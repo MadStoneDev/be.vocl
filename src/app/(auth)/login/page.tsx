@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { AuthCard } from "@/components/auth";
+import { LoadingSpinner } from "@/components/ui";
 
 export const metadata = {
   title: "Log in | be.vocl",
@@ -6,5 +8,9 @@ export const metadata = {
 };
 
 export default function LoginPage() {
-  return <AuthCard initialMode="login" />;
+  return (
+    <Suspense fallback={<LoadingSpinner size="lg" className="mx-auto" />}>
+      <AuthCard initialMode="login" />
+    </Suspense>
+  );
 }
