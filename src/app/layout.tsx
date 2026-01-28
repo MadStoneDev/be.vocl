@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Gloock, Lexend } from "next/font/google";
+import { QueryProvider } from "@/components/providers";
+import { Toaster } from "@/components/ui";
 import "./globals.css";
 
 const gloock = Gloock({
@@ -29,7 +31,13 @@ export default function RootLayout({
       <body
         className={`${gloock.variable} ${lexend.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+          {children}
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );

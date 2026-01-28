@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(BASH_ENV=\"\" npm install --prefix \"G:/Development-Sandbox/_Rumblebuffin/be.vocl\" @tabler/icons-react)",
-      "Bash(npm run dev)"
+      "Bash(npm run dev)",
+      "Bash(cd:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

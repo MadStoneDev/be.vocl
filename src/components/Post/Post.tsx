@@ -14,6 +14,7 @@ import {
   IconCalendar,
   IconHourglass,
 } from "@tabler/icons-react";
+import { NSFWOverlay } from "./NSFWOverlay";
 
 // =============================================================================
 // Types
@@ -41,6 +42,7 @@ export interface PostProps {
   children: ReactNode; // The actual content (image, text, video, etc.)
   stats: PostStats;
   interactions: PostInteractions;
+  isSensitive?: boolean; // NSFW content flag
   onComment?: () => void;
   onLike?: () => void;
   onReblog?: (type: "instant" | "with-comment" | "schedule" | "queue") => void;
@@ -60,7 +62,7 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
   return (
     <div
       className="flex items-center justify-between p-3 sm:p-4 z-50"
-      style={{ backgroundColor: "#EBEBEB", borderRadius: "50px 50px 0 0" }}
+      style={{ backgroundColor: "#EBEBEB", borderRadius: "45px 45px 0 0" }}
     >
       <div className="flex items-center gap-3">
         <div className="relative h-14 sm:h-16 w-14 sm:w-16 overflow-hidden rounded-full">
@@ -263,12 +265,17 @@ export function Post({
   children,
   stats,
   interactions,
+  isSensitive = false,
   onComment,
   onLike,
   onReblog,
   onMenuClick,
 }: PostProps) {
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
+  const [isContentRevealed, setIsContentRevealed] = useState(false);
+
+  // Determine if NSFW overlay should be shown
+  const showNSFWOverlay = isSensitive && !isContentRevealed;
 
   const handleReblogClick = () => {
     setIsReblogMenuOpen(!isReblogMenuOpen);
@@ -304,6 +311,13 @@ export function Post({
         <div className="relative overflow-hidden" style={{
           borderRadius: "0 0 50px 50px"
         }}>{children}</div>
+
+        {/* NSFW overlay - shown when content is sensitive and not revealed */}
+        {showNSFWOverlay && (
+          <div style={{ borderRadius: "0 0 42px 42px" }} className="overflow-hidden">
+            <NSFWOverlay onReveal={() => setIsContentRevealed(true)} />
+          </div>
+        )}
 
         {/* Dark overlay - only covers content, not header or action bar */}
         <div

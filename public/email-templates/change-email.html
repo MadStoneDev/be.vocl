@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your new email - be.vocl</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1a1a1a;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width: 560px;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding: 20px 0 30px;">
+              <a href="{{ .SiteURL }}" style="text-decoration: none;">
+                <span style="color: #5B9A8B; font-size: 32px; font-weight: 700; font-family: Georgia, serif;">be.vocl</span>
+              </a>
+            </td>
+          </tr>
+
+          <!-- Content Card -->
+          <tr>
+            <td style="background-color: #2a2a2a; border-radius: 16px; padding: 40px;">
+
+              <!-- Emoji -->
+              <p style="font-size: 48px; text-align: center; margin: 0 0 20px;">📧</p>
+
+              <!-- Heading -->
+              <h1 style="color: #ededed; font-size: 24px; font-weight: 600; line-height: 32px; margin: 0 0 20px; text-align: center;">
+                Confirm your new email
+              </h1>
+
+              <!-- Description -->
+              <p style="color: #ededed; font-size: 15px; line-height: 24px; margin: 0 0 20px;">
+                You requested to change your be.vocl email address. Click the button below to confirm this change.
+              </p>
+
+              <!-- Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding: 30px 0;">
+                    <a href="{{ .ConfirmationURL }}"
+                       style="background-color: #5B9A8B; border-radius: 12px; color: #ffffff; display: inline-block; font-size: 15px; font-weight: 600; padding: 14px 28px; text-decoration: none; text-align: center;">
+                      Confirm New Email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <hr style="border: none; border-top: 1px solid #3a3a3a; margin: 30px 0;">
+
+              <!-- Security notice -->
+              <p style="color: #888888; font-size: 14px; line-height: 22px; margin: 0 0 20px;">
+                Once confirmed, this email address (<span style="color: #ededed;">{{ .Email }}</span>) will be used to sign in to your account.
+              </p>
+
+              <p style="color: #888888; font-size: 12px; line-height: 20px; margin: 0;">
+                If you didn't request this change, please contact support immediately as someone may have access to your account.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 30px 0;">
+              <p style="color: #888888; font-size: 12px; line-height: 20px; margin: 0 0 10px;">
+                <a href="{{ .SiteURL }}/settings" style="color: #5B9A8B; text-decoration: none;">Email Settings</a>
+                &nbsp;•&nbsp;
+                <a href="{{ .SiteURL }}/help" style="color: #5B9A8B; text-decoration: none;">Help Center</a>
+                &nbsp;•&nbsp;
+                <a href="{{ .SiteURL }}" style="color: #5B9A8B; text-decoration: none;">Visit be.vocl</a>
+              </p>
+              <p style="color: #666666; font-size: 11px; margin: 20px 0 0;">
+                © 2024 be.vocl. Share your voice freely.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
