@@ -1,107 +1,196 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
+import { getFeedPosts } from "@/actions/posts";
 
-// Demo data for now - will be replaced with real data from Supabase
-const demoPosts = [
-  {
-    id: "1",
-    author: {
-      username: "naturelover",
-      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    },
-    timestamp: "2h ago",
-    contentType: "image" as const,
-    content: {
-      imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=400&fit=crop",
-    },
-    stats: { comments: 24, likes: 189, reblogs: 45 },
-    interactions: { hasCommented: false, hasLiked: false, hasReblogged: false },
-  },
-  {
-    id: "2",
-    author: {
-      username: "thoughtful_writer",
-      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-    },
-    timestamp: "4h ago",
-    contentType: "text" as const,
-    content: {
-      text: "Sometimes the smallest step in the right direction ends up being the biggest step of your life. Tip toe if you must, but take the step.\n\nWhat's one small step you're taking today?",
-    },
-    stats: { comments: 56, likes: 423, reblogs: 112 },
-    interactions: { hasCommented: true, hasLiked: true, hasReblogged: false },
-  },
-  {
-    id: "3",
-    author: {
-      username: "cityexplorer",
-      avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
-    },
-    timestamp: "6h ago",
-    contentType: "image" as const,
-    content: {
-      imageUrl: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=400&fit=crop",
-    },
-    stats: { comments: 18, likes: 267, reblogs: 34 },
-    interactions: { hasCommented: false, hasLiked: false, hasReblogged: false },
-  },
-  {
-    id: "4",
-    author: {
-      username: "midnight_thoughts",
-      avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
-    },
-    timestamp: "8h ago",
-    contentType: "text" as const,
-    content: {
-      text: "Hot take: The internet was better when it was weird and everyone had a personal blog with a terrible color scheme and an auto-playing MIDI soundtrack.\n\nI miss the chaos. I miss the authenticity. I miss when we made things just because we wanted to, not because of The Algorithm.",
-    },
-    stats: { comments: 234, likes: 1823, reblogs: 567 },
-    interactions: { hasCommented: false, hasLiked: true, hasReblogged: true },
-  },
-  {
-    id: "5",
-    author: {
-      username: "foodie_adventures",
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-    },
-    timestamp: "12h ago",
-    contentType: "image" as const,
-    content: {
-      imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop",
-    },
-    stats: { comments: 45, likes: 512, reblogs: 89 },
-    interactions: { hasCommented: false, hasLiked: false, hasReblogged: false },
-    isSensitive: false,
-  },
-];
+interface FeedPost {
+  id: string;
+  authorId: string;
+  author: {
+    username: string;
+    avatarUrl: string;
+  };
+  timestamp: string;
+  contentType: "text" | "image" | "video" | "audio" | "gallery";
+  content: {
+    text?: string;
+    imageUrl?: string;
+    urls?: string[];
+    html?: string;
+    plain?: string;
+    url?: string;
+    thumbnail_url?: string;
+    album_art_url?: string;
+    caption_html?: string;
+  };
+  stats: { comments: number; likes: number; reblogs: number };
+  interactions: { hasCommented: boolean; hasLiked: boolean; hasReblogged: boolean };
+  isSensitive?: boolean;
+}
 
 export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTab>("chronological");
-  const [posts] = useState(demoPosts);
-  const [isLoading] = useState(false);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sort posts based on active tab
+  // Fetch posts
+  const fetchPosts = useCallback(async (offset = 0, append = false) => {
+    if (offset === 0) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+    setError(null);
+
+    const result = await getFeedPosts({
+      limit: 20,
+      offset,
+      sortBy: activeTab,
+    });
+
+    if (result.success && result.posts) {
+      // Transform posts to FeedList format
+      const transformedPosts: FeedPost[] = result.posts.map((post) => {
+        // Determine content based on post type
+        let content: FeedPost["content"] = {};
+        const postContent = post.content as any;
+
+        if (post.postType === "text") {
+          content = {
+            text: postContent?.plain || postContent?.html?.replace(/<[^>]*>/g, "") || "",
+            html: postContent?.html,
+          };
+        } else if (post.postType === "image") {
+          content = {
+            imageUrl: postContent?.urls?.[0] || postContent?.url,
+            caption_html: postContent?.caption_html,
+          };
+        } else if (post.postType === "gallery") {
+          content = {
+            urls: postContent?.urls,
+            imageUrl: postContent?.urls?.[0],
+            caption_html: postContent?.caption_html,
+          };
+        } else if (post.postType === "video") {
+          content = {
+            url: postContent?.url,
+            thumbnail_url: postContent?.thumbnail_url,
+            caption_html: postContent?.caption_html,
+          };
+        } else if (post.postType === "audio") {
+          content = {
+            url: postContent?.url,
+            album_art_url: postContent?.album_art_url,
+            caption_html: postContent?.caption_html,
+          };
+        }
+
+        return {
+          id: post.id,
+          authorId: post.authorId,
+          author: {
+            username: post.author.username,
+            avatarUrl: post.author.avatarUrl || "https://via.placeholder.com/100",
+          },
+          timestamp: post.createdAt,
+          contentType: post.postType as FeedPost["contentType"],
+          content,
+          stats: {
+            comments: post.commentCount,
+            likes: post.likeCount,
+            reblogs: post.reblogCount,
+          },
+          interactions: {
+            hasCommented: post.hasCommented,
+            hasLiked: post.hasLiked,
+            hasReblogged: post.hasReblogged,
+          },
+          isSensitive: post.isSensitive,
+        };
+      });
+
+      if (append) {
+        setPosts((prev) => [...prev, ...transformedPosts]);
+      } else {
+        setPosts(transformedPosts);
+      }
+      setHasMore(result.hasMore || false);
+    } else {
+      setError(result.error || "Failed to load posts");
+    }
+
+    setIsLoading(false);
+    setIsLoadingMore(false);
+  }, [activeTab]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchPosts(0, false);
+  }, [fetchPosts]);
+
+  // Sort posts based on active tab (client-side for engagement)
   const sortedPosts = [...posts].sort((a, b) => {
     if (activeTab === "engagement") {
-      // Sort by engagement score (likes + comments*2 + reblogs*3)
       const scoreA = a.stats.likes + a.stats.comments * 2 + a.stats.reblogs * 3;
       const scoreB = b.stats.likes + b.stats.comments * 2 + b.stats.reblogs * 3;
       return scoreB - scoreA;
     }
-    // Chronological - keep original order (which is chronological in demo)
     return 0;
   });
+
+  // Transform for FeedList (it expects slightly different format)
+  const feedListPosts = sortedPosts.map((post) => ({
+    id: post.id,
+    author: post.author,
+    timestamp: post.timestamp,
+    contentType: post.contentType,
+    content: {
+      text: post.content.text || post.content.html?.replace(/<[^>]*>/g, ""),
+      imageUrl: post.content.imageUrl,
+    },
+    stats: post.stats,
+    interactions: post.interactions,
+    isSensitive: post.isSensitive,
+  }));
 
   return (
     <div className="py-3 mx-auto max-w-sm">
       <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {error && !isLoading && (
+        <div className="text-center py-8">
+          <p className="text-foreground/50 mb-4">{error}</p>
+          <button
+            onClick={() => fetchPosts(0, false)}
+            className="px-4 py-2 bg-vocl-accent text-white rounded-xl hover:bg-vocl-accent-hover transition-colors"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
       <FeedList
-        posts={sortedPosts}
+        posts={feedListPosts}
         isLoading={isLoading}
+        isLoadingMore={isLoadingMore}
       />
+
+      {/* Load more button */}
+      {!isLoading && !error && hasMore && posts.length > 0 && (
+        <div className="flex justify-center py-6">
+          <button
+            onClick={() => fetchPosts(posts.length, true)}
+            disabled={isLoadingMore}
+            className="px-6 py-2 bg-white/5 text-foreground/70 rounded-xl hover:bg-white/10 transition-colors disabled:opacity-50"
+          >
+            {isLoadingMore ? "Loading..." : "Load more"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

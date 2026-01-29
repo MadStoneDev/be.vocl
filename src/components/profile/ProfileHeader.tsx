@@ -38,6 +38,7 @@ interface ProfileHeaderProps {
   onShare?: () => void;
   onFollowersClick?: () => void;
   onFollowingClick?: () => void;
+  onAvatarClick?: () => void;
 }
 
 export function ProfileHeader({
@@ -59,6 +60,7 @@ export function ProfileHeader({
   onShare,
   onFollowersClick,
   onFollowingClick,
+  onAvatarClick,
 }: ProfileHeaderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -108,7 +110,11 @@ export function ProfileHeader({
           <div className="flex items-end gap-4">
             {/* Avatar */}
             <div className="relative">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-background shadow-xl">
+              <button
+                onClick={onAvatarClick}
+                className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-background shadow-xl cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:ring-offset-2 focus:ring-offset-background"
+                aria-label="View profile picture"
+              >
                 {avatarUrl ? (
                   <Image
                     src={avatarUrl}
@@ -124,9 +130,9 @@ export function ProfileHeader({
                     </span>
                   </div>
                 )}
-              </div>
+              </button>
               {/* Online indicator - optional */}
-              <div className="absolute bottom-1 right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-500 border-3 border-background" />
+              <div className="absolute bottom-1 right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-500 border-3 border-background pointer-events-none" />
             </div>
 
             {/* Name and username */}

@@ -5,10 +5,12 @@ import {
   IconGridDots,
   IconHeart,
   IconMessage,
+  IconUsers,
+  IconUserPlus,
   IconLock,
 } from "@tabler/icons-react";
 
-type TabId = "posts" | "likes" | "comments";
+type TabId = "posts" | "likes" | "comments" | "followers" | "following";
 
 interface Tab {
   id: TabId;
@@ -22,10 +24,14 @@ interface ProfileTabsProps {
   onTabChange: (tab: TabId) => void;
   showLikes: boolean;
   showComments: boolean;
+  showFollowers: boolean;
+  showFollowing: boolean;
   counts: {
     posts: number;
     likes: number;
     comments: number;
+    followers: number;
+    following: number;
   };
 }
 
@@ -34,6 +40,8 @@ export function ProfileTabs({
   onTabChange,
   showLikes,
   showComments,
+  showFollowers,
+  showFollowing,
   counts,
 }: ProfileTabsProps) {
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -43,6 +51,8 @@ export function ProfileTabs({
     { id: "posts", label: "Posts", icon: IconGridDots },
     { id: "likes", label: "Likes", icon: IconHeart, isPrivate: !showLikes },
     { id: "comments", label: "Comments", icon: IconMessage, isPrivate: !showComments },
+    { id: "followers", label: "Followers", icon: IconUsers, isPrivate: !showFollowers },
+    { id: "following", label: "Following", icon: IconUserPlus, isPrivate: !showFollowing },
   ];
 
   // Update indicator position when active tab changes

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { IconLoader2, IconMoodSad } from "@tabler/icons-react";
 import {
   ProfileHeader,
@@ -9,6 +11,7 @@ import {
   ProfileTabs,
   PinnedPost,
   FollowersModal,
+  AvatarModal,
   type TabId,
 } from "@/components/profile";
 import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
@@ -85,9 +88,12 @@ export default function ProfilePage() {
   const [likesCount, setLikesCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
 
-  // Followers modal state
+  // Followers modal state (for stat clicks in header)
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followersModalType, setFollowersModalType] = useState<"followers" | "following">("followers");
+
+  // Avatar modal state
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
@@ -334,6 +340,7 @@ export default function ProfilePage() {
         onShare={handleShare}
         onFollowersClick={() => openFollowersModal("followers")}
         onFollowingClick={() => openFollowersModal("following")}
+        onAvatarClick={() => setAvatarModalOpen(true)}
       />
 
       {/* Profile Links */}
@@ -348,10 +355,14 @@ export default function ProfilePage() {
           onTabChange={setActiveTab}
           showLikes={profile.showLikes || isOwnProfile}
           showComments={profile.showComments || isOwnProfile}
+          showFollowers={profile.showFollowers || isOwnProfile}
+          showFollowing={profile.showFollowing || isOwnProfile}
           counts={{
             posts: stats.posts,
             likes: likesCount,
             comments: commentsCount,
+            followers: stats.followers,
+            following: stats.following,
           }}
         />
       </div>
@@ -402,10 +413,26 @@ export default function ProfilePage() {
               <p className="text-foreground/50">Comments feature coming soon</p>
             </div>
           )}
+
+          {activeTab === "followers" && (
+            <FollowersListTab
+              userId={profile.id}
+              type="followers"
+              currentUserId={currentUserId}
+            />
+          )}
+
+          {activeTab === "following" && (
+            <FollowersListTab
+              userId={profile.id}
+              type="following"
+              currentUserId={currentUserId}
+            />
+          )}
         </div>
       </div>
 
-      {/* Followers/Following Modal */}
+      {/* Followers/Following Modal (for stat clicks) */}
       {profile && (
         <FollowersModal
           isOpen={followersModalOpen}
@@ -416,6 +443,191 @@ export default function ProfilePage() {
           currentUserId={currentUserId}
         />
       )}
+
+      {/* Avatar Modal */}
+      {profile && (
+        <AvatarModal
+          isOpen={avatarModalOpen}
+          onClose={() => setAvatarModalOpen(false)}
+          avatarUrl={profile.avatarUrl}
+          username={profile.username}
+        />
+      )}
     </div>
+  );
+}
+
+// Inline component for followers/following tab content
+function FollowersListTab({
+  userId,
+  type,
+  currentUserId,
+}: {
+  userId: string;
+  type: "followers" | "following";
+  currentUserId?: string;
+}) {
+  const [users, setUsers] = useState<Array<{
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+  }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const { getFollowers, getFollowing } = await import("@/actions/follows");
+        const result = type === "followers"
+          ? await getFollowers(userId)
+          : await getFollowing(userId);
+        if (result.success) {
+          const userList = type === "followers"
+            ? (result as { followers?: typeof users }).followers
+            : (result as { following?: typeof users }).following;
+          setUsers(userList || []);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [userId, type]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-foreground/50">
+          {type === "followers" ? "No followers yet" : "Not following anyone yet"}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {users.map((user) => (
+        <FollowerCard key={user.id} user={user} currentUserId={currentUserId} />
+      ))}
+    </div>
+  );
+}
+
+// Inline component for individual follower/following card
+function FollowerCard({
+  user,
+  currentUserId,
+}: {
+  user: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+  };
+  currentUserId?: string;
+}) {
+  const [isFollowingUser, setIsFollowingUser] = useState(false);
+  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+  const isOwnCard = currentUserId === user.id;
+
+  useEffect(() => {
+    const checkFollowing = async () => {
+      if (!currentUserId || isOwnCard) return;
+      const { isFollowing } = await import("@/actions/follows");
+      const result = await isFollowing(user.id);
+      setIsFollowingUser(result);
+    };
+    checkFollowing();
+  }, [currentUserId, user.id, isOwnCard]);
+
+  const handleFollowToggle = async () => {
+    if (isOwnCard) return;
+    setIsLoadingFollow(true);
+    try {
+      const { followUser, unfollowUser } = await import("@/actions/follows");
+      if (isFollowingUser) {
+        const result = await unfollowUser(user.id);
+        if (result.success) {
+          setIsFollowingUser(false);
+          toast.success(`Unfollowed @${user.username}`);
+        }
+      } else {
+        const result = await followUser(user.id);
+        if (result.success) {
+          setIsFollowingUser(true);
+          toast.success(`Following @${user.username}`);
+        }
+      }
+    } finally {
+      setIsLoadingFollow(false);
+    }
+  };
+
+  return (
+    <Link
+      href={`/profile/${user.username}`}
+      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+    >
+      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+        {user.avatarUrl ? (
+          <Image
+            src={user.avatarUrl}
+            alt={user.username}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+            <span className="text-lg font-bold text-white">
+              {user.username.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-foreground truncate">
+          {user.displayName || user.username}
+        </p>
+        <p className="text-sm text-foreground/50 truncate">@{user.username}</p>
+        {user.bio && (
+          <p className="text-sm text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
+        )}
+      </div>
+      {!isOwnCard && currentUserId && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFollowToggle();
+          }}
+          disabled={isLoadingFollow}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
+            isFollowingUser
+              ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+              : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+          }`}
+        >
+          {isLoadingFollow ? (
+            <IconLoader2 size={16} className="animate-spin" />
+          ) : isFollowingUser ? (
+            "Following"
+          ) : (
+            "Follow"
+          )}
+        </button>
+      )}
+    </Link>
   );
 }

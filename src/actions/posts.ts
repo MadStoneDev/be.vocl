@@ -562,3 +562,153 @@ function formatTimeAgo(dateStr: string): string {
     day: "numeric",
   });
 }
+
+/**
+ * Get feed posts (from followed users or all public posts)
+ */
+export async function getFeedPosts(options?: {
+  limit?: number;
+  offset?: number;
+  sortBy?: "chronological" | "engagement";
+}): Promise<{
+  success: boolean;
+  posts?: PostWithDetails[];
+  hasMore?: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const limit = options?.limit || 20;
+    const offset = options?.offset || 0;
+    const sortBy = options?.sortBy || "chronological";
+
+    // Get followed user IDs if logged in
+    let followedIds: string[] = [];
+    if (user) {
+      const { data: follows } = await (supabase as any)
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", user.id);
+      followedIds = (follows || []).map((f: any) => f.following_id);
+      // Include own posts in feed
+      followedIds.push(user.id);
+    }
+
+    // Build query
+    let query = (supabase as any)
+      .from("posts")
+      .select(
+        `
+        id,
+        author_id,
+        post_type,
+        content,
+        is_sensitive,
+        is_pinned,
+        created_at,
+        author:author_id (
+          username,
+          display_name,
+          avatar_url
+        )
+      `
+      )
+      .eq("status", "published");
+
+    // Filter by followed users if logged in and following someone
+    if (user && followedIds.length > 0) {
+      query = query.in("author_id", followedIds);
+    }
+
+    // Sort by created_at for now (engagement sorting done client-side)
+    query = query.order("created_at", { ascending: false });
+    query = query.range(offset, offset + limit);
+
+    const { data: posts, error } = await query;
+
+    if (error) {
+      console.error("Get feed posts error:", error);
+      return { success: false, error: "Failed to fetch posts" };
+    }
+
+    if (!posts || posts.length === 0) {
+      return { success: true, posts: [], hasMore: false };
+    }
+
+    // Get like and comment counts for posts
+    const postIds = posts.map((p: any) => p.id);
+
+    const { data: likeCounts } = await (supabase as any)
+      .from("likes")
+      .select("post_id")
+      .in("post_id", postIds);
+
+    const { data: commentCounts } = await (supabase as any)
+      .from("comments")
+      .select("post_id")
+      .in("post_id", postIds);
+
+    // Check if current user has liked/commented
+    let userLikes: string[] = [];
+    let userComments: string[] = [];
+    if (user) {
+      const { data: likes } = await (supabase as any)
+        .from("likes")
+        .select("post_id")
+        .eq("user_id", user.id)
+        .in("post_id", postIds);
+      userLikes = (likes || []).map((l: any) => l.post_id);
+
+      const { data: comments } = await (supabase as any)
+        .from("comments")
+        .select("post_id")
+        .eq("user_id", user.id)
+        .in("post_id", postIds);
+      userComments = (comments || []).map((c: any) => c.post_id);
+    }
+
+    // Count likes/comments per post
+    const likeCountMap = new Map<string, number>();
+    const commentCountMap = new Map<string, number>();
+    (likeCounts || []).forEach((l: any) => {
+      likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
+    });
+    (commentCounts || []).forEach((c: any) => {
+      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
+    });
+
+    const formattedPosts: PostWithDetails[] = posts.map((post: any) => ({
+      id: post.id,
+      authorId: post.author_id,
+      author: {
+        username: post.author?.username || "unknown",
+        displayName: post.author?.display_name,
+        avatarUrl: post.author?.avatar_url,
+      },
+      postType: post.post_type,
+      content: post.content,
+      isSensitive: post.is_sensitive,
+      isPinned: post.is_pinned,
+      createdAt: formatTimeAgo(post.created_at),
+      likeCount: likeCountMap.get(post.id) || 0,
+      commentCount: commentCountMap.get(post.id) || 0,
+      reblogCount: 0,
+      hasLiked: userLikes.includes(post.id),
+      hasCommented: userComments.includes(post.id),
+      hasReblogged: false,
+    }));
+
+    return {
+      success: true,
+      posts: formattedPosts,
+      hasMore: posts.length === limit,
+    };
+  } catch (error) {
+    console.error("Get feed posts error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState, useRef, type ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   IconDots,
   IconMessage,
@@ -85,18 +86,24 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
       style={{ backgroundColor: "#EBEBEB", borderRadius: "30px 0 0 0" }}
     >
       <div className="flex items-center gap-3">
-        <div className="relative h-10 sm:h-12 w-10 sm:w-12 overflow-hidden rounded-full">
+        <Link
+          href={`/profile/${author.username}`}
+          className="relative h-10 sm:h-12 w-10 sm:w-12 overflow-hidden rounded-full hover:opacity-90 transition-opacity"
+        >
           <Image
             src={author.avatarUrl}
             alt={author.username}
             fill
             className="object-cover"
           />
-        </div>
+        </Link>
         <div className="flex flex-col">
-          <span className="font-display text-base sm:text-lg font-normal text-neutral-900">
+          <Link
+            href={`/profile/${author.username}`}
+            className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-accent transition-colors"
+          >
             {author.username}
-          </span>
+          </Link>
           <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">{timestamp}</span>
         </div>
       </div>
@@ -342,17 +349,25 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="flex gap-3 p-3 border-b border-neutral-100 last:border-0">
-              <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full">
+              <Link
+                href={`/profile/${comment.author.username}`}
+                className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full hover:opacity-90 transition-opacity"
+              >
                 <Image
                   src={comment.author.avatarUrl}
                   alt={comment.author.username}
                   fill
                   className="object-cover"
                 />
-              </div>
+              </Link>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-medium text-sm text-neutral-800">{comment.author.username}</span>
+                  <Link
+                    href={`/profile/${comment.author.username}`}
+                    className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors"
+                  >
+                    {comment.author.username}
+                  </Link>
                   <span className="text-xs text-neutral-400">{comment.timestamp}</span>
                 </div>
                 <p className="text-sm text-neutral-600 mt-0.5">{comment.content}</p>
@@ -378,7 +393,11 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
         <p className="text-center text-neutral-400 text-sm py-6">{emptyMessage}</p>
       ) : (
         users.map((user) => (
-          <div key={user.id} className="flex items-center gap-3 p-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors cursor-pointer">
+          <Link
+            key={user.id}
+            href={`/profile/${user.username}`}
+            className="flex items-center gap-3 p-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
+          >
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
               <Image
                 src={user.avatarUrl}
@@ -388,11 +407,11 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="font-medium text-sm text-neutral-800 block">{user.displayName || user.username}</span>
+              <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent block transition-colors">{user.displayName || user.username}</span>
               <span className="text-xs text-neutral-400">@{user.username}</span>
             </div>
             <div className={`w-2 h-2 rounded-full ${actionColor}`} />
-          </div>
+          </Link>
         ))
       )}
     </div>
