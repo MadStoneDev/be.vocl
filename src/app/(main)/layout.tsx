@@ -24,7 +24,7 @@ export default function MainLayout({
 
       {/* Main Content */}
       <main id="main-content" className="pt-16 pb-20 md:pb-8" tabIndex={-1}>
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="max-w-2xl mx-auto sm:px-4">
           {children}
         </div>
       </main>

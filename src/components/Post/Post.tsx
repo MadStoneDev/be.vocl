@@ -61,11 +61,11 @@ interface PostHeaderProps {
 function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
   return (
     <div
-      className="flex items-center justify-between p-3 sm:p-4 z-50"
-      style={{ backgroundColor: "#EBEBEB", borderRadius: "45px 45px 0 0" }}
+      className="flex items-center justify-between p-2 border-b border-vocl-surface-dark/20 z-50"
+      style={{ backgroundColor: "#EBEBEB", borderRadius: "30px 0 0 0" }}
     >
       <div className="flex items-center gap-3">
-        <div className="relative h-14 sm:h-16 w-14 sm:w-16 overflow-hidden rounded-full">
+        <div className="relative h-10 sm:h-12 w-10 sm:w-12 overflow-hidden rounded-full">
           <Image
             src={author.avatarUrl}
             alt={author.username}
@@ -77,7 +77,7 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
           <span className="font-display text-base sm:text-lg font-normal text-neutral-900">
             {author.username}
           </span>
-          <span className="-mt-1 font-sans text-xs sm:text-sm text-neutral-400">{timestamp}</span>
+          <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">{timestamp}</span>
         </div>
       </div>
       <button
@@ -110,8 +110,8 @@ function PostActionBar({
 }: PostActionBarProps) {
   return (
     <div
-      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between pt-3 sm:pt-2.5 pr-21 sm:pr-22 pb-5 sm:pb-5 pl-6 sm:pl-8`}
-      style={{ backgroundColor: "rgba(19, 19, 19, 0.9)", borderRadius: "0 0 50px 50px" }}
+      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between pt-2.5 pr-20 pb-3 sm:pb-4 pl-3 sm:pl-5`}
+      style={{ backgroundColor: "rgba(19, 19, 19, 0.9)", borderRadius: "0 0 40px 0" }}
     >
       {/* Comment button */}
       <button
@@ -161,7 +161,7 @@ function PostActionBar({
       {/* Reblog button */}
       <button
           onClick={onReblogClick}
-          className={`absolute right-0 bottom-0 w-18 sm:w-20 h-18 sm:h-20 rounded-full shadow-lg transition-all duration-300 ${
+          className={`absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full shadow-lg shadow-vocl-surface-dark/50 transition-all duration-300 ${
               isReblogMenuOpen
                   ? "bg-vocl-accent scale-105"
                   : "bg-vocl-accent hover:scale-105"
@@ -171,17 +171,17 @@ function PostActionBar({
       >
         <div className="hidden sm:flex items-center justify-center">
           {isReblogMenuOpen ? (
-              <IconBolt size={60} stroke={1.5} className="text-neutral-900" />
+              <IconBolt size={55} stroke={1.5} className={`text-neutral-900`} />
           ) : (
-              <IconRefresh size={60} stroke={1.5} className="text-neutral-900" />
+              <IconRefresh size={55} stroke={1.5} className={`text-neutral-900`} />
           )}
         </div>
 
         <div className="flex sm:hidden items-center justify-center">
           {isReblogMenuOpen ? (
-              <IconBolt size={55} stroke={1.5} className="text-neutral-900" />
+              <IconBolt size={50} stroke={1.5} className="text-neutral-900" />
           ) : (
-              <IconRefresh size={55} stroke={1.5} className="text-neutral-900" />
+              <IconRefresh size={50} stroke={1.5} className="text-neutral-900" />
           )}
         </div>
       </button>
@@ -309,12 +309,12 @@ export function Post({
       <div className="relative">
         {/* The actual content */}
         <div className="relative overflow-hidden" style={{
-          borderRadius: "0 0 50px 50px"
+          borderRadius: "0 0 40px 0"
         }}>{children}</div>
 
         {/* NSFW overlay - shown when content is sensitive and not revealed */}
         {showNSFWOverlay && (
-          <div style={{ borderRadius: "0 0 42px 42px" }} className="overflow-hidden">
+          <div style={{ borderRadius: "0 0 40px 0" }} className="overflow-hidden">
             <NSFWOverlay onReveal={() => setIsContentRevealed(true)} />
           </div>
         )}
@@ -345,8 +345,8 @@ export function Post({
       />
       
       {/* Fake Border */}
-      <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-8 sm:border-10 border-[#EBEBEB] z-40`} style={{
-        borderRadius: "50px",
+      <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border sm:border-6 border-[#EBEBEB] z-40`} style={{
+        borderRadius: "30px 0 40px 0",
       }}></div>
     </article>
   );
@@ -375,8 +375,8 @@ interface TextContentProps {
 
 export function TextContent({ children }: TextContentProps) {
   return (
-    <div className="p-4 pb-22 bg-[#EBEBEB]">
-      <div className="font-sans text-base leading-relaxed  text-neutral-700">
+    <div className="p-3 sm:p-4 pb-18.5 sm:pb-18.5 bg-[#EBEBEB]">
+      <div className="font-sans text-sm sm:text-base font-light leading-relaxed  text-neutral-700">
         {children}
       </div>
     </div>

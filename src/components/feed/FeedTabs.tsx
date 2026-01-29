@@ -26,7 +26,7 @@ export function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
   ];
 
   return (
-    <div className="flex rounded-2xl bg-vocl-surface-dark/50 p-1 mb-6">
+    <div className="flex sm:rounded-2xl bg-vocl-surface-dark/50 p-1 mb-6">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
@@ -36,7 +36,7 @@ export function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
             key={tab.id}
             type="button"
             onClick={() => onTabChange(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 sm:rounded-xl text-sm font-medium transition-all ${
               isActive
                 ? "bg-vocl-accent text-white shadow-lg"
                 : "text-foreground/60 hover:text-foreground"

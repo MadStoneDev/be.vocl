@@ -171,7 +171,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
       </div>
 
       {/* Auth Card */}
-      <div className="bg-vocl-surface-dark/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/5">
+      <div className="bg-vocl-surface-dark/80 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/5">
         {/* Tab Switcher - Only show for login/signup */}
         {mode !== "forgot" ? (
           <div className="flex rounded-full bg-background/50 p-1 mb-6">
@@ -216,40 +216,40 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
         )}
 
         {/* OAuth Buttons - Hide for forgot mode */}
-        {mode !== "forgot" && (
-          <>
-            <div className="space-y-3 mb-6">
-              <button
-                type="button"
-                onClick={() => handleOAuthSignIn("google")}
-                disabled={isPending}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white text-gray-800 font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
-              >
-                <IconBrandGoogle size={20} />
-                Continue with Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOAuthSignIn("github")}
-                disabled={isPending}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
-              >
-                <IconBrandGithub size={20} />
-                Continue with GitHub
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-foreground/40 text-sm">or</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-          </>
-        )}
+        {/*{mode !== "forgot" && (*/}
+        {/*  <>*/}
+        {/*    <div className="space-y-2 mb-3">*/}
+        {/*      <button*/}
+        {/*        type="button"*/}
+        {/*        onClick={() => handleOAuthSignIn("google")}*/}
+        {/*        disabled={isPending}*/}
+        {/*        className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"*/}
+        {/*      >*/}
+        {/*        <IconBrandGoogle size={20} />*/}
+        {/*        Continue with Google*/}
+        {/*      </button>*/}
+        {/*      <button*/}
+        {/*        type="button"*/}
+        {/*        onClick={() => handleOAuthSignIn("github")}*/}
+        {/*        disabled={isPending}*/}
+        {/*        className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"*/}
+        {/*      >*/}
+        {/*        <IconBrandGithub size={20} />*/}
+        {/*        Continue with GitHub*/}
+        {/*      </button>*/}
+        {/*    </div>*/}
+        
+        {/*    /!* Divider *!/*/}
+        {/*    <div className="flex items-center gap-4 mb-3">*/}
+        {/*      <div className="flex-1 h-px bg-white/10" />*/}
+        {/*      <span className="text-foreground/40 text-sm">or</span>*/}
+        {/*      <div className="flex-1 h-px bg-white/10" />*/}
+        {/*    </div>*/}
+        {/*  </>*/}
+        {/*)}*/}
 
         {/* Email/Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {mode === "signup" && (
             <div className="relative">
               <IconUser
@@ -307,7 +307,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-all"
               >
                 {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
               </button>
@@ -320,7 +320,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                 type="button"
                 onClick={handleMagicLink}
                 disabled={isPending}
-                className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+                className="text-xs text-foreground/60 hover:text-foreground transition-all"
               >
                 Send magic link instead
               </button>
@@ -331,7 +331,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                   setError(null);
                   setSuccess(null);
                 }}
-                className="text-sm text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+                className="text-xs text-vocl-accent hover:text-vocl-accent-hover transition-all"
               >
                 Forgot password?
               </button>
@@ -355,7 +355,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-3.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="mt-6 w-full py-3.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isPending ? (
               <>
@@ -385,7 +385,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               setError(null);
               setSuccess(null);
             }}
-            className="w-full text-center mt-4 text-sm text-foreground/60 hover:text-foreground transition-colors"
+            className="w-full text-center mt-4 text-sm text-foreground/60 hover:text-foreground transition-all"
           >
             ← Back to login
           </button>

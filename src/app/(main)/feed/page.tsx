@@ -133,7 +133,7 @@ export default function FeedPage() {
   });
 
   return (
-    <div className="py-6">
+    <div className="py-3 mx-auto max-w-sm">
       <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
       <FeedList
         posts={sortedPosts}
