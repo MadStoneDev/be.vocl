@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { IconX, IconSearch, IconLoader2 } from "@tabler/icons-react";
 import { ConversationList, type Conversation } from "./ConversationList";
 import { ActiveChat, type Message, type Participant } from "./ActiveChat";
+import { useChat, useMessages } from "@/hooks/useChat";
+import { toast } from "@/components/ui";
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -11,240 +13,112 @@ interface ChatSidebarProps {
   currentUserId?: string;
 }
 
-// Demo data for now - will be replaced with real data from server actions
-const demoConversations: Conversation[] = [
-  {
-    id: "conv-1",
-    participant: {
-      id: "user-1",
-      username: "creativemind",
-      avatarUrl: "https://picsum.photos/seed/user1/200",
-      isOnline: true,
-    },
-    lastMessage: {
-      content: "That sounds amazing! Let me know when you're free",
-      senderId: "user-1",
-      createdAt: "2m ago",
-      isRead: false,
-    },
-    unreadCount: 2,
-  },
-  {
-    id: "conv-2",
-    participant: {
-      id: "user-2",
-      username: "artlover",
-      avatarUrl: "https://picsum.photos/seed/user2/200",
-      isOnline: false,
-    },
-    lastMessage: {
-      content: "Thanks for sharing!",
-      senderId: "current-user",
-      createdAt: "1h ago",
-      isRead: true,
-    },
-    unreadCount: 0,
-  },
-  {
-    id: "conv-3",
-    participant: {
-      id: "user-3",
-      username: "photographer",
-      avatarUrl: "https://picsum.photos/seed/user3/200",
-      isOnline: true,
-    },
-    lastMessage: {
-      content: "Check out my new collection when you get a chance",
-      senderId: "user-3",
-      createdAt: "3h ago",
-      isRead: true,
-    },
-    unreadCount: 0,
-  },
-];
-
-const demoMessages: Record<string, Message[]> = {
-  "conv-1": [
-    {
-      id: "msg-1",
-      content: "Hey! I saw your latest post, it was incredible!",
-      senderId: "user-1",
-      isRead: true,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: "10:30 AM",
-    },
-    {
-      id: "msg-2",
-      content: "Thank you so much! I spent a lot of time on it",
-      senderId: "current-user",
-      isRead: true,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: "10:32 AM",
-    },
-    {
-      id: "msg-3",
-      content: "Would you be interested in collaborating on a project?",
-      senderId: "user-1",
-      isRead: true,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: "10:35 AM",
-    },
-    {
-      id: "msg-4",
-      content: "That sounds amazing! Let me know when you're free",
-      senderId: "user-1",
-      isRead: false,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: "10:36 AM",
-    },
-  ],
-  "conv-2": [
-    {
-      id: "msg-5",
-      content: "Your art style is so unique!",
-      senderId: "user-2",
-      isRead: true,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: "Yesterday",
-    },
-    {
-      id: "msg-6",
-      content: "Thanks for sharing!",
-      senderId: "current-user",
-      isRead: true,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: "Yesterday",
-    },
-  ],
-};
-
-export function ChatSidebar({ isOpen, onClose, currentUserId = "current-user" }: ChatSidebarProps) {
+export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps) {
   const [view, setView] = useState<"list" | "chat">("list");
   const [searchQuery, setSearchQuery] = useState("");
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Load conversations
-  const loadConversations = useCallback(async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setConversations(demoConversations);
-    setIsLoading(false);
-  }, []);
+  // Use chat hook for conversations
+  const {
+    conversations,
+    isLoading: conversationsLoading,
+    error: conversationsError,
+    refreshConversations,
+  } = useChat(currentUserId);
 
+  // Use messages hook for active conversation
+  const {
+    messages,
+    isLoading: messagesLoading,
+    sendNewMessage,
+    editExistingMessage,
+    deleteExistingMessage,
+  } = useMessages(activeConversation?.id || null, currentUserId);
+
+  // Refresh conversations when sidebar opens
   useEffect(() => {
-    if (isOpen) {
-      loadConversations();
+    if (isOpen && currentUserId) {
+      refreshConversations();
     }
-  }, [isOpen, loadConversations]);
+  }, [isOpen, currentUserId, refreshConversations]);
 
   // Handle conversation selection
-  const handleSelectConversation = (conversationId: string) => {
+  const handleSelectConversation = useCallback((conversationId: string) => {
     const conversation = conversations.find((c) => c.id === conversationId);
     if (conversation) {
       setActiveConversation(conversation);
-      setMessages(demoMessages[conversationId] || []);
       setView("chat");
-
-      // Mark as read
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === conversationId ? { ...c, unreadCount: 0 } : c
-        )
-      );
     }
-  };
+  }, [conversations]);
 
   // Handle back to list
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setView("list");
     setActiveConversation(null);
-    setMessages([]);
-  };
+  }, []);
 
   // Handle send message
-  const handleSendMessage = async (content: string, _mediaFile?: File) => {
+  const handleSendMessage = useCallback(async (content: string, mediaFile?: File) => {
     if (!activeConversation) return;
 
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      content,
-      senderId: currentUserId,
-      isRead: false,
-      isEdited: false,
-      isDeleted: false,
-      createdAt: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+    // TODO: Handle media file upload to R2
+    let mediaUrl: string | undefined;
+    let mediaType: string | undefined;
 
-    setMessages((prev) => [...prev, newMessage]);
+    if (mediaFile) {
+      // For now, show a message that media upload is coming soon
+      toast.info("Media upload coming soon!");
+      return;
+    }
 
-    // Update last message in conversation list
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeConversation.id
-          ? {
-              ...c,
-              lastMessage: {
-                content,
-                senderId: currentUserId,
-                createdAt: "Just now",
-                isRead: true,
-              },
-            }
-          : c
-      )
-    );
-
-    // Simulate typing response after a delay
-    setTimeout(() => {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        // Could add auto-response here for demo
-      }, 2000);
-    }, 1000);
-  };
+    const success = await sendNewMessage(content, mediaUrl, mediaType);
+    if (!success) {
+      toast.error("Failed to send message");
+    }
+  }, [activeConversation, sendNewMessage]);
 
   // Handle edit message
-  const handleEditMessage = (messageId: string, newContent: string) => {
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === messageId ? { ...m, content: newContent, isEdited: true } : m
-      )
-    );
-  };
+  const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
+    const success = await editExistingMessage(messageId, newContent);
+    if (!success) {
+      toast.error("Failed to edit message");
+    }
+  }, [editExistingMessage]);
 
   // Handle delete message
-  const handleDeleteMessage = (messageId: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, isDeleted: true } : m))
-    );
-  };
+  const handleDeleteMessage = useCallback(async (messageId: string) => {
+    const success = await deleteExistingMessage(messageId);
+    if (!success) {
+      toast.error("Failed to delete message");
+    }
+  }, [deleteExistingMessage]);
 
   // Handle typing indicator
-  const handleTyping = () => {
-    // Would send typing event to server
-  };
+  const handleTyping = useCallback(() => {
+    // TODO: Implement typing indicator broadcast via Supabase Realtime Presence
+  }, []);
 
   // Handle new chat
-  const handleNewChat = () => {
-    // Would open a user search modal
-  };
+  const handleNewChat = useCallback(() => {
+    // TODO: Open a user search modal to start new conversation
+    toast.info("New chat feature coming soon!");
+  }, []);
 
   if (!isOpen) return null;
+
+  // Convert messages to ActiveChat format
+  const chatMessages: Message[] = messages.map((m) => ({
+    id: m.id,
+    content: m.content,
+    mediaUrl: m.mediaUrl,
+    mediaType: m.mediaType as "image" | "video" | "audio" | undefined,
+    senderId: m.senderId,
+    isRead: m.isRead,
+    isEdited: m.isEdited,
+    isDeleted: m.isDeleted,
+    createdAt: m.createdAt,
+  }));
 
   return (
     <>
@@ -289,9 +163,19 @@ export function ChatSidebar({ isOpen, onClose, currentUserId = "current-user" }:
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
-              {isLoading ? (
+              {conversationsLoading ? (
                 <div className="flex items-center justify-center py-16">
                   <IconLoader2 size={28} className="animate-spin text-vocl-accent" />
+                </div>
+              ) : conversationsError ? (
+                <div className="text-center py-16 px-4">
+                  <p className="text-foreground/50 text-sm">{conversationsError}</p>
+                  <button
+                    onClick={refreshConversations}
+                    className="mt-4 px-4 py-2 rounded-xl bg-vocl-accent text-white text-sm"
+                  >
+                    Try again
+                  </button>
                 </div>
               ) : (
                 <ConversationList
@@ -307,9 +191,10 @@ export function ChatSidebar({ isOpen, onClose, currentUserId = "current-user" }:
           <ActiveChat
             conversationId={activeConversation.id}
             participant={activeConversation.participant as Participant}
-            messages={messages}
-            currentUserId={currentUserId}
+            messages={chatMessages}
+            currentUserId={currentUserId || ""}
             isTyping={isTyping}
+            isLoading={messagesLoading}
             onBack={handleBack}
             onSendMessage={handleSendMessage}
             onEditMessage={handleEditMessage}

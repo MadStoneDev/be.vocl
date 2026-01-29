@@ -32,6 +32,7 @@ interface ActiveChatProps {
   messages: Message[];
   currentUserId: string;
   isTyping: boolean;
+  isLoading?: boolean;
   onBack: () => void;
   onSendMessage: (content: string, mediaFile?: File) => Promise<void>;
   onEditMessage: (messageId: string, newContent: string) => void;
@@ -44,6 +45,7 @@ export function ActiveChat({
   messages,
   currentUserId,
   isTyping,
+  isLoading = false,
   onBack,
   onSendMessage,
   onEditMessage,

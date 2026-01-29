@@ -8,16 +8,19 @@ import {
   ProfileLinks,
   ProfileTabs,
   PinnedPost,
+  FollowersModal,
   type TabId,
 } from "@/components/profile";
-import { Post, ImageContent, TextContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
 import {
   getProfileByUsername,
   getProfileStats,
   getProfileLinks,
   getCurrentProfile,
 } from "@/actions/profile";
+import { getPostsByUser, getLikedPosts } from "@/actions/posts";
 import { followUser, unfollowUser, isFollowing, blockUser, muteUser } from "@/actions/follows";
+import { toast } from "@/components/ui";
 
 interface ProfileData {
   id: string;
@@ -38,6 +41,27 @@ interface ProfileLink {
   url: string;
 }
 
+interface PostData {
+  id: string;
+  authorId: string;
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  postType: string;
+  content: any;
+  isSensitive: boolean;
+  isPinned: boolean;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  reblogCount: number;
+  hasLiked: boolean;
+  hasCommented: boolean;
+  hasReblogged: boolean;
+}
+
 export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -48,40 +72,22 @@ export default function ProfilePage() {
   const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0 });
   const [links, setLinks] = useState<ProfileLink[]>([]);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [following, setFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("posts");
   const [error, setError] = useState<string | null>(null);
 
-  // Demo pinned post
-  const [pinnedPost] = useState({
-    id: "pinned-1",
-    author: { username: "demo", avatarUrl: "https://picsum.photos/seed/avatar1/200" },
-    timestamp: "2 days ago",
-    content: "This is my pinned post! Welcome to my profile.",
-    imageUrl: "https://picsum.photos/seed/pinned/800/800",
-  });
+  // Posts state
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [pinnedPost, setPinnedPost] = useState<PostData | null>(null);
+  const [likedPosts, setLikedPosts] = useState<PostData[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
 
-  // Demo posts for each tab
-  const [posts] = useState([
-    {
-      id: "post-1",
-      author: { username, avatarUrl: "https://picsum.photos/seed/avatar1/200" },
-      timestamp: "3h ago",
-      contentType: "image" as const,
-      imageUrl: "https://picsum.photos/seed/post1/800/800",
-      stats: { comments: 12, likes: 89, reblogs: 5 },
-      interactions: { hasCommented: false, hasLiked: true, hasReblogged: false },
-    },
-    {
-      id: "post-2",
-      author: { username, avatarUrl: "https://picsum.photos/seed/avatar1/200" },
-      timestamp: "1d ago",
-      contentType: "text" as const,
-      content: "Just sharing some thoughts on this beautiful day. The weather is perfect and I'm feeling inspired to create something new.",
-      stats: { comments: 5, likes: 34, reblogs: 2 },
-      interactions: { hasCommented: true, hasLiked: false, hasReblogged: false },
-    },
-  ]);
+  // Followers modal state
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalType, setFollowersModalType] = useState<"followers" | "following">("followers");
 
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
@@ -122,13 +128,22 @@ export default function ProfilePage() {
         setLinks(linksResult.links);
       }
 
+      // Fetch posts
+      const postsResult = await getPostsByUser(profileData.id, { includePinned: true });
+      if (postsResult.success) {
+        setPosts(postsResult.posts || []);
+        setPinnedPost(postsResult.pinnedPost || null);
+      }
+
       // Check if own profile
       const currentProfileResult = await getCurrentProfile();
       if (currentProfileResult.success && currentProfileResult.profile) {
-        setIsOwnProfile(currentProfileResult.profile.id === profileData.id);
+        const isOwn = currentProfileResult.profile.id === profileData.id;
+        setIsOwnProfile(isOwn);
+        setCurrentUserId(currentProfileResult.profile.id);
 
         // Check if following
-        if (currentProfileResult.profile.id !== profileData.id) {
+        if (!isOwn) {
           const isFollowingResult = await isFollowing(profileData.id);
           setFollowing(isFollowingResult);
         }
@@ -140,6 +155,24 @@ export default function ProfilePage() {
     }
   }, [username]);
 
+  // Fetch liked posts when switching to likes tab
+  const fetchLikedPosts = useCallback(async () => {
+    if (!profile) return;
+    setPostsLoading(true);
+    const result = await getLikedPosts(profile.id);
+    if (result.success) {
+      setLikedPosts(result.posts || []);
+      setLikesCount(result.total || 0);
+    }
+    setPostsLoading(false);
+  }, [profile]);
+
+  useEffect(() => {
+    if (activeTab === "likes" && likedPosts.length === 0 && profile) {
+      fetchLikedPosts();
+    }
+  }, [activeTab, likedPosts.length, profile, fetchLikedPosts]);
+
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
@@ -150,6 +183,9 @@ export default function ProfilePage() {
     if (result.success) {
       setFollowing(true);
       setStats((prev) => ({ ...prev, followers: prev.followers + 1 }));
+      toast.success(`Following @${profile.username}`);
+    } else {
+      toast.error(result.error || "Failed to follow user");
     }
   };
 
@@ -159,22 +195,89 @@ export default function ProfilePage() {
     if (result.success) {
       setFollowing(false);
       setStats((prev) => ({ ...prev, followers: prev.followers - 1 }));
+      toast.success(`Unfollowed @${profile.username}`);
+    } else {
+      toast.error(result.error || "Failed to unfollow user");
     }
   };
 
   const handleBlock = async () => {
     if (!profile) return;
-    await blockUser(profile.id);
-    router.push("/feed");
+    const result = await blockUser(profile.id);
+    if (result.success) {
+      toast.success(`Blocked @${profile.username}`);
+      router.push("/feed");
+    } else {
+      toast.error(result.error || "Failed to block user");
+    }
   };
 
   const handleMute = async () => {
     if (!profile) return;
-    await muteUser(profile.id);
+    const result = await muteUser(profile.id);
+    if (result.success) {
+      toast.success(`Muted @${profile.username}`);
+    }
   };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
+    toast.success("Profile link copied!");
+  };
+
+  const openFollowersModal = (type: "followers" | "following") => {
+    setFollowersModalType(type);
+    setFollowersModalOpen(true);
+  };
+
+  // Render a post
+  const renderPost = (post: PostData) => {
+    const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery";
+
+    // Get content preview for reblog dialog
+    const contentPreview = post.content?.plain || post.content?.caption_html?.replace(/<[^>]*>/g, "") || "";
+    const imageUrl = post.content?.urls?.[0] || post.content?.thumbnail_url;
+
+    return (
+      <InteractivePost
+        key={post.id}
+        id={post.id}
+        author={{
+          username: post.author.username,
+          avatarUrl: post.author.avatarUrl || "https://via.placeholder.com/100",
+        }}
+        authorId={post.authorId}
+        timestamp={post.createdAt}
+        contentType={contentType}
+        initialStats={{
+          comments: post.commentCount,
+          likes: post.likeCount,
+          reblogs: post.reblogCount,
+        }}
+        initialInteractions={{
+          hasCommented: post.hasCommented,
+          hasLiked: post.hasLiked,
+          hasReblogged: post.hasReblogged,
+        }}
+        isSensitive={post.isSensitive}
+        isOwn={post.authorId === currentUserId}
+        isPinned={post.isPinned}
+        contentPreview={contentPreview}
+        imageUrl={imageUrl}
+      >
+        {contentType === "image" && post.content?.urls?.[0] && (
+          <ImageContent src={post.content.urls[0]} alt="" />
+        )}
+        {contentType === "text" && post.content?.html && (
+          <TextContent>
+            <div dangerouslySetInnerHTML={{ __html: post.content.html }} />
+          </TextContent>
+        )}
+        {contentType === "text" && post.content?.plain && !post.content?.html && (
+          <TextContent>{post.content.plain}</TextContent>
+        )}
+      </InteractivePost>
+    );
   };
 
   // Loading state
@@ -229,6 +332,8 @@ export default function ProfilePage() {
         onBlock={handleBlock}
         onMute={handleMute}
         onShare={handleShare}
+        onFollowersClick={() => openFollowersModal("followers")}
+        onFollowingClick={() => openFollowersModal("following")}
       />
 
       {/* Profile Links */}
@@ -245,8 +350,8 @@ export default function ProfilePage() {
           showComments={profile.showComments || isOwnProfile}
           counts={{
             posts: stats.posts,
-            likes: 47, // Demo value
-            comments: 23, // Demo value
+            likes: likesCount,
+            comments: commentsCount,
           }}
         />
       </div>
@@ -259,56 +364,58 @@ export default function ProfilePage() {
               {/* Pinned Post */}
               {pinnedPost && (
                 <PinnedPost>
-                  <Post
-                    id={pinnedPost.id}
-                    author={{
-                      username: profile.username,
-                      avatarUrl: profile.avatarUrl || "https://picsum.photos/seed/default/200",
-                    }}
-                    timestamp={pinnedPost.timestamp}
-                    contentType="image"
-                    stats={{ comments: 24, likes: 156, reblogs: 12 }}
-                    interactions={{ hasCommented: false, hasLiked: false, hasReblogged: false }}
-                  >
-                    <ImageContent src={pinnedPost.imageUrl} alt="" />
-                  </Post>
+                  {renderPost(pinnedPost)}
                 </PinnedPost>
               )}
 
               {/* Regular Posts */}
-              {posts.map((post) => (
-                <Post
-                  key={post.id}
-                  id={post.id}
-                  author={post.author}
-                  timestamp={post.timestamp}
-                  contentType={post.contentType}
-                  stats={post.stats}
-                  interactions={post.interactions}
-                >
-                  {post.contentType === "image" && post.imageUrl ? (
-                    <ImageContent src={post.imageUrl} alt="" />
-                  ) : (
-                    <TextContent>{post.content}</TextContent>
-                  )}
-                </Post>
-              ))}
+              {posts.length > 0 ? (
+                posts.map((post) => renderPost(post))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-foreground/50">
+                    {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
+                  </p>
+                </div>
+              )}
             </>
           )}
 
           {activeTab === "likes" && (
-            <div className="text-center py-12">
-              <p className="text-foreground/50">Liked posts will appear here</p>
-            </div>
+            <>
+              {postsLoading ? (
+                <div className="flex justify-center py-12">
+                  <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+                </div>
+              ) : likedPosts.length > 0 ? (
+                likedPosts.map((post) => renderPost(post))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-foreground/50">No liked posts yet</p>
+                </div>
+              )}
+            </>
           )}
 
           {activeTab === "comments" && (
             <div className="text-center py-12">
-              <p className="text-foreground/50">Comments will appear here</p>
+              <p className="text-foreground/50">Comments feature coming soon</p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Followers/Following Modal */}
+      {profile && (
+        <FollowersModal
+          isOpen={followersModalOpen}
+          onClose={() => setFollowersModalOpen(false)}
+          type={followersModalType}
+          userId={profile.id}
+          username={profile.username}
+          currentUserId={currentUserId}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
 import {
   IconX,
@@ -28,6 +28,7 @@ interface ReblogDialogProps {
   isOpen: boolean;
   onClose: () => void;
   originalPost: OriginalPost;
+  defaultMode?: ReblogMode;
   onSuccess?: (postId: string) => void;
 }
 
@@ -37,13 +38,24 @@ export function ReblogDialog({
   isOpen,
   onClose,
   originalPost,
+  defaultMode = "now",
   onSuccess,
 }: ReblogDialogProps) {
   const [isPending, startTransition] = useTransition();
-  const [mode, setMode] = useState<ReblogMode>("now");
+  const [mode, setMode] = useState<ReblogMode>(defaultMode);
   const [comment, setComment] = useState({ html: "", plain: "" });
   const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset mode and clear form when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setMode(defaultMode);
+      setComment({ html: "", plain: "" });
+      setScheduledDate(null);
+      setError(null);
+    }
+  }, [isOpen, defaultMode]);
 
   const handleSubmit = async () => {
     setError(null);

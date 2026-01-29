@@ -50,14 +50,14 @@ export function BottomNav({
       href: "/notifications",
       icon: IconBell,
       iconActive: IconBellFilled,
-      label: "Alerts",
+      label: "Notifications",
       badge: notificationCount,
     },
     {
       action: onChatToggle,
       icon: IconMessage,
       iconActive: IconMessageFilled,
-      label: "Chat",
+      label: "Messages",
       badge: messageCount,
     },
   ];
@@ -70,6 +70,8 @@ export function BottomNav({
             ? pathname === item.href || pathname.startsWith(item.href + "/")
             : false;
           const Icon = isActive ? item.iconActive : item.icon;
+          const badgeCount = item.badge ?? 0;
+          const showBadge = badgeCount > 0;
 
           if (item.action) {
             return (
@@ -77,15 +79,20 @@ export function BottomNav({
                 key={index}
                 type="button"
                 onClick={item.action}
-                className="relative flex flex-col items-center justify-center w-16 h-full text-foreground/60 hover:text-foreground transition-colors"
+                aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
+                className="relative flex items-center justify-center w-12 h-12 text-foreground/60 hover:text-foreground transition-colors"
               >
-                <Icon size={24} />
-                <span className="text-[10px] mt-0.5">{item.label}</span>
-                {item.badge && item.badge > 0 && (
-                  <span className="absolute top-1 right-2 min-w-4 h-4 flex items-center justify-center px-1 rounded-full bg-vocl-like text-white text-[10px] font-bold">
-                    {item.badge > 99 ? "99+" : item.badge}
-                  </span>
-                )}
+                <span className="relative inline-flex">
+                  <Icon size={26} aria-hidden="true" />
+                  {showBadge && (
+                    <span
+                      className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold"
+                      aria-hidden="true"
+                    >
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </span>
+                  )}
+                </span>
               </button>
             );
           }
@@ -95,9 +102,10 @@ export function BottomNav({
               <Link
                 key={item.href}
                 href={item.href!}
+                aria-label="Create post"
                 className="flex items-center justify-center w-12 h-12 rounded-full bg-vocl-accent text-white shadow-lg shadow-vocl-accent/30"
               >
-                <Icon size={26} />
+                <Icon size={26} aria-hidden="true" />
               </Link>
             );
           }
@@ -106,17 +114,23 @@ export function BottomNav({
             <Link
               key={item.href}
               href={item.href!}
-              className={`relative flex flex-col items-center justify-center w-16 h-full transition-colors ${
+              aria-current={isActive ? "page" : undefined}
+              aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
+              className={`relative flex items-center justify-center w-12 h-12 transition-colors ${
                 isActive ? "text-vocl-accent" : "text-foreground/60 hover:text-foreground"
               }`}
             >
-              <Icon size={24} />
-              <span className="text-[10px] mt-0.5">{item.label}</span>
-              {item.badge && item.badge > 0 && (
-                <span className="absolute top-1 right-2 min-w-4 h-4 flex items-center justify-center px-1 rounded-full bg-vocl-like text-white text-[10px] font-bold">
-                  {item.badge > 99 ? "99+" : item.badge}
-                </span>
-              )}
+              <span className="relative inline-flex">
+                <Icon size={26} aria-hidden="true" />
+                {showBadge && (
+                  <span
+                    className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold"
+                    aria-hidden="true"
+                  >
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </span>
+                )}
+              </span>
             </Link>
           );
         })}

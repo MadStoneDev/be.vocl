@@ -47,7 +47,7 @@ export function TagInput({
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === "," || e.key === " ") {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addTag(inputValue);
     } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
@@ -56,8 +56,8 @@ export function TagInput({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         {tags.map((tag) => (
           <span
             key={tag}
@@ -96,7 +96,7 @@ export function TagInput({
       )}
 
       <p className="text-foreground/30 text-xs">
-        {tags.length}/{maxTags} tags • Press Enter or Space to add
+        {tags.length}/{maxTags} tags • Press Enter or comma to add
       </p>
     </div>
   );

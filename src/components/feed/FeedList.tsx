@@ -1,8 +1,9 @@
 "use client";
 
-import { Post, ImageContent, TextContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
 import { IconLoader2 } from "@tabler/icons-react";
+import { FeedSkeleton } from "@/components/ui";
 
 interface FeedPost {
   id: string;
@@ -24,21 +25,22 @@ interface FeedPost {
 interface FeedListProps {
   posts: FeedPost[];
   isLoading?: boolean;
+  isLoadingMore?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
-  onLike?: (postId: string) => void;
-  onComment?: (postId: string) => void;
-  onReblog?: (postId: string, type: "instant" | "with-comment" | "schedule" | "queue") => void;
 }
 
 export function FeedList({
   posts,
   isLoading = false,
-  onLike,
-  onComment,
-  onReblog,
+  isLoadingMore = false,
 }: FeedListProps) {
-  if (posts.length === 0 && !isLoading) {
+  // Show skeleton on initial load
+  if (isLoading && posts.length === 0) {
+    return <FeedSkeleton count={3} />;
+  }
+
+  if (posts.length === 0) {
     return (
       <div className="text-center py-16">
         <p className="text-foreground/40 text-lg mb-2">Your feed is empty</p>
@@ -52,19 +54,17 @@ export function FeedList({
   return (
     <div className="flex flex-col gap-5">
       {posts.map((post) => (
-        <Post
+        <InteractivePost
           key={post.id}
           id={post.id}
           author={post.author}
           timestamp={post.timestamp}
           contentType={post.contentType}
-          stats={post.stats}
-          interactions={post.interactions}
+          initialStats={post.stats}
+          initialInteractions={post.interactions}
           isSensitive={post.isSensitive}
-          onLike={() => onLike?.(post.id)}
-          onComment={() => onComment?.(post.id)}
-          onReblog={(type) => onReblog?.(post.id, type)}
-          onMenuClick={() => console.log("Open menu for", post.id)}
+          contentPreview={post.content.text || ""}
+          imageUrl={post.content.imageUrl}
         >
           {post.contentType === "image" && post.content.imageUrl && (
             <ImageContent src={post.content.imageUrl} alt="Post image" />
@@ -72,12 +72,12 @@ export function FeedList({
           {post.contentType === "text" && post.content.text && (
             <TextContent>{post.content.text}</TextContent>
           )}
-        </Post>
+        </InteractivePost>
       ))}
 
-      {isLoading && (
+      {isLoadingMore && (
         <div className="flex items-center justify-center py-8">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-accent" aria-label="Loading more posts" />
         </div>
       )}
     </div>

@@ -36,6 +36,8 @@ interface ProfileHeaderProps {
   onBlock?: () => void;
   onMute?: () => void;
   onShare?: () => void;
+  onFollowersClick?: () => void;
+  onFollowingClick?: () => void;
 }
 
 export function ProfileHeader({
@@ -55,6 +57,8 @@ export function ProfileHeader({
   onBlock,
   onMute,
   onShare,
+  onFollowersClick,
+  onFollowingClick,
 }: ProfileHeaderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -238,7 +242,10 @@ export function ProfileHeader({
           </div>
 
           {showFollowers ? (
-            <button className="text-center hover:opacity-80 transition-opacity">
+            <button
+              onClick={onFollowersClick}
+              className="text-center hover:opacity-80 transition-opacity"
+            >
               <p className="text-lg sm:text-xl font-bold text-foreground">
                 {formatNumber(stats.followers)}
               </p>
@@ -252,7 +259,10 @@ export function ProfileHeader({
           )}
 
           {showFollowing ? (
-            <button className="text-center hover:opacity-80 transition-opacity">
+            <button
+              onClick={onFollowingClick}
+              className="text-center hover:opacity-80 transition-opacity"
+            >
               <p className="text-lg sm:text-xl font-bold text-foreground">
                 {formatNumber(stats.following)}
               </p>

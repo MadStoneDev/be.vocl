@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
-import type { PostStats, PostInteractions } from "@/components/Post";
 
 // Demo data for now - will be replaced with real data from Supabase
 const demoPosts = [
@@ -81,44 +80,8 @@ const demoPosts = [
 
 export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTab>("chronological");
-  const [posts, setPosts] = useState(demoPosts);
+  const [posts] = useState(demoPosts);
   const [isLoading] = useState(false);
-
-  const handleLike = (postId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post.id === postId) {
-          const wasLiked = post.interactions.hasLiked;
-          return {
-            ...post,
-            stats: {
-              ...post.stats,
-              likes: wasLiked ? post.stats.likes - 1 : post.stats.likes + 1,
-            },
-            interactions: {
-              ...post.interactions,
-              hasLiked: !wasLiked,
-            },
-          };
-        }
-        return post;
-      })
-    );
-  };
-
-  const handleComment = (postId: string) => {
-    console.log("Open comments for", postId);
-    // TODO: Open comment modal/drawer
-  };
-
-  const handleReblog = (
-    postId: string,
-    type: "instant" | "with-comment" | "schedule" | "queue"
-  ) => {
-    console.log("Reblog", postId, "with type", type);
-    // TODO: Handle reblog based on type
-    alert(`Reblog type: ${type}\n\nThis will be implemented in Phase 4.`);
-  };
 
   // Sort posts based on active tab
   const sortedPosts = [...posts].sort((a, b) => {
@@ -138,9 +101,6 @@ export default function FeedPage() {
       <FeedList
         posts={sortedPosts}
         isLoading={isLoading}
-        onLike={handleLike}
-        onComment={handleComment}
-        onReblog={handleReblog}
       />
     </div>
   );

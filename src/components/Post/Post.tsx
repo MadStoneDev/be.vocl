@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useRef, type ReactNode } from "react";
 import Image from "next/image";
 import {
   IconDots,
@@ -13,8 +13,13 @@ import {
   IconPencil,
   IconCalendar,
   IconHourglass,
+  IconSend,
+  IconX,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
+
+// Panel types for expanded view
+type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
 
 // =============================================================================
 // Types
@@ -34,6 +39,18 @@ export interface PostInteractions {
   hasLiked: boolean;
   hasReblogged: boolean;
 }
+export interface CommentData {
+  id: string;
+  author: PostAuthor;
+  content: string;
+  timestamp: string;
+}
+export interface UserData {
+  id: string;
+  username: string;
+  avatarUrl: string;
+  displayName?: string;
+}
 export interface PostProps {
   id: string;
   author: PostAuthor;
@@ -43,7 +60,10 @@ export interface PostProps {
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean; // NSFW content flag
-  onComment?: () => void;
+  comments?: CommentData[];
+  likedBy?: UserData[];
+  rebloggedBy?: UserData[];
+  onComment?: (content: string) => void;
   onLike?: () => void;
   onReblog?: (type: "instant" | "with-comment" | "schedule" | "queue") => void;
   onMenuClick?: () => void;
@@ -95,8 +115,11 @@ interface PostActionBarProps {
   stats: PostStats;
   interactions: PostInteractions;
   isReblogMenuOpen: boolean;
-  onComment?: () => void;
+  expandedPanel: ExpandedPanel;
+  onCommentClick: () => void;
   onLike?: () => void;
+  onLikesClick: () => void;
+  onReblogsClick: () => void;
   onReblogClick: () => void;
 }
 
@@ -104,8 +127,11 @@ function PostActionBar({
   stats,
   interactions,
   isReblogMenuOpen,
-  onComment,
+  expandedPanel,
+  onCommentClick,
   onLike,
+  onLikesClick,
+  onReblogsClick,
   onReblogClick,
 }: PostActionBarProps) {
   return (
@@ -113,55 +139,68 @@ function PostActionBar({
       className={`absolute right-0 bottom-0 left-0 flex items-center justify-between pt-2.5 pr-20 pb-3 sm:pb-4 pl-3 sm:pl-5`}
       style={{ backgroundColor: "rgba(19, 19, 19, 0.9)", borderRadius: "0 0 40px 0" }}
     >
-      {/* Comment button */}
+      {/* Comment button - icon AND count open panel */}
       <button
-        onClick={onComment}
-        className={`cursor-pointer flex items-center gap-1 sm:gap-2 transition-colors`}
-        aria-label={`${stats.comments} comments`}
+        onClick={onCommentClick}
+        className="cursor-pointer flex items-center gap-1 sm:gap-2 transition-colors"
+        aria-label={`View ${stats.comments} comments`}
+        aria-expanded={false}
       >
         {interactions.hasCommented ? (
-          <IconMessageFilled size={24} className="text-vocl-comment" />
+          <IconMessageFilled size={24} className="text-vocl-comment" aria-hidden="true" />
         ) : (
-          <IconMessage size={24} className="text-neutral-400" />
+          <IconMessage size={24} className="text-neutral-400" aria-hidden="true" />
         )}
         <span
           className={`font-sans text-sm ${
             interactions.hasCommented ? "text-vocl-comment" : "text-neutral-400"
           }`}
+          aria-hidden="true"
         >
           {stats.comments}
         </span>
       </button>
 
-      {/* Like button */}
-      <button
-        onClick={onLike}
-        className={`cursor-pointer flex items-center gap-1 sm:gap-2 transition-colors`}
-        aria-label={`${stats.likes} likes`}
-      >
-        {interactions.hasLiked ? (
-          <IconHeartFilled size={24} className="text-vocl-like" />
-        ) : (
-          <IconHeart size={24} className="text-neutral-400" />
-        )}
-        <span
-          className={`font-sans text-sm ${
+      {/* Like button - icon triggers like, count shows likes list */}
+      <div className="flex items-center gap-1 sm:gap-2">
+        <button
+          onClick={onLike}
+          className="cursor-pointer transition-colors"
+          aria-label={interactions.hasLiked ? "Unlike post" : "Like post"}
+          aria-pressed={interactions.hasLiked}
+        >
+          {interactions.hasLiked ? (
+            <IconHeartFilled size={24} className="text-vocl-like" aria-hidden="true" />
+          ) : (
+            <IconHeart size={24} className="text-neutral-400" aria-hidden="true" />
+          )}
+        </button>
+        <button
+          onClick={onLikesClick}
+          className={`cursor-pointer font-sans text-sm transition-colors ${
             interactions.hasLiked ? "text-vocl-like" : "text-neutral-400"
           }`}
+          aria-label="View likes"
         >
           {stats.likes}
-        </span>
-      </button>
+        </button>
+      </div>
 
-      {/* Reblog count */}
-        <span className={`font-sans text-sm font-medium ${interactions.hasReblogged ? "text-vocl-reblog" : "text-neutral-400"}`}>
-            {stats.reblogs}
-          </span>
+      {/* Reblog count - clickable to show reblogs list */}
+      <button
+        onClick={onReblogsClick}
+        className={`font-sans text-sm font-medium cursor-pointer transition-colors ${
+          interactions.hasReblogged ? "text-vocl-reblog" : "text-neutral-400"
+        }`}
+        aria-label="View reblogs"
+      >
+        {stats.reblogs}
+      </button>
 
       {/* Reblog button */}
       <button
           onClick={onReblogClick}
-          className={`absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full shadow-lg shadow-vocl-surface-dark/50 transition-all duration-300 ${
+          className={`absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-surface-dark/50"} transition-all duration-300 ${
               isReblogMenuOpen
                   ? "bg-vocl-accent scale-105"
                   : "bg-vocl-accent hover:scale-105"
@@ -255,6 +294,161 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
 }
 
 // =============================================================================
+// Expandable Panel Components
+// =============================================================================
+
+interface CommentsListProps {
+  comments: CommentData[];
+  onSubmit: (content: string) => void;
+}
+
+function CommentsList({ comments, onSubmit }: CommentsListProps) {
+  const [newComment, setNewComment] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newComment.trim()) {
+      onSubmit(newComment.trim());
+      setNewComment("");
+    }
+  };
+
+  return (
+    <div className="flex flex-col">
+      {/* Comment input */}
+      <form onSubmit={handleSubmit} className="flex gap-2 p-3 border-b border-neutral-200">
+        <input
+          ref={inputRef}
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Add a comment..."
+          className="flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+        />
+        <button
+          type="submit"
+          disabled={!newComment.trim()}
+          className="p-2 rounded-full bg-vocl-accent text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+        >
+          <IconSend size={18} />
+        </button>
+      </form>
+
+      {/* Comments list */}
+      <div className="max-h-64 overflow-y-auto">
+        {comments.length === 0 ? (
+          <p className="text-center text-neutral-400 text-sm py-6">No comments yet. Be the first!</p>
+        ) : (
+          comments.map((comment) => (
+            <div key={comment.id} className="flex gap-3 p-3 border-b border-neutral-100 last:border-0">
+              <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full">
+                <Image
+                  src={comment.author.avatarUrl}
+                  alt={comment.author.username}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-medium text-sm text-neutral-800">{comment.author.username}</span>
+                  <span className="text-xs text-neutral-400">{comment.timestamp}</span>
+                </div>
+                <p className="text-sm text-neutral-600 mt-0.5">{comment.content}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface UsersListProps {
+  users: UserData[];
+  emptyMessage: string;
+  actionColor: string;
+}
+
+function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
+  return (
+    <div className="max-h-64 overflow-y-auto">
+      {users.length === 0 ? (
+        <p className="text-center text-neutral-400 text-sm py-6">{emptyMessage}</p>
+      ) : (
+        users.map((user) => (
+          <div key={user.id} className="flex items-center gap-3 p-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors cursor-pointer">
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
+              <Image
+                src={user.avatarUrl}
+                alt={user.username}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="font-medium text-sm text-neutral-800 block">{user.displayName || user.username}</span>
+              <span className="text-xs text-neutral-400">@{user.username}</span>
+            </div>
+            <div className={`w-2 h-2 rounded-full ${actionColor}`} />
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+interface ExpandedPanelProps {
+  type: ExpandedPanel;
+  comments: CommentData[];
+  likedBy: UserData[];
+  rebloggedBy: UserData[];
+  onCommentSubmit: (content: string) => void;
+  onClose: () => void;
+}
+
+function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, onClose }: ExpandedPanelProps) {
+  if (!type) return null;
+
+  const titles = {
+    comments: "Comments",
+    likes: "Liked by",
+    reblogs: "Reblogged by",
+  };
+
+  return (
+    <div
+      className="bg-vocl-surface overflow-hidden transition-all duration-300 ease-out"
+      style={{ borderRadius: "0 0 20px 20px" }}
+    >
+      {/* Panel header */}
+      <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 border-b border-neutral-200">
+        <h3 className="font-medium text-sm text-neutral-700">{titles[type]}</h3>
+        <button
+          onClick={onClose}
+          className="p-1 rounded-full hover:bg-neutral-200 transition-colors"
+          aria-label="Close panel"
+        >
+          <IconX size={18} className="text-neutral-500" />
+        </button>
+      </div>
+
+      {/* Panel content */}
+      {type === "comments" && (
+        <CommentsList comments={comments} onSubmit={onCommentSubmit} />
+      )}
+      {type === "likes" && (
+        <UsersList users={likedBy} emptyMessage="No likes yet" actionColor="bg-vocl-like" />
+      )}
+      {type === "reblogs" && (
+        <UsersList users={rebloggedBy} emptyMessage="No reblogs yet" actionColor="bg-vocl-reblog" />
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // Main Post Component
 // =============================================================================
 export function Post({
@@ -266,6 +460,9 @@ export function Post({
   stats,
   interactions,
   isSensitive = false,
+  comments = [],
+  likedBy = [],
+  rebloggedBy = [],
   onComment,
   onLike,
   onReblog,
@@ -273,12 +470,18 @@ export function Post({
 }: PostProps) {
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
   const [isContentRevealed, setIsContentRevealed] = useState(false);
+  const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
+  const [lastPanel, setLastPanel] = useState<ExpandedPanel>(null);
+
+  // Track the last opened panel so content stays visible during close animation
+  const displayPanel = expandedPanel || lastPanel;
 
   // Determine if NSFW overlay should be shown
   const showNSFWOverlay = isSensitive && !isContentRevealed;
 
   const handleReblogClick = () => {
     setIsReblogMenuOpen(!isReblogMenuOpen);
+    setExpandedPanel(null); // Close panel when opening reblog menu
   };
 
   const handleReblogSelect = (type: "instant" | "with-comment" | "schedule" | "queue") => {
@@ -292,63 +495,136 @@ export function Post({
     }
   };
 
+  const handleCommentClick = () => {
+    if (expandedPanel === "comments") {
+      setExpandedPanel(null);
+      // Clear lastPanel after animation completes
+      setTimeout(() => setLastPanel(null), 300);
+    } else {
+      setLastPanel("comments");
+      setExpandedPanel("comments");
+    }
+    setIsReblogMenuOpen(false);
+  };
+
+  const handleLikesClick = () => {
+    if (expandedPanel === "likes") {
+      setExpandedPanel(null);
+      setTimeout(() => setLastPanel(null), 300);
+    } else {
+      setLastPanel("likes");
+      setExpandedPanel("likes");
+    }
+    setIsReblogMenuOpen(false);
+  };
+
+  const handleReblogsClick = () => {
+    if (expandedPanel === "reblogs") {
+      setExpandedPanel(null);
+      setTimeout(() => setLastPanel(null), 300);
+    } else {
+      setLastPanel("reblogs");
+      setExpandedPanel("reblogs");
+    }
+    setIsReblogMenuOpen(false);
+  };
+
+  const handleCommentSubmit = (content: string) => {
+    onComment?.(content);
+  };
+
+  const handleClosePanel = () => {
+    setExpandedPanel(null);
+    setTimeout(() => setLastPanel(null), 300);
+  };
+
   return (
-    <article
-      className="relative w-full max-w-full sm:max-w-sm shadow-xl overflow-hidden"
-      data-post-id={id}
-      data-content-type={contentType}
-    >
-      {/* Header - always visible, never dimmed */}
-      <PostHeader
-        author={author}
-        timestamp={timestamp}
-        onMenuClick={onMenuClick}
-      />
-
-      {/* Content area with overlay */}
-      <div className="relative">
-        {/* The actual content */}
-        <div className="relative overflow-hidden" style={{
-          borderRadius: "0 0 40px 0"
-        }}>{children}</div>
-
-        {/* NSFW overlay - shown when content is sensitive and not revealed */}
-        {showNSFWOverlay && (
-          <div style={{ borderRadius: "0 0 40px 0" }} className="overflow-hidden">
-            <NSFWOverlay onReveal={() => setIsContentRevealed(true)} />
-          </div>
-        )}
-
-        {/* Dark overlay - only covers content, not header or action bar */}
-        <div
-          onClick={handleOverlayClick}
-          className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
-            isReblogMenuOpen
-              ? "pointer-events-auto opacity-100"
-              : "pointer-events-none opacity-0"
-          } z-30`}
-          aria-hidden="true"
+    <div className="w-full max-w-full sm:max-w-sm">
+      <article
+        className="relative shadow-xl overflow-hidden"
+        data-post-id={id}
+        data-content-type={contentType}
+      >
+        {/* Header - always visible, never dimmed */}
+        <PostHeader
+          author={author}
+          timestamp={timestamp}
+          onMenuClick={onMenuClick}
         />
+
+        {/* Content area with overlay */}
+        <div className="relative">
+          {/* The actual content */}
+          <div className="relative overflow-hidden" style={{
+            borderRadius: expandedPanel ? "0" : "0 0 40px 0"
+          }}>{children}</div>
+
+          {/* NSFW overlay - shown when content is sensitive and not revealed */}
+          {showNSFWOverlay && (
+            <div style={{ borderRadius: "0 0 40px 0" }} className="overflow-hidden">
+              <NSFWOverlay onReveal={() => setIsContentRevealed(true)} />
+            </div>
+          )}
+
+          {/* Dark overlay - only covers content, not header or action bar */}
+          <div
+            onClick={handleOverlayClick}
+            className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
+              isReblogMenuOpen
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0"
+            } z-30`}
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Radial FAB Menu - positioned relative to article (around reblog button) */}
+        <ReblogFabMenu isOpen={isReblogMenuOpen} onSelect={handleReblogSelect} />
+
+        {/* Action bar - always visible, never dimmed */}
+        <PostActionBar
+          stats={stats}
+          interactions={interactions}
+          isReblogMenuOpen={isReblogMenuOpen}
+          expandedPanel={expandedPanel}
+          onCommentClick={handleCommentClick}
+          onLike={onLike}
+          onLikesClick={handleLikesClick}
+          onReblogsClick={handleReblogsClick}
+          onReblogClick={handleReblogClick}
+        />
+
+        {/* Fake Border */}
+        <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border sm:border-6 border-[#EBEBEB] z-40`} style={{
+          borderRadius: expandedPanel ? "30px 0 0 0" : "30px 0 40px 0",
+        }}></div>
+      </article>
+
+      {/* Expanded Panel - OUTSIDE article, below action bar */}
+      <div
+        className="overflow-hidden bg-vocl-surface shadow-lg"
+        style={{
+          maxHeight: expandedPanel ? "384px" : "0px",
+          opacity: expandedPanel ? 1 : 0,
+          transition: "max-height 300ms ease-out, opacity 200ms ease-out",
+          borderRadius: "0 0 20px 20px",
+          marginTop: "0px",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {displayPanel && (
+          <ExpandedPanel
+            type={displayPanel}
+            comments={comments}
+            likedBy={likedBy}
+            rebloggedBy={rebloggedBy}
+            onCommentSubmit={handleCommentSubmit}
+            onClose={handleClosePanel}
+          />
+        )}
       </div>
-
-      {/* Radial FAB Menu - positioned relative to article (around reblog button) */}
-      <ReblogFabMenu isOpen={isReblogMenuOpen} onSelect={handleReblogSelect} />
-
-      {/* Action bar - always visible, never dimmed */}
-      <PostActionBar
-        stats={stats}
-        interactions={interactions}
-        isReblogMenuOpen={isReblogMenuOpen}
-        onComment={onComment}
-        onLike={onLike}
-        onReblogClick={handleReblogClick}
-      />
-      
-      {/* Fake Border */}
-      <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border sm:border-6 border-[#EBEBEB] z-40`} style={{
-        borderRadius: "30px 0 40px 0",
-      }}></div>
-    </article>
+    </div>
   );
 }
 
@@ -383,12 +659,10 @@ export function TextContent({ children }: TextContentProps) {
   );
 }
 
-// TODO: Implement VideoContent component for video posts
-// TODO: Implement AudioContent component for audio posts
-// TODO: Implement GalleryContent component for multi-image posts
-
 // =============================================================================
 // Export
+// Note: VideoContent, AudioContent, and GalleryContent are implemented in
+// ./content/ directory and exported from the Post index
 // =============================================================================
 
 export default Post;

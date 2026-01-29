@@ -5,7 +5,10 @@
       "Bash(BASH_ENV=\"\" npm install --prefix \"G:/Development-Sandbox/_Rumblebuffin/be.vocl\" @tabler/icons-react)",
       "Bash(npm run dev)",
       "Bash(cd:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(set NODE_OPTIONS=--max-old-space-size=4096)",
+      "Bash(find:*)"
     ]
   }
 }
