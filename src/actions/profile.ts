@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
+import { validateUsernameFormat } from "@/lib/validation";
 
 interface ProfileResult {
   success: boolean;
@@ -462,6 +463,109 @@ export async function pinPost(postId: string): Promise<ProfileResult> {
 }
 
 /**
+ * Check if onboarding is complete
+ */
+export async function checkOnboardingStatus(): Promise<{
+  success: boolean;
+  isComplete: boolean;
+  profile?: {
+    username: string;
+    displayName?: string;
+    avatarUrl?: string;
+    bio?: string;
+  };
+  error?: string;
+}> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, isComplete: false, error: "Unauthorized" };
+    }
+
+    const { data, error } = await (supabase as any)
+      .from("profiles")
+      .select("username, display_name, avatar_url, bio, onboarding_completed")
+      .eq("id", user.id)
+      .single();
+
+    if (error || !data) {
+      return { success: false, isComplete: false, error: "Profile not found" };
+    }
+
+    // Onboarding is complete if the flag is set, or if user has display name and bio
+    const isComplete = data.onboarding_completed === true ||
+      (data.display_name && data.bio);
+
+    return {
+      success: true,
+      isComplete,
+      profile: {
+        username: data.username,
+        displayName: data.display_name,
+        avatarUrl: data.avatar_url,
+        bio: data.bio,
+      },
+    };
+  } catch (error) {
+    console.error("Check onboarding status error:", error);
+    return { success: false, isComplete: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Complete onboarding
+ */
+export async function completeOnboarding(data: {
+  displayName: string;
+  bio?: string;
+  avatarUrl?: string;
+  showSensitivePosts?: boolean;
+  blurSensitiveByDefault?: boolean;
+}): Promise<ProfileResult> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const updateData: any = {
+      display_name: data.displayName,
+      bio: data.bio || null,
+      avatar_url: data.avatarUrl || null,
+      show_sensitive_posts: data.showSensitivePosts ?? false,
+      blur_sensitive_by_default: data.blurSensitiveByDefault ?? true,
+      onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update(updateData)
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Complete onboarding error:", error);
+      return { success: false, error: "Failed to complete onboarding" };
+    }
+
+    revalidatePath("/feed");
+    revalidatePath("/profile/[username]", "page");
+    return { success: true };
+  } catch (error) {
+    console.error("Complete onboarding error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Unpin a post from profile
  */
 export async function unpinPost(postId: string): Promise<ProfileResult> {
@@ -489,6 +593,96 @@ export async function unpinPost(postId: string): Promise<ProfileResult> {
     return { success: true };
   } catch (error) {
     console.error("Unpin post error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Check if a username is available
+ */
+export async function checkUsernameAvailability(
+  username: string,
+  excludeUserId?: string
+): Promise<{ available: boolean; error?: string }> {
+  // First validate format
+  const formatResult = validateUsernameFormat(username);
+  if (!formatResult.valid) {
+    return { available: false, error: formatResult.error };
+  }
+
+  try {
+    const supabase = await createServerClient();
+    const normalized = username.toLowerCase().trim();
+
+    // Check if username exists
+    let query = (supabase as any)
+      .from("profiles")
+      .select("id")
+      .eq("username", normalized);
+
+    // Exclude current user when updating
+    if (excludeUserId) {
+      query = query.neq("id", excludeUserId);
+    }
+
+    const { data } = await query.single();
+
+    if (data) {
+      return { available: false, error: "Username is already taken" };
+    }
+
+    return { available: true };
+  } catch (error) {
+    // No result found = username is available
+    return { available: true };
+  }
+}
+
+/**
+ * Update username (with validation)
+ */
+export async function updateUsername(
+  newUsername: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Check availability (excluding current user)
+    const availabilityResult = await checkUsernameAvailability(newUsername, user.id);
+    if (!availabilityResult.available) {
+      return { success: false, error: availabilityResult.error };
+    }
+
+    const normalized = newUsername.toLowerCase().trim();
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({
+        username: normalized,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Update username error:", error);
+      if (error.code === "23505") {
+        return { success: false, error: "Username is already taken" };
+      }
+      return { success: false, error: "Failed to update username" };
+    }
+
+    revalidatePath("/profile/[username]", "page");
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    console.error("Update username error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }

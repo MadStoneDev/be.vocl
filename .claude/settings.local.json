@@ -9,7 +9,8 @@
       "Bash(npx tsc:*)",
       "Bash(set NODE_OPTIONS=--max-old-space-size=4096)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ]
   }
 }

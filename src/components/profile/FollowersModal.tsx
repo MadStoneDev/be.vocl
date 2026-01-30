@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { IconX, IconLoader2 } from "@tabler/icons-react";
 import { FollowButton } from "./FollowButton";
-import { getFollowers, getFollowing, followUser, unfollowUser } from "@/actions/follows";
+import { getFollowers, getFollowing, followUser, unfollowUser, getFollowStatusBatch } from "@/actions/follows";
 
 type ModalType = "followers" | "following";
 
@@ -59,6 +59,11 @@ export function FollowersModal({
       }
     }
 
+    // Get follow status for all users in batch
+    const userIds = userData.map((u: any) => u.id);
+    const followStatusResult = await getFollowStatusBatch(userIds);
+    const followingIds = new Set(followStatusResult.followingIds || []);
+
     setUsers(
       userData.map((u: any) => ({
         id: u.id,
@@ -66,7 +71,7 @@ export function FollowersModal({
         displayName: u.display_name,
         avatarUrl: u.avatar_url,
         bio: u.bio,
-        isFollowing: false, // TODO: check if current user follows each
+        isFollowing: followingIds.has(u.id),
       }))
     );
     setTotal(totalCount);

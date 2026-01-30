@@ -11,7 +11,9 @@ import {
   IconBan,
   IconVolume3,
   IconShare,
+  IconCoin,
 } from "@tabler/icons-react";
+import { VerificationBadge } from "@/components/payments";
 
 interface ProfileStats {
   posts: number;
@@ -28,6 +30,7 @@ interface ProfileHeaderProps {
   stats: ProfileStats;
   isOwnProfile: boolean;
   isFollowing: boolean;
+  isVerified?: boolean;
   showFollowers: boolean;
   showFollowing: boolean;
   onFollow?: () => Promise<void>;
@@ -36,6 +39,7 @@ interface ProfileHeaderProps {
   onBlock?: () => void;
   onMute?: () => void;
   onShare?: () => void;
+  onTip?: () => void;
   onFollowersClick?: () => void;
   onFollowingClick?: () => void;
   onAvatarClick?: () => void;
@@ -50,6 +54,7 @@ export function ProfileHeader({
   stats,
   isOwnProfile,
   isFollowing,
+  isVerified,
   showFollowers,
   showFollowing,
   onFollow,
@@ -58,6 +63,7 @@ export function ProfileHeader({
   onBlock,
   onMute,
   onShare,
+  onTip,
   onFollowersClick,
   onFollowingClick,
   onAvatarClick,
@@ -137,8 +143,9 @@ export function ProfileHeader({
 
             {/* Name and username */}
             <div className="pb-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-1.5">
                 {displayName || username}
+                {isVerified && <VerificationBadge size={20} />}
               </h1>
               <p className="text-sm sm:text-base text-foreground/50">@{username}</p>
             </div>
@@ -175,6 +182,18 @@ export function ProfileHeader({
                   )}
                   <span>{isFollowing ? "Following" : "Follow"}</span>
                 </button>
+
+                {/* Tip button */}
+                {onTip && (
+                  <button
+                    onClick={onTip}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-yellow-500 font-medium hover:from-yellow-500/20 hover:to-orange-500/20 transition-all border border-yellow-500/20"
+                    title="Send a tip"
+                  >
+                    <IconCoin size={18} />
+                    <span>Tip</span>
+                  </button>
+                )}
 
                 {/* More options menu */}
                 <div className="relative">

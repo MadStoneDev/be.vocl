@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -12,7 +12,11 @@ import {
   IconLoader2,
   IconEye,
   IconEyeOff,
+  IconCheck,
+  IconX,
 } from "@tabler/icons-react";
+import { validateUsernameFormat } from "@/lib/validation";
+import { checkUsernameAvailability } from "@/actions/profile";
 
 type AuthMode = "login" | "signup" | "forgot";
 
@@ -42,6 +46,11 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Username validation state
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+
   // Check for error in URL params (from auth callback)
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -49,6 +58,53 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
       setError(errorMessages[errorParam] || "An authentication error occurred.");
     }
   }, [searchParams]);
+
+  // Validate username on change with debouncing
+  const validateUsername = useCallback(async (value: string) => {
+    if (!value) {
+      setUsernameError(null);
+      setUsernameAvailable(null);
+      return;
+    }
+
+    // First check format
+    const formatResult = validateUsernameFormat(value);
+    if (!formatResult.valid) {
+      setUsernameError(formatResult.error || null);
+      setUsernameAvailable(null);
+      return;
+    }
+
+    // Format is valid, check availability
+    setUsernameError(null);
+    setCheckingUsername(true);
+
+    const result = await checkUsernameAvailability(value);
+    setCheckingUsername(false);
+
+    if (!result.available) {
+      setUsernameError(result.error || "Username is not available");
+      setUsernameAvailable(false);
+    } else {
+      setUsernameError(null);
+      setUsernameAvailable(true);
+    }
+  }, []);
+
+  // Debounced username validation
+  useEffect(() => {
+    if (mode !== "signup" || !username) {
+      setUsernameError(null);
+      setUsernameAvailable(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      validateUsername(username);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username, mode, validateUsername]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,13 +129,17 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
 
           setSuccess("Check your email for the password reset link!");
         } else if (mode === "signup") {
-          // Validate username
-          if (!username || username.length < 3) {
-            setError("Username must be at least 3 characters");
+          // Validate username format
+          const formatResult = validateUsernameFormat(username);
+          if (!formatResult.valid) {
+            setError(formatResult.error || "Invalid username");
             return;
           }
-          if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-            setError("Username can only contain letters, numbers, and underscores");
+
+          // Check availability one more time before signup
+          const availabilityResult = await checkUsernameAvailability(username);
+          if (!availabilityResult.available) {
+            setError(availabilityResult.error || "Username is not available");
             return;
           }
 
@@ -89,7 +149,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
             options: {
               emailRedirectTo: `${window.location.origin}/auth/callback`,
               data: {
-                username: username.toLowerCase(),
+                username: username.toLowerCase().trim(),
                 display_name: username,
               },
             },
@@ -251,23 +311,56 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
         {/* Email/Password Form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           {mode === "signup" && (
-            <div className="relative">
-              <IconUser
-                size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
-              />
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={isPending}
-                className="w-full py-3 pl-12 pr-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
-                required
-                minLength={3}
-                maxLength={30}
-                pattern="[a-zA-Z0-9_]+"
-              />
+            <div className="space-y-1">
+              <div className="relative">
+                <IconUser
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
+                />
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                  disabled={isPending}
+                  className={`w-full py-3 pl-12 pr-12 rounded-xl bg-background/50 border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 ${
+                    usernameError
+                      ? "border-vocl-like focus:border-vocl-like focus:ring-vocl-like"
+                      : usernameAvailable
+                      ? "border-green-500 focus:border-green-500 focus:ring-green-500"
+                      : "border-white/10 focus:border-vocl-accent focus:ring-vocl-accent"
+                  }`}
+                  required
+                  minLength={3}
+                  maxLength={20}
+                />
+                {/* Validation status indicator */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  {checkingUsername && (
+                    <IconLoader2 size={18} className="animate-spin text-foreground/40" />
+                  )}
+                  {!checkingUsername && usernameAvailable && (
+                    <IconCheck size={18} className="text-green-500" />
+                  )}
+                  {!checkingUsername && usernameError && (
+                    <IconX size={18} className="text-vocl-like" />
+                  )}
+                </div>
+              </div>
+              {/* Username hint or error */}
+              {usernameError ? (
+                <p className="text-xs text-vocl-like px-1">{usernameError}</p>
+              ) : username ? (
+                usernameAvailable ? (
+                  <p className="text-xs text-green-500 px-1">Username is available</p>
+                ) : checkingUsername ? (
+                  <p className="text-xs text-foreground/40 px-1">Checking availability...</p>
+                ) : null
+              ) : (
+                <p className="text-xs text-foreground/40 px-1">
+                  3-20 characters, letters, numbers, underscores. Must start with a letter.
+                </p>
+              )}
             </div>
           )}
 

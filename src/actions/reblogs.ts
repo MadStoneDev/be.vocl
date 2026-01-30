@@ -258,6 +258,56 @@ export async function publishNow(
 }
 
 /**
+ * Get queue settings for a user
+ */
+export async function getQueueSettings(): Promise<{
+  success: boolean;
+  settings?: {
+    enabled: boolean;
+    paused: boolean;
+    postsPerDay: number;
+    windowStart: string;
+    windowEnd: string;
+  };
+  error?: string;
+}> {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { data: profile, error } = await (supabase as any)
+      .from("profiles")
+      .select("queue_enabled, queue_paused, queue_posts_per_day, queue_window_start, queue_window_end")
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      return { success: false, error: "Failed to fetch settings" };
+    }
+
+    return {
+      success: true,
+      settings: {
+        enabled: profile.queue_enabled ?? true,
+        paused: profile.queue_paused ?? false,
+        postsPerDay: profile.queue_posts_per_day ?? 8,
+        windowStart: profile.queue_window_start?.slice(0, 5) ?? "09:00",
+        windowEnd: profile.queue_window_end?.slice(0, 5) ?? "21:00",
+      },
+    };
+  } catch (error) {
+    console.error("Get queue settings error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Update queue settings for a user
  */
 export async function updateQueueSettings(settings: {
@@ -298,6 +348,78 @@ export async function updateQueueSettings(settings: {
     return { success: true };
   } catch (error) {
     console.error("Update queue settings error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Get users who have reblogged a post
+ */
+export async function getRebloggedBy(
+  postId: string,
+  options?: { limit?: number }
+): Promise<{
+  success: boolean;
+  users?: Array<{
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  }>;
+  total?: number;
+  error?: string;
+}> {
+  try {
+    const supabase = await createServerClient();
+    const limit = options?.limit || 10;
+
+    // Get posts that reblogged this post (or have it as original)
+    const { data: reblogs, error, count } = await (supabase as any)
+      .from("posts")
+      .select(
+        `
+        author_id,
+        author:author_id (
+          id,
+          username,
+          display_name,
+          avatar_url
+        )
+      `,
+        { count: "exact" }
+      )
+      .eq("reblogged_from_id", postId)
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error("Get reblogged by error:", error);
+      return { success: false, error: "Failed to fetch rebloggers" };
+    }
+
+    // Extract unique users
+    const seenIds = new Set<string>();
+    const users = (reblogs || [])
+      .filter((r: any) => {
+        if (!r.author || seenIds.has(r.author.id)) return false;
+        seenIds.add(r.author.id);
+        return true;
+      })
+      .map((r: any) => ({
+        id: r.author.id,
+        username: r.author.username,
+        displayName: r.author.display_name,
+        avatarUrl: r.author.avatar_url,
+      }));
+
+    return {
+      success: true,
+      users,
+      total: count || 0,
+    };
+  } catch (error) {
+    console.error("Get reblogged by error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }

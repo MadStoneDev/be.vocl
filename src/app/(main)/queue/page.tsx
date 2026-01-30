@@ -5,6 +5,7 @@ import { IconClock, IconLoader2 } from "@tabler/icons-react";
 import { QueueControls, QueueList } from "@/components/queue";
 import {
   getQueue,
+  getQueueSettings,
   reorderQueue,
   removeFromQueue,
   publishNow,
@@ -45,15 +46,20 @@ export default function QueuePage() {
   });
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch queue data
+  // Fetch queue data and settings
   const fetchQueue = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await getQueue();
-      if (result.success && result.posts) {
+      // Fetch both queue posts and settings in parallel
+      const [queueResult, settingsResult] = await Promise.all([
+        getQueue(),
+        getQueueSettings(),
+      ]);
+
+      if (queueResult.success && queueResult.posts) {
         // Transform posts to match QueuePost interface
-        const transformedPosts: QueuePost[] = result.posts.map((post: any) => ({
+        const transformedPosts: QueuePost[] = queueResult.posts.map((post: any) => ({
           id: post.id,
           queuePosition: post.queue_position || 0,
           reblogCommentHtml: post.reblog_comment_html,
@@ -70,7 +76,11 @@ export default function QueuePage() {
         }));
         setPosts(transformedPosts);
       } else {
-        setError(result.error || "Failed to load queue");
+        setError(queueResult.error || "Failed to load queue");
+      }
+
+      if (settingsResult.success && settingsResult.settings) {
+        setSettings(settingsResult.settings);
       }
     } catch (err) {
       setError("An unexpected error occurred");

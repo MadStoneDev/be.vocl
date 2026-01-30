@@ -68,6 +68,7 @@ export interface PostProps {
   onLike?: () => void;
   onReblog?: (type: "instant" | "with-comment" | "schedule" | "queue") => void;
   onMenuClick?: () => void;
+  onReblogsExpand?: () => void;
 }
 
 // =============================================================================
@@ -486,6 +487,7 @@ export function Post({
   onLike,
   onReblog,
   onMenuClick,
+  onReblogsExpand,
 }: PostProps) {
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
   const [isContentRevealed, setIsContentRevealed] = useState(false);
@@ -544,6 +546,7 @@ export function Post({
     } else {
       setLastPanel("reblogs");
       setExpandedPanel("reblogs");
+      onReblogsExpand?.();
     }
     setIsReblogMenuOpen(false);
   };

@@ -5,13 +5,17 @@ import {
   IconSend,
   IconPhoto,
   IconMoodSmile,
+  IconGif,
   IconX,
   IconLoader2,
 } from "@tabler/icons-react";
 import Image from "next/image";
+import { GifPicker } from "./GifPicker";
+import { EmojiPicker } from "./EmojiPicker";
 
 interface ChatInputProps {
   onSend: (content: string, mediaFile?: File) => Promise<void>;
+  onSendGif?: (gifUrl: string) => Promise<void>;
   onTyping?: () => void;
   disabled?: boolean;
   placeholder?: string;
@@ -19,6 +23,7 @@ interface ChatInputProps {
 
 export function ChatInput({
   onSend,
+  onSendGif,
   onTyping,
   disabled = false,
   placeholder = "Type a message...",
@@ -27,9 +32,50 @@ export function ChatInput({
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle GIF selection
+  const handleGifSelect = async (gifUrl: string) => {
+    if (onSendGif) {
+      setIsSending(true);
+      try {
+        await onSendGif(gifUrl);
+      } finally {
+        setIsSending(false);
+      }
+    } else {
+      // Fallback: send as a message with the GIF URL
+      setIsSending(true);
+      try {
+        await onSend(gifUrl);
+      } finally {
+        setIsSending(false);
+      }
+    }
+  };
+
+  // Handle emoji selection
+  const handleEmojiSelect = (emoji: string) => {
+    // Insert emoji at cursor position
+    const input = inputRef.current;
+    if (input) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const newMessage = message.slice(0, start) + emoji + message.slice(end);
+      setMessage(newMessage);
+      // Move cursor after emoji
+      setTimeout(() => {
+        input.selectionStart = input.selectionEnd = start + emoji.length;
+        input.focus();
+      }, 0);
+    } else {
+      setMessage((prev) => prev + emoji);
+    }
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -122,13 +168,21 @@ export function ChatInput({
       )}
 
       {/* Input area */}
-      <div className="flex items-end gap-2">
+      <div className="relative flex items-end gap-2">
+        {/* GIF Picker */}
+        <GifPicker
+          isOpen={showGifPicker}
+          onClose={() => setShowGifPicker(false)}
+          onSelect={handleGifSelect}
+        />
+
         {/* Media button */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isSending}
           className="flex-shrink-0 p-2.5 rounded-xl text-foreground/50 hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50"
+          title="Upload image or video"
         >
           <IconPhoto size={20} />
         </button>
@@ -139,6 +193,24 @@ export function ChatInput({
           onChange={handleFileSelect}
           className="hidden"
         />
+
+        {/* GIF button */}
+        <button
+          type="button"
+          onClick={() => {
+            setShowGifPicker(!showGifPicker);
+            setShowEmojiPicker(false);
+          }}
+          disabled={disabled || isSending}
+          className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+            showGifPicker
+              ? "bg-vocl-accent text-white"
+              : "text-foreground/50 hover:text-foreground hover:bg-white/5"
+          }`}
+          title="Send a GIF"
+        >
+          <IconGif size={20} />
+        </button>
 
         {/* Text input */}
         <div className="flex-1 relative">
@@ -153,13 +225,28 @@ export function ChatInput({
             className="w-full py-2.5 px-4 pr-10 rounded-xl bg-vocl-surface-dark border border-white/5 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent transition-colors text-sm resize-none disabled:opacity-50"
             style={{ maxHeight: "120px" }}
           />
-          {/* Emoji button */}
-          <button
-            type="button"
-            className="absolute right-3 bottom-2.5 text-foreground/40 hover:text-foreground transition-colors"
-          >
-            <IconMoodSmile size={18} />
-          </button>
+          {/* Emoji button and picker */}
+          <div className="absolute right-3 bottom-2.5">
+            <EmojiPicker
+              isOpen={showEmojiPicker}
+              onClose={() => setShowEmojiPicker(false)}
+              onSelect={handleEmojiSelect}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setShowEmojiPicker(!showEmojiPicker);
+                setShowGifPicker(false);
+              }}
+              className={`transition-colors ${
+                showEmojiPicker
+                  ? "text-vocl-accent"
+                  : "text-foreground/40 hover:text-foreground"
+              }`}
+            >
+              <IconMoodSmile size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Send button */}

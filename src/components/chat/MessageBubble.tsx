@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import {
   IconCheck,
@@ -9,6 +9,7 @@ import {
   IconPencil,
   IconTrash,
 } from "@tabler/icons-react";
+import { LinkPreview, extractUrls } from "./LinkPreview";
 
 interface MessageBubbleProps {
   id: string;
@@ -41,6 +42,9 @@ export function MessageBubble({
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
+
+  // Extract URLs for link previews
+  const urls = useMemo(() => extractUrls(content), [content]);
 
   const handleSaveEdit = () => {
     if (editContent.trim() && editContent !== content) {
@@ -83,7 +87,17 @@ export function MessageBubble({
                 alt=""
                 width={300}
                 height={200}
-                className="object-cover"
+                className="object-cover rounded-lg"
+              />
+            </div>
+          )}
+          {mediaUrl && mediaType === "video" && (
+            <div className="relative w-full max-w-xs rounded-lg overflow-hidden mb-2">
+              <video
+                src={mediaUrl}
+                controls
+                className="w-full rounded-lg"
+                preload="metadata"
               />
             </div>
           )}
@@ -115,6 +129,15 @@ export function MessageBubble({
             </div>
           ) : (
             <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+          )}
+
+          {/* Link previews */}
+          {!isEditing && urls.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {urls.slice(0, 2).map((url) => (
+                <LinkPreview key={url} url={url} />
+              ))}
+            </div>
           )}
 
           {/* Timestamp and status */}

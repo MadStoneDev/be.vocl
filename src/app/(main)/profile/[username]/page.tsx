@@ -21,7 +21,7 @@ import {
   getProfileLinks,
   getCurrentProfile,
 } from "@/actions/profile";
-import { getPostsByUser, getLikedPosts } from "@/actions/posts";
+import { getPostsByUser, getLikedPosts, getCommentedPosts } from "@/actions/posts";
 import { followUser, unfollowUser, isFollowing, blockUser, muteUser } from "@/actions/follows";
 import { toast } from "@/components/ui";
 
@@ -84,6 +84,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [pinnedPost, setPinnedPost] = useState<PostData | null>(null);
   const [likedPosts, setLikedPosts] = useState<PostData[]>([]);
+  const [commentedPosts, setCommentedPosts] = useState<PostData[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
@@ -173,11 +174,26 @@ export default function ProfilePage() {
     setPostsLoading(false);
   }, [profile]);
 
+  // Fetch commented posts when switching to comments tab
+  const fetchCommentedPosts = useCallback(async () => {
+    if (!profile) return;
+    setPostsLoading(true);
+    const result = await getCommentedPosts(profile.id);
+    if (result.success) {
+      setCommentedPosts(result.posts || []);
+      setCommentsCount(result.total || 0);
+    }
+    setPostsLoading(false);
+  }, [profile]);
+
   useEffect(() => {
     if (activeTab === "likes" && likedPosts.length === 0 && profile) {
       fetchLikedPosts();
     }
-  }, [activeTab, likedPosts.length, profile, fetchLikedPosts]);
+    if (activeTab === "comments" && commentedPosts.length === 0 && profile) {
+      fetchCommentedPosts();
+    }
+  }, [activeTab, likedPosts.length, commentedPosts.length, profile, fetchLikedPosts, fetchCommentedPosts]);
 
   useEffect(() => {
     fetchProfile();
@@ -409,9 +425,21 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "comments" && (
-            <div className="text-center py-12">
-              <p className="text-foreground/50">Comments feature coming soon</p>
-            </div>
+            <>
+              {postsLoading ? (
+                <div className="flex justify-center py-12">
+                  <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+                </div>
+              ) : commentedPosts.length > 0 ? (
+                commentedPosts.map((post) => renderPost(post))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-foreground/50">
+                    {isOwnProfile ? "You haven't commented on any posts yet" : "No commented posts yet"}
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           {activeTab === "followers" && (

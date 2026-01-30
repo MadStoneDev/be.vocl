@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
 import { ChatSidebar } from "@/components/chat";
 import { CreatePostFAB } from "@/components/Post/create";
 import { useAuth } from "@/hooks/useAuth";
 import { useChat } from "@/hooks/useChat";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { checkOnboardingStatus } from "@/actions/profile";
 import { ErrorBoundary } from "@/components/ui";
-import { IconMessageOff, IconX } from "@tabler/icons-react";
+import { IconMessageOff, IconX, IconLoader2 } from "@tabler/icons-react";
 
 // Chat-specific error fallback
 function ChatErrorFallback({ onClose }: { onClose: () => void }) {
@@ -50,11 +54,47 @@ export default function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { profile } = useAuth();
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const { profile, isLoading: authLoading, user } = useAuth();
   const { totalUnread } = useChat(profile?.id);
+  const { unreadCount: notificationCount } = useNotifications(profile?.id);
+
+  // Track online presence globally
+  useOnlineStatus(profile?.id, profile?.username);
+
+  // Check onboarding status
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (authLoading) return;
+      if (!user) {
+        setOnboardingChecked(true);
+        return;
+      }
+
+      const result = await checkOnboardingStatus();
+      if (result.success && !result.isComplete) {
+        router.replace("/onboarding");
+        return;
+      }
+
+      setOnboardingChecked(true);
+    };
+
+    checkOnboarding();
+  }, [user, authLoading, router]);
 
   const toggleChat = () => setIsChatOpen(!isChatOpen);
+
+  // Show loading while checking onboarding
+  if (!onboardingChecked && user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,7 +102,7 @@ export default function MainLayout({
       <LeftSidebar
         username={profile?.username}
         avatarUrl={profile?.avatarUrl}
-        notificationCount={0}
+        notificationCount={notificationCount}
         messageCount={totalUnread}
         onChatToggle={toggleChat}
       />
@@ -86,7 +126,7 @@ export default function MainLayout({
 
       {/* Bottom Navigation (Mobile) */}
       <BottomNav
-        notificationCount={0}
+        notificationCount={notificationCount}
         messageCount={totalUnread}
         onChatToggle={toggleChat}
       />

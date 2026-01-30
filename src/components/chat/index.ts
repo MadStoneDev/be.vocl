@@ -4,3 +4,6 @@ export { ActiveChat, type Message, type Participant } from "./ActiveChat";
 export { MessageBubble } from "./MessageBubble";
 export { ChatInput } from "./ChatInput";
 export { TypingIndicator } from "./TypingIndicator";
+export { LinkPreview, extractUrls } from "./LinkPreview";
+export { GifPicker } from "./GifPicker";
+export { EmojiPicker } from "./EmojiPicker";

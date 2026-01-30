@@ -299,6 +299,47 @@ export async function unblockUser(targetUserId: string): Promise<FollowResult> {
 }
 
 /**
+ * Check if current user is following multiple users (batch)
+ */
+export async function getFollowStatusBatch(
+  userIds: string[]
+): Promise<{ success: boolean; followingIds?: string[]; error?: string }> {
+  try {
+    if (userIds.length === 0) {
+      return { success: true, followingIds: [] };
+    }
+
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: true, followingIds: [] };
+    }
+
+    const { data, error } = await (supabase as any)
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id)
+      .in("following_id", userIds);
+
+    if (error) {
+      console.error("Get follow status batch error:", error);
+      return { success: false, error: "Failed to check follow status" };
+    }
+
+    return {
+      success: true,
+      followingIds: data?.map((f: any) => f.following_id) || [],
+    };
+  } catch (error) {
+    console.error("Get follow status batch error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Mute a user
  */
 export async function muteUser(targetUserId: string): Promise<FollowResult> {

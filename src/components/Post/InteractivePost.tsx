@@ -6,6 +6,7 @@ import { PostMenu } from "./PostMenu";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
 import { useLike } from "@/hooks/useLike";
 import { useComments } from "@/hooks/useComments";
+import { useReblog } from "@/hooks/useReblog";
 import { ConfirmDialog, toast } from "@/components/ui";
 import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
@@ -93,10 +94,19 @@ export function InteractivePost({
     initialHasCommented: initialInteractions.hasCommented,
   });
 
-  // State for reblogged by (loaded on demand - TODO: implement)
-  const [rebloggedBy] = useState<UserData[]>([]);
-  const [reblogCount, setReblogCount] = useState(initialStats.reblogs);
-  const [hasReblogged, setHasReblogged] = useState(initialInteractions.hasReblogged);
+  // Use reblog hook
+  const {
+    hasReblogged,
+    reblogCount,
+    rebloggedBy: rebloggedByRaw,
+    setHasReblogged,
+    setReblogCount,
+    refreshRebloggedBy,
+  } = useReblog({
+    postId: id,
+    initialHasReblogged: initialInteractions.hasReblogged,
+    initialCount: initialStats.reblogs,
+  });
 
   // Transform comments to match Post component interface
   const comments: CommentData[] = commentsRaw.map((c) => ({
@@ -111,6 +121,14 @@ export function InteractivePost({
 
   // Transform likedBy to match Post component interface
   const likedBy: UserData[] = likedByRaw.map((u) => ({
+    id: u.id,
+    username: u.username,
+    avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
+    displayName: u.displayName || undefined,
+  }));
+
+  // Transform rebloggedBy to match Post component interface
+  const rebloggedBy: UserData[] = rebloggedByRaw.map((u) => ({
     id: u.id,
     username: u.username,
     avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
@@ -276,6 +294,7 @@ export function InteractivePost({
         onComment={handleComment}
         onReblog={handleReblog}
         onMenuClick={handleMenuClick}
+        onReblogsExpand={refreshRebloggedBy}
       >
         {children}
       </Post>

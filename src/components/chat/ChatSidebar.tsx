@@ -4,7 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { IconX, IconSearch, IconLoader2 } from "@tabler/icons-react";
 import { ConversationList, type Conversation } from "./ConversationList";
 import { ActiveChat, type Message, type Participant } from "./ActiveChat";
+import { NewChatModal } from "./NewChatModal";
 import { useChat, useMessages } from "@/hooks/useChat";
+import { useTypingPresence } from "@/hooks/useTypingPresence";
+import { useAuth } from "@/hooks/useAuth";
+import { useIsOnline } from "@/hooks/useOnlineStatus";
 import { toast } from "@/components/ui";
 
 interface ChatSidebarProps {
@@ -17,15 +21,31 @@ export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps
   const [view, setView] = useState<"list" | "chat">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+
+  // Get current user profile for username
+  const { profile } = useAuth();
 
   // Use chat hook for conversations
   const {
-    conversations,
+    conversations: rawConversations,
     isLoading: conversationsLoading,
     error: conversationsError,
     refreshConversations,
   } = useChat(currentUserId);
+
+  // Get participant IDs for online status check
+  const participantIds = rawConversations.map((c) => c.participant.id);
+  const onlineStatus = useIsOnline(participantIds);
+
+  // Enrich conversations with online status
+  const conversations = rawConversations.map((conv) => ({
+    ...conv,
+    participant: {
+      ...conv.participant,
+      isOnline: onlineStatus.get(conv.participant.id) || false,
+    },
+  }));
 
   // Use messages hook for active conversation
   const {
@@ -36,12 +56,32 @@ export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps
     deleteExistingMessage,
   } = useMessages(activeConversation?.id || null, currentUserId);
 
+  // Use typing presence hook
+  const { typingUsers, startTyping, stopTyping } = useTypingPresence(
+    activeConversation?.id || null,
+    currentUserId,
+    profile?.username
+  );
+
+  // Check if the other participant is typing
+  const isParticipantTyping = typingUsers.length > 0;
+
   // Refresh conversations when sidebar opens
   useEffect(() => {
     if (isOpen && currentUserId) {
       refreshConversations();
     }
   }, [isOpen, currentUserId, refreshConversations]);
+
+  // Update active conversation's online status when it changes
+  useEffect(() => {
+    if (activeConversation) {
+      const updatedConv = conversations.find((c) => c.id === activeConversation.id);
+      if (updatedConv && updatedConv.participant.isOnline !== activeConversation.participant.isOnline) {
+        setActiveConversation(updatedConv);
+      }
+    }
+  }, [activeConversation, conversations]);
 
   // Handle conversation selection
   const handleSelectConversation = useCallback((conversationId: string) => {
@@ -62,13 +102,62 @@ export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps
   const handleSendMessage = useCallback(async (content: string, mediaFile?: File) => {
     if (!activeConversation) return;
 
-    // TODO: Handle media file upload to R2
     let mediaUrl: string | undefined;
     let mediaType: string | undefined;
 
     if (mediaFile) {
-      // For now, show a message that media upload is coming soon
-      toast.info("Media upload coming soon!");
+      try {
+        // Validate file type
+        if (!mediaFile.type.startsWith("image/") && !mediaFile.type.startsWith("video/")) {
+          toast.error("Only images and videos are supported");
+          return;
+        }
+
+        // Validate file size (max 25MB for chat media)
+        if (mediaFile.size > 25 * 1024 * 1024) {
+          toast.error("File must be less than 25MB");
+          return;
+        }
+
+        // Get presigned URL for upload
+        const presignRes = await fetch("/api/upload/presign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: mediaFile.name,
+            contentType: mediaFile.type,
+            folder: `messages/${activeConversation.id}`,
+          }),
+        });
+
+        if (!presignRes.ok) {
+          throw new Error("Failed to get upload URL");
+        }
+
+        const { uploadUrl, publicUrl } = await presignRes.json();
+
+        // Upload file to R2
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          body: mediaFile,
+          headers: { "Content-Type": mediaFile.type },
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error("Failed to upload file");
+        }
+
+        mediaUrl = publicUrl;
+        mediaType = mediaFile.type.startsWith("image/") ? "image" : "video";
+      } catch (error) {
+        console.error("Media upload error:", error);
+        toast.error("Failed to upload media");
+        return;
+      }
+    }
+
+    // Don't send empty messages (unless there's media)
+    if (!content.trim() && !mediaUrl) {
       return;
     }
 
@@ -96,14 +185,28 @@ export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps
 
   // Handle typing indicator
   const handleTyping = useCallback(() => {
-    // TODO: Implement typing indicator broadcast via Supabase Realtime Presence
-  }, []);
+    startTyping();
+  }, [startTyping]);
+
+  // Stop typing when message is sent
+  const handleSendWithTypingStop = useCallback(async (content: string, mediaFile?: File) => {
+    stopTyping();
+    await handleSendMessage(content, mediaFile);
+  }, [stopTyping, handleSendMessage]);
 
   // Handle new chat
   const handleNewChat = useCallback(() => {
-    // TODO: Open a user search modal to start new conversation
-    toast.info("New chat feature coming soon!");
+    setShowNewChatModal(true);
   }, []);
+
+  // Handle conversation created from new chat modal
+  const handleConversationCreated = useCallback((conversationId: string) => {
+    refreshConversations();
+    // Find and select the new conversation after refresh
+    setTimeout(() => {
+      handleSelectConversation(conversationId);
+    }, 500);
+  }, [refreshConversations, handleSelectConversation]);
 
   if (!isOpen) return null;
 
@@ -193,16 +296,24 @@ export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps
             participant={activeConversation.participant as Participant}
             messages={chatMessages}
             currentUserId={currentUserId || ""}
-            isTyping={isTyping}
+            isTyping={isParticipantTyping}
             isLoading={messagesLoading}
             onBack={handleBack}
-            onSendMessage={handleSendMessage}
+            onSendMessage={handleSendWithTypingStop}
             onEditMessage={handleEditMessage}
             onDeleteMessage={handleDeleteMessage}
             onTyping={handleTyping}
           />
         ) : null}
       </aside>
+
+      {/* New Chat Modal */}
+      <NewChatModal
+        isOpen={showNewChatModal}
+        onClose={() => setShowNewChatModal(false)}
+        onConversationCreated={handleConversationCreated}
+        currentUserId={currentUserId}
+      />
     </>
   );
 }
