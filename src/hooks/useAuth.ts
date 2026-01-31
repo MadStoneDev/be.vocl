@@ -9,6 +9,7 @@ interface Profile {
   username: string;
   displayName?: string;
   avatarUrl?: string;
+  role: number;
 }
 
 interface ProfileRow {
@@ -16,6 +17,7 @@ interface ProfileRow {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  role: number | null;
 }
 
 interface UseAuthReturn {
@@ -53,7 +55,7 @@ export function useAuth(): UseAuthReturn {
           // Fetch profile
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
-            .select("id, username, display_name, avatar_url")
+            .select("id, username, display_name, avatar_url, role")
             .eq("id", user.id)
             .single<ProfileRow>();
 
@@ -65,6 +67,7 @@ export function useAuth(): UseAuthReturn {
               username: profileData.username,
               displayName: profileData.display_name || undefined,
               avatarUrl: profileData.avatar_url || undefined,
+              role: profileData.role || 0,
             });
           }
         }
@@ -93,7 +96,7 @@ export function useAuth(): UseAuthReturn {
           // Fetch profile on auth change
           const { data: profileData } = await supabase
             .from("profiles")
-            .select("id, username, display_name, avatar_url")
+            .select("id, username, display_name, avatar_url, role")
             .eq("id", newUser.id)
             .single<ProfileRow>();
 
@@ -103,6 +106,7 @@ export function useAuth(): UseAuthReturn {
               username: profileData.username,
               displayName: profileData.display_name || undefined,
               avatarUrl: profileData.avatar_url || undefined,
+              role: profileData.role || 0,
             });
           }
         } else {

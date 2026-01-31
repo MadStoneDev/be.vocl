@@ -102,6 +102,7 @@ export default function MainLayout({
         messageCount={totalUnread}
         onChatToggle={toggleChat}
         isLoading={authLoading}
+        role={profile?.role}
       />
 
       {/* Top Navigation (Mobile) */}
