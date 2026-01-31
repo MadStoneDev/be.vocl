@@ -30,6 +30,9 @@ ALTER TABLE profiles ADD COLUMN promise_accepted_at TIMESTAMPTZ;
 ALTER TABLE profiles ADD COLUMN banned_at TIMESTAMPTZ;
 ALTER TABLE profiles ADD COLUMN ban_reason TEXT;
 
+-- Appeals blocking (prevents user from submitting new appeals)
+ALTER TABLE profiles ADD COLUMN appeals_blocked BOOLEAN DEFAULT false;
+
 -- ============================================================================
 -- UPDATE POSTS TABLE
 -- ============================================================================
@@ -99,7 +102,6 @@ CREATE TABLE appeals (
 
   -- Status
   status appeal_status DEFAULT 'pending',
-  appeals_blocked BOOLEAN DEFAULT false,
 
   -- Review
   reviewed_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
