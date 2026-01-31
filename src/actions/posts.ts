@@ -165,8 +165,8 @@ function extractMediaUrls(
       for (const url of imageContent.urls) {
         urls.push({ url, type: "image" });
       }
-    } else if (imageContent.url) {
-      urls.push({ url: imageContent.url, type: "image" });
+    } else if (imageContent.urls) {
+      urls.push({ url: imageContent.urls, type: "image" });
     }
   } else if (postType === "video") {
     const videoContent = content as VideoPostContent;

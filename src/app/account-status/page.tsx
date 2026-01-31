@@ -14,7 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { getUserLockStatus } from "@/actions/account";
 import { submitAppeal, getUserAppealStatus } from "@/actions/appeals";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 type AppealStatus = "none" | "pending" | "approved" | "denied" | "blocked";
 
@@ -67,7 +67,7 @@ export default function AccountStatusPage() {
   }, [router]);
 
   const handleLogout = async () => {
-    const supabase = createBrowserClient();
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
   };
