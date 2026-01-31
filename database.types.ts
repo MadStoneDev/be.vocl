@@ -194,6 +194,99 @@ export type Database = {
         }
         Relationships: []
       }
+      email_send_recipients: {
+        Row: {
+          id: string
+          email_send_id: string
+          recipient_id: string
+          email_address: string
+          status: string | null
+          sent_at: string | null
+          error: string | null
+        }
+        Insert: {
+          id?: string
+          email_send_id: string
+          recipient_id: string
+          email_address: string
+          status?: string | null
+          sent_at?: string | null
+          error?: string | null
+        }
+        Update: {
+          id?: string
+          email_send_id?: string
+          recipient_id?: string
+          email_address?: string
+          status?: string | null
+          sent_at?: string | null
+          error?: string | null
+        }
+        Relationships: []
+      }
+      email_sends: {
+        Row: {
+          id: string
+          template_type: string
+          subject: string
+          recipient_count: number
+          sent_by: string | null
+          recipient_filter: Json | null
+          custom_content: Json | null
+          created_at: string | null
+          completed_at: string | null
+          status: string | null
+        }
+        Insert: {
+          id?: string
+          template_type: string
+          subject: string
+          recipient_count?: number
+          sent_by?: string | null
+          recipient_filter?: Json | null
+          custom_content?: Json | null
+          created_at?: string | null
+          completed_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          id?: string
+          template_type?: string
+          subject?: string
+          recipient_count?: number
+          sent_by?: string | null
+          recipient_filter?: Json | null
+          custom_content?: Json | null
+          created_at?: string | null
+          completed_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      email_template_customizations: {
+        Row: {
+          id: string
+          template_type: string
+          customizations: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          template_type: string
+          customizations?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          template_type?: string
+          customizations?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       escalation_history: {
         Row: {
           id: string
@@ -347,6 +440,33 @@ export type Database = {
         }
         Relationships: []
       }
+      message_email_tracking: {
+        Row: {
+          id: string
+          recipient_id: string
+          sender_id: string
+          conversation_id: string
+          last_email_sent_at: string
+          is_new_conversation: boolean | null
+        }
+        Insert: {
+          id?: string
+          recipient_id: string
+          sender_id: string
+          conversation_id: string
+          last_email_sent_at?: string
+          is_new_conversation?: boolean | null
+        }
+        Update: {
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+          conversation_id?: string
+          last_email_sent_at?: string
+          is_new_conversation?: boolean | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           id: string
@@ -436,6 +556,42 @@ export type Database = {
           comment_id?: string | null
           message_id?: string | null
           is_read?: boolean | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      pending_digest_notifications: {
+        Row: {
+          id: string
+          recipient_id: string
+          notification_type: string
+          actor_id: string | null
+          post_id: string | null
+          comment_id: string | null
+          message_preview: string | null
+          conversation_id: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          recipient_id: string
+          notification_type: string
+          actor_id?: string | null
+          post_id?: string | null
+          comment_id?: string | null
+          message_preview?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          recipient_id?: string
+          notification_type?: string
+          actor_id?: string | null
+          post_id?: string | null
+          comment_id?: string | null
+          message_preview?: string | null
+          conversation_id?: string | null
           created_at?: string | null
         }
         Relationships: []
@@ -580,6 +736,14 @@ export type Database = {
           banned_at: string | null
           ban_reason: string | null
           appeals_blocked: boolean | null
+          email_likes: boolean | null
+          email_comments: boolean | null
+          email_reblogs: boolean | null
+          email_follows: boolean | null
+          email_mentions: boolean | null
+          email_messages: boolean | null
+          email_frequency: string | null
+          last_message_email_at: string | null
         }
         Insert: {
           id: string
@@ -612,6 +776,14 @@ export type Database = {
           banned_at?: string | null
           ban_reason?: string | null
           appeals_blocked?: boolean | null
+          email_likes?: boolean | null
+          email_comments?: boolean | null
+          email_reblogs?: boolean | null
+          email_follows?: boolean | null
+          email_mentions?: boolean | null
+          email_messages?: boolean | null
+          email_frequency?: string | null
+          last_message_email_at?: string | null
         }
         Update: {
           id?: string
@@ -644,6 +816,14 @@ export type Database = {
           banned_at?: string | null
           ban_reason?: string | null
           appeals_blocked?: boolean | null
+          email_likes?: boolean | null
+          email_comments?: boolean | null
+          email_reblogs?: boolean | null
+          email_follows?: boolean | null
+          email_mentions?: boolean | null
+          email_messages?: boolean | null
+          email_frequency?: string | null
+          last_message_email_at?: string | null
         }
         Relationships: []
       }
@@ -785,6 +965,51 @@ export type Database = {
           conversation_id?: string
           profile_id?: string
           started_at?: string | null
+        }
+        Relationships: []
+      }
+      user_tag_assignments: {
+        Row: {
+          user_id: string
+          tag_id: string
+          assigned_at: string | null
+          assigned_by: string | null
+        }
+        Insert: {
+          user_id: string
+          tag_id: string
+          assigned_at?: string | null
+          assigned_by?: string | null
+        }
+        Update: {
+          user_id?: string
+          tag_id?: string
+          assigned_at?: string | null
+          assigned_by?: string | null
+        }
+        Relationships: []
+      }
+      user_tags: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          color: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          color?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          color?: string | null
+          created_at?: string | null
         }
         Relationships: []
       }
