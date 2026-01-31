@@ -8,4 +8,6 @@ export {
   sendCommentNotificationEmail,
   sendReblogNotificationEmail,
   sendMessageNotificationEmail,
+  sendMentionNotificationEmail,
+  sendDailyDigestEmail,
 } from "./send";

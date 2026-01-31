@@ -11,6 +11,7 @@ import type {
   VideoPostContent,
   AudioPostContent,
 } from "@/types/database";
+import { processMentions } from "@/actions/mentions";
 
 interface CreatePostInput {
   postType: PostType;
@@ -142,6 +143,14 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       await handleTags(supabase, post.id, tags);
     }
 
+    // Process mentions (only for published posts)
+    if (status === "published") {
+      const textContent = extractTextContent(postType, content);
+      if (textContent) {
+        await processMentions(textContent, user.id, post.id, "post");
+      }
+    }
+
     revalidatePath("/feed");
     return { success: true, postId: post.id };
   } catch (error) {
@@ -179,6 +188,20 @@ function extractMediaUrls(
   }
 
   return urls;
+}
+
+function extractTextContent(postType: PostType, content: PostContent): string | null {
+  if (postType === "text") {
+    const textContent = content as TextPostContent;
+    return textContent.html || textContent.plain || null;
+  }
+
+  // For other post types, check for caption
+  if ("caption_html" in content && content.caption_html) {
+    return content.caption_html as string;
+  }
+
+  return null;
 }
 
 async function handleTags(supabase: any, postId: string, tagNames: string[]) {

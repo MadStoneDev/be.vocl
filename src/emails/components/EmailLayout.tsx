@@ -36,7 +36,13 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
           {/* Header with logo */}
           <Section style={header}>
             <Link href="https://be.vocl.app" style={logoLink}>
-              <Text style={logo}>be.vocl</Text>
+              <Img
+                src="https://be.vocl.app/bevocl%20logo.png"
+                alt="be.vocl"
+                width="120"
+                height="auto"
+                style={logoImage}
+              />
             </Link>
           </Section>
 
@@ -94,12 +100,8 @@ const logoLink = {
   textDecoration: "none",
 };
 
-const logo = {
-  color: colors.accent,
-  fontSize: "32px",
-  fontWeight: "700",
-  margin: "0",
-  fontFamily: "Georgia, serif",
+const logoImage = {
+  margin: "0 auto",
 };
 
 const content = {

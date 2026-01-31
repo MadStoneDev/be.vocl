@@ -58,24 +58,6 @@ export async function GET(request: Request) {
         errors.push(`Post ${post.id}: ${publishError.message}`);
       } else {
         publishedCount++;
-
-        // Create notification for original author if it's a reblog
-        if (post.original_post_id) {
-          const { data: originalPost } = await supabase
-            .from("posts")
-            .select("author_id")
-            .eq("id", post.original_post_id)
-            .single();
-
-          if (originalPost && originalPost.author_id !== post.author_id) {
-            await supabase.from("notifications").insert({
-              recipient_id: originalPost.author_id,
-              actor_id: post.author_id,
-              notification_type: "reblog",
-              post_id: post.id,
-            });
-          }
-        }
       }
     }
 

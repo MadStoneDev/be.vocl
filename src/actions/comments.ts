@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { processMentions } from "@/actions/mentions";
 
 interface CommentResult {
   success: boolean;
@@ -89,6 +90,9 @@ export async function createComment(
           comment_id: comment.id,
         });
     }
+
+    // Process mentions in the comment
+    await processMentions(trimmedContent, user.id, postId, "comment");
 
     revalidatePath("/feed");
     revalidatePath(`/post/${postId}`);

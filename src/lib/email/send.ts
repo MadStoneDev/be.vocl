@@ -8,6 +8,8 @@ import {
   CommentNotificationEmail,
   ReblogNotificationEmail,
   MessageNotificationEmail,
+  MentionNotificationEmail,
+  DailyDigestEmail,
 } from "@/emails";
 
 // Types
@@ -329,6 +331,87 @@ export async function sendMessageNotificationEmail(
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error("Message notification email error:", error);
+    return { success: false, error: "Failed to send email" };
+  }
+}
+
+export async function sendMentionNotificationEmail(
+  options: BaseEmailOptions & {
+    mentionerUsername: string;
+    mentionerAvatarUrl?: string;
+    context: string;
+    postId: string;
+  }
+): Promise<SendEmailResult> {
+  if (!isEmailConfigured() || !resend) {
+    console.log("Email not configured. Would send mention notification to:", options.to);
+    return { success: true, messageId: "mock" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.notifications,
+      to: options.to,
+      subject: `@${options.mentionerUsername} mentioned you`,
+      react: MentionNotificationEmail({
+        mentionerUsername: options.mentionerUsername,
+        mentionerAvatarUrl: options.mentionerAvatarUrl,
+        context: options.context,
+        postId: options.postId,
+      }),
+    });
+
+    if (error) {
+      console.error("Failed to send mention notification:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error("Mention notification email error:", error);
+    return { success: false, error: "Failed to send email" };
+  }
+}
+
+interface DigestItem {
+  type: "like" | "comment" | "reblog" | "follow" | "mention" | "message";
+  count: number;
+  actorUsernames: string[];
+  postId?: string;
+}
+
+export async function sendDailyDigestEmail(
+  options: BaseEmailOptions & {
+    recipientUsername: string;
+    items: DigestItem[];
+    totalNotifications: number;
+  }
+): Promise<SendEmailResult> {
+  if (!isEmailConfigured() || !resend) {
+    console.log("Email not configured. Would send daily digest to:", options.to);
+    return { success: true, messageId: "mock" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.notifications,
+      to: options.to,
+      subject: `Your daily digest: ${options.totalNotifications} notifications`,
+      react: DailyDigestEmail({
+        recipientUsername: options.recipientUsername,
+        items: options.items,
+        totalNotifications: options.totalNotifications,
+      }),
+    });
+
+    if (error) {
+      console.error("Failed to send daily digest:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error("Daily digest email error:", error);
     return { success: false, error: "Failed to send email" };
   }
 }
