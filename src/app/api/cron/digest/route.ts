@@ -62,7 +62,7 @@ export async function GET(request: Request) {
             post_id,
             message_preview,
             conversation_id,
-            actor:actor_id (username)
+            actor:profiles!actor_id (username)
           `)
           .eq("recipient_id", user.id);
 
@@ -84,8 +84,10 @@ export async function GET(request: Request) {
             grouped[type] = { actorUsernames: new Set(), postIds: new Set(), count: 0 };
           }
           grouped[type].count++;
-          if (notif.actor?.username) {
-            grouped[type].actorUsernames.add(notif.actor.username);
+          const actorData = notif.actor;
+          const actor = Array.isArray(actorData) ? actorData[0] : actorData;
+          if (actor && typeof actor === 'object' && 'username' in actor && actor.username) {
+            grouped[type].actorUsernames.add(actor.username as string);
           }
           if (notif.post_id) {
             grouped[type].postIds.add(notif.post_id);

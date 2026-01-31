@@ -193,7 +193,7 @@ export async function getFollowedTags(): Promise<{
       .from("followed_tags")
       .select(`
         tag_id,
-        tag:tag_id (
+        tag:tags!tag_id (
           id,
           name,
           post_count
@@ -206,17 +206,14 @@ export async function getFollowedTags(): Promise<{
       return { success: false, error: "Failed to get followed tags" };
     }
 
-    type FollowedTagResult = {
-      tag_id: string;
-      tag: { id: string; name: string; post_count: number } | null;
-    };
-
-    const tags = ((followedTags || []) as FollowedTagResult[])
-      .filter((ft) => ft.tag)
+    const tags = (followedTags || [])
+      .filter((ft): ft is typeof ft & { tag: { id: string; name: string; post_count: number } } =>
+        ft.tag !== null && typeof ft.tag === 'object' && !Array.isArray(ft.tag)
+      )
       .map((ft) => ({
-        id: ft.tag!.id,
-        name: ft.tag!.name,
-        postCount: ft.tag!.post_count,
+        id: ft.tag.id,
+        name: ft.tag.name,
+        postCount: ft.tag.post_count,
       }));
 
     return { success: true, tags };
@@ -244,7 +241,7 @@ export async function getPostTags(postId: string): Promise<{
       .from("post_tags")
       .select(`
         tag_id,
-        tag:tag_id (
+        tag:tags!tag_id (
           id,
           name
         )
@@ -256,16 +253,13 @@ export async function getPostTags(postId: string): Promise<{
       return { success: false, error: "Failed to get post tags" };
     }
 
-    type PostTagResult = {
-      tag_id: string;
-      tag: { id: string; name: string } | null;
-    };
-
-    const tags = ((postTags || []) as PostTagResult[])
-      .filter((pt) => pt.tag)
+    const tags = (postTags || [])
+      .filter((pt): pt is typeof pt & { tag: { id: string; name: string } } =>
+        pt.tag !== null && typeof pt.tag === 'object' && !Array.isArray(pt.tag)
+      )
       .map((pt) => ({
-        id: pt.tag!.id,
-        name: pt.tag!.name,
+        id: pt.tag.id,
+        name: pt.tag.name,
       }));
 
     return { success: true, tags };
@@ -295,7 +289,7 @@ export async function getPostTagsBatch(postIds: string[]): Promise<{
       .select(`
         post_id,
         tag_id,
-        tag:tag_id (
+        tag:tags!tag_id (
           id,
           name
         )
@@ -307,23 +301,18 @@ export async function getPostTagsBatch(postIds: string[]): Promise<{
       return { success: false, error: "Failed to get post tags" };
     }
 
-    type PostTagResult = {
-      post_id: string;
-      tag_id: string;
-      tag: { id: string; name: string } | null;
-    };
-
     const tagsByPostId: Record<string, Array<{ id: string; name: string }>> = {};
 
     for (const postId of postIds) {
       tagsByPostId[postId] = [];
     }
 
-    for (const pt of (postTags || []) as PostTagResult[]) {
-      if (pt.tag && tagsByPostId[pt.post_id]) {
+    for (const pt of postTags || []) {
+      const tag = pt.tag;
+      if (tag && typeof tag === 'object' && !Array.isArray(tag) && tagsByPostId[pt.post_id]) {
         tagsByPostId[pt.post_id].push({
-          id: pt.tag.id,
-          name: pt.tag.name,
+          id: (tag as { id: string; name: string }).id,
+          name: (tag as { id: string; name: string }).name,
         });
       }
     }
