@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// DEPRECATED: Use /api/cron/scheduled (every 5 min) and /api/cron/queue (every 15 min) instead
-// This endpoint processes both for backwards compatibility
+// Processes queue posts based on each user's settings
+// Run every 15 minutes via cron (queue posts spread throughout the day)
 
 export async function GET(request: Request) {
   // Verify cron secret
@@ -14,7 +14,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Use service role key for admin operations
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -31,7 +30,10 @@ export async function GET(request: Request) {
     const currentMinute = now.getMinutes();
     const currentTimeStr = `${currentHour.toString().padStart(2, "0")}:${currentMinute.toString().padStart(2, "0")}:00`;
 
-    // Get all users with active queues that have posts to publish
+    let publishedCount = 0;
+    const errors: string[] = [];
+
+    // Get all users with active queues
     const { data: usersWithQueues, error: usersError } = await supabase
       .from("profiles")
       .select("id, queue_enabled, queue_paused, queue_posts_per_day, queue_window_start, queue_window_end, timezone")
@@ -45,9 +47,6 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
-
-    let publishedCount = 0;
-    const errors: string[] = [];
 
     for (const user of usersWithQueues || []) {
       try {
@@ -123,7 +122,7 @@ export async function GET(request: Request) {
           } else {
             publishedCount++;
 
-            // Create notification for original author if applicable
+            // Create notification for original author
             if (post.original_post_id) {
               const { data: originalPost } = await supabase
                 .from("posts")
@@ -147,51 +146,10 @@ export async function GET(request: Request) {
       }
     }
 
-    // Also process scheduled posts that are due
-    const { data: scheduledPosts, error: scheduledError } = await supabase
-      .from("posts")
-      .select("id, author_id, original_post_id")
-      .eq("status", "scheduled")
-      .lte("scheduled_for", now.toISOString());
-
-    if (!scheduledError && scheduledPosts) {
-      for (const post of scheduledPosts) {
-        const { error: publishError } = await supabase
-          .from("posts")
-          .update({
-            status: "published",
-            scheduled_for: null,
-            published_at: new Date().toISOString(),
-          })
-          .eq("id", post.id);
-
-        if (!publishError) {
-          publishedCount++;
-
-          // Create notification for original author if it's a reblog
-          if (post.original_post_id) {
-            const { data: originalPost } = await supabase
-              .from("posts")
-              .select("author_id")
-              .eq("id", post.original_post_id)
-              .single();
-
-            if (originalPost && originalPost.author_id !== post.author_id) {
-              await supabase.from("notifications").insert({
-                recipient_id: originalPost.author_id,
-                actor_id: post.author_id,
-                notification_type: "reblog",
-                post_id: post.id,
-              });
-            }
-          }
-        }
-      }
-    }
-
     return NextResponse.json({
       success: true,
       published: publishedCount,
+      usersProcessed: usersWithQueues?.length || 0,
       errors: errors.length > 0 ? errors : undefined,
       timestamp: now.toISOString(),
     });
@@ -204,7 +162,6 @@ export async function GET(request: Request) {
   }
 }
 
-// Also support POST for flexibility
 export async function POST(request: Request) {
   return GET(request);
 }

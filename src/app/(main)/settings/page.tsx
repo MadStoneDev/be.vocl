@@ -1,7 +1,8 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   IconUser,
   IconLock,
@@ -10,6 +11,7 @@ import {
   IconPalette,
   IconChevronRight,
   IconCheck,
+  IconLogout,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { toast, LoadingSpinner } from "@/components/ui";
@@ -49,7 +51,9 @@ const settingsLinks = [
 
 function SettingsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("email_changed") === "true") {
@@ -57,6 +61,26 @@ function SettingsContent() {
       setShowSuccess(true);
     }
   }, [searchParams]);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        toast.error("Configuration error");
+        return;
+      }
+
+      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (error) {
+      toast.error("Failed to log out");
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div className="py-6">
@@ -88,6 +112,26 @@ function SettingsContent() {
             <IconChevronRight className="w-5 h-5 text-foreground/30" />
           </Link>
         ))}
+      </div>
+
+      {/* Logout Button */}
+      <div className="mt-8 pt-6 border-t border-white/5">
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex items-center gap-4 p-4 w-full rounded-xl bg-vocl-like/10 hover:bg-vocl-like/20 transition-colors disabled:opacity-50"
+        >
+          <div className="w-10 h-10 rounded-xl bg-vocl-like/20 flex items-center justify-center">
+            <IconLogout className="w-5 h-5 text-vocl-like" />
+          </div>
+          <div className="flex-1 text-left">
+            <h3 className="font-medium text-vocl-like">
+              {isLoggingOut ? "Logging out..." : "Log out"}
+            </h3>
+            <p className="text-sm text-vocl-like/70">Sign out of your account</p>
+          </div>
+        </button>
       </div>
     </div>
   );

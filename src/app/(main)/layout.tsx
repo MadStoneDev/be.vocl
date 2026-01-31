@@ -64,19 +64,31 @@ export default function MainLayout({
   // Track online presence globally
   useOnlineStatus(profile?.id, profile?.username);
 
-  // Check onboarding status
+  // Check onboarding status - runs when auth state is known
   useEffect(() => {
-    const checkOnboarding = async () => {
-      if (authLoading) return;
-      if (!user) {
-        setOnboardingChecked(true);
-        return;
-      }
+    // Wait until auth loading is complete
+    if (authLoading) return;
 
-      const result = await checkOnboardingStatus();
-      if (result.success && !result.isComplete) {
-        router.replace("/onboarding");
-        return;
+    // If no user, no onboarding check needed
+    if (!user) {
+      setOnboardingChecked(true);
+      return;
+    }
+
+    const checkOnboarding = async () => {
+      try {
+        const timeoutPromise = new Promise<{ success: false; isComplete: true }>((resolve) =>
+          setTimeout(() => resolve({ success: false, isComplete: true }), 3000)
+        );
+
+        const result = await Promise.race([checkOnboardingStatus(), timeoutPromise]);
+
+        if (result.success && !result.isComplete) {
+          router.replace("/onboarding");
+          return;
+        }
+      } catch (error) {
+        console.error("Onboarding check failed:", error);
       }
 
       setOnboardingChecked(true);
@@ -85,10 +97,22 @@ export default function MainLayout({
     checkOnboarding();
   }, [user, authLoading, router]);
 
+  // Fallback: force onboardingChecked after timeout to prevent infinite spinner
+  useEffect(() => {
+    if (onboardingChecked) return;
+
+    const fallbackTimer = setTimeout(() => {
+      console.warn("Onboarding check timed out, proceeding anyway");
+      setOnboardingChecked(true);
+    }, 5000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [onboardingChecked]);
+
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 
-  // Show loading while checking onboarding
-  if (!onboardingChecked && user) {
+  // Show loading while auth is loading OR while checking onboarding (but not forever)
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <IconLoader2 size={32} className="animate-spin text-vocl-accent" />

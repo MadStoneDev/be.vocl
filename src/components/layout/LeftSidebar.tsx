@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   IconHome,
   IconHomeFilled,
@@ -14,6 +15,7 @@ import {
   IconSettings,
   IconUser,
   IconStack2,
+  IconLogout,
 } from "@tabler/icons-react";
 
 interface LeftSidebarProps {
@@ -32,6 +34,18 @@ export function LeftSidebar({
   onChatToggle,
 }: LeftSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) return;
+
+    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   const navItems = [
     { href: "/feed", icon: IconHome, iconActive: IconHomeFilled, label: "Home" },
@@ -176,6 +190,18 @@ export function LeftSidebar({
             {username ? `@${username}` : "Profile"}
           </span>
         </Link>
+
+        {/* Logout */}
+        {username && (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 mt-1 w-full rounded-xl text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-all"
+          >
+            <IconLogout size={22} aria-hidden="true" />
+            <span className="text-sm font-medium">Logout</span>
+          </button>
+        )}
       </div>
     </aside>
   );

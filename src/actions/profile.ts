@@ -488,17 +488,18 @@ export async function checkOnboardingStatus(): Promise<{
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("username, display_name, avatar_url, bio, onboarding_completed")
+      .select("username, display_name, avatar_url, bio")
       .eq("id", user.id)
       .single();
 
     if (error || !data) {
-      return { success: false, isComplete: false, error: "Profile not found" };
+      // If profile query fails, assume onboarding is complete to avoid blocking user
+      console.error("Profile query error:", error);
+      return { success: true, isComplete: true, error: "Profile not found" };
     }
 
-    // Onboarding is complete if the flag is set, or if user has display name and bio
-    const isComplete = data.onboarding_completed === true ||
-      (data.display_name && data.bio);
+    // Onboarding is complete if user has a username (required) and display name
+    const isComplete = !!(data.username && data.display_name);
 
     return {
       success: true,

@@ -9,18 +9,42 @@ interface SchedulePickerProps {
   minDate?: Date;
 }
 
+// Round minutes to nearest 5-minute increment
+function roundToFiveMinutes(date: Date): Date {
+  const rounded = new Date(date);
+  const minutes = rounded.getMinutes();
+  const roundedMinutes = Math.ceil(minutes / 5) * 5;
+  rounded.setMinutes(roundedMinutes, 0, 0);
+  return rounded;
+}
+
+// Generate time options in 5-minute increments
+function generateTimeOptions(): string[] {
+  const options: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 5) {
+      options.push(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`);
+    }
+  }
+  return options;
+}
+
+const TIME_OPTIONS = generateTimeOptions();
+
 export function SchedulePicker({
   value,
   onChange,
   minDate = new Date(),
 }: SchedulePickerProps) {
+  const defaultTime = roundToFiveMinutes(new Date(Date.now() + 3600000));
+
   const [date, setDate] = useState<string>(
     value ? value.toISOString().split("T")[0] : ""
   );
   const [time, setTime] = useState<string>(
     value
-      ? value.toTimeString().slice(0, 5)
-      : new Date(Date.now() + 3600000).toTimeString().slice(0, 5) // Default to 1 hour from now
+      ? `${value.getHours().toString().padStart(2, "0")}:${(Math.floor(value.getMinutes() / 5) * 5).toString().padStart(2, "0")}`
+      : `${defaultTime.getHours().toString().padStart(2, "0")}:${defaultTime.getMinutes().toString().padStart(2, "0")}`
   );
 
   const handleDateChange = (newDate: string) => {
@@ -47,7 +71,7 @@ export function SchedulePicker({
     }
   };
 
-  // Generate quick time options
+  // Generate quick time options (rounded to 5 minutes)
   const quickOptions = [
     { label: "In 1 hour", hours: 1 },
     { label: "In 3 hours", hours: 3 },
@@ -70,10 +94,10 @@ export function SchedulePicker({
     if (option.custom) {
       newDate = option.custom();
     } else {
-      newDate = new Date(Date.now() + option.hours! * 3600000);
+      newDate = roundToFiveMinutes(new Date(Date.now() + option.hours! * 3600000));
     }
     setDate(newDate.toISOString().split("T")[0]);
-    setTime(newDate.toTimeString().slice(0, 5));
+    setTime(`${newDate.getHours().toString().padStart(2, "0")}:${newDate.getMinutes().toString().padStart(2, "0")}`);
     onChange(newDate);
   };
 
@@ -113,14 +137,22 @@ export function SchedulePicker({
         <div className="relative">
           <IconClock
             size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none z-10"
           />
-          <input
-            type="time"
+          <select
             value={time}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm"
-          />
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm appearance-none cursor-pointer"
+          >
+            {TIME_OPTIONS.map((t) => (
+              <option key={t} value={t}>
+                {new Date(`2000-01-01T${t}`).toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

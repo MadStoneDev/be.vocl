@@ -39,39 +39,59 @@ export function useAuth(): UseAuthReturn {
 
     // Skip if Supabase is not configured
     if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn("Supabase not configured");
       setIsLoading(false);
       return;
     }
 
     const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
-    // Get initial session
+    // Get initial session with error handling
     const getSession = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-      if (user) {
-        // Fetch profile
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, avatar_url")
-          .eq("id", user.id)
-          .single<ProfileRow>();
-
-        if (profileData) {
-          setProfile({
-            id: profileData.id,
-            username: profileData.username,
-            displayName: profileData.display_name || undefined,
-            avatarUrl: profileData.avatar_url || undefined,
-          });
+        if (authError) {
+          console.error("Auth error:", authError);
+          setIsLoading(false);
+          return;
         }
-      }
 
-      setIsLoading(false);
+        setUser(user);
+
+        if (user) {
+          // Fetch profile
+          const { data: profileData, error: profileError } = await supabase
+            .from("profiles")
+            .select("id, username, display_name, avatar_url")
+            .eq("id", user.id)
+            .single<ProfileRow>();
+
+          if (profileError) {
+            console.error("Profile fetch error:", profileError);
+          } else if (profileData) {
+            setProfile({
+              id: profileData.id,
+              username: profileData.username,
+              displayName: profileData.display_name || undefined,
+              avatarUrl: profileData.avatar_url || undefined,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    getSession();
+    // Add timeout fallback
+    const timeoutId = setTimeout(() => {
+      console.warn("Auth check timed out");
+      setIsLoading(false);
+    }, 10000);
+
+    getSession().finally(() => clearTimeout(timeoutId));
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
