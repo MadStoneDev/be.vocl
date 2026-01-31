@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   sendWelcomeEmail,
   sendFollowNotificationEmail,
@@ -20,7 +20,7 @@ async function shouldSendEmail(userId: string, type: string): Promise<boolean> {
 // Helper to get user email from profile
 async function getUserEmail(userId: string): Promise<string | null> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const { data } = await (supabase as any)
       .from("profiles")
       .select("id")
@@ -67,7 +67,7 @@ export async function sendFollowNotification(
   try {
     if (!(await shouldSendEmail(followingId, "follow"))) return;
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get follower info
     const { data: follower } = await (supabase as any)
@@ -112,7 +112,7 @@ export async function sendLikeNotification(
     if (likerId === postAuthorId) return; // Don't notify yourself
     if (!(await shouldSendEmail(postAuthorId, "like"))) return;
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get liker info
     const { data: liker } = await (supabase as any)
@@ -173,7 +173,7 @@ export async function sendCommentNotification(
     if (commenterId === postAuthorId) return; // Don't notify yourself
     if (!(await shouldSendEmail(postAuthorId, "comment"))) return;
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get commenter info
     const { data: commenter } = await (supabase as any)
@@ -232,7 +232,7 @@ export async function sendReblogNotification(
     if (rebloggerId === originalAuthorId) return; // Don't notify yourself
     if (!(await shouldSendEmail(originalAuthorId, "reblog"))) return;
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get reblogger info
     const { data: reblogger } = await (supabase as any)
@@ -292,7 +292,7 @@ export async function sendMessageNotification(
   try {
     if (!(await shouldSendEmail(recipientId, "message"))) return;
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get sender info
     const { data: sender } = await (supabase as any)

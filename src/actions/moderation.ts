@@ -1,7 +1,9 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { moderateContent } from "@/lib/sightengine/client";
+import { ROLES } from "@/constants/roles";
+import type { FlagSubject } from "@/types/database";
 
 interface ModerationCheckResult {
   safe: boolean;
@@ -49,20 +51,18 @@ export async function checkContentModeration(
 }
 
 /**
- * Flag a post for moderation review
+ * Auto-flag a post for moderation review (used by content moderation system)
+ * Creates a Flag (not a Report) since it's against a post
  */
-export async function flagPostForReview(
+export async function autoFlagPost(
   postId: string,
   reason: string,
-  source: "auto_moderation" | "user_report" = "auto_moderation"
-): Promise<{ success: boolean; error?: string }> {
+  subject: FlagSubject = "minor_safety"
+): Promise<{ success: boolean; flagId?: string; error?: string }> {
   try {
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const supabase = await createClient();
 
-    // Get post author
+    // Get post info
     const { data: post, error: postError } = await (supabase as any)
       .from("posts")
       .select("author_id")
@@ -83,152 +83,76 @@ export async function flagPostForReview(
       })
       .eq("id", postId);
 
-    // Create report
-    await (supabase as any).from("reports").insert({
-      reporter_id: source === "user_report" ? user?.id : null,
-      reported_user_id: post.author_id,
-      post_id: postId,
-      subject: "minor_safety",
-      comments: reason,
-      source,
-      status: "pending",
-    });
-
-    // Notify admins via email
-    await notifyAdminsOfFlaggedContent(postId, post.author_id, reason);
-
-    return { success: true };
-  } catch (error) {
-    console.error("Flag post error:", error);
-    return { success: false, error: "Failed to flag post" };
-  }
-}
-
-/**
- * Create a user report
- */
-export async function createReport(input: {
-  reportedUserId?: string;
-  postId?: string;
-  subject: string;
-  comments?: string;
-}): Promise<{ success: boolean; reportId?: string; error?: string }> {
-  try {
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: "Unauthorized" };
-    }
-
-    // If reporting a post, get the author
-    let reportedUserId = input.reportedUserId;
-    if (input.postId && !reportedUserId) {
-      const { data: post } = await (supabase as any)
-        .from("posts")
-        .select("author_id")
-        .eq("id", input.postId)
-        .single();
-
-      if (post) {
-        reportedUserId = post.author_id;
-      }
-    }
-
-    if (!reportedUserId) {
-      return { success: false, error: "No user to report" };
-    }
-
-    // Can't report yourself
-    if (reportedUserId === user.id) {
-      return { success: false, error: "Cannot report yourself" };
-    }
-
-    const { data: report, error } = await (supabase as any)
-      .from("reports")
+    // Create flag (not report - flags are for posts)
+    const { data: flag, error } = await (supabase as any)
+      .from("flags")
       .insert({
-        reporter_id: user.id,
-        reported_user_id: reportedUserId,
-        post_id: input.postId || null,
-        subject: input.subject,
-        comments: input.comments || null,
-        source: "user_report",
+        flagger_id: null, // Auto-moderation has no flagger
+        post_id: postId,
+        subject,
+        comments: `[Auto-moderation] ${reason}`,
         status: "pending",
+        assigned_role: ROLES.JUNIOR_MOD,
       })
       .select("id")
       .single();
 
     if (error) {
-      console.error("Create report error:", error);
-      return { success: false, error: "Failed to create report" };
+      console.error("Create flag error:", error);
+      return { success: false, error: "Failed to create flag" };
     }
 
-    // Notify admins
-    await notifyAdminsOfReport(report.id);
+    // Notify staff
+    await notifyStaffOfFlaggedContent(postId, ROLES.JUNIOR_MOD);
 
-    return { success: true, reportId: report.id };
+    return { success: true, flagId: flag.id };
   } catch (error) {
-    console.error("Create report error:", error);
-    return { success: false, error: "An unexpected error occurred" };
+    console.error("Auto-flag post error:", error);
+    return { success: false, error: "Failed to flag post" };
   }
 }
 
 /**
- * Notify admins of flagged content (sends email)
+ * @deprecated Use autoFlagPost instead
+ * Kept for backwards compatibility
  */
-async function notifyAdminsOfFlaggedContent(
+export async function flagPostForReview(
   postId: string,
-  authorId: string,
-  reason: string
+  reason: string,
+  source: "auto_moderation" | "user_report" = "auto_moderation"
+): Promise<{ success: boolean; error?: string }> {
+  return autoFlagPost(postId, reason);
+}
+
+/**
+ * Notify staff of flagged content
+ */
+async function notifyStaffOfFlaggedContent(
+  postId: string,
+  roleLevel: number
 ): Promise<void> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
-    // Get admins (role >= 10)
-    const { data: admins } = await (supabase as any)
+    // Get staff at or above the role level
+    const { data: staff } = await (supabase as any)
       .from("profiles")
       .select("id")
-      .gte("role", 10);
+      .gte("role", roleLevel);
 
-    if (!admins || admins.length === 0) return;
+    if (!staff || staff.length === 0) return;
 
-    // Create in-app notification for each admin
-    const notifications = admins.map((admin: any) => ({
-      recipient_id: admin.id,
-      actor_id: authorId,
-      notification_type: "mention", // Reusing mention type for now
+    // Create in-app notification for each staff member
+    const notifications = staff.map((s: any) => ({
+      recipient_id: s.id,
+      notification_type: "mention", // Reusing mention type for moderation alerts
       post_id: postId,
       is_read: false,
     }));
 
     await (supabase as any).from("notifications").insert(notifications);
-
-    // TODO: Send email notification to admins
   } catch (error) {
-    console.error("Admin notification error:", error);
-  }
-}
-
-/**
- * Notify admins of new report
- */
-async function notifyAdminsOfReport(reportId: string): Promise<void> {
-  try {
-    const supabase = await createServerClient();
-
-    // Get admins (role >= 10)
-    const { data: admins } = await (supabase as any)
-      .from("profiles")
-      .select("id")
-      .gte("role", 10);
-
-    if (!admins || admins.length === 0) return;
-
-    // TODO: Send email notification to admins about new report
-  } catch (error) {
-    console.error("Admin report notification error:", error);
+    console.error("Staff notification error:", error);
   }
 }
 
@@ -241,7 +165,7 @@ export async function getUserPendingReports(): Promise<{
   count?: number;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -254,7 +178,7 @@ export async function getUserPendingReports(): Promise<{
       .from("reports")
       .select("*", { count: "exact", head: true })
       .eq("reported_user_id", user.id)
-      .in("status", ["pending", "reviewing"]);
+      .in("status", ["pending", "reviewing", "escalated"]);
 
     if (error) {
       return { success: false, hasPendingReports: false };

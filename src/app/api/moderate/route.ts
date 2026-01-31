@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { moderateContent, type ModerationResult } from "@/lib/sightengine/client";
 
 /**
@@ -8,7 +8,7 @@ import { moderateContent, type ModerationResult } from "@/lib/sightengine/client
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

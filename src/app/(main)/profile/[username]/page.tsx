@@ -343,19 +343,14 @@ export default function ProfilePage() {
         avatarUrl={profile.avatarUrl}
         headerUrl={profile.headerUrl}
         bio={profile.bio}
-        stats={stats}
         isOwnProfile={isOwnProfile}
         isFollowing={following}
-        showFollowers={profile.showFollowers || isOwnProfile}
-        showFollowing={profile.showFollowing || isOwnProfile}
         onFollow={handleFollow}
         onUnfollow={handleUnfollow}
         onSettings={() => router.push("/settings")}
         onBlock={handleBlock}
         onMute={handleMute}
         onShare={handleShare}
-        onFollowersClick={() => openFollowersModal("followers")}
-        onFollowingClick={() => openFollowersModal("following")}
         onAvatarClick={() => setAvatarModalOpen(true)}
       />
 

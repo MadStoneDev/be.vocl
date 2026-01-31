@@ -7,7 +7,8 @@ import {
   IconLoader2,
   IconAlertTriangle,
 } from "@tabler/icons-react";
-import { reportPost, type ReportReason } from "@/actions/reports";
+import { flagPost } from "@/actions/flags";
+import type { FlagSubject } from "@/types/database";
 
 interface ReportDialogProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ interface ReportDialogProps {
   onSuccess?: () => void;
 }
 
-const reportReasons: { value: ReportReason; label: string; description: string }[] = [
+const flagReasons: { value: FlagSubject; label: string; description: string }[] = [
   {
     value: "spam",
     label: "Spam",
@@ -28,29 +29,24 @@ const reportReasons: { value: ReportReason; label: string; description: string }
     description: "Targeting someone with harmful behavior",
   },
   {
-    value: "hate_speech",
-    label: "Hate speech",
-    description: "Attacks based on identity or protected characteristics",
+    value: "minor_safety",
+    label: "Child safety concern",
+    description: "Content that may harm or exploit minors",
   },
   {
-    value: "violence",
-    label: "Violence or threats",
-    description: "Threatening or promoting violence",
+    value: "non_consensual",
+    label: "Non-consensual content",
+    description: "Inappropriate or non-consensual intimate content",
   },
   {
-    value: "sexual_content",
-    label: "Sexual content",
-    description: "Inappropriate or non-consensual sexual content",
+    value: "illegal",
+    label: "Illegal content",
+    description: "Threatening, promoting violence, or illegal activity",
   },
   {
     value: "misinformation",
     label: "Misinformation",
     description: "False or misleading information",
-  },
-  {
-    value: "impersonation",
-    label: "Impersonation",
-    description: "Pretending to be someone else",
   },
   {
     value: "copyright",
@@ -71,26 +67,26 @@ export function ReportDialog({
   onSuccess,
 }: ReportDialogProps) {
   const [isPending, startTransition] = useTransition();
-  const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
+  const [selectedReason, setSelectedReason] = useState<FlagSubject | null>(null);
   const [details, setDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = () => {
     if (!selectedReason) {
-      setError("Please select a reason for your report");
+      setError("Please select a reason for your flag");
       return;
     }
 
     setError(null);
     startTransition(async () => {
-      const result = await reportPost(postId, selectedReason, details || undefined);
+      const result = await flagPost(postId, selectedReason, details || undefined);
 
       if (result.success) {
         setSubmitted(true);
         onSuccess?.();
       } else {
-        setError(result.error || "Failed to submit report");
+        setError(result.error || "Failed to submit flag");
       }
     });
   };
@@ -116,7 +112,7 @@ export function ReportDialog({
         <div className="flex items-center justify-between p-4 border-b border-white/5">
           <div className="flex items-center gap-2">
             <IconFlag size={20} className="text-vocl-like" />
-            <h2 className="font-semibold text-foreground">Report Post</h2>
+            <h2 className="font-semibold text-foreground">Flag Post</h2>
           </div>
           <button
             type="button"
@@ -136,11 +132,11 @@ export function ReportDialog({
                 <IconFlag size={32} className="text-green-500" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                Report Submitted
+                Flag Submitted
               </h3>
               <p className="text-foreground/60 text-sm mb-6">
                 Thank you for helping keep our community safe. We&apos;ll review
-                your report and take appropriate action.
+                this post and take appropriate action.
               </p>
               <button
                 type="button"
@@ -160,7 +156,7 @@ export function ReportDialog({
 
               {/* Reason selection */}
               <div className="space-y-2">
-                {reportReasons.map((reason) => (
+                {flagReasons.map((reason) => (
                   <button
                     key={reason.value}
                     type="button"
@@ -232,7 +228,7 @@ export function ReportDialog({
                     Submitting...
                   </>
                 ) : (
-                  "Submit Report"
+                  "Submit Flag"
                 )}
               </button>
             </div>

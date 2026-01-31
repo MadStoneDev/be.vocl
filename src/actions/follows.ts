@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 interface FollowResult {
   success: boolean;
@@ -13,7 +13,7 @@ interface FollowResult {
  */
 export async function followUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -83,7 +83,7 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
  */
 export async function unfollowUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -116,7 +116,7 @@ export async function unfollowUser(targetUserId: string): Promise<FollowResult> 
  */
 export async function isFollowing(targetUserId: string): Promise<boolean> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -145,7 +145,7 @@ export async function getFollowers(
   offset = 0
 ): Promise<{ success: boolean; followers?: any[]; total?: number; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { data, error, count } = await (supabase as any)
       .from("follows")
@@ -191,7 +191,7 @@ export async function getFollowing(
   offset = 0
 ): Promise<{ success: boolean; following?: any[]; total?: number; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { data, error, count } = await (supabase as any)
       .from("follows")
@@ -233,7 +233,7 @@ export async function getFollowing(
  */
 export async function blockUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -272,7 +272,7 @@ export async function blockUser(targetUserId: string): Promise<FollowResult> {
  */
 export async function unblockUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -309,7 +309,7 @@ export async function getFollowStatusBatch(
       return { success: true, followingIds: [] };
     }
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -344,7 +344,7 @@ export async function getFollowStatusBatch(
  */
 export async function muteUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -374,7 +374,7 @@ export async function muteUser(targetUserId: string): Promise<FollowResult> {
  */
 export async function unmuteUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

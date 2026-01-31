@@ -9,6 +9,15 @@ export type Json =
 export type PostType = "text" | "image" | "video" | "audio" | "gallery";
 export type PostStatus = "draft" | "published" | "queued" | "scheduled" | "deleted";
 export type NotificationType = "follow" | "like" | "comment" | "reblog" | "message" | "mention";
+export type LockStatus = "unlocked" | "restricted" | "banned";
+export type ReportSubject = "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "other";
+export type ReportSource = "user_report" | "auto_moderation" | "promise_declined";
+export type ReportStatus = "pending" | "reviewing" | "escalated" | "resolved_ban" | "resolved_restrict" | "resolved_dismissed";
+export type FlagSubject = "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "copyright" | "misinformation" | "other";
+export type FlagStatus = "pending" | "reviewing" | "escalated" | "resolved_removed" | "resolved_flagged" | "resolved_dismissed";
+export type AppealStatus = "pending" | "approved" | "denied" | "blocked";
+export type ModerationStatus = "pending" | "approved" | "rejected";
+export type ExportStatus = "pending" | "processing" | "completed" | "failed";
 
 export interface Database {
   public: {
@@ -35,6 +44,10 @@ export interface Database {
           queue_posts_per_day: number;
           queue_window_start: string;
           queue_window_end: string;
+          role: number;
+          lock_status: LockStatus;
+          lock_reason: string | null;
+          appeals_blocked: boolean;
         };
         Insert: {
           id: string;
@@ -57,6 +70,10 @@ export interface Database {
           queue_posts_per_day?: number;
           queue_window_start?: string;
           queue_window_end?: string;
+          role?: number;
+          lock_status?: LockStatus;
+          lock_reason?: string | null;
+          appeals_blocked?: boolean;
         };
         Update: {
           id?: string;
@@ -79,6 +96,10 @@ export interface Database {
           queue_posts_per_day?: number;
           queue_window_start?: string;
           queue_window_end?: string;
+          role?: number;
+          lock_status?: LockStatus;
+          lock_reason?: string | null;
+          appeals_blocked?: boolean;
         };
       };
       profile_links: {
@@ -438,6 +459,197 @@ export interface Database {
           created_at?: string;
         };
       };
+      reports: {
+        Row: {
+          id: string;
+          reporter_id: string | null;
+          reported_user_id: string;
+          post_id: string | null;
+          subject: ReportSubject;
+          comments: string | null;
+          source: ReportSource;
+          status: ReportStatus;
+          assigned_to: string | null;
+          assigned_role: number;
+          escalated_from: string | null;
+          escalated_by: string | null;
+          escalated_at: string | null;
+          escalation_reason: string | null;
+          resolved_by: string | null;
+          resolution_notes: string | null;
+          resolved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          reporter_id?: string | null;
+          reported_user_id: string;
+          post_id?: string | null;
+          subject: ReportSubject;
+          comments?: string | null;
+          source?: ReportSource;
+          status?: ReportStatus;
+          assigned_to?: string | null;
+          assigned_role?: number;
+          escalated_from?: string | null;
+          escalated_by?: string | null;
+          escalated_at?: string | null;
+          escalation_reason?: string | null;
+          resolved_by?: string | null;
+          resolution_notes?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          reporter_id?: string | null;
+          reported_user_id?: string;
+          post_id?: string | null;
+          subject?: ReportSubject;
+          comments?: string | null;
+          source?: ReportSource;
+          status?: ReportStatus;
+          assigned_to?: string | null;
+          assigned_role?: number;
+          escalated_from?: string | null;
+          escalated_by?: string | null;
+          escalated_at?: string | null;
+          escalation_reason?: string | null;
+          resolved_by?: string | null;
+          resolution_notes?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      flags: {
+        Row: {
+          id: string;
+          flagger_id: string | null;
+          post_id: string;
+          subject: FlagSubject;
+          comments: string | null;
+          status: FlagStatus;
+          assigned_to: string | null;
+          assigned_role: number;
+          escalated_from: string | null;
+          escalated_by: string | null;
+          escalated_at: string | null;
+          escalation_reason: string | null;
+          resolved_by: string | null;
+          resolution_notes: string | null;
+          resolved_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          flagger_id?: string | null;
+          post_id: string;
+          subject: FlagSubject;
+          comments?: string | null;
+          status?: FlagStatus;
+          assigned_to?: string | null;
+          assigned_role?: number;
+          escalated_from?: string | null;
+          escalated_by?: string | null;
+          escalated_at?: string | null;
+          escalation_reason?: string | null;
+          resolved_by?: string | null;
+          resolution_notes?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          flagger_id?: string | null;
+          post_id?: string;
+          subject?: FlagSubject;
+          comments?: string | null;
+          status?: FlagStatus;
+          assigned_to?: string | null;
+          assigned_role?: number;
+          escalated_from?: string | null;
+          escalated_by?: string | null;
+          escalated_at?: string | null;
+          escalation_reason?: string | null;
+          resolved_by?: string | null;
+          resolution_notes?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      appeals: {
+        Row: {
+          id: string;
+          user_id: string;
+          report_id: string | null;
+          reason: string;
+          status: AppealStatus;
+          reviewed_by: string | null;
+          review_notes: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          report_id?: string | null;
+          reason: string;
+          status?: AppealStatus;
+          reviewed_by?: string | null;
+          review_notes?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          report_id?: string | null;
+          reason?: string;
+          status?: AppealStatus;
+          reviewed_by?: string | null;
+          review_notes?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+      };
+      escalation_history: {
+        Row: {
+          id: string;
+          report_id: string | null;
+          flag_id: string | null;
+          from_role: number;
+          to_role: number;
+          escalated_by: string;
+          reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          report_id?: string | null;
+          flag_id?: string | null;
+          from_role: number;
+          to_role: number;
+          escalated_by: string;
+          reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          report_id?: string | null;
+          flag_id?: string | null;
+          from_role?: number;
+          to_role?: number;
+          escalated_by?: string;
+          reason?: string | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -536,4 +748,45 @@ export interface PostWithAuthor extends Post {
   has_reblogged?: boolean;
   original_post?: PostWithAuthor | null;
   reblogged_from?: PostWithAuthor | null;
+}
+
+// Moderation types
+export type Report = Database["public"]["Tables"]["reports"]["Row"];
+export type ReportInsert = Database["public"]["Tables"]["reports"]["Insert"];
+export type ReportUpdate = Database["public"]["Tables"]["reports"]["Update"];
+
+export type Flag = Database["public"]["Tables"]["flags"]["Row"];
+export type FlagInsert = Database["public"]["Tables"]["flags"]["Insert"];
+export type FlagUpdate = Database["public"]["Tables"]["flags"]["Update"];
+
+export type Appeal = Database["public"]["Tables"]["appeals"]["Row"];
+export type AppealInsert = Database["public"]["Tables"]["appeals"]["Insert"];
+export type AppealUpdate = Database["public"]["Tables"]["appeals"]["Update"];
+
+export type EscalationHistory = Database["public"]["Tables"]["escalation_history"]["Row"];
+export type EscalationHistoryInsert = Database["public"]["Tables"]["escalation_history"]["Insert"];
+
+// Extended report with related data
+export interface ReportWithDetails extends Report {
+  reporter?: Profile | null;
+  reported_user: Profile;
+  assigned_moderator?: Profile | null;
+  resolved_moderator?: Profile | null;
+  escalation_history?: EscalationHistory[];
+}
+
+// Extended flag with related data
+export interface FlagWithDetails extends Flag {
+  flagger?: Profile | null;
+  post: PostWithAuthor;
+  assigned_moderator?: Profile | null;
+  resolved_moderator?: Profile | null;
+  escalation_history?: EscalationHistory[];
+}
+
+// Extended appeal with related data
+export interface AppealWithDetails extends Appeal {
+  user: Profile;
+  report?: Report | null;
+  reviewer?: Profile | null;
 }

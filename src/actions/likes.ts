@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 interface LikeResult {
   success: boolean;
@@ -27,7 +27,7 @@ interface LikesData {
  */
 export async function toggleLike(postId: string): Promise<LikeResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -113,7 +113,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
  */
 export async function getLikesByPost(postId: string): Promise<LikesData> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -175,7 +175,7 @@ export async function hasUserLiked(postId: string): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

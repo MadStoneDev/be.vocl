@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -11,7 +11,7 @@ export async function acceptContentPromise(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -48,7 +48,7 @@ export async function hasAcceptedPromise(): Promise<{
   accepted: boolean;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -85,7 +85,7 @@ export async function requestDataExport(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -145,7 +145,7 @@ export async function getExportStatus(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -185,7 +185,7 @@ export async function deleteAccount(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -250,7 +250,7 @@ export async function deleteAccount(): Promise<{
 
     // Update auth user email (requires admin client)
     // Note: This requires service role key
-    const supabaseAdmin = await createServerClient();
+    const supabaseAdmin = await createClient();
     try {
       await (supabaseAdmin as any).auth.admin.updateUserById(user.id, {
         email: deletedEmail,
@@ -279,7 +279,7 @@ export async function getUserLockStatus(): Promise<{
   banReason?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

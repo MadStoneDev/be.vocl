@@ -21,6 +21,7 @@ const STATUS_OPTIONS = [
   { value: "all", label: "All" },
   { value: "pending", label: "Pending" },
   { value: "reviewing", label: "Reviewing" },
+  { value: "escalated", label: "Escalated" },
   { value: "resolved_ban", label: "Resolved (Ban)" },
   { value: "resolved_restrict", label: "Resolved (Restrict)" },
   { value: "resolved_dismissed", label: "Dismissed" },

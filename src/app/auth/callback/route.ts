@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { type EmailOtpType } from "@supabase/supabase-js";
 
 export async function GET(request: Request) {
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   // Where to redirect after auth
   const next = searchParams.get("next") ?? "/feed";
 
-  const supabase = await createServerClient();
+  const supabase = await createClient();
 
   // Handle PKCE code exchange (OAuth)
   if (code) {

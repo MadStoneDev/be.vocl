@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 interface CommentResult {
   success: boolean;
@@ -36,7 +36,7 @@ export async function createComment(
   content: string
 ): Promise<CommentResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -104,7 +104,7 @@ export async function createComment(
  */
 export async function deleteComment(commentId: string): Promise<CommentResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -159,7 +159,7 @@ export async function deleteComment(commentId: string): Promise<CommentResult> {
  */
 export async function getCommentsByPost(postId: string): Promise<CommentsData> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -226,7 +226,7 @@ export async function getCommentCount(postId: string): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { count, error } = await (supabase as any)
       .from("comments")

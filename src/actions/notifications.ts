@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 type NotificationType = "follow" | "like" | "comment" | "reblog" | "mention" | "message";
 
@@ -39,7 +39,7 @@ export async function getNotifications(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -145,7 +145,7 @@ export async function getUnreadCount(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -176,7 +176,7 @@ export async function getUnreadCount(): Promise<{
  */
 export async function markAsRead(notificationId: string): Promise<NotificationResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -208,7 +208,7 @@ export async function markAsRead(notificationId: string): Promise<NotificationRe
  */
 export async function markAllAsRead(): Promise<NotificationResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -240,7 +240,7 @@ export async function markAllAsRead(): Promise<NotificationResult> {
  */
 export async function deleteNotification(notificationId: string): Promise<NotificationResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -272,7 +272,7 @@ export async function deleteNotification(notificationId: string): Promise<Notifi
  */
 export async function clearAllNotifications(): Promise<NotificationResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

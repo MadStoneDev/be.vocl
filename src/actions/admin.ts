@@ -1,17 +1,24 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import {
+  ROLES,
+  ROLE_NAMES,
+  canModerateUser,
+  canAssignRole,
+  getAssignableRoles,
+} from "@/constants/roles";
 
 /**
- * Check if current user is admin
+ * Check if current user has required role level
  */
-async function requireAdmin(minRole: number = 5): Promise<{
+async function requireRole(minRole: number = ROLES.MODERATOR): Promise<{
   authorized: boolean;
   userId?: string;
   role?: number;
 }> {
-  const supabase = await createServerClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -75,13 +82,13 @@ export async function getReports(options?: {
   total?: number;
   error?: string;
 }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
@@ -165,13 +172,13 @@ export async function assignReport(
   reportId: string,
   assigneeId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { error } = await (supabase as any)
       .from("reports")
@@ -198,13 +205,13 @@ export async function resolveReport(
   resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed",
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get report details
     const { data: report } = await (supabase as any)
@@ -296,13 +303,13 @@ export async function getUsers(options?: {
   total?: number;
   error?: string;
 }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
@@ -369,13 +376,13 @@ export async function banUser(
   reason: string,
   logIp?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin(10); // Require admin
+  const auth = await requireRole(10); // Require admin
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Update user profile
     await (supabase as any)
@@ -408,13 +415,13 @@ export async function banUser(
 export async function restrictUser(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     await (supabase as any)
       .from("profiles")
@@ -434,13 +441,13 @@ export async function restrictUser(
 export async function unlockUser(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     await (supabase as any)
       .from("profiles")
@@ -461,24 +468,45 @@ export async function unlockUser(
 
 export async function setUserRole(
   userId: string,
-  role: number
+  newRole: number
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin(10); // Only admins can change roles
-  if (!auth.authorized) {
+  const auth = await requireRole(ROLES.ADMIN); // Only admins can change roles
+  if (!auth.authorized || !auth.role) {
     return { success: false, error: "Unauthorized" };
   }
 
-  // Can't demote yourself
+  // Can't change your own role
   if (userId === auth.userId) {
     return { success: false, error: "Cannot change your own role" };
   }
 
+  // Check if admin can assign this role level
+  if (!canAssignRole(auth.role, newRole)) {
+    return { success: false, error: `Cannot assign role ${ROLE_NAMES[newRole as keyof typeof ROLE_NAMES] || newRole}` };
+  }
+
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
+
+    // Get target user's current role
+    const { data: targetUser } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (!targetUser) {
+      return { success: false, error: "User not found" };
+    }
+
+    // Can't modify users with equal or higher role
+    if (targetUser.role >= auth.role) {
+      return { success: false, error: "Cannot modify a user with equal or higher role" };
+    }
 
     await (supabase as any)
       .from("profiles")
-      .update({ role })
+      .update({ role: newRole })
       .eq("id", userId);
 
     revalidatePath("/admin/users");
@@ -487,6 +515,25 @@ export async function setUserRole(
     console.error("Set role error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
+}
+
+/**
+ * Get assignable roles for current user
+ */
+export async function getAssignableRolesForCurrentUser(): Promise<{
+  success: boolean;
+  roles?: { value: number; label: string }[];
+  error?: string;
+}> {
+  const auth = await requireRole(ROLES.ADMIN);
+  if (!auth.authorized || !auth.role) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  return {
+    success: true,
+    roles: getAssignableRoles(auth.role),
+  };
 }
 
 // ============================================================================
@@ -523,13 +570,13 @@ export async function getAppeals(options?: {
   total?: number;
   error?: string;
 }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
@@ -600,13 +647,13 @@ export async function reviewAppeal(
   decision: "approved" | "denied" | "blocked",
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const auth = await requireAdmin();
+  const auth = await requireRole();
   if (!auth.authorized) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get appeal details
     const { data: appeal } = await (supabase as any)
@@ -661,34 +708,56 @@ export async function getAdminStats(): Promise<{
   success: boolean;
   stats?: {
     pendingReports: number;
+    pendingFlags: number;
     pendingAppeals: number;
+    escalatedItems: number;
     bannedUsers: number;
     restrictedUsers: number;
   };
   error?: string;
 }> {
-  const auth = await requireAdmin();
-  if (!auth.authorized) {
+  const auth = await requireRole();
+  if (!auth.authorized || !auth.role) {
     return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
+    // Filter by role level - staff can only see items at their level or below
     const [
       { count: pendingReports },
+      { count: pendingFlags },
       { count: pendingAppeals },
+      { count: escalatedReports },
+      { count: escalatedFlags },
       { count: bannedUsers },
       { count: restrictedUsers },
     ] = await Promise.all([
       (supabase as any)
         .from("reports")
         .select("*", { count: "exact", head: true })
-        .eq("status", "pending"),
+        .eq("status", "pending")
+        .lte("assigned_role", auth.role),
+      (supabase as any)
+        .from("flags")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending")
+        .lte("assigned_role", auth.role),
       (supabase as any)
         .from("appeals")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending"),
+      (supabase as any)
+        .from("reports")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "escalated")
+        .lte("assigned_role", auth.role),
+      (supabase as any)
+        .from("flags")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "escalated")
+        .lte("assigned_role", auth.role),
       (supabase as any)
         .from("profiles")
         .select("*", { count: "exact", head: true })
@@ -703,7 +772,9 @@ export async function getAdminStats(): Promise<{
       success: true,
       stats: {
         pendingReports: pendingReports || 0,
+        pendingFlags: pendingFlags || 0,
         pendingAppeals: pendingAppeals || 0,
+        escalatedItems: (escalatedReports || 0) + (escalatedFlags || 0),
         bannedUsers: bannedUsers || 0,
         restrictedUsers: restrictedUsers || 0,
       },

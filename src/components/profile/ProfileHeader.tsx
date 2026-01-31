@@ -15,24 +15,15 @@ import {
 } from "@tabler/icons-react";
 import { VerificationBadge } from "@/components/payments";
 
-interface ProfileStats {
-  posts: number;
-  followers: number;
-  following: number;
-}
-
 interface ProfileHeaderProps {
   username: string;
   displayName?: string;
   avatarUrl?: string;
   headerUrl?: string;
   bio?: string;
-  stats: ProfileStats;
   isOwnProfile: boolean;
   isFollowing: boolean;
   isVerified?: boolean;
-  showFollowers: boolean;
-  showFollowing: boolean;
   onFollow?: () => Promise<void>;
   onUnfollow?: () => Promise<void>;
   onSettings?: () => void;
@@ -40,8 +31,6 @@ interface ProfileHeaderProps {
   onMute?: () => void;
   onShare?: () => void;
   onTip?: () => void;
-  onFollowersClick?: () => void;
-  onFollowingClick?: () => void;
   onAvatarClick?: () => void;
 }
 
@@ -51,12 +40,9 @@ export function ProfileHeader({
   avatarUrl,
   headerUrl,
   bio,
-  stats,
   isOwnProfile,
   isFollowing,
   isVerified,
-  showFollowers,
-  showFollowing,
   onFollow,
   onUnfollow,
   onSettings,
@@ -64,8 +50,6 @@ export function ProfileHeader({
   onMute,
   onShare,
   onTip,
-  onFollowersClick,
-  onFollowingClick,
   onAvatarClick,
 }: ProfileHeaderProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -82,12 +66,6 @@ export function ProfileHeader({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
   };
 
   return (
@@ -256,50 +234,6 @@ export function ProfileHeader({
             {bio}
           </p>
         )}
-
-        {/* Stats */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/5">
-          <div className="text-center">
-            <p className="text-lg sm:text-xl font-bold text-foreground">
-              {formatNumber(stats.posts)}
-            </p>
-            <p className="text-xs sm:text-sm text-foreground/50">Posts</p>
-          </div>
-
-          {showFollowers ? (
-            <button
-              onClick={onFollowersClick}
-              className="text-center hover:opacity-80 transition-opacity"
-            >
-              <p className="text-lg sm:text-xl font-bold text-foreground">
-                {formatNumber(stats.followers)}
-              </p>
-              <p className="text-xs sm:text-sm text-foreground/50">Followers</p>
-            </button>
-          ) : (
-            <div className="text-center opacity-50">
-              <p className="text-lg sm:text-xl font-bold text-foreground">-</p>
-              <p className="text-xs sm:text-sm text-foreground/50">Followers</p>
-            </div>
-          )}
-
-          {showFollowing ? (
-            <button
-              onClick={onFollowingClick}
-              className="text-center hover:opacity-80 transition-opacity"
-            >
-              <p className="text-lg sm:text-xl font-bold text-foreground">
-                {formatNumber(stats.following)}
-              </p>
-              <p className="text-xs sm:text-sm text-foreground/50">Following</p>
-            </button>
-          ) : (
-            <div className="text-center opacity-50">
-              <p className="text-lg sm:text-xl font-bold text-foreground">-</p>
-              <p className="text-xs sm:text-sm text-foreground/50">Following</p>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

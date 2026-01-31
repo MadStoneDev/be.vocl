@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Sensitive keywords that may contain NSFW content
 const SENSITIVE_KEYWORDS = [
@@ -55,7 +55,7 @@ export interface SearchResult {
 export async function checkSensitiveSearch(
   query: string
 ): Promise<{ isSensitive: boolean; userAllowsSensitive: boolean }> {
-  const supabase = await createServerClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -89,7 +89,7 @@ export async function searchUsers(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -181,7 +181,7 @@ export async function searchTags(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const limit = options?.limit ?? 20;
     const offset = options?.offset ?? 0;
 
@@ -233,7 +233,7 @@ export async function searchPosts(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -404,7 +404,7 @@ export async function getPostsByTag(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Find the tag
     const { data: tag, error: tagError } = await supabase
@@ -451,7 +451,7 @@ export async function getTrendingTags(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { data: tags, error } = await supabase
       .from("tags")
@@ -486,7 +486,7 @@ export async function getSuggestedUsers(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { PaddleServer, TIP_PRODUCTS, VERIFICATION_PRODUCT } from "@/lib/paddle/client";
 
 interface PaymentResult {
@@ -19,7 +19,7 @@ export async function initiateTip(
   message?: string
 ): Promise<PaymentResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -77,7 +77,7 @@ export async function initiateTip(
  */
 export async function completeTip(transactionId: string): Promise<PaymentResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Update tip status
     const { data: tip, error } = await (supabase as any)
@@ -133,7 +133,7 @@ export async function getTipsReceived(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -204,7 +204,7 @@ export async function getTipsReceived(
  */
 export async function initiateVerification(): Promise<PaymentResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -271,7 +271,7 @@ export async function completeVerification(
   transactionId: string
 ): Promise<PaymentResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Update verification status
     const { data: verification, error } = await (supabase as any)
@@ -317,7 +317,7 @@ export async function checkVerificationStatus(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

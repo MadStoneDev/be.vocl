@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { moderateContent } from "@/lib/sightengine/client";
 import type {
   PostType,
@@ -29,7 +29,7 @@ interface CreatePostResult {
 
 export async function createPost(input: CreatePostInput): Promise<CreatePostResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -221,7 +221,7 @@ interface UpdatePostInput {
 
 export async function updatePost(input: UpdatePostInput): Promise<CreatePostResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -278,7 +278,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
 
 export async function deletePost(postId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -431,7 +431,7 @@ export async function getPostsByUser(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -586,7 +586,7 @@ export async function getLikedPosts(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -742,7 +742,7 @@ export async function getCommentedPosts(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -894,7 +894,7 @@ export async function getFeedPosts(options?: {
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 

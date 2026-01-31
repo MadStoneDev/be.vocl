@@ -12,14 +12,6 @@ interface Profile {
   role: number;
 }
 
-interface ProfileRow {
-  id: string;
-  username: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  role: number | null;
-}
-
 interface UseAuthReturn {
   user: User | null;
   profile: Profile | null;
@@ -27,114 +19,77 @@ interface UseAuthReturn {
   isAuthenticated: boolean;
 }
 
-// Cache the supabase client
-let cachedClient: ReturnType<typeof createClient> | null = null;
-function getSupabaseClient() {
-  if (!cachedClient) {
-    cachedClient = createClient();
-  }
-  return cachedClient;
-}
-
-/**
- * Hook for accessing authentication state and current user profile
- */
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const fetchedRef = useRef(false);
+  const profileFetchedRef = useRef(false);
 
   useEffect(() => {
-    // Prevent double-fetch in strict mode
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
+    const supabase = createClient();
+    let isMounted = true;
 
-    const supabase = getSupabaseClient();
+    const fetchProfile = async (userId: string): Promise<Profile | null> => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_url, role")
+          .eq("id", userId)
+          .maybeSingle();
 
-    // Fetch profile helper
-    const fetchProfile = async (userId: string) => {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, username, display_name, avatar_url, role")
-        .eq("id", userId)
-        .single<ProfileRow>();
+        if (error) {
+          console.error("[useAuth] Profile fetch error:", error);
+          return null;
+        }
 
-      if (profileError) {
-        console.error("Profile fetch error:", profileError);
+        if (data) {
+          return {
+            id: data.id,
+            username: data.username,
+            displayName: data.display_name || undefined,
+            avatarUrl: data.avatar_url || undefined,
+            role: data.role ?? 0,
+          };
+        }
+        return null;
+      } catch (err) {
+        console.error("[useAuth] Profile fetch exception:", err);
         return null;
       }
-
-      if (profileData) {
-        return {
-          id: profileData.id,
-          username: profileData.username,
-          displayName: profileData.display_name || undefined,
-          avatarUrl: profileData.avatar_url || undefined,
-          role: profileData.role ?? 0,
-        };
-      }
-      return null;
     };
 
-    // Get initial session
-    const getSession = async () => {
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError) {
-          console.error("Auth error:", authError);
-          setIsLoading(false);
-          return;
-        }
-
-        setUser(user);
-
-        // Set loading false immediately after auth check
-        // Profile will load in parallel
-        setIsLoading(false);
-
-        if (user) {
-          const profileData = await fetchProfile(user.id);
-          if (profileData) {
-            setProfile(profileData);
-          }
-        }
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-        setIsLoading(false);
-      }
-    };
-
-    // Add timeout fallback
-    const timeoutId = setTimeout(() => {
-      console.warn("Auth check timed out");
-      setIsLoading(false);
-    }, 5000);
-
-    getSession().finally(() => clearTimeout(timeoutId));
-
-    // Listen for auth changes
+    // Use onAuthStateChange for all auth events (including initial)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Skip INITIAL_SESSION as we handle it above
-        if (event === "INITIAL_SESSION") return;
+        if (!isMounted) return;
 
         const newUser = session?.user ?? null;
         setUser(newUser);
 
-        if (newUser) {
-          const profileData = await fetchProfile(newUser.id);
-          if (profileData) {
-            setProfile(profileData);
-          }
-        } else {
+        if (newUser && !profileFetchedRef.current) {
+          profileFetchedRef.current = true;
+
+          // Defer to break out of onAuthStateChange callback context
+          // This prevents deadlocks when calling Supabase methods inside the callback
+          setTimeout(async () => {
+            const profileData = await fetchProfile(newUser.id);
+            if (isMounted) {
+              setProfile(profileData);
+              setIsLoading(false);
+            }
+          }, 0);
+        } else if (!newUser) {
+          profileFetchedRef.current = false;
           setProfile(null);
+          setIsLoading(false);
+        } else {
+          setIsLoading(false);
         }
       }
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);

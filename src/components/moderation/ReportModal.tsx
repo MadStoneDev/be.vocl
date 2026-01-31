@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { IconX, IconFlag, IconCheck } from "@tabler/icons-react";
-import { createReport } from "@/actions/moderation";
+import { reportUser } from "@/actions/reports";
+import { flagPost } from "@/actions/flags";
+import type { ReportSubject, FlagSubject } from "@/types/database";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -12,7 +14,8 @@ interface ReportModalProps {
   reportedUsername?: string;
 }
 
-const REPORT_SUBJECTS = [
+// Subjects for user reports
+const USER_REPORT_SUBJECTS = [
   {
     value: "minor_safety",
     label: "Harmful content involving minors",
@@ -45,6 +48,26 @@ const REPORT_SUBJECTS = [
   },
 ];
 
+// Subjects for post flags (includes additional options)
+const POST_FLAG_SUBJECTS = [
+  ...USER_REPORT_SUBJECTS.slice(0, -1), // All except "other"
+  {
+    value: "copyright",
+    label: "Copyright infringement",
+    description: "Content that violates intellectual property rights",
+  },
+  {
+    value: "misinformation",
+    label: "Misinformation",
+    description: "False or misleading information",
+  },
+  {
+    value: "other",
+    label: "Other",
+    description: "Something else not listed above",
+  },
+];
+
 export function ReportModal({
   isOpen,
   onClose,
@@ -58,18 +81,37 @@ export function ReportModal({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Determine if this is a post flag or user report
+  const isPostFlag = !!postId;
+  const subjects = isPostFlag ? POST_FLAG_SUBJECTS : USER_REPORT_SUBJECTS;
+
   const handleSubmit = async () => {
     if (!selectedSubject) return;
 
     setIsSubmitting(true);
     setError(null);
 
-    const result = await createReport({
-      reportedUserId,
-      postId,
-      subject: selectedSubject,
-      comments: comments.trim() || undefined,
-    });
+    let result;
+
+    if (isPostFlag) {
+      // Flag the post
+      result = await flagPost(
+        postId,
+        selectedSubject as FlagSubject,
+        comments.trim() || undefined
+      );
+    } else if (reportedUserId) {
+      // Report the user
+      result = await reportUser(
+        reportedUserId,
+        selectedSubject as ReportSubject,
+        comments.trim() || undefined
+      );
+    } else {
+      setError("No content to report");
+      setIsSubmitting(false);
+      return;
+    }
 
     if (result.success) {
       setSubmitted(true);
@@ -105,7 +147,13 @@ export function ReportModal({
           <div className="flex items-center gap-2">
             <IconFlag size={20} className="text-vocl-like" />
             <h2 className="text-lg font-semibold text-foreground">
-              {submitted ? "Report Submitted" : "Report Content"}
+              {submitted
+                ? isPostFlag
+                  ? "Flag Submitted"
+                  : "Report Submitted"
+                : isPostFlag
+                  ? "Flag Post"
+                  : "Report User"}
             </h2>
           </div>
           <button
@@ -148,7 +196,7 @@ export function ReportModal({
                 <label className="text-sm font-medium text-foreground">
                   What's the issue?
                 </label>
-                {REPORT_SUBJECTS.map((subject) => (
+                {subjects.map((subject) => (
                   <button
                     key={subject.value}
                     onClick={() => setSelectedSubject(subject.value)}

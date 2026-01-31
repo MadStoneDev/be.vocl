@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
 
 /**
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     console.log("Paddle webhook received:", eventType);
 
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     switch (eventType) {
       case "transaction.completed": {

@@ -77,11 +77,17 @@ export function useChat(currentUserId?: string): UseChatReturn {
     setIsLoading(true);
     setError(null);
 
-    const result = await getConversations();
-    if (result.success && result.conversations) {
-      setConversations(result.conversations);
-    } else {
-      setError(result.error || "Failed to load conversations");
+    try {
+      const result = await getConversations();
+      if (result.success && result.conversations) {
+        setConversations(result.conversations);
+      } else {
+        console.error("Get conversations error:", result.error);
+        setError(result.error || "Failed to load conversations");
+      }
+    } catch (err) {
+      console.error("Get conversations exception:", err);
+      setError("Failed to load conversations");
     }
 
     setIsLoading(false);

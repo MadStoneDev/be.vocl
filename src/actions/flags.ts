@@ -2,44 +2,47 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
-import type { ReportSubject, ReportStatus } from "@/types/database";
+import type { FlagSubject, FlagStatus } from "@/types/database";
 
-interface ReportResult {
+interface FlagResult {
   success: boolean;
-  reportId?: string;
+  flagId?: string;
   error?: string;
 }
 
-interface ReportListResult {
+interface FlagListResult {
   success: boolean;
-  reports?: ReportWithUser[];
+  flags?: FlagWithPost[];
   error?: string;
 }
 
-interface ReportWithUser {
+interface FlagWithPost {
   id: string;
-  reporter_id: string | null;
-  reported_user_id: string;
-  subject: ReportSubject;
+  flagger_id: string | null;
+  post_id: string;
+  subject: FlagSubject;
   comments: string | null;
-  source: string;
-  status: ReportStatus;
+  status: FlagStatus;
   assigned_to: string | null;
   assigned_role: number;
   escalated_at: string | null;
   escalation_reason: string | null;
   created_at: string;
   updated_at: string;
-  reporter?: {
+  flagger?: {
     id: string;
     username: string;
     avatar_url: string | null;
   } | null;
-  reported_user: {
+  post: {
     id: string;
-    username: string;
-    avatar_url: string | null;
-    lock_status: string;
+    post_type: string;
+    content: any;
+    author: {
+      id: string;
+      username: string;
+      avatar_url: string | null;
+    };
   };
   assigned_moderator?: {
     id: string;
@@ -48,14 +51,13 @@ interface ReportWithUser {
 }
 
 /**
- * Report a user (for user-level issues like harassment, impersonation, etc.)
- * For post-specific issues, use flagPost instead
+ * Flag a post (user-initiated)
  */
-export async function reportUser(
-  userId: string,
-  subject: ReportSubject,
+export async function flagPost(
+  postId: string,
+  subject: FlagSubject,
   comments?: string
-): Promise<ReportResult> {
+): Promise<FlagResult> {
   try {
     const supabase = await createClient();
     const {
@@ -66,32 +68,42 @@ export async function reportUser(
       return { success: false, error: "Unauthorized" };
     }
 
-    if (userId === user.id) {
-      return { success: false, error: "You cannot report yourself" };
-    }
-
-    // Check if user already reported this user
-    const { data: existingReport } = await (supabase as any)
-      .from("reports")
+    // Check if user already flagged this post
+    const { data: existingFlag } = await (supabase as any)
+      .from("flags")
       .select("id")
-      .eq("reporter_id", user.id)
-      .eq("reported_user_id", userId)
-      .in("status", ["pending", "reviewing", "escalated"])
+      .eq("flagger_id", user.id)
+      .eq("post_id", postId)
       .single();
 
-    if (existingReport) {
-      return { success: false, error: "You have already reported this user" };
+    if (existingFlag) {
+      return { success: false, error: "You have already flagged this post" };
     }
 
-    // Create report - starts at Junior Mod level
-    const { data: report, error } = await (supabase as any)
-      .from("reports")
+    // Get post info
+    const { data: post } = await (supabase as any)
+      .from("posts")
+      .select("author_id")
+      .eq("id", postId)
+      .single();
+
+    if (!post) {
+      return { success: false, error: "Post not found" };
+    }
+
+    // Can't flag your own post
+    if (post.author_id === user.id) {
+      return { success: false, error: "You cannot flag your own post" };
+    }
+
+    // Create flag - starts at Junior Mod level
+    const { data: flag, error } = await (supabase as any)
+      .from("flags")
       .insert({
-        reporter_id: user.id,
-        reported_user_id: userId,
+        flagger_id: user.id,
+        post_id: postId,
         subject,
         comments: comments || null,
-        source: "user_report",
         status: "pending",
         assigned_role: ROLES.JUNIOR_MOD,
       })
@@ -99,28 +111,28 @@ export async function reportUser(
       .single();
 
     if (error) {
-      console.error("Report error:", error);
-      return { success: false, error: "Failed to submit report" };
+      console.error("Flag error:", error);
+      return { success: false, error: "Failed to submit flag" };
     }
 
-    // Notify staff
-    await notifyStaffOfReport(report.id, ROLES.JUNIOR_MOD);
+    // Notify staff at appropriate level
+    await notifyStaffOfFlag(flag.id, ROLES.JUNIOR_MOD);
 
-    return { success: true, reportId: report.id };
+    return { success: true, flagId: flag.id };
   } catch (error) {
-    console.error("Report error:", error);
+    console.error("Flag error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
 
 /**
- * Get reports for moderation (filtered by role level)
+ * Get flags for moderation (filtered by role level)
  */
-export async function getReports(
-  status?: ReportStatus | ReportStatus[],
+export async function getFlags(
+  status?: FlagStatus | FlagStatus[],
   limit = 50,
   offset = 0
-): Promise<ReportListResult> {
+): Promise<FlagListResult> {
   try {
     const supabase = await createClient();
     const {
@@ -143,12 +155,15 @@ export async function getReports(
     }
 
     let query = (supabase as any)
-      .from("reports")
+      .from("flags")
       .select(`
         *,
-        reporter:profiles!reports_reporter_id_fkey(id, username, avatar_url),
-        reported_user:profiles!reports_reported_user_id_fkey(id, username, avatar_url, lock_status),
-        assigned_moderator:profiles!reports_assigned_to_fkey(id, username)
+        flagger:profiles!flags_flagger_id_fkey(id, username, avatar_url),
+        post:posts!flags_post_id_fkey(
+          id, post_type, content,
+          author:profiles!posts_author_id_fkey(id, username, avatar_url)
+        ),
+        assigned_moderator:profiles!flags_assigned_to_fkey(id, username)
       `)
       .lte("assigned_role", profile.role)
       .order("created_at", { ascending: false })
@@ -162,25 +177,25 @@ export async function getReports(
       }
     }
 
-    const { data: reports, error } = await query;
+    const { data: flags, error } = await query;
 
     if (error) {
-      console.error("Get reports error:", error);
-      return { success: false, error: "Failed to fetch reports" };
+      console.error("Get flags error:", error);
+      return { success: false, error: "Failed to fetch flags" };
     }
 
-    return { success: true, reports };
+    return { success: true, flags };
   } catch (error) {
-    console.error("Get reports error:", error);
+    console.error("Get flags error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
 
 /**
- * Assign a report to self
+ * Assign a flag to self
  */
-export async function claimReport(
-  reportId: string
+export async function claimFlag(
+  flagId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
@@ -203,61 +218,50 @@ export async function claimReport(
       return { success: false, error: "Insufficient permissions" };
     }
 
-    // Get report to check role requirement
-    const { data: report } = await (supabase as any)
-      .from("reports")
-      .select("assigned_role, status, reported_user_id")
-      .eq("id", reportId)
+    // Get flag to check role requirement
+    const { data: flag } = await (supabase as any)
+      .from("flags")
+      .select("assigned_role, status")
+      .eq("id", flagId)
       .single();
 
-    if (!report) {
-      return { success: false, error: "Report not found" };
+    if (!flag) {
+      return { success: false, error: "Flag not found" };
     }
 
-    if (profile.role < report.assigned_role) {
-      return { success: false, error: "This report requires a higher role level" };
+    if (profile.role < flag.assigned_role) {
+      return { success: false, error: "This flag requires a higher role level" };
     }
 
-    if (report.status !== "pending" && report.status !== "escalated") {
-      return { success: false, error: "Report is not available to claim" };
-    }
-
-    // Get reported user's role to check if mod can handle them
-    const { data: reportedUser } = await (supabase as any)
-      .from("profiles")
-      .select("role")
-      .eq("id", report.reported_user_id)
-      .single();
-
-    if (reportedUser && !canModerateUser(profile.role, reportedUser.role)) {
-      return { success: false, error: "Cannot moderate a user with equal or higher role" };
+    if (flag.status !== "pending" && flag.status !== "escalated") {
+      return { success: false, error: "Flag is not available to claim" };
     }
 
     const { error } = await (supabase as any)
-      .from("reports")
+      .from("flags")
       .update({
         assigned_to: user.id,
         status: "reviewing",
       })
-      .eq("id", reportId);
+      .eq("id", flagId);
 
     if (error) {
-      return { success: false, error: "Failed to claim report" };
+      return { success: false, error: "Failed to claim flag" };
     }
 
     return { success: true };
   } catch (error) {
-    console.error("Claim report error:", error);
+    console.error("Claim flag error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
 
 /**
- * Resolve a report
+ * Resolve a flag
  */
-export async function resolveReport(
-  reportId: string,
-  resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed",
+export async function resolveFlag(
+  flagId: string,
+  resolution: "resolved_removed" | "resolved_flagged" | "resolved_dismissed",
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -281,78 +285,71 @@ export async function resolveReport(
       return { success: false, error: "Insufficient permissions" };
     }
 
-    // Get report details
-    const { data: report } = await (supabase as any)
-      .from("reports")
-      .select("assigned_role, assigned_to, reported_user_id, status")
-      .eq("id", reportId)
+    // Get flag details
+    const { data: flag } = await (supabase as any)
+      .from("flags")
+      .select("assigned_role, assigned_to, post_id, status")
+      .eq("id", flagId)
       .single();
 
-    if (!report) {
-      return { success: false, error: "Report not found" };
+    if (!flag) {
+      return { success: false, error: "Flag not found" };
     }
 
-    if (profile.role < report.assigned_role) {
-      return { success: false, error: "This report requires a higher role level" };
+    if (profile.role < flag.assigned_role) {
+      return { success: false, error: "This flag requires a higher role level" };
     }
 
-    // Get reported user's role
-    const { data: reportedUser } = await (supabase as any)
-      .from("profiles")
-      .select("role")
-      .eq("id", report.reported_user_id)
-      .single();
-
-    if (reportedUser && !canModerateUser(profile.role, reportedUser.role)) {
-      return { success: false, error: "Cannot moderate a user with equal or higher role" };
-    }
-
-    // Update report
+    // Update flag
     const { error } = await (supabase as any)
-      .from("reports")
+      .from("flags")
       .update({
         status: resolution,
         resolved_by: user.id,
         resolution_notes: notes || null,
         resolved_at: new Date().toISOString(),
       })
-      .eq("id", reportId);
+      .eq("id", flagId);
 
     if (error) {
-      return { success: false, error: "Failed to resolve report" };
+      return { success: false, error: "Failed to resolve flag" };
     }
 
-    // Apply action to the user
-    if (resolution === "resolved_ban") {
+    // If resolved_removed, update the post moderation status
+    if (resolution === "resolved_removed") {
       await (supabase as any)
-        .from("profiles")
+        .from("posts")
         .update({
-          lock_status: "banned",
-          banned_at: new Date().toISOString(),
-          ban_reason: notes || "Banned due to report",
+          moderation_status: "removed",
+          moderation_reason: notes || "Removed due to flag",
+          moderated_at: new Date().toISOString(),
+          moderated_by: user.id,
         })
-        .eq("id", report.reported_user_id);
-    } else if (resolution === "resolved_restrict") {
+        .eq("id", flag.post_id);
+    } else if (resolution === "resolved_flagged") {
       await (supabase as any)
-        .from("profiles")
+        .from("posts")
         .update({
-          lock_status: "restricted",
+          moderation_status: "flagged",
+          moderation_reason: notes || "Content flagged",
+          moderated_at: new Date().toISOString(),
+          moderated_by: user.id,
         })
-        .eq("id", report.reported_user_id);
+        .eq("id", flag.post_id);
     }
 
     return { success: true };
   } catch (error) {
-    console.error("Resolve report error:", error);
+    console.error("Resolve flag error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
 
 /**
- * Escalate a report to a higher role level
+ * Escalate a flag to a higher role level
  */
-export async function escalateReport(
-  reportId: string,
+export async function escalateFlag(
+  flagId: string,
   targetRole: number,
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -383,62 +380,62 @@ export async function escalateReport(
       return { success: false, error: "Invalid escalation target" };
     }
 
-    // Get report
-    const { data: report } = await (supabase as any)
-      .from("reports")
+    // Get flag
+    const { data: flag } = await (supabase as any)
+      .from("flags")
       .select("assigned_role, status")
-      .eq("id", reportId)
+      .eq("id", flagId)
       .single();
 
-    if (!report) {
-      return { success: false, error: "Report not found" };
+    if (!flag) {
+      return { success: false, error: "Flag not found" };
     }
 
-    if (targetRole <= report.assigned_role) {
+    if (targetRole <= flag.assigned_role) {
       return { success: false, error: "Can only escalate to a higher role" };
     }
 
-    // Update report
+    // Update flag
     const { error } = await (supabase as any)
-      .from("reports")
+      .from("flags")
       .update({
         status: "escalated",
         assigned_role: targetRole,
-        assigned_to: null,
+        assigned_to: null, // Clear assignment so someone at higher level can claim
         escalated_by: user.id,
         escalated_at: new Date().toISOString(),
         escalation_reason: reason,
       })
-      .eq("id", reportId);
+      .eq("id", flagId);
 
     if (error) {
-      return { success: false, error: "Failed to escalate report" };
+      return { success: false, error: "Failed to escalate flag" };
     }
 
     // Record escalation history
     await (supabase as any).from("escalation_history").insert({
-      report_id: reportId,
-      from_role: report.assigned_role,
+      flag_id: flagId,
+      from_role: flag.assigned_role,
       to_role: targetRole,
       escalated_by: user.id,
       reason,
     });
 
     // Notify staff at new level
-    await notifyStaffOfReport(reportId, targetRole, true);
+    await notifyStaffOfFlag(flagId, targetRole, true);
 
     return { success: true };
   } catch (error) {
-    console.error("Escalate report error:", error);
+    console.error("Escalate flag error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
 
 /**
- * Notify staff of a new or escalated report
+ * Notify staff of a new or escalated flag
  */
-async function notifyStaffOfReport(
-  reportId: string,
+async function notifyStaffOfFlag(
+  flagId: string,
   roleLevel: number,
   isEscalation = false
 ): Promise<void> {
@@ -456,7 +453,7 @@ async function notifyStaffOfReport(
     // Create in-app notifications
     const notifications = staff.map((s: any) => ({
       recipient_id: s.id,
-      notification_type: "mention",
+      notification_type: "mention", // Reusing for now
       is_read: false,
     }));
 
@@ -467,9 +464,9 @@ async function notifyStaffOfReport(
 }
 
 /**
- * Get report statistics for dashboard
+ * Get flag statistics for dashboard
  */
-export async function getReportStats(): Promise<{
+export async function getFlagStats(): Promise<{
   success: boolean;
   stats?: {
     pending: number;
@@ -503,27 +500,27 @@ export async function getReportStats(): Promise<{
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Count reports by status (filtered by role)
+    // Count flags by status (filtered by role)
     const [pending, reviewing, escalated, resolvedToday] = await Promise.all([
       (supabase as any)
-        .from("reports")
+        .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending")
         .lte("assigned_role", profile.role),
       (supabase as any)
-        .from("reports")
+        .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "reviewing")
         .lte("assigned_role", profile.role),
       (supabase as any)
-        .from("reports")
+        .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "escalated")
         .lte("assigned_role", profile.role),
       (supabase as any)
-        .from("reports")
+        .from("flags")
         .select("*", { count: "exact", head: true })
-        .in("status", ["resolved_ban", "resolved_restrict", "resolved_dismissed"])
+        .in("status", ["resolved_removed", "resolved_flagged", "resolved_dismissed"])
         .gte("resolved_at", today.toISOString())
         .lte("assigned_role", profile.role),
     ]);
@@ -538,45 +535,7 @@ export async function getReportStats(): Promise<{
       },
     };
   } catch (error) {
-    console.error("Get report stats error:", error);
+    console.error("Get flag stats error:", error);
     return { success: false, error: "An unexpected error occurred" };
-  }
-}
-
-/**
- * Get user's pending reports (for showing warning banner to reported users)
- */
-export async function getUserPendingReports(): Promise<{
-  success: boolean;
-  hasPendingReports: boolean;
-  count?: number;
-}> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, hasPendingReports: false };
-    }
-
-    const { count, error } = await (supabase as any)
-      .from("reports")
-      .select("*", { count: "exact", head: true })
-      .eq("reported_user_id", user.id)
-      .in("status", ["pending", "reviewing", "escalated"]);
-
-    if (error) {
-      return { success: false, hasPendingReports: false };
-    }
-
-    return {
-      success: true,
-      hasPendingReports: (count || 0) > 0,
-      count: count || 0,
-    };
-  } catch (error) {
-    return { success: false, hasPendingReports: false };
   }
 }

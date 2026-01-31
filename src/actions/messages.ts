@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 interface MessageResult {
   success: boolean;
@@ -48,7 +48,7 @@ export async function getConversations(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -165,7 +165,7 @@ export async function getMessages(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -241,7 +241,7 @@ export async function sendMessage(
   mediaType?: string
 ): Promise<MessageResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -318,7 +318,7 @@ export async function startConversation(
   participantId: string
 ): Promise<MessageResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -388,7 +388,7 @@ export async function editMessage(
   newContent: string
 ): Promise<MessageResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -423,7 +423,7 @@ export async function editMessage(
  */
 export async function deleteMessage(messageId: string): Promise<MessageResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -459,7 +459,7 @@ export async function markConversationAsRead(
   conversationId: string
 ): Promise<MessageResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

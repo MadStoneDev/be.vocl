@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { validateUsernameFormat } from "@/lib/validation";
 
 interface ProfileResult {
@@ -40,7 +40,7 @@ export async function getProfileByUsername(
   username: string
 ): Promise<{ success: boolean; profile?: Profile; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { data, error } = await (supabase as any)
       .from("profiles")
@@ -86,7 +86,7 @@ export async function getCurrentProfile(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -141,7 +141,7 @@ export async function updateProfile(updates: {
   timezone?: string;
 }): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -186,7 +186,7 @@ export async function updatePrivacySettings(settings: {
   showFollowing?: boolean;
 }): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -227,7 +227,7 @@ export async function updateContentSettings(settings: {
   blurSensitiveByDefault?: boolean;
 }): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -267,7 +267,7 @@ export async function getProfileLinks(
   profileId: string
 ): Promise<{ success: boolean; links?: ProfileLink[]; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     const { data, error } = await (supabase as any)
       .from("profile_links")
@@ -302,7 +302,7 @@ export async function addProfileLink(
   url: string
 ): Promise<{ success: boolean; linkId?: string; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -349,7 +349,7 @@ export async function addProfileLink(
  */
 export async function removeProfileLink(linkId: string): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -387,7 +387,7 @@ export async function getProfileStats(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
 
     // Get post count
     const { count: postsCount } = await (supabase as any)
@@ -427,7 +427,7 @@ export async function getProfileStats(
  */
 export async function pinPost(postId: string): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -477,7 +477,7 @@ export async function checkOnboardingStatus(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -528,7 +528,7 @@ export async function completeOnboarding(data: {
   blurSensitiveByDefault?: boolean;
 }): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -571,7 +571,7 @@ export async function completeOnboarding(data: {
  */
 export async function unpinPost(postId: string): Promise<ProfileResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -612,7 +612,7 @@ export async function checkUsernameAvailability(
   }
 
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const normalized = username.toLowerCase().trim();
 
     // Check if username exists
@@ -646,7 +646,7 @@ export async function updateUsername(
   newUsername: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

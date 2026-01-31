@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 interface ReblogResult {
   success: boolean;
@@ -25,7 +25,7 @@ export async function reblogPost(
   options?: ReblogOptions
 ): Promise<ReblogResult> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -112,7 +112,7 @@ export async function reblogPost(
  */
 export async function getQueue(): Promise<{ success: boolean; posts?: any[]; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -155,7 +155,7 @@ export async function reorderQueue(
   postIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -189,7 +189,7 @@ export async function removeFromQueue(
   postId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -224,7 +224,7 @@ export async function publishNow(
   postId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -272,7 +272,7 @@ export async function getQueueSettings(): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -318,7 +318,7 @@ export async function updateQueueSettings(settings: {
   windowEnd?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -370,7 +370,7 @@ export async function getRebloggedBy(
   error?: string;
 }> {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const limit = options?.limit || 10;
 
     // Get posts that reblogged this post (or have it as original)
