@@ -44,6 +44,7 @@ export interface SearchResult {
     createdAt: string;
     likeCount: number;
     commentCount: number;
+    tags: Array<{ id: string; name: string }>;
   }>;
   tags: Array<{
     id: string;
@@ -358,6 +359,23 @@ export async function searchPosts(
 }
 
 async function formatPosts(supabase: any, posts: any[]): Promise<SearchResult["posts"]> {
+  // Batch fetch tags for all posts
+  const postIds = posts.map((p) => p.id);
+  const { data: postTagsData } = await supabase
+    .from("post_tags")
+    .select("post_id, tag:tag_id (id, name)")
+    .in("post_id", postIds);
+
+  // Build tags map
+  const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
+  ((postTagsData || []) as any[]).forEach((pt) => {
+    if (pt.tag) {
+      const existing = tagsMap.get(pt.post_id) || [];
+      existing.push({ id: pt.tag.id, name: pt.tag.name });
+      tagsMap.set(pt.post_id, existing);
+    }
+  });
+
   return Promise.all(
     posts.map(async (post) => {
       // Get like count
@@ -388,6 +406,7 @@ async function formatPosts(supabase: any, posts: any[]): Promise<SearchResult["p
         createdAt: post.created_at,
         likeCount: likeCount || 0,
         commentCount: commentCount || 0,
+        tags: tagsMap.get(post.id) || [],
       };
     })
   );

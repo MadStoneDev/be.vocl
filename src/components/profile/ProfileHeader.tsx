@@ -12,6 +12,7 @@ import {
   IconVolume3,
   IconShare,
   IconCoin,
+  IconFlag,
 } from "@tabler/icons-react";
 import { VerificationBadge } from "@/components/payments";
 
@@ -31,6 +32,7 @@ interface ProfileHeaderProps {
   onMute?: () => void;
   onShare?: () => void;
   onTip?: () => void;
+  onReport?: () => void;
   onAvatarClick?: () => void;
 }
 
@@ -50,6 +52,7 @@ export function ProfileHeader({
   onMute,
   onShare,
   onTip,
+  onReport,
   onAvatarClick,
 }: ProfileHeaderProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -208,6 +211,16 @@ export function ProfileHeader({
                         >
                           <IconVolume3 size={18} />
                           Mute
+                        </button>
+                        <button
+                          onClick={() => {
+                            onReport?.();
+                            setShowMenu(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                        >
+                          <IconFlag size={18} />
+                          Report
                         </button>
                         <button
                           onClick={() => {

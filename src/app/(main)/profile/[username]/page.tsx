@@ -14,6 +14,7 @@ import {
   AvatarModal,
   type TabId,
 } from "@/components/profile";
+import { ReportModal } from "@/components/moderation";
 import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
 import {
   getProfileByUsername,
@@ -95,6 +96,9 @@ export default function ProfilePage() {
 
   // Avatar modal state
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+
+  // Report modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
@@ -351,6 +355,7 @@ export default function ProfilePage() {
         onBlock={handleBlock}
         onMute={handleMute}
         onShare={handleShare}
+        onReport={() => setReportModalOpen(true)}
         onAvatarClick={() => setAvatarModalOpen(true)}
       />
 
@@ -474,6 +479,16 @@ export default function ProfilePage() {
           onClose={() => setAvatarModalOpen(false)}
           avatarUrl={profile.avatarUrl}
           username={profile.username}
+        />
+      )}
+
+      {/* Report User Modal */}
+      {profile && (
+        <ReportModal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          reportedUserId={profile.id}
+          reportedUsername={profile.username}
         />
       )}
     </div>

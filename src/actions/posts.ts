@@ -415,6 +415,7 @@ interface PostWithDetails {
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
+  tags?: Array<{ id: string; name: string }>;
 }
 
 /**
@@ -955,13 +956,14 @@ export async function getFeedPosts(options?: {
     const postIds = posts.map((p: any) => p.id);
 
     // Run all count queries in parallel
-    const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData] = await Promise.all([
+    const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData, postTagsData] = await Promise.all([
       (supabase as any).from("likes").select("post_id").in("post_id", postIds),
       (supabase as any).from("comments").select("post_id").in("post_id", postIds),
       (supabase as any).from("posts").select("reblogged_from_id").in("reblogged_from_id", postIds).eq("status", "published"),
       user ? (supabase as any).from("likes").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
       user ? (supabase as any).from("comments").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
       user ? (supabase as any).from("posts").select("reblogged_from_id").eq("author_id", user.id).in("reblogged_from_id", postIds).neq("status", "deleted") : Promise.resolve({ data: [] }),
+      (supabase as any).from("post_tags").select("post_id, tag:tag_id (id, name)").in("post_id", postIds),
     ]);
 
     const userLikes = (userLikesData.data || []).map((l: any) => l.post_id);
@@ -972,6 +974,7 @@ export async function getFeedPosts(options?: {
     const likeCountMap = new Map<string, number>();
     const commentCountMap = new Map<string, number>();
     const reblogCountMap = new Map<string, number>();
+    const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
     (likeCounts.data || []).forEach((l: any) => {
       likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
     });
@@ -980,6 +983,13 @@ export async function getFeedPosts(options?: {
     });
     (reblogCounts.data || []).forEach((r: any) => {
       reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
+    });
+    (postTagsData.data || []).forEach((pt: any) => {
+      if (pt.tag) {
+        const existing = tagsMap.get(pt.post_id) || [];
+        existing.push({ id: pt.tag.id, name: pt.tag.name });
+        tagsMap.set(pt.post_id, existing);
+      }
     });
 
     const formattedPosts: PostWithDetails[] = posts.map((post: any) => ({
@@ -1001,6 +1011,7 @@ export async function getFeedPosts(options?: {
       hasLiked: userLikes.includes(post.id),
       hasCommented: userComments.includes(post.id),
       hasReblogged: userReblogs.includes(post.id),
+      tags: tagsMap.get(post.id) || [],
     }));
 
     return {

@@ -1,6 +1,7 @@
 export { Post, ImageContent, TextContent } from "./Post";
 export { InteractivePost } from "./InteractivePost";
 export { PostMenu } from "./PostMenu";
+export { PostTags } from "./PostTags";
 export { ReportDialog } from "./ReportDialog";
 export { VideoContent } from "./content/VideoContent";
 export { AudioContent } from "./content/AudioContent";

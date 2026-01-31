@@ -20,6 +20,7 @@ interface FeedPost {
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean;
+  tags?: Array<{ id: string; name: string }>;
 }
 
 interface FeedListProps {
@@ -65,6 +66,7 @@ export function FeedList({
           isSensitive={post.isSensitive}
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
+          tags={post.tags}
         >
           {post.contentType === "image" && post.content.imageUrl && (
             <ImageContent src={post.content.imageUrl} alt="Post image" />

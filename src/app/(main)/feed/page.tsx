@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { getFeedPosts } from "@/actions/posts";
+import { getPersonalizedFeed } from "@/actions/recommendations";
 import { hasAcceptedPromise } from "@/actions/account";
 import { getUserPendingReports } from "@/actions/moderation";
 
@@ -30,6 +31,7 @@ interface FeedPost {
   stats: { comments: number; likes: number; reblogs: number };
   interactions: { hasCommented: boolean; hasLiked: boolean; hasReblogged: boolean };
   isSensitive?: boolean;
+  tags?: Array<{ id: string; name: string }>;
 }
 
 export default function FeedPage() {
@@ -71,11 +73,10 @@ export default function FeedPage() {
     }
     setError(null);
 
-    const result = await getFeedPosts({
-      limit: 20,
-      offset,
-      sortBy: activeTab,
-    });
+    // Use personalized feed for "For You" tab, regular feed for chronological
+    const result = activeTab === "engagement"
+      ? await getPersonalizedFeed({ limit: 20, offset })
+      : await getFeedPosts({ limit: 20, offset, sortBy: activeTab });
 
     if (result.success && result.posts) {
       // Transform posts to FeedList format
@@ -135,6 +136,7 @@ export default function FeedPage() {
             hasReblogged: post.hasReblogged,
           },
           isSensitive: post.isSensitive,
+          tags: post.tags,
         };
       });
 
@@ -157,15 +159,10 @@ export default function FeedPage() {
     fetchPosts(0, false);
   }, [fetchPosts]);
 
-  // Sort posts based on active tab (client-side for engagement)
-  const sortedPosts = [...posts].sort((a, b) => {
-    if (activeTab === "engagement") {
-      const scoreA = a.stats.likes + a.stats.comments * 2 + a.stats.reblogs * 3;
-      const scoreB = b.stats.likes + b.stats.comments * 2 + b.stats.reblogs * 3;
-      return scoreB - scoreA;
-    }
-    return 0;
-  });
+  // Posts are already sorted server-side
+  // - Chronological: sorted by created_at desc
+  // - For You: sorted by personalization score
+  const sortedPosts = posts;
 
   // Transform for FeedList (it expects slightly different format)
   const feedListPosts = sortedPosts.map((post) => ({
@@ -180,6 +177,7 @@ export default function FeedPage() {
     stats: post.stats,
     interactions: post.interactions,
     isSensitive: post.isSensitive,
+    tags: post.tags,
   }));
 
   return (

@@ -26,6 +26,7 @@ import {
   type SearchResult,
 } from "@/actions/search";
 import { followUser, unfollowUser } from "@/actions/follows";
+import { followTag, unfollowTag, isFollowingTag } from "@/actions/tags";
 import { toast } from "@/components/ui";
 import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
 
@@ -91,6 +92,8 @@ function SearchContent() {
     name: string;
     postCount: number;
   } | null>(null);
+  const [isFollowingBrowsingTag, setIsFollowingBrowsingTag] = useState(false);
+  const [isTogglingTagFollow, setIsTogglingTagFollow] = useState(false);
 
   // Load discovery content on mount
   useEffect(() => {
@@ -231,9 +234,32 @@ function SearchContent() {
       setTags([]);
       setUserCount(0);
       setTagCount(0);
+
+      // Check if user is following this tag
+      if (result.tag?.id) {
+        const following = await isFollowingTag(result.tag.id);
+        setIsFollowingBrowsingTag(following);
+      }
     }
 
     setIsSearching(false);
+  };
+
+  const handleTagFollowToggle = async () => {
+    if (!browsingTag) return;
+
+    setIsTogglingTagFollow(true);
+    const result = isFollowingBrowsingTag
+      ? await unfollowTag(browsingTag.id)
+      : await followTag(browsingTag.id);
+
+    if (result.success) {
+      setIsFollowingBrowsingTag(!isFollowingBrowsingTag);
+      toast.success(isFollowingBrowsingTag ? `Unfollowed #${browsingTag.name}` : `Following #${browsingTag.name}!`);
+    } else {
+      toast.error(result.error || "Failed to update tag follow");
+    }
+    setIsTogglingTagFollow(false);
   };
 
   const handleSensitiveConfirm = () => {
@@ -261,6 +287,7 @@ function SearchContent() {
     setBrowsingTag(null);
     setPosts([]);
     setPostCount(0);
+    setIsFollowingBrowsingTag(false);
   };
 
   const hasResults = users.length > 0 || tags.length > 0 || posts.length > 0;
@@ -346,12 +373,31 @@ function SearchContent() {
                 {browsingTag.postCount.toLocaleString()} posts
               </p>
             </div>
-            <button
-              onClick={clearTagBrowsing}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              <IconX size={20} className="text-foreground/60" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleTagFollowToggle}
+                disabled={isTogglingTagFollow}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  isFollowingBrowsingTag
+                    ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+                    : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                }`}
+              >
+                {isTogglingTagFollow ? (
+                  <IconLoader2 size={16} className="animate-spin" />
+                ) : isFollowingBrowsingTag ? (
+                  "Following"
+                ) : (
+                  "Follow"
+                )}
+              </button>
+              <button
+                onClick={clearTagBrowsing}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <IconX size={20} className="text-foreground/60" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -663,6 +709,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
           hasReblogged: false,
         }}
         isSensitive={post.isSensitive}
+        tags={post.tags}
       >
         {contentType === "image" && post.content?.urls?.[0] && (
           <ImageContent src={post.content.urls[0]} alt="" />

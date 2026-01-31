@@ -14,6 +14,12 @@ import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, unfollowUser } from "@/actions/follows";
 import { ReblogDialog } from "@/components/reblog";
 import { ReportDialog } from "./ReportDialog";
+import { PostTags } from "./PostTags";
+
+interface PostTag {
+  id: string;
+  name: string;
+}
 
 interface InteractivePostProps {
   id: string;
@@ -29,6 +35,7 @@ interface InteractivePostProps {
   isPinned?: boolean;
   contentPreview?: string;
   imageUrl?: string;
+  tags?: PostTag[];
   onEdit?: () => void;
   onDeleted?: () => void;
 }
@@ -47,6 +54,7 @@ export function InteractivePost({
   isPinned = false,
   contentPreview = "",
   imageUrl,
+  tags = [],
   onEdit,
   onDeleted,
 }: InteractivePostProps) {
@@ -297,6 +305,7 @@ export function InteractivePost({
         onReblogsExpand={refreshRebloggedBy}
       >
         {children}
+        {tags.length > 0 && <PostTags tags={tags} />}
       </Post>
 
       {/* Post Menu */}
