@@ -183,47 +183,37 @@ export function LeftSidebar({
           <span className="text-sm font-medium">Settings</span>
         </Link>
 
-        {/* Profile - show skeleton when loading, link only when username available */}
-        {username ? (
-          <Link
-            href={`/profile/${username}`}
-            aria-label="Your profile"
-            className={`flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl transition-all ${
-              pathname === `/profile/${username}`
-                ? "bg-vocl-accent/10 text-vocl-accent"
-                : "text-foreground/70 hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-vocl-surface-dark flex-shrink-0">
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt=""
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <IconUser size={16} aria-hidden="true" />
-                </div>
-              )}
-            </div>
-            <span className="text-sm font-medium truncate">@{username}</span>
-          </Link>
-        ) : (
-          <div className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-foreground/70">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+        {/* Profile - always show, link when username available */}
+        <Link
+          href={username ? `/profile/${username}` : "#"}
+          aria-label="Your profile"
+          onClick={(e) => !username && e.preventDefault()}
+          className={`flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl transition-all ${
+            username && pathname === `/profile/${username}`
+              ? "bg-vocl-accent/10 text-vocl-accent"
+              : "text-foreground/70 hover:text-foreground hover:bg-white/5"
+          } ${!username ? "cursor-default" : ""}`}
+        >
+          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt=""
+                fill
+                className="object-cover"
+              />
+            ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <IconUser size={16} aria-hidden="true" />
               </div>
-            </div>
-            {isLoading ? (
-              <span className="h-4 w-20 bg-white/10 rounded animate-pulse" />
-            ) : (
-              <span className="text-sm font-medium truncate">Profile</span>
             )}
           </div>
-        )}
+          {username ? (
+            <span className="text-sm font-medium truncate">@{username}</span>
+          ) : (
+            <span className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+          )}
+        </Link>
 
         {/* Logout */}
         {username && (
