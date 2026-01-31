@@ -42,7 +42,7 @@ export default function AdminEmailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-white/10 pb-2">
+      <div className="flex gap-2 mb-6 border-b border-white/10 pb-2 overflow-x-auto">
         {[
           { id: "compose" as Tab, label: "Compose", icon: IconSend },
           { id: "templates" as Tab, label: "Templates", icon: IconTemplate },
@@ -52,7 +52,7 @@ export default function AdminEmailPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ${
               activeTab === tab.id
                 ? "bg-vocl-accent text-white"
                 : "text-foreground/70 hover:bg-white/5"
@@ -445,9 +445,13 @@ function EmailPreview({
 
   return (
     <div className="text-[#ededed] text-sm">
-      {/* Logo placeholder */}
+      {/* Logo */}
       <div className="text-center mb-6">
-        <span className="text-[#5B9A8B] text-xl font-bold">be.vocl</span>
+        <img
+          src="/bevocl logo.png"
+          alt="be.vocl"
+          className="h-8 mx-auto"
+        />
       </div>
 
       {/* Badge */}
@@ -568,12 +572,8 @@ function TemplatesTab() {
             {selectedTemplate ? "Template Preview" : "Select a template"}
           </h3>
           {selectedTemplate ? (
-            <div className="bg-[#1a1a1a] rounded-lg p-6 min-h-[400px]">
-              <p className="text-foreground/50 text-center">
-                Template preview for &quot;{templates.find(t => t.id === selectedTemplate)?.name}&quot;
-                <br />
-                <span className="text-sm">Edit functionality coming soon</span>
-              </p>
+            <div className="bg-[#1a1a1a] rounded-lg p-6 min-h-[400px] overflow-auto">
+              <TemplatePreview templateId={selectedTemplate} />
             </div>
           ) : (
             <p className="text-foreground/50 text-center py-20">
@@ -584,6 +584,326 @@ function TemplatesTab() {
       </div>
     </div>
   );
+}
+
+// ============================================================================
+// TEMPLATE PREVIEW COMPONENT
+// ============================================================================
+
+function TemplatePreview({ templateId }: { templateId: string }) {
+  const baseStyles = "text-[#ededed] text-sm";
+
+  const Logo = () => (
+    <div className="text-center mb-6">
+      <img src="/bevocl logo.png" alt="be.vocl" className="h-8 mx-auto" />
+    </div>
+  );
+
+  const Footer = () => (
+    <div className="border-t border-[#2a2a2a] pt-4 mt-6 text-center text-xs text-[#666]">
+      <p>© 2025 be.vocl. All rights reserved.</p>
+      <p className="mt-1">
+        <span className="text-[#5B9A8B]">Unsubscribe</span> • <span className="text-[#5B9A8B]">Preferences</span>
+      </p>
+    </div>
+  );
+
+  const Button = ({ children }: { children: React.ReactNode }) => (
+    <div className="text-center my-6">
+      <span className="inline-block bg-[#5B9A8B] text-white px-6 py-3 rounded-xl font-semibold">
+        {children}
+      </span>
+    </div>
+  );
+
+  switch (templateId) {
+    case "welcome":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">Welcome to be.vocl! 🎉</h2>
+          <p className="mb-4">Hey @username,</p>
+          <p className="mb-4 leading-relaxed">
+            Welcome to be.vocl! We&apos;re thrilled to have you join our community of creators and voices.
+          </p>
+          <p className="mb-4 leading-relaxed">
+            This is your space to share your voice freely. Post your thoughts, connect with like-minded people, and explore content that resonates with you.
+          </p>
+          <Button>Complete Your Profile</Button>
+          <Footer />
+        </div>
+      );
+
+    case "magic_link":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">Sign in to be.vocl</h2>
+          <p className="mb-4">Hey there,</p>
+          <p className="mb-4 leading-relaxed">
+            Click the button below to sign in to your be.vocl account. This link will expire in 1 hour.
+          </p>
+          <Button>Sign In to be.vocl</Button>
+          <p className="text-[#888] text-xs mb-4">
+            If you didn&apos;t request this email, you can safely ignore it.
+          </p>
+          <Footer />
+        </div>
+      );
+
+    case "password_reset":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">Reset Your Password</h2>
+          <p className="mb-4">Hey @username,</p>
+          <p className="mb-4 leading-relaxed">
+            We received a request to reset your password. Click the button below to create a new password.
+          </p>
+          <Button>Reset Password</Button>
+          <p className="text-[#888] text-xs mb-4">
+            This link will expire in 1 hour. If you didn&apos;t request this, please ignore this email.
+          </p>
+          <Footer />
+        </div>
+      );
+
+    case "follow":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">You have a new follower!</h2>
+          <p className="mb-4">Hey @username,</p>
+          <div className="flex items-center gap-3 bg-[#2a2a2a] p-4 rounded-xl mb-4">
+            <div className="w-12 h-12 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold">
+              J
+            </div>
+            <div>
+              <p className="font-semibold">@johndoe</p>
+              <p className="text-[#888] text-xs">started following you</p>
+            </div>
+          </div>
+          <Button>View Profile</Button>
+          <Footer />
+        </div>
+      );
+
+    case "like":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">Someone liked your post! ❤️</h2>
+          <p className="mb-4">Hey @username,</p>
+          <div className="bg-[#2a2a2a] p-4 rounded-xl mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+                J
+              </div>
+              <span className="font-semibold">@johndoe</span>
+              <span className="text-[#888]">liked your post</span>
+            </div>
+            <p className="text-[#888] text-sm italic border-l-2 border-[#5B9A8B] pl-3">
+              &quot;This is a preview of your post content that was liked...&quot;
+            </p>
+          </div>
+          <Button>View Post</Button>
+          <Footer />
+        </div>
+      );
+
+    case "comment":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">New comment on your post 💬</h2>
+          <p className="mb-4">Hey @username,</p>
+          <div className="bg-[#2a2a2a] p-4 rounded-xl mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+                J
+              </div>
+              <span className="font-semibold">@johndoe</span>
+              <span className="text-[#888]">commented</span>
+            </div>
+            <p className="text-sm leading-relaxed">
+              &quot;This is amazing! I love what you shared here. Keep up the great work!&quot;
+            </p>
+          </div>
+          <Button>View Comment</Button>
+          <Footer />
+        </div>
+      );
+
+    case "reblog":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">Your post was reblogged! 🔄</h2>
+          <p className="mb-4">Hey @username,</p>
+          <div className="bg-[#2a2a2a] p-4 rounded-xl mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+                J
+              </div>
+              <span className="font-semibold">@johndoe</span>
+              <span className="text-[#888]">reblogged your post</span>
+            </div>
+            <p className="text-[#888] text-sm italic border-l-2 border-[#5B9A8B] pl-3">
+              &quot;This is a preview of the reblogged post...&quot;
+            </p>
+          </div>
+          <Button>View Reblog</Button>
+          <Footer />
+        </div>
+      );
+
+    case "message":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">You have a new message! 💬</h2>
+          <p className="mb-4">Hey @username,</p>
+          <div className="bg-[#2a2a2a] p-4 rounded-xl mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+                J
+              </div>
+              <span className="font-semibold">@johndoe</span>
+            </div>
+            <p className="text-sm leading-relaxed">
+              &quot;Hey! I saw your latest post and wanted to reach out...&quot;
+            </p>
+          </div>
+          <Button>Read Message</Button>
+          <Footer />
+        </div>
+      );
+
+    case "mention":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">You were mentioned! 👋</h2>
+          <p className="mb-4">Hey @username,</p>
+          <div className="bg-[#2a2a2a] p-4 rounded-xl mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+                J
+              </div>
+              <span className="font-semibold">@johndoe</span>
+              <span className="text-[#888]">mentioned you</span>
+            </div>
+            <p className="text-sm leading-relaxed">
+              &quot;Check out what <span className="text-[#5B9A8B]">@username</span> posted yesterday, it&apos;s incredible!&quot;
+            </p>
+          </div>
+          <Button>View Post</Button>
+          <Footer />
+        </div>
+      );
+
+    case "digest":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <h2 className="text-xl font-semibold text-center mb-4">Your Daily Digest 📬</h2>
+          <p className="mb-4">Hey @username,</p>
+          <p className="mb-4 leading-relaxed">Here&apos;s what you missed today:</p>
+
+          <div className="space-y-3 mb-4">
+            <div className="bg-[#2a2a2a] p-3 rounded-lg flex items-center gap-3">
+              <span className="text-lg">❤️</span>
+              <div>
+                <p className="font-medium">3 new likes</p>
+                <p className="text-[#888] text-xs">on your posts</p>
+              </div>
+            </div>
+            <div className="bg-[#2a2a2a] p-3 rounded-lg flex items-center gap-3">
+              <span className="text-lg">💬</span>
+              <div>
+                <p className="font-medium">2 new comments</p>
+                <p className="text-[#888] text-xs">from @johndoe, @janedoe</p>
+              </div>
+            </div>
+            <div className="bg-[#2a2a2a] p-3 rounded-lg flex items-center gap-3">
+              <span className="text-lg">👥</span>
+              <div>
+                <p className="font-medium">1 new follower</p>
+                <p className="text-[#888] text-xs">@newuser started following you</p>
+              </div>
+            </div>
+          </div>
+
+          <Button>View All Activity</Button>
+          <Footer />
+        </div>
+      );
+
+    case "announcement":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <div className="text-center mb-4">
+            <span className="inline-block bg-[#5B9A8B] text-white px-3 py-1 rounded-full text-xs font-bold">
+              ANNOUNCEMENT
+            </span>
+          </div>
+          <h2 className="text-xl font-semibold text-center mb-4">New Feature: Queue Scheduling!</h2>
+          <p className="mb-4">Hey @username,</p>
+          <p className="mb-4 leading-relaxed">
+            We&apos;re excited to announce a new feature that lets you schedule your posts in advance!
+          </p>
+          <p className="mb-4 leading-relaxed">
+            Now you can queue up content and set it to publish automatically at your preferred times.
+          </p>
+          <Button>Learn More</Button>
+          <div className="border-t border-[#2a2a2a] pt-4 mt-6">
+            <p className="text-[#888]">Thanks for being part of be.vocl!</p>
+            <p className="text-[#888] italic mt-2">— The be.vocl Team</p>
+          </div>
+          <Footer />
+        </div>
+      );
+
+    case "founder_message":
+      return (
+        <div className={baseStyles}>
+          <Logo />
+          <div className="text-center mb-4">
+            <span className="inline-block bg-[#F59E0B] text-[#1a1a1a] px-3 py-1 rounded-full text-xs font-bold">
+              A MESSAGE FROM THE FOUNDER
+            </span>
+          </div>
+          <h2 className="text-xl font-semibold text-center mb-4">Thank You for Being Here</h2>
+          <p className="mb-4">Hey @username,</p>
+          <p className="mb-4 leading-relaxed">
+            I wanted to take a moment to personally thank you for being part of be.vocl.
+          </p>
+          <p className="mb-4 leading-relaxed">
+            Building this platform has been an incredible journey, and it wouldn&apos;t be possible without amazing people like you.
+          </p>
+          <div className="border-t border-[#2a2a2a] pt-4 mt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-lg">
+                R
+              </div>
+              <div>
+                <p className="font-semibold">Richard</p>
+                <p className="text-[#888] text-xs">Founder, be.vocl</p>
+              </div>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      );
+
+    default:
+      return (
+        <div className={baseStyles}>
+          <p className="text-[#888] text-center">Template preview not available</p>
+        </div>
+      );
+  }
 }
 
 // ============================================================================
