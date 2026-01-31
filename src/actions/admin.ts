@@ -1,0 +1,715 @@
+"use server";
+
+import { createServerClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+
+/**
+ * Check if current user is admin
+ */
+async function requireAdmin(minRole: number = 5): Promise<{
+  authorized: boolean;
+  userId?: string;
+  role?: number;
+}> {
+  const supabase = await createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { authorized: false };
+  }
+
+  const { data: profile } = await (supabase as any)
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role < minRole) {
+    return { authorized: false };
+  }
+
+  return { authorized: true, userId: user.id, role: profile.role };
+}
+
+// ============================================================================
+// REPORTS
+// ============================================================================
+
+export interface ReportWithDetails {
+  id: string;
+  subject: string;
+  comments: string | null;
+  source: string;
+  status: string;
+  createdAt: string;
+  reporter: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+  } | null;
+  reportedUser: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+  };
+  post: {
+    id: string;
+    content: any;
+    postType: string;
+  } | null;
+  assignedTo: {
+    id: string;
+    username: string;
+  } | null;
+}
+
+export async function getReports(options?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{
+  success: boolean;
+  reports?: ReportWithDetails[];
+  total?: number;
+  error?: string;
+}> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+    const limit = options?.limit || 20;
+    const offset = options?.offset || 0;
+
+    let query = (supabase as any)
+      .from("reports")
+      .select(
+        `
+        id,
+        subject,
+        comments,
+        source,
+        status,
+        created_at,
+        reporter:reporter_id (id, username, avatar_url),
+        reported_user:reported_user_id (id, username, avatar_url),
+        post:post_id (id, content, post_type),
+        assigned:assigned_to (id, username)
+      `,
+        { count: "exact" }
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (options?.status && options.status !== "all") {
+      query = query.eq("status", options.status);
+    }
+
+    const { data: reports, count, error } = await query;
+
+    if (error) {
+      console.error("Get reports error:", error);
+      return { success: false, error: "Failed to fetch reports" };
+    }
+
+    const formatted: ReportWithDetails[] = (reports || []).map((r: any) => ({
+      id: r.id,
+      subject: r.subject,
+      comments: r.comments,
+      source: r.source,
+      status: r.status,
+      createdAt: r.created_at,
+      reporter: r.reporter
+        ? {
+            id: r.reporter.id,
+            username: r.reporter.username,
+            avatarUrl: r.reporter.avatar_url,
+          }
+        : null,
+      reportedUser: {
+        id: r.reported_user.id,
+        username: r.reported_user.username,
+        avatarUrl: r.reported_user.avatar_url,
+      },
+      post: r.post
+        ? {
+            id: r.post.id,
+            content: r.post.content,
+            postType: r.post.post_type,
+          }
+        : null,
+      assignedTo: r.assigned
+        ? {
+            id: r.assigned.id,
+            username: r.assigned.username,
+          }
+        : null,
+    }));
+
+    return {
+      success: true,
+      reports: formatted,
+      total: count || 0,
+    };
+  } catch (error) {
+    console.error("Get reports error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function assignReport(
+  reportId: string,
+  assigneeId: string
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    const { error } = await (supabase as any)
+      .from("reports")
+      .update({
+        assigned_to: assigneeId,
+        status: "reviewing",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", reportId);
+
+    if (error) {
+      return { success: false, error: "Failed to assign report" };
+    }
+
+    revalidatePath("/admin/reports");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function resolveReport(
+  reportId: string,
+  resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed",
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    // Get report details
+    const { data: report } = await (supabase as any)
+      .from("reports")
+      .select("reported_user_id, post_id")
+      .eq("id", reportId)
+      .single();
+
+    if (!report) {
+      return { success: false, error: "Report not found" };
+    }
+
+    // Update report
+    await (supabase as any)
+      .from("reports")
+      .update({
+        status: resolution,
+        resolved_by: auth.userId,
+        resolution_notes: notes || null,
+        resolved_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", reportId);
+
+    // Apply action based on resolution
+    if (resolution === "resolved_ban") {
+      await banUser(report.reported_user_id, notes || "Banned due to report");
+    } else if (resolution === "resolved_restrict") {
+      await restrictUser(report.reported_user_id);
+    }
+
+    // If post was flagged, update its status
+    if (report.post_id) {
+      if (resolution === "resolved_dismissed") {
+        // Restore post
+        await (supabase as any)
+          .from("posts")
+          .update({
+            moderation_status: "approved",
+            moderation_reason: null,
+          })
+          .eq("id", report.post_id);
+      } else {
+        // Remove post
+        await (supabase as any)
+          .from("posts")
+          .update({
+            moderation_status: "removed",
+            moderation_reason: notes || "Removed by moderation",
+            moderated_at: new Date().toISOString(),
+            moderated_by: auth.userId,
+          })
+          .eq("id", report.post_id);
+      }
+    }
+
+    revalidatePath("/admin/reports");
+    return { success: true };
+  } catch (error) {
+    console.error("Resolve report error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// ============================================================================
+// USERS
+// ============================================================================
+
+export interface UserWithDetails {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  email: string;
+  role: number;
+  lockStatus: string;
+  createdAt: string;
+  reportCount: number;
+}
+
+export async function getUsers(options?: {
+  search?: string;
+  lockStatus?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{
+  success: boolean;
+  users?: UserWithDetails[];
+  total?: number;
+  error?: string;
+}> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+    const limit = options?.limit || 20;
+    const offset = options?.offset || 0;
+
+    let query = (supabase as any)
+      .from("profiles")
+      .select("id, username, display_name, avatar_url, role, lock_status, created_at", {
+        count: "exact",
+      })
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (options?.search) {
+      query = query.ilike("username", `%${options.search}%`);
+    }
+
+    if (options?.lockStatus && options.lockStatus !== "all") {
+      query = query.eq("lock_status", options.lockStatus);
+    }
+
+    const { data: users, count, error } = await query;
+
+    if (error) {
+      console.error("Get users error:", error);
+      return { success: false, error: "Failed to fetch users" };
+    }
+
+    // Get report counts for each user
+    const userIds = (users || []).map((u: any) => u.id);
+    const { data: reportCounts } = await (supabase as any)
+      .from("reports")
+      .select("reported_user_id")
+      .in("reported_user_id", userIds);
+
+    const countMap = new Map<string, number>();
+    (reportCounts || []).forEach((r: any) => {
+      countMap.set(r.reported_user_id, (countMap.get(r.reported_user_id) || 0) + 1);
+    });
+
+    const formatted: UserWithDetails[] = (users || []).map((u: any) => ({
+      id: u.id,
+      username: u.username,
+      displayName: u.display_name,
+      avatarUrl: u.avatar_url,
+      email: "", // Not fetching email for privacy
+      role: u.role || 0,
+      lockStatus: u.lock_status || "unlocked",
+      createdAt: u.created_at,
+      reportCount: countMap.get(u.id) || 0,
+    }));
+
+    return {
+      success: true,
+      users: formatted,
+      total: count || 0,
+    };
+  } catch (error) {
+    console.error("Get users error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function banUser(
+  userId: string,
+  reason: string,
+  logIp?: string
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin(10); // Require admin
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    // Update user profile
+    await (supabase as any)
+      .from("profiles")
+      .update({
+        lock_status: "banned",
+        banned_at: new Date().toISOString(),
+        ban_reason: reason,
+      })
+      .eq("id", userId);
+
+    // Log IP if provided
+    if (logIp) {
+      await (supabase as any).from("banned_ips").insert({
+        ip_address: logIp,
+        user_id: userId,
+        reason,
+        banned_by: auth.userId,
+      });
+    }
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Ban user error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function restrictUser(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    await (supabase as any)
+      .from("profiles")
+      .update({
+        lock_status: "restricted",
+      })
+      .eq("id", userId);
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Restrict user error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function unlockUser(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    await (supabase as any)
+      .from("profiles")
+      .update({
+        lock_status: "unlocked",
+        banned_at: null,
+        ban_reason: null,
+      })
+      .eq("id", userId);
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Unlock user error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function setUserRole(
+  userId: string,
+  role: number
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin(10); // Only admins can change roles
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // Can't demote yourself
+  if (userId === auth.userId) {
+    return { success: false, error: "Cannot change your own role" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    await (supabase as any)
+      .from("profiles")
+      .update({ role })
+      .eq("id", userId);
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Set role error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// ============================================================================
+// APPEALS
+// ============================================================================
+
+export interface AppealWithDetails {
+  id: string;
+  reason: string;
+  status: string;
+  appealsBlocked: boolean;
+  reviewNotes: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  user: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+    lockStatus: string;
+  };
+  reviewedBy: {
+    id: string;
+    username: string;
+  } | null;
+}
+
+export async function getAppeals(options?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{
+  success: boolean;
+  appeals?: AppealWithDetails[];
+  total?: number;
+  error?: string;
+}> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+    const limit = options?.limit || 20;
+    const offset = options?.offset || 0;
+
+    let query = (supabase as any)
+      .from("appeals")
+      .select(
+        `
+        id,
+        reason,
+        status,
+        review_notes,
+        created_at,
+        reviewed_at,
+        user:user_id (id, username, avatar_url, lock_status, appeals_blocked),
+        reviewer:reviewed_by (id, username)
+      `,
+        { count: "exact" }
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (options?.status && options.status !== "all") {
+      query = query.eq("status", options.status);
+    }
+
+    const { data: appeals, count, error } = await query;
+
+    if (error) {
+      console.error("Get appeals error:", error);
+      return { success: false, error: "Failed to fetch appeals" };
+    }
+
+    const formatted: AppealWithDetails[] = (appeals || []).map((a: any) => ({
+      id: a.id,
+      reason: a.reason,
+      status: a.status,
+      appealsBlocked: a.user?.appeals_blocked || false,
+      reviewNotes: a.review_notes,
+      createdAt: a.created_at,
+      reviewedAt: a.reviewed_at,
+      user: {
+        id: a.user.id,
+        username: a.user.username,
+        avatarUrl: a.user.avatar_url,
+        lockStatus: a.user.lock_status,
+      },
+      reviewedBy: a.reviewer
+        ? {
+            id: a.reviewer.id,
+            username: a.reviewer.username,
+          }
+        : null,
+    }));
+
+    return {
+      success: true,
+      appeals: formatted,
+      total: count || 0,
+    };
+  } catch (error) {
+    console.error("Get appeals error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export async function reviewAppeal(
+  appealId: string,
+  decision: "approved" | "denied" | "blocked",
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    // Get appeal details
+    const { data: appeal } = await (supabase as any)
+      .from("appeals")
+      .select("user_id")
+      .eq("id", appealId)
+      .single();
+
+    if (!appeal) {
+      return { success: false, error: "Appeal not found" };
+    }
+
+    // Update appeal
+    await (supabase as any)
+      .from("appeals")
+      .update({
+        status: decision,
+        reviewed_by: auth.userId,
+        review_notes: notes || null,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", appealId);
+
+    // If approved, unlock user
+    if (decision === "approved") {
+      await unlockUser(appeal.user_id);
+    }
+
+    // If blocked, update profile to block future appeals
+    if (decision === "blocked") {
+      await (supabase as any)
+        .from("profiles")
+        .update({ appeals_blocked: true })
+        .eq("id", appeal.user_id);
+    }
+
+    // TODO: Send email notification to user about decision
+
+    revalidatePath("/admin/appeals");
+    return { success: true };
+  } catch (error) {
+    console.error("Review appeal error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+// ============================================================================
+// STATS
+// ============================================================================
+
+export async function getAdminStats(): Promise<{
+  success: boolean;
+  stats?: {
+    pendingReports: number;
+    pendingAppeals: number;
+    bannedUsers: number;
+    restrictedUsers: number;
+  };
+  error?: string;
+}> {
+  const auth = await requireAdmin();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    const [
+      { count: pendingReports },
+      { count: pendingAppeals },
+      { count: bannedUsers },
+      { count: restrictedUsers },
+    ] = await Promise.all([
+      (supabase as any)
+        .from("reports")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending"),
+      (supabase as any)
+        .from("appeals")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending"),
+      (supabase as any)
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("lock_status", "banned"),
+      (supabase as any)
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("lock_status", "restricted"),
+    ]);
+
+    return {
+      success: true,
+      stats: {
+        pendingReports: pendingReports || 0,
+        pendingAppeals: pendingAppeals || 0,
+        bannedUsers: bannedUsers || 0,
+        restrictedUsers: restrictedUsers || 0,
+      },
+    };
+  } catch (error) {
+    console.error("Get stats error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}

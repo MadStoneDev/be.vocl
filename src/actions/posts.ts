@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
+import { moderateContent } from "@/lib/sightengine/client";
 import type {
   PostType,
   PostContent,
@@ -37,7 +38,35 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       return { success: false, error: "Unauthorized" };
     }
 
+    // Check if user is restricted from posting
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("lock_status")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.lock_status === "restricted" || profile?.lock_status === "banned") {
+      return { success: false, error: "Your account is restricted from posting" };
+    }
+
     const { postType, content, isSensitive, tags, publishMode, scheduledFor } = input;
+
+    // Extract media URLs for moderation
+    const mediaUrls = extractMediaUrls(postType, content);
+    let moderationStatus: "approved" | "flagged" = "approved";
+    let moderationReason: string | null = null;
+
+    // Moderate content if there are media URLs
+    if (mediaUrls.length > 0) {
+      for (const { url, type } of mediaUrls) {
+        const result = await moderateContent(url, type);
+        if (result.flagged) {
+          moderationStatus = "flagged";
+          moderationReason = result.reason || "Content flagged by automated moderation";
+          break;
+        }
+      }
+    }
 
     // Determine status and queue position
     let status: "published" | "queued" | "scheduled" = "published";
@@ -66,6 +95,9 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         queue_position: queuePosition,
         scheduled_for: scheduledFor || null,
         published_at: status === "published" ? new Date().toISOString() : null,
+        moderation_status: moderationStatus,
+        moderation_reason: moderationReason,
+        moderated_at: moderationStatus === "flagged" ? new Date().toISOString() : null,
       })
       .select("id")
       .single();
@@ -73,6 +105,36 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     if (postError) {
       console.error("Create post error:", postError);
       return { success: false, error: "Failed to create post" };
+    }
+
+    // If content was flagged, create a report for staff review
+    if (moderationStatus === "flagged") {
+      await (supabase as any).from("reports").insert({
+        reporter_id: null, // System report
+        reported_user_id: user.id,
+        post_id: post.id,
+        subject: "minor_safety",
+        comments: moderationReason,
+        source: "auto_moderation",
+        status: "pending",
+      });
+
+      // Notify admins
+      const { data: admins } = await (supabase as any)
+        .from("profiles")
+        .select("id")
+        .gte("role", 10);
+
+      if (admins && admins.length > 0) {
+        const notifications = admins.map((admin: any) => ({
+          recipient_id: admin.id,
+          actor_id: user.id,
+          notification_type: "mention",
+          post_id: post.id,
+          is_read: false,
+        }));
+        await (supabase as any).from("notifications").insert(notifications);
+      }
     }
 
     // Handle tags
@@ -86,6 +148,37 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     console.error("Create post error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
+}
+
+/**
+ * Extract media URLs from post content for moderation
+ */
+function extractMediaUrls(
+  postType: PostType,
+  content: PostContent
+): { url: string; type: "image" | "video" }[] {
+  const urls: { url: string; type: "image" | "video" }[] = [];
+
+  if (postType === "image" || postType === "gallery") {
+    const imageContent = content as ImagePostContent;
+    if (imageContent.urls) {
+      for (const url of imageContent.urls) {
+        urls.push({ url, type: "image" });
+      }
+    } else if (imageContent.url) {
+      urls.push({ url: imageContent.url, type: "image" });
+    }
+  } else if (postType === "video") {
+    const videoContent = content as VideoPostContent;
+    if (videoContent.url) {
+      urls.push({ url: videoContent.url, type: "video" });
+    }
+    if (videoContent.thumbnail_url) {
+      urls.push({ url: videoContent.thumbnail_url, type: "image" });
+    }
+  }
+
+  return urls;
 }
 
 async function handleTags(supabase: any, postId: string, tagNames: string[]) {
@@ -802,27 +895,23 @@ export async function getFeedPosts(options?: {
 }> {
   try {
     const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
-    const sortBy = options?.sortBy || "chronological";
 
-    // Get followed user IDs if logged in
+    // Get user first
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Get followed IDs (only if logged in)
     let followedIds: string[] = [];
     if (user) {
       const { data: follows } = await (supabase as any)
         .from("follows")
         .select("following_id")
         .eq("follower_id", user.id);
-      followedIds = (follows || []).map((f: any) => f.following_id);
-      // Include own posts in feed
-      followedIds.push(user.id);
+      followedIds = [...(follows || []).map((f: any) => f.following_id), user.id];
     }
 
-    // Build query
+    // Build and execute the main posts query
     let query = (supabase as any)
       .from("posts")
       .select(
@@ -848,7 +937,6 @@ export async function getFeedPosts(options?: {
       query = query.in("author_id", followedIds);
     }
 
-    // Sort by created_at for now (engagement sorting done client-side)
     query = query.order("created_at", { ascending: false });
     query = query.range(offset, offset + limit);
 
@@ -859,68 +947,38 @@ export async function getFeedPosts(options?: {
       return { success: false, error: "Failed to fetch posts" };
     }
 
+    // Early return if no posts - don't do any more queries
     if (!posts || posts.length === 0) {
       return { success: true, posts: [], hasMore: false };
     }
 
-    // Get like, comment, and reblog counts for posts
     const postIds = posts.map((p: any) => p.id);
 
-    const { data: likeCounts } = await (supabase as any)
-      .from("likes")
-      .select("post_id")
-      .in("post_id", postIds);
+    // Run all count queries in parallel
+    const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData] = await Promise.all([
+      (supabase as any).from("likes").select("post_id").in("post_id", postIds),
+      (supabase as any).from("comments").select("post_id").in("post_id", postIds),
+      (supabase as any).from("posts").select("reblogged_from_id").in("reblogged_from_id", postIds).eq("status", "published"),
+      user ? (supabase as any).from("likes").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
+      user ? (supabase as any).from("comments").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
+      user ? (supabase as any).from("posts").select("reblogged_from_id").eq("author_id", user.id).in("reblogged_from_id", postIds).neq("status", "deleted") : Promise.resolve({ data: [] }),
+    ]);
 
-    const { data: commentCounts } = await (supabase as any)
-      .from("comments")
-      .select("post_id")
-      .in("post_id", postIds);
-
-    const { data: reblogCounts } = await (supabase as any)
-      .from("posts")
-      .select("reblogged_from_id")
-      .in("reblogged_from_id", postIds)
-      .eq("status", "published");
-
-    // Check if current user has liked/commented/reblogged
-    let userLikes: string[] = [];
-    let userComments: string[] = [];
-    let userReblogs: string[] = [];
-    if (user) {
-      const { data: likes } = await (supabase as any)
-        .from("likes")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", postIds);
-      userLikes = (likes || []).map((l: any) => l.post_id);
-
-      const { data: comments } = await (supabase as any)
-        .from("comments")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", postIds);
-      userComments = (comments || []).map((c: any) => c.post_id);
-
-      const { data: reblogs } = await (supabase as any)
-        .from("posts")
-        .select("reblogged_from_id")
-        .eq("author_id", user.id)
-        .in("reblogged_from_id", postIds)
-        .neq("status", "deleted");
-      userReblogs = (reblogs || []).map((r: any) => r.reblogged_from_id);
-    }
+    const userLikes = (userLikesData.data || []).map((l: any) => l.post_id);
+    const userComments = (userCommentsData.data || []).map((c: any) => c.post_id);
+    const userReblogs = (userReblogsData.data || []).map((r: any) => r.reblogged_from_id);
 
     // Count likes/comments/reblogs per post
     const likeCountMap = new Map<string, number>();
     const commentCountMap = new Map<string, number>();
     const reblogCountMap = new Map<string, number>();
-    (likeCounts || []).forEach((l: any) => {
+    (likeCounts.data || []).forEach((l: any) => {
       likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
     });
-    (commentCounts || []).forEach((c: any) => {
+    (commentCounts.data || []).forEach((c: any) => {
       commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
     });
-    (reblogCounts || []).forEach((r: any) => {
+    (reblogCounts.data || []).forEach((r: any) => {
       reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
     });
 

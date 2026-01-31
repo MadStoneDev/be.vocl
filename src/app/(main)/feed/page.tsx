@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
+import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { getFeedPosts } from "@/actions/posts";
+import { hasAcceptedPromise } from "@/actions/account";
+import { getUserPendingReports } from "@/actions/moderation";
 
 interface FeedPost {
   id: string;
@@ -36,6 +39,28 @@ export default function FeedPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPromiseBanner, setShowPromiseBanner] = useState(false);
+  const [showFlaggedBanner, setShowFlaggedBanner] = useState(false);
+
+  // Check promise and report status
+  useEffect(() => {
+    const checkStatus = async () => {
+      const [promiseResult, reportsResult] = await Promise.all([
+        hasAcceptedPromise(),
+        getUserPendingReports(),
+      ]);
+
+      if (promiseResult.success && !promiseResult.accepted) {
+        setShowPromiseBanner(true);
+      }
+
+      if (reportsResult.success && reportsResult.hasPendingReports) {
+        setShowFlaggedBanner(true);
+      }
+    };
+
+    checkStatus();
+  }, []);
 
   // Fetch posts
   const fetchPosts = useCallback(async (offset = 0, append = false) => {
@@ -159,6 +184,14 @@ export default function FeedPage() {
 
   return (
     <div className="py-3 mx-auto max-w-sm">
+      {/* Promise Banner - show until accepted */}
+      {showPromiseBanner && (
+        <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />
+      )}
+
+      {/* Flagged Content Banner - show if user has pending reports */}
+      {showFlaggedBanner && <FlaggedContentBanner />}
+
       <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {error && !isLoading && (

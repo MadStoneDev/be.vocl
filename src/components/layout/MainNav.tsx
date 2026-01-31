@@ -6,6 +6,7 @@ import {
   IconPlus,
   IconUser,
 } from "@tabler/icons-react";
+import Logo from "@/components/logo";
 
 interface MainNavProps {
   username?: string;
@@ -21,7 +22,7 @@ export function MainNav({
       <div className="px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors">
-          be.vocl
+          <Logo />
         </Link>
 
         {/* Right side actions */}

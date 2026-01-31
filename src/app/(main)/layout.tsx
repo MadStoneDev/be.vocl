@@ -11,7 +11,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { checkOnboardingStatus } from "@/actions/profile";
 import { ErrorBoundary } from "@/components/ui";
-import { IconMessageOff, IconX, IconLoader2 } from "@tabler/icons-react";
+import { IconMessageOff, IconX } from "@tabler/icons-react";
 
 // Chat-specific error fallback
 function ChatErrorFallback({ onClose }: { onClose: () => void }) {
@@ -56,24 +56,18 @@ export default function MainLayout({
 }) {
   const router = useRouter();
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
-  const { profile, isLoading: authLoading, user } = useAuth();
+
+  // All hooks run immediately - they return default/empty values while loading
+  const { profile, user, isLoading: authLoading } = useAuth();
   const { totalUnread } = useChat(profile?.id);
   const { unreadCount: notificationCount } = useNotifications(profile?.id);
 
-  // Track online presence globally
+  // Track online presence
   useOnlineStatus(profile?.id, profile?.username);
 
   // Check onboarding status - runs when auth state is known
   useEffect(() => {
-    // Wait until auth loading is complete
-    if (authLoading) return;
-
-    // If no user, no onboarding check needed
-    if (!user) {
-      setOnboardingChecked(true);
-      return;
-    }
+    if (authLoading || !user) return;
 
     const checkOnboarding = async () => {
       try {
@@ -85,50 +79,29 @@ export default function MainLayout({
 
         if (result.success && !result.isComplete) {
           router.replace("/onboarding");
-          return;
         }
       } catch (error) {
         console.error("Onboarding check failed:", error);
       }
-
-      setOnboardingChecked(true);
     };
 
     checkOnboarding();
   }, [user, authLoading, router]);
 
-  // Fallback: force onboardingChecked after timeout to prevent infinite spinner
-  useEffect(() => {
-    if (onboardingChecked) return;
-
-    const fallbackTimer = setTimeout(() => {
-      console.warn("Onboarding check timed out, proceeding anyway");
-      setOnboardingChecked(true);
-    }, 5000);
-
-    return () => clearTimeout(fallbackTimer);
-  }, [onboardingChecked]);
-
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 
-  // Show loading while auth is loading OR while checking onboarding (but not forever)
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
-      </div>
-    );
-  }
-
+  // Render everything immediately - components handle their own loading states
+  // No blocking on auth - children render right away with their skeletons
   return (
     <div className="min-h-screen bg-background">
-      {/* Left Sidebar (Desktop) */}
+      {/* Left Sidebar (Desktop) - shows skeleton for profile while loading */}
       <LeftSidebar
         username={profile?.username}
         avatarUrl={profile?.avatarUrl}
         notificationCount={notificationCount}
         messageCount={totalUnread}
         onChatToggle={toggleChat}
+        isLoading={authLoading}
       />
 
       {/* Top Navigation (Mobile) */}
@@ -137,7 +110,7 @@ export default function MainLayout({
         avatarUrl={profile?.avatarUrl}
       />
 
-      {/* Main Content */}
+      {/* Main Content - renders children immediately */}
       <main
         id="main-content"
         className="pt-14 pb-20 md:pt-0 md:pb-8 md:pl-52 lg:pl-56"

@@ -2,6 +2,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 
+// Map old reason types to new subject types for backwards compatibility
 export type ReportReason =
   | "spam"
   | "harassment"
@@ -12,6 +13,34 @@ export type ReportReason =
   | "impersonation"
   | "copyright"
   | "other";
+
+// New subject types matching the database enum
+export type ReportSubject =
+  | "minor_safety"
+  | "non_consensual"
+  | "harassment"
+  | "spam"
+  | "illegal"
+  | "other";
+
+function mapReasonToSubject(reason: ReportReason): ReportSubject {
+  switch (reason) {
+    case "spam":
+      return "spam";
+    case "harassment":
+    case "hate_speech":
+      return "harassment";
+    case "violence":
+    case "sexual_content":
+      return "illegal";
+    case "misinformation":
+    case "impersonation":
+    case "copyright":
+      return "other";
+    default:
+      return "other";
+  }
+}
 
 interface ReportResult {
   success: boolean;
@@ -65,15 +94,17 @@ export async function reportPost(
       return { success: false, error: "You cannot report your own post" };
     }
 
-    // Create report
+    // Create report with new schema
+    const subject = mapReasonToSubject(reason);
     const { data: report, error } = await (supabase as any)
       .from("reports")
       .insert({
         reporter_id: user.id,
         post_id: postId,
         reported_user_id: post.author_id,
-        reason,
-        details: details || null,
+        subject,
+        comments: details || null,
+        source: "user_report",
         status: "pending",
       })
       .select("id")
@@ -82,6 +113,23 @@ export async function reportPost(
     if (error) {
       console.error("Report error:", error);
       return { success: false, error: "Failed to submit report" };
+    }
+
+    // Notify admins
+    const { data: admins } = await (supabase as any)
+      .from("profiles")
+      .select("id")
+      .gte("role", 10);
+
+    if (admins && admins.length > 0) {
+      const notifications = admins.map((admin: any) => ({
+        recipient_id: admin.id,
+        actor_id: user.id,
+        notification_type: "mention",
+        post_id: postId,
+        is_read: false,
+      }));
+      await (supabase as any).from("notifications").insert(notifications);
     }
 
     return { success: true, reportId: report.id };
@@ -126,14 +174,16 @@ export async function reportUser(
       return { success: false, error: "You have already reported this user" };
     }
 
-    // Create report
+    // Create report with new schema
+    const subject = mapReasonToSubject(reason);
     const { data: report, error } = await (supabase as any)
       .from("reports")
       .insert({
         reporter_id: user.id,
         reported_user_id: userId,
-        reason,
-        details: details || null,
+        subject,
+        comments: details || null,
+        source: "user_report",
         status: "pending",
       })
       .select("id")
@@ -142,6 +192,22 @@ export async function reportUser(
     if (error) {
       console.error("Report error:", error);
       return { success: false, error: "Failed to submit report" };
+    }
+
+    // Notify admins
+    const { data: admins } = await (supabase as any)
+      .from("profiles")
+      .select("id")
+      .gte("role", 10);
+
+    if (admins && admins.length > 0) {
+      const notifications = admins.map((admin: any) => ({
+        recipient_id: admin.id,
+        actor_id: user.id,
+        notification_type: "mention",
+        is_read: false,
+      }));
+      await (supabase as any).from("notifications").insert(notifications);
     }
 
     return { success: true, reportId: report.id };

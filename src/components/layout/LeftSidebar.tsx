@@ -17,6 +17,7 @@ import {
   IconStack2,
   IconLogout,
 } from "@tabler/icons-react";
+import Logo from "@/components/logo";
 
 interface LeftSidebarProps {
   username?: string;
@@ -24,6 +25,7 @@ interface LeftSidebarProps {
   notificationCount?: number;
   messageCount?: number;
   onChatToggle?: () => void;
+  isLoading?: boolean;
 }
 
 export function LeftSidebar({
@@ -32,6 +34,7 @@ export function LeftSidebar({
   notificationCount = 0,
   messageCount = 0,
   onChatToggle,
+  isLoading = false,
 }: LeftSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -75,7 +78,7 @@ export function LeftSidebar({
           href="/feed"
           className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors"
         >
-          be.vocl
+          <Logo className={`w-36`} />
         </Link>
       </div>
 
@@ -166,7 +169,7 @@ export function LeftSidebar({
           <span className="text-sm font-medium">Settings</span>
         </Link>
 
-        {/* Profile */}
+        {/* Profile - show skeleton when loading */}
         <Link
           href={username ? `/profile/${username}` : "/settings"}
           aria-label="Your profile"
@@ -186,9 +189,13 @@ export function LeftSidebar({
               </div>
             )}
           </div>
-          <span className="text-sm font-medium truncate">
-            {username ? `@${username}` : "Profile"}
-          </span>
+          {isLoading ? (
+            <span className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+          ) : (
+            <span className="text-sm font-medium truncate">
+              {username ? `@${username}` : "Profile"}
+            </span>
+          )}
         </Link>
 
         {/* Logout */}
