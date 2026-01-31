@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface OnlineUser {
@@ -40,12 +40,7 @@ export function useOnlineStatus(
       return;
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient();
 
     // Only create the channel once
     if (!globalChannel) {

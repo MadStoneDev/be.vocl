@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import {
   getConversations,
   getMessages,
@@ -98,10 +98,7 @@ export function useChat(currentUserId?: string): UseChatReturn {
   useEffect(() => {
     if (!currentUserId) return;
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     // Subscribe to new messages for all conversations the user is in
     const channel = supabase
@@ -190,10 +187,7 @@ export function useMessages(
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
 
     const channel = supabase
       .channel(`conversation-${conversationId}`)

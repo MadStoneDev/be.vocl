@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import {
   IconHome,
   IconHomeFilled,
@@ -40,12 +40,7 @@ export function LeftSidebar({
   const router = useRouter();
 
   const handleLogout = async () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
   };

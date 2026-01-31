@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import {
   IconUser,
   IconLock,
@@ -65,15 +65,7 @@ function SettingsContent() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        toast.error("Configuration error");
-        return;
-      }
-
-      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+      const supabase = createClient();
       await supabase.auth.signOut();
       router.push("/login");
     } catch (error) {

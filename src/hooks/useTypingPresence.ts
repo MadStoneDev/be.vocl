@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface TypingUser {
@@ -35,12 +35,7 @@ export function useTypingPresence(
       return;
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient();
 
     // Create a presence channel for this conversation
     const channel = supabase.channel(`typing:${conversationId}`, {

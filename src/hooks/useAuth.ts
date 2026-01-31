@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 interface Profile {
@@ -34,17 +34,7 @@ export function useAuth(): UseAuthReturn {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    // Skip if Supabase is not configured
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn("Supabase not configured");
-      setIsLoading(false);
-      return;
-    }
-
-    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient();
 
     // Get initial session with error handling
     const getSession = async () => {
