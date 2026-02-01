@@ -56,15 +56,24 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     const mediaUrls = extractMediaUrls(postType, content);
     let moderationStatus: "approved" | "flagged" = "approved";
     let moderationReason: string | null = null;
+    let autoSensitive = false; // Auto-tag as sensitive if nudity/gore detected
 
     // Moderate content if there are media URLs
     if (mediaUrls.length > 0) {
       for (const { url, type } of mediaUrls) {
         const result = await moderateContent(url, type);
+
+        // Check if should be flagged (child safety, extreme gore)
         if (result.flagged) {
           moderationStatus = "flagged";
           moderationReason = result.reason || "Content flagged by automated moderation";
+          autoSensitive = true;
           break;
+        }
+
+        // Check if should be auto-tagged as sensitive (nudity, erotica, moderate gore)
+        if (result.suggestSensitive) {
+          autoSensitive = true;
         }
       }
     }
@@ -85,13 +94,16 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     }
 
     // Create the post
+    // Auto-tag as sensitive if moderation detected nudity/gore (even if user didn't mark it)
+    const finalIsSensitive = isSensitive || autoSensitive;
+
     const { data: post, error: postError } = await (supabase as any)
       .from("posts")
       .insert({
         author_id: user.id,
         post_type: postType,
         content: content,
-        is_sensitive: isSensitive || false,
+        is_sensitive: finalIsSensitive,
         status,
         queue_position: queuePosition,
         scheduled_for: scheduledFor || null,

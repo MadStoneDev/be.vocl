@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
 import { ChatSidebar } from "@/components/chat";
 import { CreatePostFAB } from "@/components/Post/create";
+import { SecurityWarningModal } from "@/components/auth/SecurityWarningModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useChat } from "@/hooks/useChat";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -143,6 +144,9 @@ export default function MainLayout({
 
       {/* Create Post FAB */}
       <CreatePostFAB />
+
+      {/* Security Warning Modal - shown once after first login */}
+      <SecurityWarningModal isAuthenticated={!!user && !authLoading} />
     </div>
   );
 }

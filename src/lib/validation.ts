@@ -8,6 +8,7 @@
  */
 const USERNAME_REGEX = /^[a-z][a-z0-9_]{2,19}$/;
 
+// Exact reserved usernames
 export const RESERVED_USERNAMES = [
   "admin",
   "administrator",
@@ -17,6 +18,8 @@ export const RESERVED_USERNAMES = [
   "help",
   "vocl",
   "bevocl",
+  "bvocl",
+  "be_vocl",
   "system",
   "official",
   "staff",
@@ -36,7 +39,64 @@ export const RESERVED_USERNAMES = [
   "auth",
   "terms",
   "privacy",
+  "security",
+  "secure",
+  "verify",
+  "verified",
+  "real",
+  "authentic",
+  "trust",
+  "trusted",
+  "ceo",
+  "founder",
+  "owner",
 ];
+
+// Patterns that should be blocked (usernames containing these)
+const BLOCKED_PATTERNS = [
+  /bevocl/i,
+  /be_vocl/i,
+  /bvocl/i,
+  /b_vocl/i,
+  /vocl_team/i,
+  /voclteam/i,
+  /vocl_staff/i,
+  /voclstaff/i,
+  /vocl_admin/i,
+  /vocladmin/i,
+  /vocl_support/i,
+  /voclsupport/i,
+  /vocl_security/i,
+  /voclsecurity/i,
+  /vocl_official/i,
+  /voclofficial/i,
+  /staff_team/i,
+  /staffteam/i,
+  /security_team/i,
+  /securityteam/i,
+  /support_team/i,
+  /supportteam/i,
+  /official_staff/i,
+  /officialstaff/i,
+  /official_team/i,
+  /officialteam/i,
+  /official_support/i,
+  /officialsupport/i,
+  /real_staff/i,
+  /realstaff/i,
+  /real_admin/i,
+  /realadmin/i,
+  /verified_staff/i,
+  /verifiedstaff/i,
+];
+
+/**
+ * Check if username contains blocked patterns that could impersonate staff
+ */
+function containsBlockedPattern(username: string): boolean {
+  const normalized = username.toLowerCase();
+  return BLOCKED_PATTERNS.some((pattern) => pattern.test(normalized));
+}
 
 export interface UsernameValidationResult {
   valid: boolean;
@@ -78,6 +138,10 @@ export function validateUsernameFormat(username: string): UsernameValidationResu
 
   if (RESERVED_USERNAMES.includes(normalized)) {
     return { valid: false, error: "This username is reserved" };
+  }
+
+  if (containsBlockedPattern(normalized)) {
+    return { valid: false, error: "This username is not allowed" };
   }
 
   return { valid: true };

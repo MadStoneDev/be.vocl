@@ -24,6 +24,7 @@ interface Profile {
   showSensitivePosts: boolean;
   blurSensitiveByDefault: boolean;
   createdAt: string;
+  role: number;
 }
 
 interface ProfileLink {
@@ -69,6 +70,7 @@ export async function getProfileByUsername(
         showSensitivePosts: data.show_sensitive_posts,
         blurSensitiveByDefault: data.blur_sensitive_by_default,
         createdAt: data.created_at,
+        role: data.role ?? 0,
       },
     };
   } catch (error) {
@@ -122,6 +124,7 @@ export async function getCurrentProfile(): Promise<{
         showSensitivePosts: data.show_sensitive_posts,
         blurSensitiveByDefault: data.blur_sensitive_by_default,
         createdAt: data.created_at,
+        role: data.role ?? 0,
       },
     };
   } catch (error) {

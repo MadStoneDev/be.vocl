@@ -9,35 +9,59 @@ interface ModerationCheckResult {
   safe: boolean;
   flagged: boolean;
   reason?: string;
+  suggestSensitive: boolean;
+  sensitiveReason?: string;
 }
 
 /**
  * Check content for moderation issues
  * Used during post creation to scan images/videos
+ *
+ * Returns:
+ * - flagged: true if content should be blocked (child safety, extreme gore)
+ * - suggestSensitive: true if content should be auto-tagged as sensitive
  */
 export async function checkContentModeration(
   contentUrls: string[],
   contentTypes: ("image" | "video")[]
 ): Promise<ModerationCheckResult> {
   try {
+    let anySuggestSensitive = false;
+    const sensitiveReasons: string[] = [];
+
     for (let i = 0; i < contentUrls.length; i++) {
       const result = await moderateContent(
         contentUrls[i],
         contentTypes[i] || "image"
       );
 
+      // If flagged (child safety or extreme gore), block immediately
       if (result.flagged) {
         return {
           safe: false,
           flagged: true,
           reason: result.reason,
+          suggestSensitive: true,
+          sensitiveReason: result.sensitiveReason,
         };
+      }
+
+      // Track if any content suggests sensitive tagging
+      if (result.suggestSensitive) {
+        anySuggestSensitive = true;
+        if (result.sensitiveReason) {
+          sensitiveReasons.push(result.sensitiveReason);
+        }
       }
     }
 
     return {
       safe: true,
       flagged: false,
+      suggestSensitive: anySuggestSensitive,
+      sensitiveReason: sensitiveReasons.length > 0
+        ? [...new Set(sensitiveReasons)].join(', ')
+        : undefined,
     };
   } catch (error) {
     console.error("Content moderation check error:", error);
@@ -45,6 +69,7 @@ export async function checkContentModeration(
     return {
       safe: true,
       flagged: false,
+      suggestSensitive: false,
       reason: "Moderation check failed",
     };
   }

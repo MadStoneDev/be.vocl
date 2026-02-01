@@ -1,10 +1,11 @@
 /**
  * SightEngine API Client for Content Moderation
  *
- * Used to scan images and videos for:
- * - Minor safety (nudity involving minors)
- * - Violence
- * - Harmful content
+ * Policy:
+ * - Child safety issues: ALWAYS flag (highest priority)
+ * - Nudity/sexual/erotica: ALLOWED (users can mark as NSFW)
+ * - Weapons: ALLOWED
+ * - Gore: Only flag if extreme (> 0.85)
  */
 
 interface SightEngineConfig {
@@ -17,6 +18,8 @@ interface ModerationResult {
   flagged: boolean;
   reason?: string;
   confidence: number;
+  suggestSensitive: boolean; // Auto-apply is_sensitive flag
+  sensitiveReason?: string;
   rawResponse?: any;
 }
 
@@ -93,7 +96,7 @@ class SightEngineClient {
     try {
       const params = new URLSearchParams({
         url: imageUrl,
-        models: 'nudity-2.1,weapon,gore,child',
+        models: 'nudity-2.1,gore,child', // Check for sensitive content + child safety
         api_user: this.apiUser,
         api_secret: this.apiSecret,
       });
@@ -108,6 +111,7 @@ class SightEngineClient {
           safe: true, // Fail open to not block legitimate content
           flagged: false,
           confidence: 0,
+          suggestSensitive: false,
           reason: 'API error',
         };
       }
@@ -120,6 +124,7 @@ class SightEngineClient {
           safe: true,
           flagged: false,
           confidence: 0,
+          suggestSensitive: false,
           reason: data.error.message,
         };
       }
@@ -131,6 +136,7 @@ class SightEngineClient {
         safe: true,
         flagged: false,
         confidence: 0,
+        suggestSensitive: false,
         reason: 'Check failed',
       };
     }
@@ -144,7 +150,7 @@ class SightEngineClient {
       // Start video moderation job
       const params = new URLSearchParams({
         stream_url: videoUrl,
-        models: 'nudity-2.1,weapon,gore',
+        models: 'nudity-2.1,gore', // Check for sensitive content
         callback_url: '', // We'll poll instead
         api_user: this.apiUser,
         api_secret: this.apiSecret,
@@ -160,6 +166,7 @@ class SightEngineClient {
           safe: true,
           flagged: false,
           confidence: 0,
+          suggestSensitive: false,
           reason: 'Video API error',
         };
       }
@@ -175,6 +182,7 @@ class SightEngineClient {
         safe: true,
         flagged: false,
         confidence: 0,
+        suggestSensitive: false,
         reason: 'Video check initiated',
       };
     } catch (error) {
@@ -183,6 +191,7 @@ class SightEngineClient {
         safe: true,
         flagged: false,
         confidence: 0,
+        suggestSensitive: false,
         reason: 'Video check failed',
       };
     }
@@ -217,6 +226,7 @@ class SightEngineClient {
             safe: true,
             flagged: false,
             confidence: 0,
+            suggestSensitive: false,
             reason: 'Video processing error',
           };
         }
@@ -230,129 +240,149 @@ class SightEngineClient {
       safe: true,
       flagged: false,
       confidence: 0,
+      suggestSensitive: false,
       reason: 'Video processing timeout',
     };
   }
 
   /**
    * Analyze image moderation response
+   *
+   * Policy:
+   * - Child safety: ALWAYS flag (block)
+   * - Extreme gore (> 0.85): Flag (block)
+   * - Nudity/sexual/erotica (> 0.5): Auto-tag as sensitive
+   * - Moderate gore (> 0.5): Auto-tag as sensitive
+   * - Weapons: Allowed without auto-tag
    */
   private analyzeImageResponse(data: SightEngineResponse): ModerationResult {
-    const issues: string[] = [];
-    let maxConfidence = 0;
-
-    // Check for child safety issues - HIGHEST PRIORITY
+    // Check for child safety issues - HIGHEST PRIORITY, ALWAYS FLAG
     if (data.child?.context === 'not_safe') {
       return {
         safe: false,
         flagged: true,
         reason: 'Potential minor safety concern detected',
         confidence: 1.0,
+        suggestSensitive: true,
+        sensitiveReason: 'child_safety',
         rawResponse: data,
       };
     }
 
-    // Check nudity with context
-    if (data.nudity) {
-      const nudity = data.nudity;
-
-      // High severity nudity
-      if (nudity.sexual_activity > 0.5) {
-        issues.push('sexual_activity');
-        maxConfidence = Math.max(maxConfidence, nudity.sexual_activity);
-      }
-      if (nudity.sexual_display > 0.5) {
-        issues.push('sexual_display');
-        maxConfidence = Math.max(maxConfidence, nudity.sexual_display);
-      }
-      if (nudity.erotica > 0.7) {
-        issues.push('erotica');
-        maxConfidence = Math.max(maxConfidence, nudity.erotica);
-      }
-    }
-
-    // Check weapons
-    if (data.weapon) {
-      const weapon = data.weapon.classes;
-      if (weapon.firearm > 0.7 || weapon.knife > 0.7) {
-        issues.push('weapon');
-        maxConfidence = Math.max(maxConfidence, Math.max(weapon.firearm, weapon.knife));
-      }
-    }
-
-    // Check gore/violence
-    if (data.gore && data.gore.prob > 0.5) {
-      issues.push('violence');
-      maxConfidence = Math.max(maxConfidence, data.gore.prob);
-    }
-
-    if (issues.length > 0) {
+    // Check for extreme gore (> 0.85) - FLAG/BLOCK
+    if (data.gore && data.gore.prob > 0.85) {
       return {
         safe: false,
         flagged: true,
-        reason: `Content flagged: ${issues.join(', ')}`,
-        confidence: maxConfidence,
+        reason: 'Extreme graphic content detected',
+        confidence: data.gore.prob,
+        suggestSensitive: true,
+        sensitiveReason: 'extreme_gore',
         rawResponse: data,
       };
     }
 
+    // Check for sensitive content that should be auto-tagged
+    const sensitiveReasons: string[] = [];
+
+    // Nudity/sexual content detection
+    if (data.nudity) {
+      const nudity = data.nudity;
+      if (nudity.sexual_activity > 0.5) sensitiveReasons.push('sexual_activity');
+      if (nudity.sexual_display > 0.5) sensitiveReasons.push('sexual_display');
+      if (nudity.erotica > 0.5) sensitiveReasons.push('erotica');
+      if (nudity.very_suggestive > 0.7) sensitiveReasons.push('suggestive');
+    }
+
+    // Moderate gore detection
+    if (data.gore && data.gore.prob > 0.5) {
+      sensitiveReasons.push('gore');
+    }
+
+    // Content is allowed but should be marked sensitive
+    if (sensitiveReasons.length > 0) {
+      return {
+        safe: true,
+        flagged: false,
+        confidence: 1.0,
+        suggestSensitive: true,
+        sensitiveReason: sensitiveReasons.join(', '),
+        rawResponse: data,
+      };
+    }
+
+    // Safe, no sensitive content detected
     return {
       safe: true,
       flagged: false,
-      confidence: 1 - maxConfidence,
+      confidence: 1.0,
+      suggestSensitive: false,
       rawResponse: data,
     };
   }
 
   /**
    * Analyze video moderation response
+   *
+   * Policy:
+   * - Extreme gore (> 0.85): Flag (block)
+   * - Nudity/sexual/erotica (> 0.5): Auto-tag as sensitive
+   * - Moderate gore (> 0.5): Auto-tag as sensitive
    */
   private analyzeVideoResponse(data: any): ModerationResult {
-    // Check frames for issues
     const frames = data.data?.frames || [];
-    let maxIssueConfidence = 0;
-    const issues: string[] = [];
+    let maxGoreConfidence = 0;
+    const sensitiveReasons: Set<string> = new Set();
 
     for (const frame of frames) {
-      if (frame.nudity) {
-        if (frame.nudity.sexual_activity > 0.5) {
-          issues.push('sexual_activity');
-          maxIssueConfidence = Math.max(maxIssueConfidence, frame.nudity.sexual_activity);
-        }
-        if (frame.nudity.sexual_display > 0.5) {
-          issues.push('sexual_display');
-          maxIssueConfidence = Math.max(maxIssueConfidence, frame.nudity.sexual_display);
-        }
+      // Check for extreme gore (block threshold)
+      if (frame.gore?.prob > 0.85) {
+        maxGoreConfidence = Math.max(maxGoreConfidence, frame.gore.prob);
       }
 
-      if (frame.weapon?.classes) {
-        const weapon = frame.weapon.classes;
-        if (weapon.firearm > 0.7 || weapon.knife > 0.7) {
-          issues.push('weapon');
-          maxIssueConfidence = Math.max(maxIssueConfidence, Math.max(weapon.firearm, weapon.knife));
-        }
-      }
-
+      // Check for sensitive content (auto-tag threshold)
       if (frame.gore?.prob > 0.5) {
-        issues.push('violence');
-        maxIssueConfidence = Math.max(maxIssueConfidence, frame.gore.prob);
+        sensitiveReasons.add('gore');
+      }
+
+      if (frame.nudity) {
+        if (frame.nudity.sexual_activity > 0.5) sensitiveReasons.add('sexual_activity');
+        if (frame.nudity.sexual_display > 0.5) sensitiveReasons.add('sexual_display');
+        if (frame.nudity.erotica > 0.5) sensitiveReasons.add('erotica');
+        if (frame.nudity.very_suggestive > 0.7) sensitiveReasons.add('suggestive');
       }
     }
 
-    if (issues.length > 0) {
+    // Flag/block if extreme gore detected
+    if (maxGoreConfidence > 0.85) {
       return {
         safe: false,
         flagged: true,
-        reason: `Video content flagged: ${[...new Set(issues)].join(', ')}`,
-        confidence: maxIssueConfidence,
+        reason: 'Extreme graphic content detected in video',
+        confidence: maxGoreConfidence,
+        suggestSensitive: true,
+        sensitiveReason: 'extreme_gore',
         rawResponse: data,
       };
     }
 
+    // Auto-tag as sensitive if nudity/gore detected
+    if (sensitiveReasons.size > 0) {
+      return {
+        safe: true,
+        flagged: false,
+        confidence: 1.0,
+        suggestSensitive: true,
+        sensitiveReason: Array.from(sensitiveReasons).join(', '),
+      };
+    }
+
+    // Safe, no sensitive content
     return {
       safe: true,
       flagged: false,
-      confidence: 1 - maxIssueConfidence,
+      confidence: 1.0,
+      suggestSensitive: false,
     };
   }
 }
@@ -397,6 +427,7 @@ export async function moderateContent(
       safe: true,
       flagged: false,
       confidence: 0,
+      suggestSensitive: false,
       reason: 'Moderation not configured',
     };
   }

@@ -15,6 +15,7 @@ import {
   IconFlag,
 } from "@tabler/icons-react";
 import { VerificationBadge } from "@/components/payments";
+import { StaffBadge } from "@/components/ui/StaffBadge";
 
 interface ProfileHeaderProps {
   username: string;
@@ -25,6 +26,7 @@ interface ProfileHeaderProps {
   isOwnProfile: boolean;
   isFollowing: boolean;
   isVerified?: boolean;
+  role?: number;
   onFollow?: () => Promise<void>;
   onUnfollow?: () => Promise<void>;
   onSettings?: () => void;
@@ -45,6 +47,7 @@ export function ProfileHeader({
   isOwnProfile,
   isFollowing,
   isVerified,
+  role = 0,
   onFollow,
   onUnfollow,
   onSettings,
@@ -127,6 +130,7 @@ export function ProfileHeader({
               <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-1.5">
                 {displayName || username}
                 {isVerified && <VerificationBadge size={20} />}
+                <StaffBadge role={role} size={20} />
               </h1>
               <p className="text-sm sm:text-base text-foreground/50">@{username}</p>
             </div>

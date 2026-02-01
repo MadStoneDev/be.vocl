@@ -37,6 +37,7 @@ interface ProfileData {
   showComments: boolean;
   showFollowers: boolean;
   showFollowing: boolean;
+  role: number;
 }
 
 interface ProfileLink {
@@ -125,6 +126,7 @@ export default function ProfilePage() {
         showComments: profileData.showComments,
         showFollowers: profileData.showFollowers,
         showFollowing: profileData.showFollowing,
+        role: profileData.role,
       });
 
       // Fetch stats
@@ -349,6 +351,7 @@ export default function ProfilePage() {
         bio={profile.bio}
         isOwnProfile={isOwnProfile}
         isFollowing={following}
+        role={profile.role}
         onFollow={handleFollow}
         onUnfollow={handleUnfollow}
         onSettings={() => router.push("/settings")}
