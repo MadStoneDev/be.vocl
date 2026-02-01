@@ -17,6 +17,7 @@ import {
 } from "@tabler/icons-react";
 import { validateUsernameFormat } from "@/lib/validation";
 import { checkUsernameAvailability } from "@/actions/profile";
+import Logo from "@/components/logo";
 
 type AuthMode = "login" | "signup" | "forgot";
 
@@ -226,8 +227,8 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     <div className="w-full max-w-md mx-auto">
       {/* Logo and tagline */}
       <div className="text-center mb-8">
-        <h1 className="font-display text-5xl text-foreground mb-2">be.vocl</h1>
-        <p className="text-foreground/60 font-light">Share your voice freely</p>
+        <Logo className="mx-auto w-60" />
+        <p className="-mt-8 text-foreground/60 font-light">Share your voice freely</p>
       </div>
 
       {/* Auth Card */}
