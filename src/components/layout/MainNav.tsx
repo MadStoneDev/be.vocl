@@ -40,7 +40,7 @@ export function MainNav({
       <div className="px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors">
-          <Logo />
+          <Logo className={`min-h-12.5`} />
         </Link>
 
         {/* Right side actions */}
