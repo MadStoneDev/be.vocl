@@ -130,7 +130,7 @@ export default function ProfileSettingsPage() {
         body: JSON.stringify({
           filename: file.name,
           contentType: file.type,
-          folder: "avatars",
+          uploadType: "avatar",
         }),
       });
 
@@ -181,7 +181,7 @@ export default function ProfileSettingsPage() {
         body: JSON.stringify({
           filename: file.name,
           contentType: file.type,
-          folder: "headers",
+          uploadType: "header",
         }),
       });
 
