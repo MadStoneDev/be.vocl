@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload: AuthWebhookPayload = await request.json();
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3111";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
 
     switch (payload.type) {
       case "signup": {
