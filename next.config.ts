@@ -30,6 +30,9 @@ const nextConfig: NextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
 
+  // Turbopack config (Next.js 16+ default bundler)
+  turbopack: {},
+
   // Experimental optimizations
   experimental: {
     // Optimize CSS output
@@ -40,36 +43,6 @@ const nextConfig: NextConfig = {
       "date-fns",
       "lodash",
     ],
-  },
-
-  // Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    // Only in production
-    if (!dev && !isServer) {
-      // Split chunks more aggressively
-      config.optimization.splitChunks = {
-        chunks: "all",
-        minSize: 20000,
-        maxSize: 244000,
-        cacheGroups: {
-          // Vendor chunk for node_modules
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: "vendors",
-            chunks: "all",
-            priority: 10,
-          },
-          // Separate chunk for heavy UI libraries
-          ui: {
-            test: /[\\/]node_modules[\\/](@tabler|@radix-ui|framer-motion)[\\/]/,
-            name: "ui-libs",
-            chunks: "all",
-            priority: 20,
-          },
-        },
-      };
-    }
-    return config;
   },
 };
 
