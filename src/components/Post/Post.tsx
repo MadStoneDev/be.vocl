@@ -18,6 +18,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
+import { StaffBadge } from "@/components/ui";
 
 // Panel types for expanded view
 type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
@@ -29,6 +30,7 @@ export type PostContentType = "image" | "text" | "video" | "audio" | "gallery";
 export interface PostAuthor {
   username: string;
   avatarUrl: string;
+  role?: number;
 }
 export interface PostStats {
   comments: number;
@@ -51,6 +53,7 @@ export interface UserData {
   username: string;
   avatarUrl: string;
   displayName?: string;
+  role?: number;
 }
 export interface PostProps {
   id: string;
@@ -68,6 +71,7 @@ export interface PostProps {
   onLike?: () => void;
   onReblog?: (type: "instant" | "with-comment" | "schedule" | "queue") => void;
   onMenuClick?: () => void;
+  onLikesExpand?: () => void;
   onReblogsExpand?: () => void;
 }
 
@@ -99,12 +103,15 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
           />
         </Link>
         <div className="flex flex-col">
-          <Link
-            href={`/profile/${author.username}`}
-            className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-accent transition-colors"
-          >
-            {author.username}
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              href={`/profile/${author.username}`}
+              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-accent transition-colors"
+            >
+              {author.username}
+            </Link>
+            {author.role !== undefined && <StaffBadge role={author.role} size={16} />}
+          </div>
           <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">{timestamp}</span>
         </div>
       </div>
@@ -362,13 +369,14 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
                 />
               </Link>
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/profile/${comment.author.username}`}
                     className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors"
                   >
                     {comment.author.username}
                   </Link>
+                  {comment.author.role !== undefined && <StaffBadge role={comment.author.role} size={14} />}
                   <span className="text-xs text-neutral-400">{comment.timestamp}</span>
                 </div>
                 <p className="text-sm text-neutral-600 mt-0.5">{comment.content}</p>
@@ -408,7 +416,10 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent block transition-colors">{user.displayName || user.username}</span>
+              <div className="flex items-center gap-1">
+                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors">{user.displayName || user.username}</span>
+                {user.role !== undefined && <StaffBadge role={user.role} size={14} />}
+              </div>
               <span className="text-xs text-neutral-400">@{user.username}</span>
             </div>
             <div className={`w-2 h-2 rounded-full ${actionColor}`} />
@@ -487,6 +498,7 @@ export function Post({
   onLike,
   onReblog,
   onMenuClick,
+  onLikesExpand,
   onReblogsExpand,
 }: PostProps) {
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
@@ -535,6 +547,7 @@ export function Post({
     } else {
       setLastPanel("likes");
       setExpandedPanel("likes");
+      onLikesExpand?.();
     }
     setIsReblogMenuOpen(false);
   };
@@ -668,15 +681,23 @@ export function ImageContent({ src, alt }: ImageContentProps) {
 }
 
 interface TextContentProps {
-  children: ReactNode;
+  children?: ReactNode;
+  html?: string;
 }
 
-export function TextContent({ children }: TextContentProps) {
+export function TextContent({ children, html }: TextContentProps) {
   return (
     <div className="p-3 sm:p-4 pb-18.5 sm:pb-18.5 bg-[#EBEBEB]">
-      <div className="font-sans text-sm sm:text-base font-light leading-relaxed  text-neutral-700">
-        {children}
-      </div>
+      {html ? (
+        <div
+          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <div className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 whitespace-pre-wrap">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

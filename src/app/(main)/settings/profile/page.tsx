@@ -50,6 +50,10 @@ export default function ProfileSettingsPage() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const headerInputRef = useRef<HTMLInputElement>(null);
 
+  // Upload states
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingHeader, setIsUploadingHeader] = useState(false);
+
   // Track changes
   const [hasChanges, setHasChanges] = useState(false);
   const [originalData, setOriginalData] = useState({
@@ -122,6 +126,7 @@ export default function ProfileSettingsPage() {
       return;
     }
 
+    setIsUploadingAvatar(true);
     try {
       // Get presigned URL
       const presignRes = await fetch("/api/upload/presign", {
@@ -157,6 +162,8 @@ export default function ProfileSettingsPage() {
       }
     } catch (error) {
       toast.error("Failed to upload avatar");
+    } finally {
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -174,6 +181,7 @@ export default function ProfileSettingsPage() {
       return;
     }
 
+    setIsUploadingHeader(true);
     try {
       const presignRes = await fetch("/api/upload/presign", {
         method: "POST",
@@ -206,6 +214,8 @@ export default function ProfileSettingsPage() {
       }
     } catch (error) {
       toast.error("Failed to upload header image");
+    } finally {
+      setIsUploadingHeader(false);
     }
   };
 
@@ -281,15 +291,21 @@ export default function ProfileSettingsPage() {
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent/30 via-vocl-accent/10 to-background" />
           )}
-          <button
-            onClick={() => headerInputRef.current?.click()}
-            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
-          >
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 backdrop-blur text-white">
-              <IconCamera size={20} />
-              <span className="text-sm font-medium">Change header</span>
+          {isUploadingHeader ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+              <IconLoader2 size={32} className="text-white animate-spin" />
             </div>
-          </button>
+          ) : (
+            <button
+              onClick={() => headerInputRef.current?.click()}
+              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
+            >
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 backdrop-blur text-white">
+                <IconCamera size={20} />
+                <span className="text-sm font-medium">Change header</span>
+              </div>
+            </button>
+          )}
         </div>
         <input
           ref={headerInputRef}
@@ -302,7 +318,7 @@ export default function ProfileSettingsPage() {
         {/* Avatar */}
         <div className="absolute -bottom-12 left-4">
           <div className="relative">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-xl">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-xl bg-vocl-surface-dark">
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
@@ -318,12 +334,18 @@ export default function ProfileSettingsPage() {
                 </div>
               )}
             </div>
-            <button
-              onClick={() => avatarInputRef.current?.click()}
-              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
-            >
-              <IconCamera size={24} className="text-white" />
-            </button>
+            {isUploadingAvatar ? (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
+                <IconLoader2 size={24} className="text-white animate-spin" />
+              </div>
+            ) : (
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
+              >
+                <IconCamera size={24} className="text-white" />
+              </button>
+            )}
           </div>
           <input
             ref={avatarInputRef}

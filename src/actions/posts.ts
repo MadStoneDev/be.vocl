@@ -218,7 +218,7 @@ function extractTextContent(postType: PostType, content: PostContent): string | 
 
 async function handleTags(supabase: any, postId: string, tagNames: string[]) {
   for (const tagName of tagNames) {
-    const normalizedTag = tagName.toLowerCase().trim().replace(/^#/, "");
+    const normalizedTag = tagName.trim().replace(/^#/, "").replace(/\s+/g, " ");
     if (!normalizedTag) continue;
 
     // Upsert tag
@@ -438,11 +438,13 @@ interface PostWithDetails {
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
+    role: number;
   };
   postType: PostType;
   content: any;
   isSensitive: boolean;
   isPinned: boolean;
+  isOwn: boolean;
   createdAt: string;
   likeCount: number;
   commentCount: number;
@@ -490,7 +492,8 @@ export async function getPostsByUser(
         author:author_id (
           username,
           display_name,
-          avatar_url
+          avatar_url,
+          role
         )
       `,
         { count: "exact" }
@@ -575,11 +578,13 @@ export async function getPostsByUser(
         username: post.author?.username || "unknown",
         displayName: post.author?.display_name,
         avatarUrl: post.author?.avatar_url,
+        role: post.author?.role || 0,
       },
       postType: post.post_type,
       content: post.content,
       isSensitive: post.is_sensitive,
       isPinned: post.is_pinned,
+      isOwn: user ? post.author_id === user.id : false,
       createdAt: formatTimeAgo(post.created_at),
       likeCount: likeCountMap.get(post.id) || 0,
       commentCount: commentCountMap.get(post.id) || 0,
@@ -647,7 +652,8 @@ export async function getLikedPosts(
           author:author_id (
             username,
             display_name,
-            avatar_url
+            avatar_url,
+            role
           )
         )
       `,
@@ -723,11 +729,13 @@ export async function getLikedPosts(
         username: l.post.author?.username || "unknown",
         displayName: l.post.author?.display_name,
         avatarUrl: l.post.author?.avatar_url,
+        role: l.post.author?.role || 0,
       },
       postType: l.post.post_type,
       content: l.post.content,
       isSensitive: l.post.is_sensitive,
       isPinned: false,
+      isOwn: false,
       createdAt: formatTimeAgo(l.post.created_at),
       likeCount: likeCountMap.get(l.post.id) || 0,
       commentCount: commentCountMap.get(l.post.id) || 0,
@@ -805,7 +813,8 @@ export async function getCommentedPosts(
           author:author_id (
             username,
             display_name,
-            avatar_url
+            avatar_url,
+            role
           )
         )
       `,
@@ -891,11 +900,13 @@ export async function getCommentedPosts(
         username: c.post.author?.username || "unknown",
         displayName: c.post.author?.display_name,
         avatarUrl: c.post.author?.avatar_url,
+        role: c.post.author?.role || 0,
       },
       postType: c.post.post_type,
       content: c.post.content,
       isSensitive: c.post.is_sensitive,
       isPinned: false,
+      isOwn: false,
       createdAt: formatTimeAgo(c.post.created_at),
       likeCount: likeCountMap.get(c.post.id) || 0,
       commentCount: commentCountMap.get(c.post.id) || 0,
@@ -962,7 +973,8 @@ export async function getFeedPosts(options?: {
         author:author_id (
           username,
           display_name,
-          avatar_url
+          avatar_url,
+          role
         )
       `
       )
@@ -1034,11 +1046,13 @@ export async function getFeedPosts(options?: {
         username: post.author?.username || "unknown",
         displayName: post.author?.display_name,
         avatarUrl: post.author?.avatar_url,
+        role: post.author?.role || 0,
       },
       postType: post.post_type,
       content: post.content,
       isSensitive: post.is_sensitive,
       isPinned: post.is_pinned,
+      isOwn: user ? post.author_id === user.id : false,
       createdAt: formatTimeAgo(post.created_at),
       likeCount: likeCountMap.get(post.id) || 0,
       commentCount: commentCountMap.get(post.id) || 0,

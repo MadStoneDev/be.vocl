@@ -14,6 +14,7 @@ import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, unfollowUser } from "@/actions/follows";
 import { ReblogDialog } from "@/components/reblog";
 import { ReportDialog } from "./ReportDialog";
+import { UserReportDialog } from "./UserReportDialog";
 import { PostTags } from "./PostTags";
 
 interface PostTag {
@@ -69,8 +70,9 @@ export function InteractivePost({
   const [reblogDialogMode, setReblogDialogMode] = useState<"now" | "queue" | "schedule">("now");
   const [isReblogging, startReblogTransition] = useTransition();
 
-  // Report dialog state
-  const [showReportDialog, setShowReportDialog] = useState(false);
+  // Flag/Report dialog state
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [showReportUserDialog, setShowReportUserDialog] = useState(false);
 
   // Pin state (can be toggled)
   const [currentlyPinned, setCurrentlyPinned] = useState(isPinned);
@@ -85,6 +87,7 @@ export function InteractivePost({
     likeCount,
     likedBy: likedByRaw,
     handleLike,
+    refreshLikes,
   } = useLike({
     postId: id,
     initialLiked: initialInteractions.hasLiked,
@@ -122,6 +125,7 @@ export function InteractivePost({
     author: {
       username: c.username,
       avatarUrl: c.avatarUrl || "https://via.placeholder.com/100",
+      role: c.role,
     },
     content: c.content,
     timestamp: c.createdAt,
@@ -133,6 +137,7 @@ export function InteractivePost({
     username: u.username,
     avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
     displayName: u.displayName || undefined,
+    role: u.role,
   }));
 
   // Transform rebloggedBy to match Post component interface
@@ -141,6 +146,7 @@ export function InteractivePost({
     username: u.username,
     avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
     displayName: u.displayName || undefined,
+    role: u.role,
   }));
 
   // Build current stats
@@ -276,8 +282,12 @@ export function InteractivePost({
     });
   }, [authorId, author.username]);
 
-  const handleReport = useCallback(() => {
-    setShowReportDialog(true);
+  const handleFlagPost = useCallback(() => {
+    setShowFlagDialog(true);
+  }, []);
+
+  const handleReportUser = useCallback(() => {
+    setShowReportUserDialog(true);
   }, []);
 
   // Don't render if deleted
@@ -302,6 +312,7 @@ export function InteractivePost({
         onComment={handleComment}
         onReblog={handleReblog}
         onMenuClick={handleMenuClick}
+        onLikesExpand={refreshLikes}
         onReblogsExpand={refreshRebloggedBy}
       >
         {children}
@@ -321,7 +332,8 @@ export function InteractivePost({
         onPin={handlePin}
         onMute={handleMute}
         onUnfollow={handleUnfollow}
-        onReport={handleReport}
+        onFlagPost={handleFlagPost}
+        onReportUser={handleReportUser}
       />
 
       {/* Delete Confirmation */}
@@ -354,13 +366,24 @@ export function InteractivePost({
         onSuccess={handleReblogSuccess}
       />
 
-      {/* Report Dialog */}
+      {/* Flag Post Dialog */}
       <ReportDialog
-        isOpen={showReportDialog}
-        onClose={() => setShowReportDialog(false)}
+        isOpen={showFlagDialog}
+        onClose={() => setShowFlagDialog(false)}
         postId={id}
-        onSuccess={() => toast.success("Report submitted. Thank you!")}
+        onSuccess={() => toast.success("Flag submitted. Thank you!")}
       />
+
+      {/* Report User Dialog */}
+      {authorId && (
+        <UserReportDialog
+          isOpen={showReportUserDialog}
+          onClose={() => setShowReportUserDialog(false)}
+          userId={authorId}
+          username={author.username}
+          onSuccess={() => toast.success("Report submitted. Thank you!")}
+        />
+      )}
     </div>
   );
 }

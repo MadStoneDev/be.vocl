@@ -8,6 +8,7 @@ interface UserData {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  role?: number;
 }
 
 interface UseLikeOptions {
@@ -69,6 +70,7 @@ export function useLike({
           username: like.username,
           displayName: like.displayName,
           avatarUrl: like.avatarUrl,
+          role: like.role,
         }))
       );
       setLikeCount(result.count || 0);

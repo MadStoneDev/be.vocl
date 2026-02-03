@@ -9,6 +9,7 @@ interface CommentData {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  role?: number;
   content: string;
   createdAt: string;
   isOwn: boolean;

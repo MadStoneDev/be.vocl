@@ -16,6 +16,7 @@ interface CommentData {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  role: number;
   content: string;
   createdAt: string;
   isOwn: boolean;
@@ -181,7 +182,8 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
           id,
           username,
           display_name,
-          avatar_url
+          avatar_url,
+          role
         )
       `
       )
@@ -199,6 +201,7 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
       username: comment.profile?.username || "unknown",
       displayName: comment.profile?.display_name,
       avatarUrl: comment.profile?.avatar_url,
+      role: comment.profile?.role || 0,
       content: comment.content_html,
       createdAt: formatTimeAgo(comment.created_at),
       isOwn: user ? comment.user_id === user.id : false,

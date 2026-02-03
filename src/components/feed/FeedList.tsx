@@ -10,16 +10,20 @@ interface FeedPost {
   author: {
     username: string;
     avatarUrl: string;
+    role?: number;
   };
+  authorId?: string;
   timestamp: string;
   contentType: "text" | "image" | "video" | "audio" | "gallery";
   content: {
     text?: string;
+    html?: string;
     imageUrl?: string;
   };
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean;
+  isOwn?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -59,11 +63,13 @@ export function FeedList({
           key={post.id}
           id={post.id}
           author={post.author}
+          authorId={post.authorId}
           timestamp={post.timestamp}
           contentType={post.contentType}
           initialStats={post.stats}
           initialInteractions={post.interactions}
           isSensitive={post.isSensitive}
+          isOwn={post.isOwn}
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
           tags={post.tags}
@@ -71,8 +77,8 @@ export function FeedList({
           {post.contentType === "image" && post.content.imageUrl && (
             <ImageContent src={post.content.imageUrl} alt="Post image" />
           )}
-          {post.contentType === "text" && post.content.text && (
-            <TextContent>{post.content.text}</TextContent>
+          {post.contentType === "text" && (post.content.html || post.content.text) && (
+            <TextContent html={post.content.html}>{post.content.text}</TextContent>
           )}
         </InteractivePost>
       ))}

@@ -9,11 +9,13 @@ interface RecommendedPost {
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
+    role: number;
   };
   postType: string;
   content: any;
   isSensitive: boolean;
   isPinned: boolean;
+  isOwn: boolean;
   createdAt: string;
   publishedAt: string;
   likeCount: number;
@@ -134,7 +136,8 @@ export async function getPersonalizedFeed(options?: {
             author:author_id (
               username,
               display_name,
-              avatar_url
+              avatar_url,
+              role
             )
           `)
           .in("id", tagPostIds.slice(0, 100))
@@ -175,7 +178,8 @@ export async function getPersonalizedFeed(options?: {
           author:author_id (
             username,
             display_name,
-            avatar_url
+            avatar_url,
+            role
           )
         `)
         .eq("status", "published")
@@ -276,11 +280,13 @@ export async function getPersonalizedFeed(options?: {
           username: post.author?.username || "unknown",
           displayName: post.author?.display_name,
           avatarUrl: post.author?.avatar_url,
+          role: post.author?.role || 0,
         },
         postType: post.post_type,
         content: post.content,
         isSensitive: post.is_sensitive,
         isPinned: post.is_pinned,
+        isOwn: false, // We exclude own posts in the query
         createdAt: formatTimeAgo(post.created_at),
         publishedAt: post.published_at || post.created_at,
         likeCount: likes,

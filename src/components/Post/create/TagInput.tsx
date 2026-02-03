@@ -21,10 +21,9 @@ export function TagInput({
   const addTag = useCallback(
     (tag: string) => {
       const normalizedTag = tag
-        .toLowerCase()
         .trim()
         .replace(/^#/, "")
-        .replace(/[^a-z0-9_]/g, "");
+        .replace(/\s+/g, " "); // Normalize multiple spaces to single space
 
       if (
         normalizedTag &&

@@ -365,6 +365,7 @@ export async function getRebloggedBy(
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
+    role: number;
   }>;
   total?: number;
   error?: string;
@@ -383,7 +384,8 @@ export async function getRebloggedBy(
           id,
           username,
           display_name,
-          avatar_url
+          avatar_url,
+          role
         )
       `,
         { count: "exact" }
@@ -411,6 +413,7 @@ export async function getRebloggedBy(
         username: r.author.username,
         displayName: r.author.display_name,
         avatarUrl: r.author.avatar_url,
+        role: r.author.role || 0,
       }));
 
     return {

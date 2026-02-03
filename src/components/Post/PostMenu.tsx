@@ -12,6 +12,7 @@ import {
   IconVolumeOff,
   IconUserMinus,
   IconCheck,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -26,7 +27,8 @@ interface PostMenuProps {
   onPin?: () => void;
   onMute?: () => void;
   onUnfollow?: () => void;
-  onReport?: () => void;
+  onFlagPost?: () => void;
+  onReportUser?: () => void;
 }
 
 export function PostMenu({
@@ -41,7 +43,8 @@ export function PostMenu({
   onPin,
   onMute,
   onUnfollow,
-  onReport,
+  onFlagPost,
+  onReportUser,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -215,17 +218,30 @@ export function PostMenu({
             {/* Divider */}
             <div className="h-px bg-neutral-200 my-1" />
 
-            {/* Report Post */}
+            {/* Flag Post */}
             <button
               onClick={() => {
-                onReport?.();
+                onFlagPost?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
+              role="menuitem"
+            >
+              <IconFlag size={18} />
+              <span>Flag post</span>
+            </button>
+
+            {/* Report User */}
+            <button
+              onClick={() => {
+                onReportUser?.();
                 onClose();
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-red-50 transition-colors"
               role="menuitem"
             >
-              <IconFlag size={18} />
-              <span>Report post</span>
+              <IconAlertTriangle size={18} />
+              <span>Report @{authorUsername}</span>
             </button>
           </>
         )}

@@ -14,6 +14,7 @@ interface FeedPost {
   author: {
     username: string;
     avatarUrl: string;
+    role?: number;
   };
   timestamp: string;
   contentType: "text" | "image" | "video" | "audio" | "gallery";
@@ -31,6 +32,7 @@ interface FeedPost {
   stats: { comments: number; likes: number; reblogs: number };
   interactions: { hasCommented: boolean; hasLiked: boolean; hasReblogged: boolean };
   isSensitive?: boolean;
+  isOwn?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -121,6 +123,7 @@ export default function FeedPage() {
           author: {
             username: post.author.username,
             avatarUrl: post.author.avatarUrl || "https://via.placeholder.com/100",
+            role: post.author.role,
           },
           timestamp: post.createdAt,
           contentType: post.postType as FeedPost["contentType"],
@@ -136,6 +139,7 @@ export default function FeedPage() {
             hasReblogged: post.hasReblogged,
           },
           isSensitive: post.isSensitive,
+          isOwn: post.isOwn,
           tags: post.tags,
         };
       });
@@ -167,16 +171,23 @@ export default function FeedPage() {
   // Transform for FeedList (it expects slightly different format)
   const feedListPosts = sortedPosts.map((post) => ({
     id: post.id,
-    author: post.author,
+    author: {
+      username: post.author.username,
+      avatarUrl: post.author.avatarUrl,
+      role: post.author.role,
+    },
+    authorId: post.authorId,
     timestamp: post.timestamp,
     contentType: post.contentType,
     content: {
       text: post.content.text || post.content.html?.replace(/<[^>]*>/g, ""),
+      html: post.content.html,
       imageUrl: post.content.imageUrl,
     },
     stats: post.stats,
     interactions: post.interactions,
     isSensitive: post.isSensitive,
+    isOwn: post.isOwn,
     tags: post.tags,
   }));
 

@@ -16,6 +16,7 @@ interface LikesData {
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
+    role: number;
   }>;
   count?: number;
   hasLiked?: boolean;
@@ -130,7 +131,8 @@ export async function getLikesByPost(postId: string): Promise<LikesData> {
           id,
           username,
           display_name,
-          avatar_url
+          avatar_url,
+          role
         )
       `
       )
@@ -147,6 +149,7 @@ export async function getLikesByPost(postId: string): Promise<LikesData> {
       username: like.profile?.username || "unknown",
       displayName: like.profile?.display_name,
       avatarUrl: like.profile?.avatar_url,
+      role: like.profile?.role || 0,
     }));
 
     // Check if current user has liked

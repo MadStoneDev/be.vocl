@@ -8,6 +8,7 @@ interface UserData {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+  role?: number;
 }
 
 interface UseReblogOptions {
@@ -43,6 +44,7 @@ export function useReblog({
           username: user.username,
           displayName: user.displayName,
           avatarUrl: user.avatarUrl,
+          role: user.role,
         }))
       );
       if (result.total !== undefined) {
