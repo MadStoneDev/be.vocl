@@ -111,6 +111,7 @@ export function InteractivePost({
     commentCount,
     hasCommented,
     addComment,
+    refreshComments,
   } = useComments({
     postId: id,
     initialCount: initialStats.comments,
@@ -321,6 +322,7 @@ export function InteractivePost({
         onComment={handleComment}
         onReblog={handleReblog}
         onMenuClick={handleMenuClick}
+        onCommentsExpand={refreshComments}
         onLikesExpand={refreshLikes}
         onReblogsExpand={refreshRebloggedBy}
       >

@@ -71,6 +71,7 @@ export interface PostProps {
   onLike?: () => void;
   onReblog?: (type: "instant" | "with-comment" | "schedule" | "queue") => void;
   onMenuClick?: () => void;
+  onCommentsExpand?: () => void;
   onLikesExpand?: () => void;
   onReblogsExpand?: () => void;
 }
@@ -498,6 +499,7 @@ export const Post = memo(function Post({
   onLike,
   onReblog,
   onMenuClick,
+  onCommentsExpand,
   onLikesExpand,
   onReblogsExpand,
 }: PostProps) {
@@ -535,9 +537,10 @@ export const Post = memo(function Post({
     } else {
       setLastPanel("comments");
       setExpandedPanel("comments");
+      onCommentsExpand?.();
     }
     setIsReblogMenuOpen(false);
-  }, [expandedPanel]);
+  }, [expandedPanel, onCommentsExpand]);
 
   const handleLikesClick = useCallback(() => {
     if (expandedPanel === "likes") {
