@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { getFeedPosts } from "@/actions/posts";
@@ -166,10 +166,9 @@ export default function FeedPage() {
   // Posts are already sorted server-side
   // - Chronological: sorted by created_at desc
   // - For You: sorted by personalization score
-  const sortedPosts = posts;
 
-  // Transform for FeedList (it expects slightly different format)
-  const feedListPosts = sortedPosts.map((post) => ({
+  // Memoize the feedListPosts transformation to avoid recalculating on every render
+  const feedListPosts = useMemo(() => posts.map((post) => ({
     id: post.id,
     author: {
       username: post.author.username,
@@ -189,7 +188,7 @@ export default function FeedPage() {
     isSensitive: post.isSensitive,
     isOwn: post.isOwn,
     tags: post.tags,
-  }));
+  })), [posts]);
 
   return (
     <div className="py-3 mx-auto max-w-sm">

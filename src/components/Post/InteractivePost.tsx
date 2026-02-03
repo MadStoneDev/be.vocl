@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useTransition, type ReactNode } from "react";
+import { useState, useCallback, useTransition, useMemo, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { Post } from "./Post";
-import { PostMenu } from "./PostMenu";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
 import { useLike } from "@/hooks/useLike";
 import { useComments } from "@/hooks/useComments";
@@ -12,10 +12,21 @@ import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
 import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, unfollowUser } from "@/actions/follows";
-import { ReblogDialog } from "@/components/reblog";
-import { ReportDialog } from "./ReportDialog";
-import { UserReportDialog } from "./UserReportDialog";
 import { PostTags } from "./PostTags";
+
+// Lazy load heavy dialog components for better initial bundle size
+const PostMenu = dynamic(() => import("./PostMenu").then(mod => ({ default: mod.PostMenu })), {
+  ssr: false,
+});
+const ReblogDialog = dynamic(() => import("@/components/reblog").then(mod => ({ default: mod.ReblogDialog })), {
+  ssr: false,
+});
+const ReportDialog = dynamic(() => import("./ReportDialog").then(mod => ({ default: mod.ReportDialog })), {
+  ssr: false,
+});
+const UserReportDialog = dynamic(() => import("./UserReportDialog").then(mod => ({ default: mod.UserReportDialog })), {
+  ssr: false,
+});
 
 interface PostTag {
   id: string;
@@ -102,6 +113,7 @@ export function InteractivePost({
     addComment,
   } = useComments({
     postId: id,
+    initialCount: initialStats.comments,
     initialHasCommented: initialInteractions.hasCommented,
   });
 
@@ -119,8 +131,8 @@ export function InteractivePost({
     initialCount: initialStats.reblogs,
   });
 
-  // Transform comments to match Post component interface
-  const comments: CommentData[] = commentsRaw.map((c) => ({
+  // Memoize transformations to avoid recalculating on every render
+  const comments: CommentData[] = useMemo(() => commentsRaw.map((c) => ({
     id: c.id,
     author: {
       username: c.username,
@@ -129,39 +141,36 @@ export function InteractivePost({
     },
     content: c.content,
     timestamp: c.createdAt,
-  }));
+  })), [commentsRaw]);
 
-  // Transform likedBy to match Post component interface
-  const likedBy: UserData[] = likedByRaw.map((u) => ({
+  const likedBy: UserData[] = useMemo(() => likedByRaw.map((u) => ({
     id: u.id,
     username: u.username,
     avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
     displayName: u.displayName || undefined,
     role: u.role,
-  }));
+  })), [likedByRaw]);
 
-  // Transform rebloggedBy to match Post component interface
-  const rebloggedBy: UserData[] = rebloggedByRaw.map((u) => ({
+  const rebloggedBy: UserData[] = useMemo(() => rebloggedByRaw.map((u) => ({
     id: u.id,
     username: u.username,
     avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
     displayName: u.displayName || undefined,
     role: u.role,
-  }));
+  })), [rebloggedByRaw]);
 
-  // Build current stats
-  const stats: PostStats = {
+  // Memoize stats and interactions objects
+  const stats: PostStats = useMemo(() => ({
     comments: commentCount,
     likes: likeCount,
     reblogs: reblogCount,
-  };
+  }), [commentCount, likeCount, reblogCount]);
 
-  // Build current interactions
-  const interactions: PostInteractions = {
+  const interactions: PostInteractions = useMemo(() => ({
     hasCommented,
     hasLiked: isLiked,
     hasReblogged,
-  };
+  }), [hasCommented, isLiked, hasReblogged]);
 
   // Handle comment submission
   const handleComment = useCallback(async (content: string) => {

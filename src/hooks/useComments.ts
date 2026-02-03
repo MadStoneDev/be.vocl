@@ -18,6 +18,7 @@ interface CommentData {
 interface UseCommentsOptions {
   postId: string;
   initialComments?: CommentData[];
+  initialCount?: number;
   initialHasCommented?: boolean;
 }
 
@@ -34,9 +35,12 @@ interface UseCommentsReturn {
 export function useComments({
   postId,
   initialComments = [],
+  initialCount = 0,
   initialHasCommented = false,
 }: UseCommentsOptions): UseCommentsReturn {
   const [comments, setComments] = useState<CommentData[]>(initialComments);
+  // Track the count separately - use initial count until comments are fetched
+  const [count, setCount] = useState(initialCount);
   const [hasCommented, setHasCommented] = useState(initialHasCommented);
   const [isPending, startTransition] = useTransition();
 
@@ -65,7 +69,9 @@ export function useComments({
     async (commentId: string): Promise<boolean> => {
       // Optimistic update
       const originalComments = comments;
+      const originalCount = count;
       setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setCount((prev) => Math.max(0, prev - 1));
 
       return new Promise((resolve) => {
         startTransition(async () => {
@@ -74,6 +80,7 @@ export function useComments({
           if (!result.success) {
             // Revert optimistic update
             setComments(originalComments);
+            setCount(originalCount);
             console.error("Delete comment failed:", result.error);
             resolve(false);
           } else {
@@ -87,13 +94,14 @@ export function useComments({
         });
       });
     },
-    [comments]
+    [comments, count]
   );
 
   const refreshCommentsInternal = async () => {
     const result = await getCommentsByPost(postId);
     if (result.success && result.comments) {
       setComments(result.comments);
+      setCount(result.count || result.comments.length);
       if (result.hasCommented !== undefined) {
         setHasCommented(result.hasCommented);
       }
@@ -106,7 +114,7 @@ export function useComments({
 
   return {
     comments,
-    commentCount: comments.length,
+    commentCount: count,
     hasCommented,
     isPending,
     addComment,

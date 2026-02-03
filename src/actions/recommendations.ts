@@ -61,31 +61,18 @@ export async function getPersonalizedFeed(options?: {
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
-    // Get user's followed tags
-    const { data: followedTags } = await supabase
-      .from("followed_tags")
-      .select("tag_id")
-      .eq("profile_id", user.id);
+    // Parallel fetch: Get followed tags, liked posts, and follows all at once
+    const [followedTagsResult, likedPostsResult, followsResult] = await Promise.all([
+      supabase.from("followed_tags").select("tag_id").eq("profile_id", user.id),
+      supabase.from("likes").select("post_id").eq("user_id", user.id).limit(50),
+      supabase.from("follows").select("following_id").eq("follower_id", user.id),
+    ]);
 
-    const followedTagIds = (followedTags || []).map((ft: any) => ft.tag_id);
+    const followedTagIds = (followedTagsResult.data || []).map((ft: any) => ft.tag_id);
+    const likedPostIds = (likedPostsResult.data || []).map((l: any) => l.post_id);
+    const followedUserIds = (followsResult.data || []).map((f: any) => f.following_id);
 
-    // Get tags from posts the user has liked (interest signal)
-    const { data: likedPostTags } = await supabase
-      .from("likes")
-      .select(`
-        post_id,
-        post:post_id (
-          id
-        )
-      `)
-      .eq("user_id", user.id)
-      .limit(50);
-
-    const likedPostIds = (likedPostTags || [])
-      .filter((l: any) => l.post)
-      .map((l: any) => l.post.id);
-
-    // Get tag IDs from liked posts
+    // Get tag IDs from liked posts (only if there are liked posts)
     let interestTagIds: string[] = [];
     if (likedPostIds.length > 0) {
       const { data: tagsFromLiked } = await supabase
@@ -99,21 +86,13 @@ export async function getPersonalizedFeed(options?: {
     // Combine all relevant tag IDs (followed tags have priority)
     const allRelevantTagIds = [...new Set([...followedTagIds, ...interestTagIds])];
 
-    // Get users the current user follows
-    const { data: follows } = await supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", user.id);
-
-    const followedUserIds = (follows || []).map((f: any) => f.following_id);
-
     // Build post query
-    // First, get posts from followed tags
     let candidatePosts: any[] = [];
     const postIdsSet = new Set<string>();
 
-    // Posts from followed tags (highest priority)
+    // Optimized: Fetch tagged posts directly with a single query if we have relevant tags
     if (allRelevantTagIds.length > 0) {
+      // Get post IDs for tagged posts
       const { data: taggedPostIds } = await supabase
         .from("post_tags")
         .select("post_id")
@@ -142,7 +121,7 @@ export async function getPersonalizedFeed(options?: {
           `)
           .in("id", tagPostIds.slice(0, 100))
           .eq("status", "published")
-          .neq("author_id", user.id) // Exclude own posts
+          .neq("author_id", user.id)
           .order("created_at", { ascending: false });
 
         for (const post of tagPosts || []) {
@@ -150,10 +129,7 @@ export async function getPersonalizedFeed(options?: {
             postIdsSet.add(post.id);
             candidatePosts.push({
               ...post,
-              reason: followedTagIds.some((tid: string) => {
-                // Check if this post has a followed tag
-                return true; // Simplified - will refine below
-              }) ? "followed_tag" : "similar_interest",
+              reason: "followed_tag" as const,
             });
           }
         }

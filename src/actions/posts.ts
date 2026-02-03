@@ -216,34 +216,53 @@ function extractTextContent(postType: PostType, content: PostContent): string | 
   return null;
 }
 
+/**
+ * Handle tags for a post
+ * Optimized: Uses batch queries instead of N+1 (2-3 queries total instead of 2-3 per tag)
+ */
 async function handleTags(supabase: any, postId: string, tagNames: string[]) {
-  for (const tagName of tagNames) {
-    const normalizedTag = tagName.trim().replace(/^#/, "").replace(/\s+/g, " ");
-    if (!normalizedTag) continue;
+  // Normalize all tag names first
+  const normalizedTags = tagNames
+    .map(name => name.trim().replace(/^#/, "").replace(/\s+/g, " "))
+    .filter(name => name.length > 0);
 
-    // Upsert tag
-    let { data: tag } = await supabase
+  if (normalizedTags.length === 0) return;
+
+  // Batch fetch: Get all existing tags in one query
+  const { data: existingTags } = await supabase
+    .from("tags")
+    .select("id, name")
+    .in("name", normalizedTags);
+
+  const existingTagMap = new Map<string, string>();
+  for (const tag of existingTags || []) {
+    existingTagMap.set(tag.name, tag.id);
+  }
+
+  // Find tags that don't exist yet
+  const newTagNames = normalizedTags.filter(name => !existingTagMap.has(name));
+
+  // Batch insert: Create all new tags in one query
+  if (newTagNames.length > 0) {
+    const { data: createdTags } = await supabase
       .from("tags")
-      .select("id")
-      .eq("name", normalizedTag)
-      .single();
+      .insert(newTagNames.map(name => ({ name })))
+      .select("id, name");
 
-    if (!tag) {
-      const { data: newTag } = await supabase
-        .from("tags")
-        .insert({ name: normalizedTag })
-        .select("id")
-        .single();
-      tag = newTag;
+    // Add newly created tags to the map
+    for (const tag of createdTags || []) {
+      existingTagMap.set(tag.name, tag.id);
     }
+  }
 
-    if (tag) {
-      // Link tag to post
-      await supabase.from("post_tags").insert({
-        post_id: postId,
-        tag_id: tag.id,
-      });
-    }
+  // Batch insert: Link all tags to post in one query
+  const postTagInserts = normalizedTags
+    .map(name => existingTagMap.get(name))
+    .filter((tagId): tagId is string => tagId !== undefined)
+    .map(tagId => ({ post_id: postId, tag_id: tagId }));
+
+  if (postTagInserts.length > 0) {
+    await supabase.from("post_tags").insert(postTagInserts);
   }
 }
 

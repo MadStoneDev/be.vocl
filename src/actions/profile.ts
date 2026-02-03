@@ -381,6 +381,7 @@ export async function removeProfileLink(linkId: string): Promise<ProfileResult> 
 
 /**
  * Get profile stats (posts, followers, following counts)
+ * Optimized: Uses Promise.all to parallelize queries
  */
 export async function getProfileStats(
   profileId: string
@@ -392,31 +393,29 @@ export async function getProfileStats(
   try {
     const supabase = await createClient();
 
-    // Get post count
-    const { count: postsCount } = await (supabase as any)
-      .from("posts")
-      .select("*", { count: "exact", head: true })
-      .eq("author_id", profileId)
-      .eq("status", "published");
-
-    // Get followers count
-    const { count: followersCount } = await (supabase as any)
-      .from("follows")
-      .select("*", { count: "exact", head: true })
-      .eq("following_id", profileId);
-
-    // Get following count
-    const { count: followingCount } = await (supabase as any)
-      .from("follows")
-      .select("*", { count: "exact", head: true })
-      .eq("follower_id", profileId);
+    // Parallel fetch all counts at once
+    const [postsResult, followersResult, followingResult] = await Promise.all([
+      (supabase as any)
+        .from("posts")
+        .select("*", { count: "exact", head: true })
+        .eq("author_id", profileId)
+        .eq("status", "published"),
+      (supabase as any)
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", profileId),
+      (supabase as any)
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", profileId),
+    ]);
 
     return {
       success: true,
       stats: {
-        posts: postsCount || 0,
-        followers: followersCount || 0,
-        following: followingCount || 0,
+        posts: postsResult.count || 0,
+        followers: followersResult.count || 0,
+        following: followingResult.count || 0,
       },
     };
   } catch (error) {

@@ -41,6 +41,7 @@ interface Conversation {
 
 /**
  * Get all conversations for current user
+ * Optimized: Uses batch queries instead of N+1
  */
 export async function getConversations(): Promise<{
   success: boolean;
@@ -77,52 +78,91 @@ export async function getConversations(): Promise<{
       return { success: false, error: "Failed to fetch conversations" };
     }
 
-    const conversations: Conversation[] = [];
+    if (!participations || participations.length === 0) {
+      return { success: true, conversations: [] };
+    }
 
-    for (const part of participations || []) {
-      // Get other participant
-      const { data: otherParticipant } = await (supabase as any)
-        .from("conversation_participants")
-        .select(
-          `
-          profile:profile_id (
-            id,
-            username,
-            avatar_url
-          )
+    const conversationIds = participations.map((p: any) => p.conversation_id);
+
+    // Batch fetch: Get all other participants for all conversations at once
+    const { data: allParticipants } = await (supabase as any)
+      .from("conversation_participants")
+      .select(
         `
+        conversation_id,
+        profile:profile_id (
+          id,
+          username,
+          avatar_url
         )
-        .eq("conversation_id", part.conversation_id)
-        .neq("profile_id", user.id)
-        .single();
+      `
+      )
+      .in("conversation_id", conversationIds)
+      .neq("profile_id", user.id);
 
-      if (!otherParticipant?.profile) continue;
+    // Batch fetch: Get latest message for each conversation using a subquery approach
+    // We'll get all recent messages and pick the latest per conversation in JS
+    const { data: allMessages } = await (supabase as any)
+      .from("messages")
+      .select("id, conversation_id, content, sender_id, created_at")
+      .in("conversation_id", conversationIds)
+      .eq("is_deleted", false)
+      .order("created_at", { ascending: false });
 
-      // Get last message
-      const { data: lastMessage } = await (supabase as any)
-        .from("messages")
-        .select("id, content, sender_id, created_at, is_deleted")
-        .eq("conversation_id", part.conversation_id)
-        .eq("is_deleted", false)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+    // Batch fetch: Get unread counts - get all unread messages and count in JS
+    const { data: unreadMessages } = await (supabase as any)
+      .from("messages")
+      .select("conversation_id, created_at")
+      .in("conversation_id", conversationIds)
+      .neq("sender_id", user.id);
 
-      // Get unread count
-      const { count: unreadCount } = await (supabase as any)
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .eq("conversation_id", part.conversation_id)
-        .neq("sender_id", user.id)
-        .gt("created_at", part.last_read_at || "1970-01-01");
+    // Build lookup maps for O(1) access
+    const participantMap = new Map<string, any>();
+    for (const p of allParticipants || []) {
+      if (p.profile) {
+        participantMap.set(p.conversation_id, p.profile);
+      }
+    }
+
+    // Get latest message per conversation
+    const lastMessageMap = new Map<string, any>();
+    for (const msg of allMessages || []) {
+      if (!lastMessageMap.has(msg.conversation_id)) {
+        lastMessageMap.set(msg.conversation_id, msg);
+      }
+    }
+
+    // Build last_read_at lookup
+    const lastReadMap = new Map<string, string>();
+    for (const p of participations) {
+      lastReadMap.set(p.conversation_id, p.last_read_at || "1970-01-01");
+    }
+
+    // Count unread messages per conversation
+    const unreadCountMap = new Map<string, number>();
+    for (const msg of unreadMessages || []) {
+      const lastRead = lastReadMap.get(msg.conversation_id) || "1970-01-01";
+      if (new Date(msg.created_at) > new Date(lastRead)) {
+        unreadCountMap.set(msg.conversation_id, (unreadCountMap.get(msg.conversation_id) || 0) + 1);
+      }
+    }
+
+    // Build conversations array
+    const conversations: Conversation[] = [];
+    for (const part of participations) {
+      const participant = participantMap.get(part.conversation_id);
+      if (!participant) continue;
+
+      const lastMessage = lastMessageMap.get(part.conversation_id);
+      const lastReadAt = part.last_read_at;
 
       conversations.push({
         id: part.conversation_id,
         participant: {
-          id: otherParticipant.profile.id,
-          username: otherParticipant.profile.username,
-          avatarUrl: otherParticipant.profile.avatar_url,
-          isOnline: false, // Would need presence system
+          id: participant.id,
+          username: participant.username,
+          avatarUrl: participant.avatar_url,
+          isOnline: false,
         },
         lastMessage: lastMessage
           ? {
@@ -130,19 +170,19 @@ export async function getConversations(): Promise<{
               senderId: lastMessage.sender_id,
               createdAt: formatTimeAgo(lastMessage.created_at),
               isRead: lastMessage.sender_id === user.id ||
-                     (part.last_read_at && new Date(lastMessage.created_at) <= new Date(part.last_read_at)),
+                     (lastReadAt && new Date(lastMessage.created_at) <= new Date(lastReadAt)),
             }
           : undefined,
-        unreadCount: unreadCount || 0,
+        unreadCount: unreadCountMap.get(part.conversation_id) || 0,
       });
     }
 
-    // Sort by most recent
+    // Sort by most recent message
     conversations.sort((a, b) => {
       if (!a.lastMessage && !b.lastMessage) return 0;
       if (!a.lastMessage) return 1;
       if (!b.lastMessage) return -1;
-      return 0; // Already sorted by updated_at
+      return 0;
     });
 
     return { success: true, conversations };
@@ -313,6 +353,7 @@ export async function sendMessage(
 
 /**
  * Start a new conversation
+ * Optimized: Uses single query to find existing conversation instead of N+1
  */
 export async function startConversation(
   participantId: string
@@ -331,22 +372,27 @@ export async function startConversation(
       return { success: false, error: "Cannot start conversation with yourself" };
     }
 
-    // Check if conversation already exists
-    const { data: existingConversations } = await (supabase as any)
+    // Check if conversation already exists using a single optimized query
+    // Find conversations where both users are participants
+    const { data: myConversations } = await (supabase as any)
       .from("conversation_participants")
       .select("conversation_id")
       .eq("profile_id", user.id);
 
-    for (const ec of existingConversations || []) {
-      const { data: hasOther } = await (supabase as any)
+    if (myConversations && myConversations.length > 0) {
+      const myConversationIds = myConversations.map((c: any) => c.conversation_id);
+
+      // Single query to check if target user is in any of these conversations
+      const { data: sharedConversation } = await (supabase as any)
         .from("conversation_participants")
         .select("conversation_id")
-        .eq("conversation_id", ec.conversation_id)
         .eq("profile_id", participantId)
+        .in("conversation_id", myConversationIds)
+        .limit(1)
         .single();
 
-      if (hasOther) {
-        return { success: true, conversationId: ec.conversation_id };
+      if (sharedConversation) {
+        return { success: true, conversationId: sharedConversation.conversation_id };
       }
     }
 

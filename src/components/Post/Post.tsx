@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type ReactNode } from "react";
+import { useState, useRef, useMemo, useCallback, memo, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -480,9 +480,9 @@ function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, 
 }
 
 // =============================================================================
-// Main Post Component
+// Main Post Component (Memoized for performance)
 // =============================================================================
-export function Post({
+export const Post = memo(function Post({
   id,
   author,
   timestamp,
@@ -506,41 +506,40 @@ export function Post({
   const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
   const [lastPanel, setLastPanel] = useState<ExpandedPanel>(null);
 
-  // Track the last opened panel so content stays visible during close animation
-  const displayPanel = expandedPanel || lastPanel;
+  // Memoized computed values
+  const displayPanel = useMemo(() => expandedPanel || lastPanel, [expandedPanel, lastPanel]);
+  const showNSFWOverlay = useMemo(() => isSensitive && !isContentRevealed, [isSensitive, isContentRevealed]);
+  const contentBorderRadius = useMemo(() => expandedPanel ? "0" : "0 0 40px 0", [expandedPanel]);
+  const articleBorderRadius = useMemo(() => expandedPanel ? "30px 0 0 0" : "30px 0 40px 0", [expandedPanel]);
 
-  // Determine if NSFW overlay should be shown
-  const showNSFWOverlay = isSensitive && !isContentRevealed;
+  const handleReblogClick = useCallback(() => {
+    setIsReblogMenuOpen(prev => !prev);
+    setExpandedPanel(null);
+  }, []);
 
-  const handleReblogClick = () => {
-    setIsReblogMenuOpen(!isReblogMenuOpen);
-    setExpandedPanel(null); // Close panel when opening reblog menu
-  };
-
-  const handleReblogSelect = (type: "instant" | "with-comment" | "schedule" | "queue") => {
+  const handleReblogSelect = useCallback((type: "instant" | "with-comment" | "schedule" | "queue") => {
     setIsReblogMenuOpen(false);
     onReblog?.(type);
-  };
+  }, [onReblog]);
 
-  const handleOverlayClick = () => {
+  const handleOverlayClick = useCallback(() => {
     if (isReblogMenuOpen) {
       setIsReblogMenuOpen(false);
     }
-  };
+  }, [isReblogMenuOpen]);
 
-  const handleCommentClick = () => {
+  const handleCommentClick = useCallback(() => {
     if (expandedPanel === "comments") {
       setExpandedPanel(null);
-      // Clear lastPanel after animation completes
       setTimeout(() => setLastPanel(null), 300);
     } else {
       setLastPanel("comments");
       setExpandedPanel("comments");
     }
     setIsReblogMenuOpen(false);
-  };
+  }, [expandedPanel]);
 
-  const handleLikesClick = () => {
+  const handleLikesClick = useCallback(() => {
     if (expandedPanel === "likes") {
       setExpandedPanel(null);
       setTimeout(() => setLastPanel(null), 300);
@@ -550,9 +549,9 @@ export function Post({
       onLikesExpand?.();
     }
     setIsReblogMenuOpen(false);
-  };
+  }, [expandedPanel, onLikesExpand]);
 
-  const handleReblogsClick = () => {
+  const handleReblogsClick = useCallback(() => {
     if (expandedPanel === "reblogs") {
       setExpandedPanel(null);
       setTimeout(() => setLastPanel(null), 300);
@@ -562,16 +561,20 @@ export function Post({
       onReblogsExpand?.();
     }
     setIsReblogMenuOpen(false);
-  };
+  }, [expandedPanel, onReblogsExpand]);
 
-  const handleCommentSubmit = (content: string) => {
+  const handleCommentSubmit = useCallback((content: string) => {
     onComment?.(content);
-  };
+  }, [onComment]);
 
-  const handleClosePanel = () => {
+  const handleClosePanel = useCallback(() => {
     setExpandedPanel(null);
     setTimeout(() => setLastPanel(null), 300);
-  };
+  }, []);
+
+  const handleRevealContent = useCallback(() => {
+    setIsContentRevealed(true);
+  }, []);
 
   return (
     <div className="w-full max-w-full sm:max-w-sm">
@@ -591,13 +594,13 @@ export function Post({
         <div className="relative">
           {/* The actual content */}
           <div className="relative overflow-hidden" style={{
-            borderRadius: expandedPanel ? "0" : "0 0 40px 0"
+            borderRadius: contentBorderRadius
           }}>{children}</div>
 
           {/* NSFW overlay - shown when content is sensitive and not revealed */}
           {showNSFWOverlay && (
             <div style={{ borderRadius: "0 0 40px 0" }} className="overflow-hidden">
-              <NSFWOverlay onReveal={() => setIsContentRevealed(true)} />
+              <NSFWOverlay onReveal={handleRevealContent} />
             </div>
           )}
 
@@ -631,7 +634,7 @@ export function Post({
 
         {/* Fake Border */}
         <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border sm:border-6 border-[#EBEBEB] z-40`} style={{
-          borderRadius: expandedPanel ? "30px 0 0 0" : "30px 0 40px 0",
+          borderRadius: articleBorderRadius,
         }}></div>
       </article>
 
@@ -661,7 +664,7 @@ export function Post({
       </div>
     </div>
   );
-}
+});
 
 // =============================================================================
 // Content Components for different post types
