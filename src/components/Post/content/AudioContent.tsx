@@ -9,6 +9,7 @@ import {
   IconVolumeOff,
   IconMusic,
 } from "@tabler/icons-react";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 
 interface SpotifyData {
   track_id: string;
@@ -181,7 +182,7 @@ export function AudioContent({
       {caption && (
         <div
           className="mt-4 pt-4 border-t border-white/10 text-foreground/80"
-          dangerouslySetInnerHTML={{ __html: caption }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}
     </div>

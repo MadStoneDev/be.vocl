@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
 import type { ReportSubject, ReportStatus } from "@/types/database";
+import { rateLimiters } from "@/lib/rate-limit";
 
 interface ReportResult {
   success: boolean;
@@ -64,6 +65,12 @@ export async function reportUser(
 
     if (!user) {
       return { success: false, error: "Unauthorized" };
+    }
+
+    // Rate limit: 10 reports per hour per user
+    const rateLimit = rateLimiters.report(`report:${user.id}`);
+    if (!rateLimit.allowed) {
+      return { success: false, error: "Too many reports. Please try again later." };
     }
 
     if (userId === user.id) {

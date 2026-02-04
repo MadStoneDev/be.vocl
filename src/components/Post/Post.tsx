@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useMemo, useCallback, memo, type ReactNode } from "react";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -697,7 +698,7 @@ export function TextContent({ children, html }: TextContentProps) {
       {html ? (
         <div
           className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0"
-          dangerouslySetInnerHTML={{ __html: html }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
         />
       ) : (
         <div className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 whitespace-pre-wrap">

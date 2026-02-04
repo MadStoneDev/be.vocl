@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendMagicLinkEmail, sendPasswordResetEmail } from "@/lib/email";
 import { sendWelcomeNotification } from "@/actions/email";
+import crypto from "crypto";
+import { rateLimiters, getRateLimitHeaders } from "@/lib/rate-limit";
 
 // Supabase Auth Webhook Types
 interface AuthWebhookPayload {
@@ -17,6 +19,27 @@ interface AuthWebhookPayload {
       username?: string;
     };
   };
+}
+
+/**
+ * Verify webhook authorization using timing-safe comparison.
+ */
+function verifyWebhookAuth(authHeader: string | null, secret: string): boolean {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false;
+  }
+
+  const providedToken = authHeader.replace("Bearer ", "");
+
+  // Use timing-safe comparison to prevent timing attacks
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(providedToken),
+      Buffer.from(secret)
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -37,15 +60,34 @@ interface AuthWebhookPayload {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify the request is from Supabase (in production, add webhook secret verification)
+    // Always verify the request is from Supabase
     const authHeader = request.headers.get("authorization");
     const webhookSecret = process.env.SUPABASE_WEBHOOK_SECRET;
 
-    if (webhookSecret && authHeader !== `Bearer ${webhookSecret}`) {
+    // Require webhook secret to be configured
+    if (!webhookSecret) {
+      console.error("SUPABASE_WEBHOOK_SECRET not configured");
+      return NextResponse.json(
+        { error: "Server misconfigured" },
+        { status: 500 }
+      );
+    }
+
+    // Verify authorization using timing-safe comparison
+    if (!verifyWebhookAuth(authHeader, webhookSecret)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const payload: AuthWebhookPayload = await request.json();
+
+    // Rate limit: 5 auth emails per 15 minutes per email address
+    const rateLimit = rateLimiters.authEmail(`authEmail:${payload.email}`);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests for this email. Please try again later." },
+        { status: 429, headers: getRateLimitHeaders(rateLimit) }
+      );
+    }
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
 
     switch (payload.type) {

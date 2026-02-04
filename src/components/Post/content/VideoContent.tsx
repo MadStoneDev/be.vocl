@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { IconPlayerPlay, IconPlayerPause, IconVolume, IconVolumeOff } from "@tabler/icons-react";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 
 interface VideoContentProps {
   src: string;
@@ -84,7 +85,7 @@ export function VideoContent({ src, thumbnailUrl, caption }: VideoContentProps) 
       {caption && (
         <div
           className="p-4 bg-[#EBEBEB] text-neutral-700"
-          dangerouslySetInnerHTML={{ __html: caption }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}
     </div>

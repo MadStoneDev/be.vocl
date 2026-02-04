@@ -79,10 +79,14 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     }
 
     // Determine status and queue position
-    let status: "published" | "queued" | "scheduled" = "published";
+    // IMPORTANT: If content is flagged, it goes to "draft" for review (not published)
+    let status: "draft" | "published" | "queued" | "scheduled" = "published";
     let queuePosition: number | null = null;
 
-    if (publishMode === "queue") {
+    // Flagged content must be held for review - do NOT publish
+    if (moderationStatus === "flagged") {
+      status = "draft"; // Hold for staff review
+    } else if (publishMode === "queue") {
       status = "queued";
       // Get next queue position
       const { data: nextPos } = await (supabase as any).rpc("get_next_queue_position", {
@@ -107,6 +111,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         status,
         queue_position: queuePosition,
         scheduled_for: scheduledFor || null,
+        // Only set published_at if actually publishing (not flagged)
         published_at: status === "published" ? new Date().toISOString() : null,
         moderation_status: moderationStatus,
         moderation_reason: moderationReason,
@@ -132,7 +137,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         status: "pending",
       });
 
-      // Notify admins
+      // Notify admins about flagged content
       const { data: admins } = await (supabase as any)
         .from("profiles")
         .select("id")
@@ -148,6 +153,13 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         }));
         await (supabase as any).from("notifications").insert(notifications);
       }
+
+      // Return success but inform user their post is under review
+      return {
+        success: true,
+        postId: post.id,
+        error: "Your post is being reviewed by our moderation team and will be published once approved.",
+      };
     }
 
     // Handle tags

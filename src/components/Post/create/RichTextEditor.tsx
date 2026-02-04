@@ -12,6 +12,7 @@ import {
   IconList,
   IconListNumbers,
 } from "@tabler/icons-react";
+import { isValidUrl } from "@/lib/sanitize";
 
 interface RichTextEditorProps {
   content?: string;
@@ -89,6 +90,11 @@ export function RichTextEditor({
   const addLink = () => {
     const url = window.prompt("Enter URL:");
     if (url) {
+      // Validate URL to prevent XSS via javascript: or data: protocols
+      if (!isValidUrl(url)) {
+        window.alert("Invalid URL. Please enter a valid http or https URL.");
+        return;
+      }
       editor.chain().focus().setLink({ href: url }).run();
     }
   };

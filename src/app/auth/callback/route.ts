@@ -2,6 +2,32 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { type EmailOtpType } from "@supabase/supabase-js";
 
+/**
+ * Validate redirect URL to prevent open redirect attacks.
+ * Only allows relative paths starting with / (not //).
+ */
+function getSafeRedirectUrl(url: string | null): string {
+  const defaultUrl = "/feed";
+
+  if (!url) return defaultUrl;
+
+  // Must start with exactly one /
+  // Must not contain protocol-relative URLs (//)
+  // Must not contain newlines or other control characters
+  // Must not contain backslashes (which can be interpreted as forward slashes in some browsers)
+  const safePattern = /^\/[a-zA-Z0-9\-_/?=&.#%]+$/;
+
+  if (!url.startsWith("/")) return defaultUrl;
+  if (url.startsWith("//")) return defaultUrl;
+  if (url.includes("\\")) return defaultUrl;
+  if (url.includes("\n") || url.includes("\r")) return defaultUrl;
+
+  // Additional check: URL should match safe pattern
+  if (!safePattern.test(url)) return defaultUrl;
+
+  return url;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const origin = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
@@ -13,8 +39,8 @@ export async function GET(request: Request) {
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
 
-  // Where to redirect after auth
-  const next = searchParams.get("next") ?? "/feed";
+  // Where to redirect after auth (validated to prevent open redirect)
+  const next = getSafeRedirectUrl(searchParams.get("next"));
 
   const supabase = await createClient();
 

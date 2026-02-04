@@ -28,6 +28,7 @@ import {
 import { followUser, unfollowUser } from "@/actions/follows";
 import { followTag, unfollowTag, isFollowingTag } from "@/actions/tags";
 import { toast } from "@/components/ui";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
 
 type SearchTab = "all" | "users" | "tags" | "posts";
@@ -716,7 +717,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
         )}
         {contentType === "text" && post.content?.html && (
           <TextContent>
-            <div dangerouslySetInnerHTML={{ __html: post.content.html }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
           </TextContent>
         )}
         {contentType === "text" && post.content?.plain && !post.content?.html && (

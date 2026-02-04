@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { validateUsernameFormat } from "@/lib/validation";
+import { isValidProfileLinkUrl } from "@/lib/sanitize";
 
 interface ProfileResult {
   success: boolean;
@@ -312,6 +313,11 @@ export async function addProfileLink(
 
     if (!user) {
       return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate URL to prevent XSS via javascript:, data:, or other malicious protocols
+    if (!isValidProfileLinkUrl(url)) {
+      return { success: false, error: "Invalid URL. Please enter a valid http or https URL." };
     }
 
     // Get current max sort order

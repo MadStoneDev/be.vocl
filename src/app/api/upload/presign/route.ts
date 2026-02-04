@@ -9,6 +9,7 @@ import {
   getMaxSizeForType,
   getMediaType,
 } from "@/lib/r2/client";
+import { rateLimiters, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +20,15 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 50 uploads per hour per user
+    const rateLimit = rateLimiters.upload(`upload:${user.id}`);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many upload requests. Please try again later." },
+        { status: 429, headers: getRateLimitHeaders(rateLimit) }
+      );
     }
 
     const body = await request.json();

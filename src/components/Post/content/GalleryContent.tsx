@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { IconX, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 
 interface GalleryContentProps {
   images: string[];
@@ -98,7 +99,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image" }: Galle
         {caption && (
           <div
             className="p-4 bg-[#EBEBEB] text-neutral-700"
-            dangerouslySetInnerHTML={{ __html: caption }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />
         )}
       </div>
