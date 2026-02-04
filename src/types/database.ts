@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type PostType = "text" | "image" | "video" | "audio" | "gallery";
+export type PostType = "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
 export type PostStatus = "draft" | "published" | "queued" | "scheduled" | "deleted";
 export type NotificationType = "follow" | "like" | "comment" | "reblog" | "message" | "mention";
 export type LockStatus = "unlocked" | "restricted" | "banned";
@@ -48,6 +48,8 @@ export interface Database {
           lock_status: LockStatus;
           lock_reason: string | null;
           appeals_blocked: boolean;
+          allow_asks: boolean;
+          allow_anonymous_asks: boolean;
         };
         Insert: {
           id: string;
@@ -74,6 +76,8 @@ export interface Database {
           lock_status?: LockStatus;
           lock_reason?: string | null;
           appeals_blocked?: boolean;
+          allow_asks?: boolean;
+          allow_anonymous_asks?: boolean;
         };
         Update: {
           id?: string;
@@ -100,6 +104,8 @@ export interface Database {
           lock_status?: LockStatus;
           lock_reason?: string | null;
           appeals_blocked?: boolean;
+          allow_asks?: boolean;
+          allow_anonymous_asks?: boolean;
         };
       };
       profile_links: {
@@ -731,12 +737,31 @@ export interface GalleryPostContent {
   caption_html?: string;
 }
 
+export interface PollPostContent {
+  question: string;
+  options: string[]; // 2-4 options
+  expires_at?: string; // Optional ISO date for poll expiration
+  show_results_before_vote?: boolean; // Whether to show results before voting
+  allow_multiple?: boolean; // Allow selecting multiple options (default: false)
+}
+
+export interface AskPostContent {
+  question: string; // The original ask question
+  question_html?: string; // Rich text version of question
+  answer_html: string; // The answer (rich text)
+  asker_id?: string; // null if anonymous
+  asker_username?: string; // For display (can be "Anonymous")
+  is_anonymous: boolean;
+}
+
 export type PostContent =
   | TextPostContent
   | ImagePostContent
   | VideoPostContent
   | AudioPostContent
-  | GalleryPostContent;
+  | GalleryPostContent
+  | PollPostContent
+  | AskPostContent;
 
 // Extended post type with author info
 export interface PostWithAuthor extends Post {

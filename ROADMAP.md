@@ -64,11 +64,11 @@ MAJOR.MINOR.PATCH
 - [x] **URL Validation**: Validate URLs in RichTextEditor link input
 
 #### High Priority Security Fixes
-- [ ] **Rate Limiting**: Add rate limits to critical endpoints
-  - [ ] File uploads (presign endpoint)
-  - [ ] Report creation
-  - [ ] Message sending
-  - [ ] Auth email webhook
+- [x] **Rate Limiting**: Add rate limits to critical endpoints
+  - [x] File uploads (presign endpoint) - 50/hour per user
+  - [x] Report creation - 10/hour per user
+  - [x] Message sending - 100/minute per user
+  - [x] Auth email webhook - 5/15min per email
 - [x] **Profile Links**: Validate URL protocols (block javascript:, data:)
 - [x] **Cron Security**: Use timing-safe comparison for cron secrets (in auth webhook)
 - [x] **Security Headers**: Add CSP, HSTS, X-Frame-Options to next.config.ts
@@ -81,7 +81,15 @@ MAJOR.MINOR.PATCH
 - [ ] **Error Messages**: Don't expose internals in production errors
 - [ ] **Race Conditions**: Add UNIQUE constraint on follows table
 
-### 0.7.2 - Polish & Testing
+### 0.7.2 - New Features
+- [x] Poll posts (backend + display component)
+- [x] Ask box feature (backend + display component)
+- [ ] Poll creation UI in post composer
+- [ ] Ask inbox page (/asks)
+- [ ] Ask button on profile pages
+- [ ] Ask settings in privacy settings
+
+### 0.7.3 - Polish & Testing
 - [ ] Performance audit and optimization
 - [ ] Mobile responsiveness check
 - [ ] Error message UX improvements
