@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Output mode for containerized deployments (Railway, Docker, etc.)
+  output: "standalone",
+
   // Security headers
   async headers() {
     return [
