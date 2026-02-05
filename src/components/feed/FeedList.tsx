@@ -1,9 +1,10 @@
 "use client";
 
-import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
 import { IconLoader2 } from "@tabler/icons-react";
 import { FeedSkeleton } from "@/components/ui";
+import type { VideoEmbedPlatform } from "@/types/database";
 
 interface FeedPost {
   id: string;
@@ -14,11 +15,32 @@ interface FeedPost {
   };
   authorId?: string;
   timestamp: string;
-  contentType: "text" | "image" | "video" | "audio" | "gallery";
+  contentType: "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
   content: {
+    // Text content
     text?: string;
     html?: string;
+    // Image content
     imageUrl?: string;
+    imageUrls?: string[];
+    altTexts?: string[];
+    // Video content (file upload)
+    videoUrl?: string;
+    videoThumbnailUrl?: string;
+    // Video content (embed)
+    embedUrl?: string;
+    embedPlatform?: VideoEmbedPlatform;
+    // Audio content
+    audioUrl?: string;
+    albumArtUrl?: string;
+    // Gallery content
+    galleryItems?: Array<{
+      type: "image" | "video";
+      url: string;
+      thumbnailUrl?: string;
+    }>;
+    // Caption (for media posts)
+    captionHtml?: string;
   };
   stats: PostStats;
   interactions: PostInteractions;
@@ -74,11 +96,42 @@ export function FeedList({
           imageUrl={post.content.imageUrl}
           tags={post.tags}
         >
+          {/* Image content */}
           {post.contentType === "image" && post.content.imageUrl && (
             <ImageContent src={post.content.imageUrl} alt="Post image" />
           )}
+
+          {/* Text content */}
           {post.contentType === "text" && (post.content.html || post.content.text) && (
             <TextContent html={post.content.html}>{post.content.text}</TextContent>
+          )}
+
+          {/* Video content (embed or file) */}
+          {post.contentType === "video" && (
+            <VideoContent
+              src={post.content.videoUrl}
+              thumbnailUrl={post.content.videoThumbnailUrl}
+              embedUrl={post.content.embedUrl}
+              embedPlatform={post.content.embedPlatform}
+              caption={post.content.captionHtml}
+            />
+          )}
+
+          {/* Audio content */}
+          {post.contentType === "audio" && post.content.audioUrl && (
+            <AudioContent
+              src={post.content.audioUrl}
+              albumArtUrl={post.content.albumArtUrl}
+              caption={post.content.captionHtml}
+            />
+          )}
+
+          {/* Gallery content */}
+          {post.contentType === "gallery" && post.content.imageUrls && (
+            <GalleryContent
+              images={post.content.imageUrls}
+              caption={post.content.captionHtml}
+            />
           )}
         </InteractivePost>
       ))}

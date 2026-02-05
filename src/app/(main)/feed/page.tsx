@@ -24,9 +24,15 @@ interface FeedPost {
     urls?: string[];
     html?: string;
     plain?: string;
+    // Video file
     url?: string;
     thumbnail_url?: string;
+    // Video embed
+    embed_url?: string;
+    embed_platform?: string;
+    // Audio
     album_art_url?: string;
+    // Caption
     caption_html?: string;
   };
   stats: { comments: number; likes: number; reblogs: number };
@@ -105,8 +111,13 @@ export default function FeedPage() {
           };
         } else if (post.postType === "video") {
           content = {
+            // File upload
             url: postContent?.url,
             thumbnail_url: postContent?.thumbnail_url,
+            // Embed
+            embed_url: postContent?.embed_url,
+            embed_platform: postContent?.embed_platform,
+            // Caption
             caption_html: postContent?.caption_html,
           };
         } else if (post.postType === "audio") {
@@ -179,9 +190,23 @@ export default function FeedPage() {
     timestamp: post.timestamp,
     contentType: post.contentType,
     content: {
+      // Text
       text: post.content.text || post.content.html?.replace(/<[^>]*>/g, ""),
       html: post.content.html,
+      // Image
       imageUrl: post.content.imageUrl,
+      imageUrls: post.content.urls,
+      // Video file
+      videoUrl: post.content.url,
+      videoThumbnailUrl: post.content.thumbnail_url,
+      // Video embed
+      embedUrl: post.content.embed_url,
+      embedPlatform: post.content.embed_platform as any,
+      // Audio
+      audioUrl: post.content.url,
+      albumArtUrl: post.content.album_art_url,
+      // Caption
+      captionHtml: post.content.caption_html,
     },
     stats: post.stats,
     interactions: post.interactions,

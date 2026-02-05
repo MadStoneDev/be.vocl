@@ -27,7 +27,7 @@ type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
 // =============================================================================
 // Types
 // =============================================================================
-export type PostContentType = "image" | "text" | "video" | "audio" | "gallery";
+export type PostContentType = "image" | "text" | "video" | "audio" | "gallery" | "poll" | "ask";
 export interface PostAuthor {
   username: string;
   avatarUrl: string;
@@ -677,10 +677,57 @@ interface ImageContentProps {
 }
 
 export function ImageContent({ src, alt }: ImageContentProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   return (
-    <div className="relative aspect-square w-full">
-      <Image src={src} alt={alt} fill className="object-cover" />
-    </div>
+    <>
+      <div
+        className="relative aspect-square w-full cursor-pointer"
+        onClick={() => setLightboxOpen(true)}
+      >
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className="object-cover hover:brightness-95 transition-all"
+        />
+      </div>
+
+      {/* Lightbox */}
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          onClick={() => setLightboxOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image lightbox"
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setLightboxOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+            aria-label="Close lightbox"
+          >
+            <IconX size={24} />
+          </button>
+
+          {/* Image */}
+          <div
+            className="relative max-w-[90vw] max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={src}
+              alt={alt}
+              width={1200}
+              height={800}
+              className="max-w-full max-h-[85vh] object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

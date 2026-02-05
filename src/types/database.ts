@@ -708,10 +708,18 @@ export interface ImagePostContent {
   caption_html?: string;
 }
 
+export type VideoEmbedPlatform = 'youtube' | 'vimeo' | 'rumble' | 'dailymotion';
+
 export interface VideoPostContent {
-  url: string;
+  // For file uploads
+  url?: string;
   thumbnail_url?: string;
   duration?: number;
+  // For embeds
+  embed_url?: string;
+  embed_platform?: VideoEmbedPlatform;
+  embed_video_id?: string;
+  // Common
   caption_html?: string;
 }
 

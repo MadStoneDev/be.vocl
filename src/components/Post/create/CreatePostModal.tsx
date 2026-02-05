@@ -16,7 +16,11 @@ import {
   IconChartBar,
   IconPlus,
   IconTrash,
+  IconLink,
+  IconUpload,
+  IconCheck,
 } from "@tabler/icons-react";
+import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
 import { RichTextEditor } from "./RichTextEditor";
 import { MediaUploader } from "./MediaUploader";
 import { TagInput } from "./TagInput";
@@ -64,6 +68,14 @@ export function CreatePostModal({
     useState(false);
   const [pollAllowMultiple, setPollAllowMultiple] = useState(false);
 
+  // Video-specific state
+  const [videoMode, setVideoMode] = useState<"embed" | "upload">("embed");
+  const [videoEmbedUrl, setVideoEmbedUrl] = useState("");
+  const [videoEmbedError, setVideoEmbedError] = useState<string | null>(null);
+
+  // Legal acknowledgment for file uploads
+  const [hasAcknowledgedRights, setHasAcknowledgedRights] = useState(false);
+
   // Generate post ID for uploads
   useEffect(() => {
     if (isOpen && !postId) {
@@ -91,6 +103,12 @@ export function CreatePostModal({
       setPollExpiresAt("");
       setPollShowResultsBeforeVote(false);
       setPollAllowMultiple(false);
+      // Reset video state
+      setVideoMode("embed");
+      setVideoEmbedUrl("");
+      setVideoEmbedError(null);
+      // Reset legal acknowledgment
+      setHasAcknowledgedRights(false);
     }
   }, [isOpen]);
 
@@ -111,10 +129,40 @@ export function CreatePostModal({
       setError("Please write something");
       return;
     }
-    if (postType !== "text" && postType !== "poll" && mediaUrls.length === 0) {
-      setError(
-        `Please upload ${postType === "image" ? "at least one image" : postType === "video" ? "a video" : "an audio file"}`,
-      );
+    // Validate media posts
+    if (postType === "video") {
+      if (videoMode === "embed") {
+        if (!videoEmbedUrl.trim()) {
+          setError("Please enter a video URL");
+          return;
+        }
+        const parsed = parseVideoUrl(videoEmbedUrl);
+        if (!parsed) {
+          setError("Please enter a valid YouTube, Vimeo, Rumble, or Dailymotion URL");
+          return;
+        }
+      } else {
+        // Upload mode
+        if (mediaUrls.length === 0) {
+          setError("Please upload a video file");
+          return;
+        }
+        if (!hasAcknowledgedRights) {
+          setError("Please acknowledge that you have the rights to publish this content");
+          return;
+        }
+      }
+    } else if (postType === "audio") {
+      if (mediaUrls.length === 0) {
+        setError("Please upload an audio file");
+        return;
+      }
+      if (!hasAcknowledgedRights) {
+        setError("Please acknowledge that you have the rights to publish this content");
+        return;
+      }
+    } else if (postType === "image" && mediaUrls.length === 0) {
+      setError("Please upload at least one image");
       return;
     }
     if (postType === "poll") {
@@ -178,10 +226,26 @@ export function CreatePostModal({
           break;
 
         case "video":
-          postContent = {
-            url: mediaUrls[0],
-            caption_html: content.html || undefined,
-          } as VideoPostContent;
+          if (videoMode === "embed") {
+            const parsed = parseVideoUrl(videoEmbedUrl);
+            if (parsed) {
+              postContent = {
+                embed_url: parsed.embedUrl,
+                embed_platform: parsed.platform,
+                embed_video_id: parsed.videoId,
+                thumbnail_url: parsed.thumbnailUrl,
+                caption_html: content.html || undefined,
+              } as VideoPostContent;
+            } else {
+              setError("Invalid video URL");
+              return;
+            }
+          } else {
+            postContent = {
+              url: mediaUrls[0],
+              caption_html: content.html || undefined,
+            } as VideoPostContent;
+          }
           break;
 
         case "audio":
@@ -276,13 +340,165 @@ export function CreatePostModal({
             ))}
           </div>
 
-          {/* Media Upload (for image/video/audio) */}
-          {postType !== "text" && postType !== "poll" && postId && (
+          {/* Video Post Options */}
+          {postType === "video" && (
+            <div className="space-y-4">
+              {/* Mode Selector */}
+              <div className="flex rounded-xl bg-background/50 p-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVideoMode("embed");
+                    setMediaUrls([]);
+                    setHasAcknowledgedRights(false);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    videoMode === "embed"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconLink size={16} />
+                  Embed URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVideoMode("upload");
+                    setVideoEmbedUrl("");
+                    setVideoEmbedError(null);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    videoMode === "upload"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconUpload size={16} />
+                  Upload File
+                </button>
+              </div>
+
+              {/* Embed URL Input */}
+              {videoMode === "embed" && (
+                <div className="space-y-3">
+                  <div>
+                    <input
+                      type="url"
+                      value={videoEmbedUrl}
+                      onChange={(e) => {
+                        setVideoEmbedUrl(e.target.value);
+                        setVideoEmbedError(null);
+                        // Live validation
+                        if (e.target.value.trim()) {
+                          const parsed = parseVideoUrl(e.target.value);
+                          if (!parsed) {
+                            setVideoEmbedError("URL not recognized. Supported: YouTube, Vimeo, Rumble, Dailymotion");
+                          }
+                        }
+                      }}
+                      placeholder="Paste video URL (YouTube, Vimeo, Rumble, Dailymotion)"
+                      className={`w-full py-3 px-4 rounded-xl bg-background/50 border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
+                        videoEmbedError
+                          ? "border-vocl-like focus:border-vocl-like"
+                          : videoEmbedUrl && parseVideoUrl(videoEmbedUrl)
+                            ? "border-green-500 focus:border-green-500"
+                            : "border-white/10 focus:border-vocl-accent"
+                      }`}
+                    />
+                    {videoEmbedError && (
+                      <p className="mt-2 text-xs text-vocl-like">{videoEmbedError}</p>
+                    )}
+                    {videoEmbedUrl && parseVideoUrl(videoEmbedUrl) && (
+                      <p className="mt-2 text-xs text-green-500 flex items-center gap-1">
+                        <IconCheck size={14} />
+                        {parseVideoUrl(videoEmbedUrl)?.platform.charAt(0).toUpperCase()}
+                        {parseVideoUrl(videoEmbedUrl)?.platform.slice(1)} video detected
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-xs text-foreground/40">
+                    <p className="font-medium mb-1">Supported platforms:</p>
+                    <ul className="space-y-0.5">
+                      {SUPPORTED_VIDEO_PLATFORMS.map((platform) => (
+                        <li key={platform.id}>
+                          {platform.name} ({platform.domain})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* File Upload */}
+              {videoMode === "upload" && postId && (
+                <div className="space-y-3">
+                  <MediaUploader
+                    postId={postId}
+                    mediaType="video"
+                    onUploadComplete={setMediaUrls}
+                    maxFiles={1}
+                    existingUrls={mediaUrls}
+                  />
+
+                  {/* Legal Disclaimer */}
+                  <label className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hasAcknowledgedRights}
+                      onChange={(e) => setHasAcknowledgedRights(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-white/20 bg-background/50 text-vocl-accent focus:ring-vocl-accent focus:ring-offset-0"
+                    />
+                    <div className="flex-1 text-xs text-foreground/70">
+                      <span className="font-medium text-amber-500">Rights Acknowledgment:</span>{" "}
+                      By uploading this file, I confirm that I own or have obtained the necessary rights,
+                      licenses, or permissions to publish this content. I understand that uploading
+                      copyrighted material without authorization may result in content removal and
+                      account action.
+                    </div>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Audio Post with Legal Disclaimer */}
+          {postType === "audio" && postId && (
+            <div className="space-y-3">
+              <MediaUploader
+                postId={postId}
+                mediaType="audio"
+                onUploadComplete={setMediaUrls}
+                maxFiles={1}
+                existingUrls={mediaUrls}
+              />
+
+              {/* Legal Disclaimer */}
+              <label className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hasAcknowledgedRights}
+                  onChange={(e) => setHasAcknowledgedRights(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-white/20 bg-background/50 text-vocl-accent focus:ring-vocl-accent focus:ring-offset-0"
+                />
+                <div className="flex-1 text-xs text-foreground/70">
+                  <span className="font-medium text-amber-500">Rights Acknowledgment:</span>{" "}
+                  By uploading this file, I confirm that I own or have obtained the necessary rights,
+                  licenses, or permissions to publish this content. I understand that uploading
+                  copyrighted material without authorization may result in content removal and
+                  account action.
+                </div>
+              </label>
+            </div>
+          )}
+
+          {/* Image Upload */}
+          {postType === "image" && postId && (
             <MediaUploader
               postId={postId}
-              mediaType={postType}
+              mediaType="image"
               onUploadComplete={setMediaUrls}
-              maxFiles={postType === "image" ? 10 : 1}
+              maxFiles={10}
               existingUrls={mediaUrls}
             />
           )}

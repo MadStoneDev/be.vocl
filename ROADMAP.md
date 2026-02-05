@@ -1,7 +1,7 @@
 # be.vocl Roadmap
 
-> **Current Version**: 0.7.0
-> **Last Updated**: 2026-02-04
+> **Current Version**: 0.8.0
+> **Last Updated**: 2026-02-05
 
 ## Versioning Strategy
 
@@ -90,7 +90,12 @@ MAJOR.MINOR.PATCH
 - [x] Ask settings in privacy settings
 
 ### 0.7.3 - Polish & Testing
-- [ ] Performance audit and optimization
+- [x] Performance audit and optimization
+  - [x] Parallelized profile page queries (reduced from 20+ to 2 batches)
+  - [x] Parallelized post queries in getPostsByUser
+- [x] Avatar component with first-letter fallback
+- [x] Railway deployment configuration (Node 22, standalone output)
+- [x] Session persistence fix (JWT expiry configuration)
 - [ ] Mobile responsiveness check
 - [ ] Error message UX improvements
 - [ ] Loading state improvements
