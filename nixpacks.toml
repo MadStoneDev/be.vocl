@@ -4,6 +4,9 @@ nixPkgs = ["nodejs_20"]
 
 [phases.build]
 cmds = [
+  "echo 'Node version:' && node --version",
+  "echo 'NPM version:' && npm --version",
+  "echo 'Environment:' && env | grep -E '^(NEXT_|NODE_|NPM_)' || true",
   "npm run build",
   "cp -r public .next/standalone/public",
   "cp -r .next/static .next/standalone/.next/static"
