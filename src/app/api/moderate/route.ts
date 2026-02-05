@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { moderateContent, type ModerationResult } from "@/lib/sightengine/client";
+import { validateCsrf } from "@/lib/csrf";
 
 /**
  * Moderate uploaded content
  * Called after upload completes to check for policy violations
  */
 export async function POST(request: NextRequest) {
+  // CSRF protection
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
   try {
     const supabase = await createClient();
     const {

@@ -16,6 +16,7 @@ import {
   IconSettings,
   IconLogout,
   IconMail,
+  IconTicket,
 } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/client";
@@ -79,6 +80,7 @@ export default function AdminLayout({
     { href: "/admin/flags", icon: IconFlagExclamation, label: "Flags" },
     { href: "/admin/users", icon: IconUsers, label: "Users" },
     { href: "/admin/appeals", icon: IconMessageReport, label: "Appeals" },
+    { href: "/admin/invites", icon: IconTicket, label: "Invites" },
     { href: "/admin/email", icon: IconMail, label: "Email" },
   ];
 

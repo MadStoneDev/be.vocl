@@ -10,8 +10,12 @@ import {
   getMediaType,
 } from "@/lib/r2/client";
 import { rateLimiters, getRateLimitHeaders } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 export async function POST(request: NextRequest) {
+  // CSRF protection
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
   try {
     const supabase = await createClient();
     const {

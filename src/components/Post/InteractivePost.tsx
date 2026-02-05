@@ -137,7 +137,7 @@ export function InteractivePost({
     id: c.id,
     author: {
       username: c.username,
-      avatarUrl: c.avatarUrl || "https://via.placeholder.com/100",
+      avatarUrl: c.avatarUrl || "",
       role: c.role,
     },
     content: c.content,
@@ -147,7 +147,7 @@ export function InteractivePost({
   const likedBy: UserData[] = useMemo(() => likedByRaw.map((u) => ({
     id: u.id,
     username: u.username,
-    avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
+    avatarUrl: u.avatarUrl || "",
     displayName: u.displayName || undefined,
     role: u.role,
   })), [likedByRaw]);
@@ -155,7 +155,7 @@ export function InteractivePost({
   const rebloggedBy: UserData[] = useMemo(() => rebloggedByRaw.map((u) => ({
     id: u.id,
     username: u.username,
-    avatarUrl: u.avatarUrl || "https://via.placeholder.com/100",
+    avatarUrl: u.avatarUrl || "",
     displayName: u.displayName || undefined,
     role: u.role,
   })), [rebloggedByRaw]);

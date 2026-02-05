@@ -540,65 +540,67 @@ export async function getPostsByUser(
       return { success: false, error: "Failed to fetch posts" };
     }
 
-    // Get like counts for posts
+    // Get counts and user interactions in parallel
     const postIds = (posts || []).map((p: any) => p.id);
-    const { data: likeCounts } = await (supabase as any)
-      .from("likes")
-      .select("post_id")
-      .in("post_id", postIds);
 
-    const { data: commentCounts } = await (supabase as any)
-      .from("comments")
-      .select("post_id")
-      .in("post_id", postIds);
+    if (postIds.length === 0) {
+      return { success: true, posts: [], total: 0 };
+    }
 
-    // Get reblog counts (posts that reblogged from these posts)
-    const { data: reblogCounts } = await (supabase as any)
-      .from("posts")
-      .select("reblogged_from_id")
-      .in("reblogged_from_id", postIds)
-      .eq("status", "published");
-
-    // Check if current user has liked/commented/reblogged
-    let userLikes: string[] = [];
-    let userComments: string[] = [];
-    let userReblogs: string[] = [];
-    if (user) {
-      const { data: likes } = await (supabase as any)
+    // Parallel fetch: counts + user interactions
+    const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData] = await Promise.all([
+      // Get like counts
+      (supabase as any)
+        .from("likes")
+        .select("post_id")
+        .in("post_id", postIds),
+      // Get comment counts
+      (supabase as any)
+        .from("comments")
+        .select("post_id")
+        .in("post_id", postIds),
+      // Get reblog counts
+      (supabase as any)
+        .from("posts")
+        .select("reblogged_from_id")
+        .in("reblogged_from_id", postIds)
+        .eq("status", "published"),
+      // User likes (if logged in)
+      user ? (supabase as any)
         .from("likes")
         .select("post_id")
         .eq("user_id", user.id)
-        .in("post_id", postIds);
-      userLikes = (likes || []).map((l: any) => l.post_id);
-
-      const { data: comments } = await (supabase as any)
+        .in("post_id", postIds) : Promise.resolve({ data: [] }),
+      // User comments (if logged in)
+      user ? (supabase as any)
         .from("comments")
         .select("post_id")
         .eq("user_id", user.id)
-        .in("post_id", postIds);
-      userComments = (comments || []).map((c: any) => c.post_id);
-
-      // Check if user has reblogged any of these posts
-      const { data: reblogs } = await (supabase as any)
+        .in("post_id", postIds) : Promise.resolve({ data: [] }),
+      // User reblogs (if logged in)
+      user ? (supabase as any)
         .from("posts")
         .select("reblogged_from_id")
         .eq("author_id", user.id)
         .in("reblogged_from_id", postIds)
-        .neq("status", "deleted");
-      userReblogs = (reblogs || []).map((r: any) => r.reblogged_from_id);
-    }
+        .neq("status", "deleted") : Promise.resolve({ data: [] }),
+    ]);
+
+    const userLikes = (userLikesData?.data || []).map((l: any) => l.post_id);
+    const userComments = (userCommentsData?.data || []).map((c: any) => c.post_id);
+    const userReblogs = (userReblogsData?.data || []).map((r: any) => r.reblogged_from_id);
 
     // Count likes/comments/reblogs per post
     const likeCountMap = new Map<string, number>();
     const commentCountMap = new Map<string, number>();
     const reblogCountMap = new Map<string, number>();
-    (likeCounts || []).forEach((l: any) => {
+    (likeCounts?.data || []).forEach((l: any) => {
       likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
     });
-    (commentCounts || []).forEach((c: any) => {
+    (commentCounts?.data || []).forEach((c: any) => {
       commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
     });
-    (reblogCounts || []).forEach((r: any) => {
+    (reblogCounts?.data || []).forEach((r: any) => {
       reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
     });
 

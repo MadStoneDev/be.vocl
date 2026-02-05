@@ -10,8 +10,10 @@ import {
   IconUserX,
   IconLoader2,
   IconAlertTriangle,
+  IconTicket,
 } from "@tabler/icons-react";
 import { getAdminStats } from "@/actions/admin";
+import { adminGetInviteStats } from "@/actions/invites";
 
 interface Stats {
   pendingReports: number;
@@ -20,6 +22,8 @@ interface Stats {
   escalatedItems: number;
   bannedUsers: number;
   restrictedUsers: number;
+  activeInviteCodes: number;
+  totalInviteUses: number;
 }
 
 export default function AdminDashboard() {
@@ -28,9 +32,17 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const loadStats = async () => {
-      const result = await getAdminStats();
-      if (result.success && result.stats) {
-        setStats(result.stats);
+      const [adminResult, inviteResult] = await Promise.all([
+        getAdminStats(),
+        adminGetInviteStats(),
+      ]);
+
+      if (adminResult.success && adminResult.stats) {
+        setStats({
+          ...adminResult.stats,
+          activeInviteCodes: inviteResult.stats?.activeCodes || 0,
+          totalInviteUses: inviteResult.stats?.totalUses || 0,
+        });
       }
       setIsLoading(false);
     };
@@ -95,6 +107,14 @@ export default function AdminDashboard() {
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
     },
+    {
+      label: "Active Invite Codes",
+      value: stats?.activeInviteCodes || 0,
+      icon: IconTicket,
+      href: "/admin/invites",
+      color: "text-vocl-accent",
+      bgColor: "bg-vocl-accent/10",
+    },
   ];
 
   return (
@@ -151,6 +171,13 @@ export default function AdminDashboard() {
           >
             <IconUsers size={20} className="text-vocl-accent" />
             <span className="text-foreground">Manage users</span>
+          </Link>
+          <Link
+            href="/admin/invites"
+            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <IconTicket size={20} className="text-green-500" />
+            <span className="text-foreground">Generate invites</span>
           </Link>
         </div>
       </div>

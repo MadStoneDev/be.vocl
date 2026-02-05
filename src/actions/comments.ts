@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { processMentions } from "@/actions/mentions";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface CommentResult {
   success: boolean;
@@ -56,13 +57,17 @@ export async function createComment(
       return { success: false, error: "Comment is too long (max 2000 characters)" };
     }
 
+    // Sanitize content to prevent XSS (even though we're storing as plain text,
+    // sanitize in case HTML support is added later)
+    const sanitizedContent = sanitizeHtml(trimmedContent);
+
     // Create the comment
     const { data: comment, error: insertError } = await (supabase as any)
       .from("comments")
       .insert({
         user_id: user.id,
         post_id: postId,
-        content_html: trimmedContent, // Plain text for now, can support HTML later
+        content_html: sanitizedContent,
       })
       .select("id")
       .single();
@@ -92,7 +97,7 @@ export async function createComment(
         });
     }
 
-    // Process mentions in the comment
+    // Process mentions in the comment (use original trimmed content to find mentions)
     await processMentions(trimmedContent, user.id, postId, "comment");
 
     revalidatePath("/feed");
@@ -202,7 +207,7 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
       displayName: comment.profile?.display_name,
       avatarUrl: comment.profile?.avatar_url,
       role: comment.profile?.role || 0,
-      content: comment.content_html,
+      content: sanitizeHtml(comment.content_html || ""), // Sanitize on output for safety
       createdAt: formatTimeAgo(comment.created_at),
       isOwn: user ? comment.user_id === user.id : false,
     }));

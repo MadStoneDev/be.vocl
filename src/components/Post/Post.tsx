@@ -19,7 +19,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
-import { StaffBadge } from "@/components/ui";
+import { StaffBadge, Avatar } from "@/components/ui";
 
 // Panel types for expanded view
 type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
@@ -409,14 +409,11 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
             href={`/profile/${user.username}`}
             className="flex items-center gap-3 p-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
           >
-            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
-              <Image
-                src={user.avatarUrl}
-                alt={user.username}
-                fill
-                className="object-cover"
-              />
-            </div>
+            <Avatar
+              src={user.avatarUrl}
+              username={user.username}
+              size="md"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
                 <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors">{user.displayName || user.username}</span>

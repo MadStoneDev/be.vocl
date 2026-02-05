@@ -12,6 +12,7 @@ import {
   IconChevronRight,
   IconCheck,
   IconLogout,
+  IconTicket,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { toast, LoadingSpinner } from "@/components/ui";
@@ -46,6 +47,12 @@ const settingsLinks = [
     icon: IconPalette,
     title: "Appearance",
     description: "Theme and display preferences",
+  },
+  {
+    href: "/settings/invites",
+    icon: IconTicket,
+    title: "Invite Codes",
+    description: "Generate codes to invite friends",
   },
 ];
 

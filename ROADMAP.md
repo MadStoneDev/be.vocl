@@ -72,22 +72,22 @@ MAJOR.MINOR.PATCH
 - [x] **Profile Links**: Validate URL protocols (block javascript:, data:)
 - [x] **Cron Security**: Use timing-safe comparison for cron secrets (in auth webhook)
 - [x] **Security Headers**: Add CSP, HSTS, X-Frame-Options to next.config.ts
-- [ ] **Audit Logging**: Log admin actions (bans, role changes, etc.)
+- [x] **Audit Logging**: Log admin actions (bans, role changes, etc.)
 
 #### Medium Priority Security Fixes
-- [ ] **CSRF Protection**: Add origin validation to API routes
-- [ ] **Comment Sanitization**: Sanitize HTML in comments
-- [ ] **Timezone Validation**: Validate timezone values
-- [ ] **Error Messages**: Don't expose internals in production errors
-- [ ] **Race Conditions**: Add UNIQUE constraint on follows table
+- [x] **CSRF Protection**: Add origin validation to API routes
+- [x] **Comment Sanitization**: Sanitize HTML in comments
+- [x] **Timezone Validation**: Validate timezone values
+- [x] **Error Messages**: Don't expose internals in production errors
+- [x] **Race Conditions**: Add UNIQUE constraint on follows table (already existed)
 
 ### 0.7.2 - New Features
 - [x] Poll posts (backend + display component)
 - [x] Ask box feature (backend + display component)
-- [ ] Poll creation UI in post composer
-- [ ] Ask inbox page (/asks)
-- [ ] Ask button on profile pages
-- [ ] Ask settings in privacy settings
+- [x] Poll creation UI in post composer
+- [x] Ask inbox page (/asks)
+- [x] Ask button on profile pages
+- [x] Ask settings in privacy settings
 
 ### 0.7.3 - Polish & Testing
 - [ ] Performance audit and optimization
@@ -103,7 +103,15 @@ MAJOR.MINOR.PATCH
 ## Version 0.8.x - Beta Testing
 
 ### 0.8.0 - Beta Launch
-- [ ] Invite system for beta testers (invite codes)
+- [x] Invite system for beta testers (invite codes)
+  - [x] Database schema with invite_codes and invite_code_uses tables
+  - [x] Server actions for code generation, validation, redemption
+  - [x] Signup gate requiring valid invite code
+  - [x] Admin invite code management UI (/admin/invites)
+  - [x] User invite codes settings page (/settings/invites)
+  - [x] Regular users start with 0 codes (admin distributes initially)
+  - [x] Trusted Users (role 1) get 3 codes when promoted
+  - [x] Staff get unlimited codes
 - [ ] Feedback collection mechanism (in-app feedback button)
 - [ ] Bug reporting from within app
 - [ ] Analytics/usage tracking (privacy-respecting, self-hosted)
@@ -274,22 +282,30 @@ _Add ideas here as they come up:_
 ### Critical Issues Found
 | Issue | Status | Priority |
 |-------|--------|----------|
-| XSS via dangerouslySetInnerHTML (5 locations) | Pending | CRITICAL |
-| Open redirect in auth callback | Pending | CRITICAL |
-| SSRF in OpenGraph endpoint | Pending | CRITICAL |
-| Webhook verification bypasses | Pending | CRITICAL |
-| Auto-mod publishes before flagging | Pending | CRITICAL |
+| XSS via dangerouslySetInnerHTML (5 locations) | **FIXED** | CRITICAL |
+| Open redirect in auth callback | **FIXED** | CRITICAL |
+| SSRF in OpenGraph endpoint | **FIXED** | CRITICAL |
+| Webhook verification bypasses | **FIXED** | CRITICAL |
+| Auto-mod publishes before flagging | **FIXED** | CRITICAL |
 
 ### High Priority Issues
 | Issue | Status | Priority |
 |-------|--------|----------|
-| No rate limiting on uploads/reports | Pending | HIGH |
-| Profile link URL validation missing | Pending | HIGH |
-| Race conditions in follows | Pending | HIGH |
-| Missing security headers | Pending | HIGH |
-| Missing audit logging | Pending | HIGH |
+| No rate limiting on uploads/reports | **FIXED** | HIGH |
+| Profile link URL validation missing | **FIXED** | HIGH |
+| Race conditions in follows | **FIXED** (already had constraint) | HIGH |
+| Missing security headers | **FIXED** | HIGH |
+| Missing audit logging | **FIXED** | HIGH |
 
-_Full audit details in security reports from 2026-02-04._
+### Medium Priority Issues
+| Issue | Status | Priority |
+|-------|--------|----------|
+| CSRF Protection | **FIXED** | MEDIUM |
+| Comment Sanitization | **FIXED** | MEDIUM |
+| Timezone Validation | **FIXED** | MEDIUM |
+| Error Messages | **FIXED** | MEDIUM |
+
+_All security issues from 2026-02-04 audit have been resolved._
 
 ---
 

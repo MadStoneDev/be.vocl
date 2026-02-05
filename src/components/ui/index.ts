@@ -1,3 +1,4 @@
+export { Avatar } from './Avatar';
 export { Toaster, toast } from './Toaster';
 export { ErrorBoundary } from './ErrorBoundary';
 export { Skeleton, PostSkeleton, ProfileSkeleton, MessageSkeleton, NotificationSkeleton, FeedSkeleton } from './Skeleton';

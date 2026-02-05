@@ -12,6 +12,7 @@ import {
   IconVolume3,
   IconTrash,
   IconAlertCircle,
+  IconMessageQuestion,
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import {
@@ -20,6 +21,7 @@ import {
   updateContentSettings,
 } from "@/actions/profile";
 import { unblockUser, unmuteUser } from "@/actions/follows";
+import { updateAskSettings } from "@/actions/asks";
 
 interface BlockedUser {
   id: string;
@@ -49,10 +51,14 @@ export default function PrivacySettingsPage() {
   const [showSensitivePosts, setShowSensitivePosts] = useState(false);
   const [blurSensitiveByDefault, setBlurSensitiveByDefault] = useState(true);
 
+  // Ask settings
+  const [allowAsks, setAllowAsks] = useState(true);
+  const [allowAnonymousAsks, setAllowAnonymousAsks] = useState(true);
+
   // Blocked and muted lists
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [mutedUsers, setMutedUsers] = useState<MutedUser[]>([]);
-  const [activeTab, setActiveTab] = useState<"privacy" | "content" | "blocked" | "muted">("privacy");
+  const [activeTab, setActiveTab] = useState<"privacy" | "content" | "asks" | "blocked" | "muted">("privacy");
 
   useEffect(() => {
     async function loadSettings() {
@@ -64,6 +70,8 @@ export default function PrivacySettingsPage() {
         setShowFollowing(result.profile.showFollowing);
         setShowSensitivePosts(result.profile.showSensitivePosts);
         setBlurSensitiveByDefault(result.profile.blurSensitiveByDefault);
+        setAllowAsks(result.profile.allowAsks ?? true);
+        setAllowAnonymousAsks(result.profile.allowAnonymousAsks ?? true);
       }
       setIsLoading(false);
     }
@@ -95,6 +103,20 @@ export default function PrivacySettingsPage() {
       }
     });
   }, []);
+
+  const handleAskSettingsChange = useCallback(
+    (newAllowAsks: boolean, newAllowAnonymous: boolean) => {
+      startTransition(async () => {
+        const result = await updateAskSettings(newAllowAsks, newAllowAnonymous);
+        if (result.success) {
+          toast.success("Ask settings updated");
+        } else {
+          toast.error(result.error || "Failed to update settings");
+        }
+      });
+    },
+    []
+  );
 
   const handleUnblock = useCallback(async (userId: string) => {
     const result = await unblockUser(userId);
@@ -145,6 +167,7 @@ export default function PrivacySettingsPage() {
         {[
           { id: "privacy" as const, label: "Privacy" },
           { id: "content" as const, label: "Content" },
+          { id: "asks" as const, label: "Asks" },
           { id: "blocked" as const, label: "Blocked" },
           { id: "muted" as const, label: "Muted" },
         ].map((tab) => (
@@ -260,6 +283,44 @@ export default function PrivacySettingsPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Asks Tab */}
+      {activeTab === "asks" && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+              <IconMessageQuestion size={20} />
+              Ask Box Settings
+            </h3>
+            <div className="space-y-4">
+              <ToggleSetting
+                label="Allow asks"
+                description="Let other users send you questions"
+                checked={allowAsks}
+                onChange={(checked) => {
+                  setAllowAsks(checked);
+                  handleAskSettingsChange(checked, allowAnonymousAsks);
+                }}
+                disabled={isPending}
+              />
+              <ToggleSetting
+                label="Allow anonymous asks"
+                description="Let users send questions without revealing their identity"
+                checked={allowAnonymousAsks}
+                onChange={(checked) => {
+                  setAllowAnonymousAsks(checked);
+                  handleAskSettingsChange(allowAsks, checked);
+                }}
+                disabled={isPending || !allowAsks}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-foreground/40 px-2">
+            When asks are enabled, an &quot;Ask&quot; button will appear on your profile.
+            Others can send you questions that you can answer publicly.
+          </p>
         </div>
       )}
 

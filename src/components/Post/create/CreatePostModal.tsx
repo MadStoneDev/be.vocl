@@ -13,6 +13,9 @@ import {
   IconClock,
   IconCalendar,
   IconChevronDown,
+  IconChartBar,
+  IconPlus,
+  IconTrash,
 } from "@tabler/icons-react";
 import { RichTextEditor } from "./RichTextEditor";
 import { MediaUploader } from "./MediaUploader";
@@ -23,9 +26,10 @@ import type {
   ImagePostContent,
   VideoPostContent,
   AudioPostContent,
+  PollPostContent,
 } from "@/types/database";
 
-type PostType = "text" | "image" | "video" | "audio";
+type PostType = "text" | "image" | "video" | "audio" | "poll";
 type PublishMode = "now" | "queue" | "schedule";
 
 interface CreatePostModalProps {
@@ -52,6 +56,14 @@ export function CreatePostModal({
   const [showPublishOptions, setShowPublishOptions] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Poll-specific state
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [pollExpiresAt, setPollExpiresAt] = useState<string>("");
+  const [pollShowResultsBeforeVote, setPollShowResultsBeforeVote] =
+    useState(false);
+  const [pollAllowMultiple, setPollAllowMultiple] = useState(false);
+
   // Generate post ID for uploads
   useEffect(() => {
     if (isOpen && !postId) {
@@ -73,6 +85,12 @@ export function CreatePostModal({
       setScheduledTime("12:00");
       setShowPublishOptions(false);
       setError(null);
+      // Reset poll state
+      setPollQuestion("");
+      setPollOptions(["", ""]);
+      setPollExpiresAt("");
+      setPollShowResultsBeforeVote(false);
+      setPollAllowMultiple(false);
     }
   }, [isOpen]);
 
@@ -93,11 +111,22 @@ export function CreatePostModal({
       setError("Please write something");
       return;
     }
-    if (postType !== "text" && mediaUrls.length === 0) {
+    if (postType !== "text" && postType !== "poll" && mediaUrls.length === 0) {
       setError(
         `Please upload ${postType === "image" ? "at least one image" : postType === "video" ? "a video" : "an audio file"}`,
       );
       return;
+    }
+    if (postType === "poll") {
+      if (!pollQuestion.trim()) {
+        setError("Please enter a poll question");
+        return;
+      }
+      const filledOptions = pollOptions.filter((opt) => opt.trim());
+      if (filledOptions.length < 2) {
+        setError("Please provide at least 2 poll options");
+        return;
+      }
     }
 
     // Validate schedule
@@ -119,9 +148,15 @@ export function CreatePostModal({
         | TextPostContent
         | ImagePostContent
         | VideoPostContent
-        | AudioPostContent;
-      let actualPostType: "text" | "image" | "video" | "audio" | "gallery" =
-        postType;
+        | AudioPostContent
+        | PollPostContent;
+      let actualPostType:
+        | "text"
+        | "image"
+        | "video"
+        | "audio"
+        | "gallery"
+        | "poll" = postType;
 
       switch (postType) {
         case "text":
@@ -155,6 +190,16 @@ export function CreatePostModal({
             caption_html: content.html || undefined,
           } as AudioPostContent;
           break;
+
+        case "poll":
+          postContent = {
+            question: pollQuestion.trim(),
+            options: pollOptions.filter((opt) => opt.trim()),
+            expires_at: pollExpiresAt || undefined,
+            show_results_before_vote: pollShowResultsBeforeVote,
+            allow_multiple: pollAllowMultiple,
+          } as PollPostContent;
+          break;
       }
 
       const result = await createPost({
@@ -185,6 +230,7 @@ export function CreatePostModal({
     { type: "image" as const, icon: IconPhoto, label: "Image" },
     { type: "video" as const, icon: IconVideo, label: "Video" },
     { type: "audio" as const, icon: IconMusic, label: "Audio" },
+    { type: "poll" as const, icon: IconChartBar, label: "Poll" },
   ];
 
   return (
@@ -231,7 +277,7 @@ export function CreatePostModal({
           </div>
 
           {/* Media Upload (for image/video/audio) */}
-          {postType !== "text" && postId && (
+          {postType !== "text" && postType !== "poll" && postId && (
             <MediaUploader
               postId={postId}
               mediaType={postType}
@@ -241,23 +287,194 @@ export function CreatePostModal({
             />
           )}
 
-          {/* Text Editor */}
-          <div>
-            {postType !== "text" && (
-              <label className="block text-sm text-foreground/60 mb-2">
-                Caption (optional)
-              </label>
-            )}
-            <RichTextEditor
-              placeholder={
-                postType === "text"
-                  ? "What's on your mind?"
-                  : "Add a caption..."
-              }
-              onChange={(html, plain) => setContent({ html, plain })}
-              minHeight={postType === "text" ? "200px" : "80px"}
-            />
-          </div>
+          {/* Poll Editor */}
+          {postType === "poll" && (
+            <div className="space-y-4">
+              {/* Poll Question */}
+              <div>
+                <label className="block text-sm text-foreground/60 mb-2">
+                  Question
+                </label>
+                <input
+                  type="text"
+                  value={pollQuestion}
+                  onChange={(e) => setPollQuestion(e.target.value)}
+                  placeholder="Ask a question..."
+                  className="w-full py-3 px-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent"
+                  maxLength={280}
+                />
+              </div>
+
+              {/* Poll Options */}
+              <div>
+                <label className="block text-sm text-foreground/60 mb-2">
+                  Options
+                </label>
+                <div className="space-y-2">
+                  {pollOptions.map((option, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => {
+                            const newOptions = [...pollOptions];
+                            newOptions[index] = e.target.value;
+                            setPollOptions(newOptions);
+                          }}
+                          placeholder={`Option ${index + 1}`}
+                          className="w-full py-2.5 px-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent"
+                          maxLength={100}
+                        />
+                      </div>
+                      {pollOptions.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newOptions = pollOptions.filter(
+                              (_, i) => i !== index,
+                            );
+                            setPollOptions(newOptions);
+                          }}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl text-foreground/40 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                        >
+                          <IconTrash size={18} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {pollOptions.length < 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setPollOptions([...pollOptions, ""])}
+                    className="mt-2 flex items-center gap-2 text-sm text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+                  >
+                    <IconPlus size={16} />
+                    Add option
+                  </button>
+                )}
+              </div>
+
+              {/* Poll Settings */}
+              <div className="space-y-3 pt-2">
+                {/* Expiration */}
+                <div>
+                  <label className="block text-sm text-foreground/60 mb-2">
+                    Poll duration (optional)
+                  </label>
+                  <select
+                    value={pollExpiresAt}
+                    onChange={(e) => setPollExpiresAt(e.target.value)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+                  >
+                    <option value="">No expiration</option>
+                    <option
+                      value={new Date(
+                        Date.now() + 1 * 24 * 60 * 60 * 1000,
+                      ).toISOString()}
+                    >
+                      1 day
+                    </option>
+                    <option
+                      value={new Date(
+                        Date.now() + 3 * 24 * 60 * 60 * 1000,
+                      ).toISOString()}
+                    >
+                      3 days
+                    </option>
+                    <option
+                      value={new Date(
+                        Date.now() + 7 * 24 * 60 * 60 * 1000,
+                      ).toISOString()}
+                    >
+                      1 week
+                    </option>
+                  </select>
+                </div>
+
+                {/* Show results before voting */}
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer">
+                  <div
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      pollShowResultsBeforeVote ? "bg-vocl-accent" : "bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                        pollShowResultsBeforeVote ? "left-6" : "left-1"
+                      }`}
+                    />
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={pollShowResultsBeforeVote}
+                    onChange={(e) =>
+                      setPollShowResultsBeforeVote(e.target.checked)
+                    }
+                    className="sr-only"
+                  />
+                  <div className="flex-1">
+                    <div className="text-foreground text-sm font-medium">
+                      Show results before voting
+                    </div>
+                    <p className="text-foreground/40 text-xs mt-0.5">
+                      Let users see results without voting first
+                    </p>
+                  </div>
+                </label>
+
+                {/* Allow multiple selections */}
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer">
+                  <div
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      pollAllowMultiple ? "bg-vocl-accent" : "bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                        pollAllowMultiple ? "left-6" : "left-1"
+                      }`}
+                    />
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={pollAllowMultiple}
+                    onChange={(e) => setPollAllowMultiple(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className="flex-1">
+                    <div className="text-foreground text-sm font-medium">
+                      Allow multiple choices
+                    </div>
+                    <p className="text-foreground/40 text-xs mt-0.5">
+                      Users can select more than one option
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Text Editor (not for polls) */}
+          {postType !== "poll" && (
+            <div>
+              {postType !== "text" && (
+                <label className="block text-sm text-foreground/60 mb-2">
+                  Caption (optional)
+                </label>
+              )}
+              <RichTextEditor
+                placeholder={
+                  postType === "text"
+                    ? "What's on your mind?"
+                    : "Add a caption..."
+                }
+                onChange={(html, plain) => setContent({ html, plain })}
+                minHeight={postType === "text" ? "200px" : "80px"}
+              />
+            </div>
+          )}
 
           {/* Tags */}
           <TagInput tags={tags} onChange={setTags} />

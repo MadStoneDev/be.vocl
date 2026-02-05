@@ -1,8 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { validateUsernameFormat } from "@/lib/validation";
+import { validateUsernameFormat, isValidTimezone } from "@/lib/validation";
 import { isValidProfileLinkUrl } from "@/lib/sanitize";
 
 interface ProfileResult {
@@ -24,6 +24,8 @@ interface Profile {
   showFollowing: boolean;
   showSensitivePosts: boolean;
   blurSensitiveByDefault: boolean;
+  allowAsks: boolean;
+  allowAnonymousAsks: boolean;
   createdAt: string;
   role: number;
 }
@@ -70,6 +72,8 @@ export async function getProfileByUsername(
         showFollowing: data.show_following,
         showSensitivePosts: data.show_sensitive_posts,
         blurSensitiveByDefault: data.blur_sensitive_by_default,
+        allowAsks: data.allow_asks ?? true,
+        allowAnonymousAsks: data.allow_anonymous_asks ?? true,
         createdAt: data.created_at,
         role: data.role ?? 0,
       },
@@ -124,6 +128,8 @@ export async function getCurrentProfile(): Promise<{
         showFollowing: data.show_following,
         showSensitivePosts: data.show_sensitive_posts,
         blurSensitiveByDefault: data.blur_sensitive_by_default,
+        allowAsks: data.allow_asks ?? true,
+        allowAnonymousAsks: data.allow_anonymous_asks ?? true,
         createdAt: data.created_at,
         role: data.role ?? 0,
       },
@@ -152,6 +158,11 @@ export async function updateProfile(updates: {
 
     if (!user) {
       return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate timezone if provided
+    if (updates.timezone !== undefined && updates.timezone !== "" && !isValidTimezone(updates.timezone)) {
+      return { success: false, error: "Invalid timezone" };
     }
 
     const updateData: any = { updated_at: new Date().toISOString() };

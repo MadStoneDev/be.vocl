@@ -13,6 +13,7 @@ import {
   IconShare,
   IconCoin,
   IconFlag,
+  IconMessageQuestion,
 } from "@tabler/icons-react";
 import { VerificationBadge } from "@/components/payments";
 import { StaffBadge } from "@/components/ui/StaffBadge";
@@ -27,6 +28,7 @@ interface ProfileHeaderProps {
   isFollowing: boolean;
   isVerified?: boolean;
   role?: number;
+  allowsAsks?: boolean;
   onFollow?: () => Promise<void>;
   onUnfollow?: () => Promise<void>;
   onSettings?: () => void;
@@ -34,6 +36,7 @@ interface ProfileHeaderProps {
   onMute?: () => void;
   onShare?: () => void;
   onTip?: () => void;
+  onAsk?: () => void;
   onReport?: () => void;
   onAvatarClick?: () => void;
 }
@@ -48,6 +51,7 @@ export function ProfileHeader({
   isFollowing,
   isVerified,
   role = 0,
+  allowsAsks,
   onFollow,
   onUnfollow,
   onSettings,
@@ -55,6 +59,7 @@ export function ProfileHeader({
   onMute,
   onShare,
   onTip,
+  onAsk,
   onReport,
   onAvatarClick,
 }: ProfileHeaderProps) {
@@ -177,6 +182,18 @@ export function ProfileHeader({
                   >
                     <IconCoin size={18} />
                     <span>Tip</span>
+                  </button>
+                )}
+
+                {/* Ask button */}
+                {allowsAsks && onAsk && (
+                  <button
+                    onClick={onAsk}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-foreground font-medium hover:bg-white/15 transition-colors"
+                    title="Send an ask"
+                  >
+                    <IconMessageQuestion size={18} />
+                    <span className="hidden sm:inline">Ask</span>
                   </button>
                 )}
 

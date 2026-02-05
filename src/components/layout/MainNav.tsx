@@ -6,12 +6,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   IconPlus,
-  IconUser,
   IconSettings,
   IconShield,
   IconLogout,
   IconDots,
 } from "@tabler/icons-react";
+import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
 import { createClient } from "@/lib/supabase/client";
 
@@ -58,19 +58,13 @@ export function MainNav({
           <Link
             href={username ? `/profile/${username}` : "/settings"}
             aria-label="Your profile"
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-vocl-surface-dark overflow-hidden hover:ring-2 hover:ring-vocl-accent transition-all"
+            className="hover:ring-2 hover:ring-vocl-accent transition-all rounded-full"
           >
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt=""
-                width={36}
-                height={36}
-                className="object-cover"
-              />
-            ) : (
-              <IconUser size={18} aria-hidden="true" />
-            )}
+            <Avatar
+              src={avatarUrl}
+              username={username || "user"}
+              size="sm"
+            />
           </Link>
 
           {/* More menu */}

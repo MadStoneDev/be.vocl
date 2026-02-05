@@ -12,7 +12,18 @@
       "Bash(ls:*)",
       "Bash(grep:*)",
       "Bash(npm ls:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(git log:*)",
+      "Bash(npm audit:*)",
+      "Bash(git restore:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(npx supabase db execute:*)",
+      "Bash(node -e:*)",
+      "Bash(echo:*)"
     ]
   }
 }

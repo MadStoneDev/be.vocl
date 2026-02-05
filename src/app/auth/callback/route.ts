@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { type EmailOtpType } from "@supabase/supabase-js";
 
 /**
@@ -72,9 +73,35 @@ export async function GET(request: Request) {
         case "email_change":
           // Email change confirmed
           return NextResponse.redirect(`${origin}/settings?email_changed=true`);
-        case "signup":
+        case "signup": {
+          // Email confirmed - redeem invite code if present
+          const { data: { user } } = await supabase.auth.getUser();
+          const inviteCode = user?.user_metadata?.invite_code;
+
+          if (inviteCode && user) {
+            try {
+              const adminClient = createAdminClient();
+              const { data, error: redeemError } = await (adminClient as any).rpc("use_invite_code", {
+                p_code: inviteCode.toUpperCase(),
+                p_user_id: user.id,
+              });
+
+              if (redeemError) {
+                console.error("Failed to redeem invite code:", redeemError);
+              } else if (!data?.success) {
+                console.error("Invite code redemption failed:", data?.error);
+              } else {
+                console.log(`Invite code ${inviteCode} redeemed by user ${user.id}`);
+              }
+            } catch (err) {
+              console.error("Error redeeming invite code:", err);
+            }
+          }
+
+          return NextResponse.redirect(`${origin}${next}`);
+        }
         case "email":
-          // Email confirmed or magic link sign in
+          // Magic link sign in
           return NextResponse.redirect(`${origin}${next}`);
         case "invite":
           // Invitation accepted - go to onboarding or feed

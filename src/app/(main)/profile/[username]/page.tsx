@@ -12,6 +12,7 @@ import {
   PinnedPost,
   FollowersModal,
   AvatarModal,
+  AskModal,
   type TabId,
 } from "@/components/profile";
 import { ReportModal } from "@/components/moderation";
@@ -24,6 +25,7 @@ import {
 } from "@/actions/profile";
 import { getPostsByUser, getLikedPosts, getCommentedPosts } from "@/actions/posts";
 import { followUser, unfollowUser, isFollowing, blockUser, muteUser } from "@/actions/follows";
+import { canSendAskTo } from "@/actions/asks";
 import { toast } from "@/components/ui";
 
 interface ProfileData {
@@ -101,13 +103,21 @@ export default function ProfilePage() {
   // Report modal state
   const [reportModalOpen, setReportModalOpen] = useState(false);
 
+  // Ask modal state
+  const [askModalOpen, setAskModalOpen] = useState(false);
+  const [allowsAsks, setAllowsAsks] = useState(false);
+
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Fetch profile data
-      const profileResult = await getProfileByUsername(username);
+      // First, fetch profile and current user in parallel (we need profile.id for other calls)
+      const [profileResult, currentProfileResult] = await Promise.all([
+        getProfileByUsername(username),
+        getCurrentProfile(),
+      ]);
+
       if (!profileResult.success || !profileResult.profile) {
         setError("Profile not found");
         setIsLoading(false);
@@ -129,37 +139,50 @@ export default function ProfilePage() {
         role: profileData.role,
       });
 
-      // Fetch stats
-      const statsResult = await getProfileStats(profileData.id);
+      // Check if own profile
+      const currentProfile = currentProfileResult.success ? currentProfileResult.profile : null;
+      const isOwn = currentProfile?.id === profileData.id;
+      setIsOwnProfile(isOwn);
+      setCurrentUserId(currentProfile?.id);
+
+      // Now fetch everything else in parallel
+      const fetchPromises: Promise<any>[] = [
+        getProfileStats(profileData.id),
+        getProfileLinks(profileData.id),
+        getPostsByUser(profileData.id, { includePinned: true }),
+      ];
+
+      // Only fetch following/ask status if not own profile and logged in
+      if (!isOwn && currentProfile) {
+        fetchPromises.push(isFollowing(profileData.id));
+        fetchPromises.push(canSendAskTo(profileData.username));
+      }
+
+      const results = await Promise.all(fetchPromises);
+
+      // Stats
+      const statsResult = results[0];
       if (statsResult.success && statsResult.stats) {
         setStats(statsResult.stats);
       }
 
-      // Fetch links
-      const linksResult = await getProfileLinks(profileData.id);
+      // Links
+      const linksResult = results[1];
       if (linksResult.success && linksResult.links) {
         setLinks(linksResult.links);
       }
 
-      // Fetch posts
-      const postsResult = await getPostsByUser(profileData.id, { includePinned: true });
+      // Posts
+      const postsResult = results[2];
       if (postsResult.success) {
         setPosts(postsResult.posts || []);
         setPinnedPost(postsResult.pinnedPost || null);
       }
 
-      // Check if own profile
-      const currentProfileResult = await getCurrentProfile();
-      if (currentProfileResult.success && currentProfileResult.profile) {
-        const isOwn = currentProfileResult.profile.id === profileData.id;
-        setIsOwnProfile(isOwn);
-        setCurrentUserId(currentProfileResult.profile.id);
-
-        // Check if following
-        if (!isOwn) {
-          const isFollowingResult = await isFollowing(profileData.id);
-          setFollowing(isFollowingResult);
-        }
+      // Following status (if applicable)
+      if (!isOwn && currentProfile) {
+        setFollowing(results[3] || false);
+        setAllowsAsks(results[4]?.canAsk || false);
       }
     } catch (err) {
       setError("Failed to load profile");
@@ -352,12 +375,14 @@ export default function ProfilePage() {
         isOwnProfile={isOwnProfile}
         isFollowing={following}
         role={profile.role}
+        allowsAsks={allowsAsks}
         onFollow={handleFollow}
         onUnfollow={handleUnfollow}
         onSettings={() => router.push("/settings")}
         onBlock={handleBlock}
         onMute={handleMute}
         onShare={handleShare}
+        onAsk={() => setAskModalOpen(true)}
         onReport={() => setReportModalOpen(true)}
         onAvatarClick={() => setAvatarModalOpen(true)}
       />
@@ -492,6 +517,16 @@ export default function ProfilePage() {
           onClose={() => setReportModalOpen(false)}
           reportedUserId={profile.id}
           reportedUsername={profile.username}
+        />
+      )}
+
+      {/* Ask Modal */}
+      {profile && (
+        <AskModal
+          isOpen={askModalOpen}
+          onClose={() => setAskModalOpen(false)}
+          recipientUsername={profile.username}
+          recipientDisplayName={profile.displayName}
         />
       )}
     </div>

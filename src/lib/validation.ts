@@ -146,3 +146,63 @@ export function validateUsernameFormat(username: string): UsernameValidationResu
 
   return { valid: true };
 }
+
+/**
+ * Validate timezone is a valid IANA timezone name.
+ * Uses Intl.supportedValuesOf which returns all valid timezones.
+ */
+export function isValidTimezone(timezone: string): boolean {
+  if (!timezone || typeof timezone !== "string") {
+    return false;
+  }
+
+  try {
+    // Try to create a DateTimeFormat with the timezone
+    // This will throw if the timezone is invalid
+    Intl.DateTimeFormat(undefined, { timeZone: timezone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get a list of common timezones for UI selection.
+ * This is a subset of all valid timezones for better UX.
+ */
+export const COMMON_TIMEZONES = [
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Anchorage",
+  "Pacific/Honolulu",
+  "America/Toronto",
+  "America/Vancouver",
+  "America/Mexico_City",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Europe/Rome",
+  "Europe/Madrid",
+  "Europe/Amsterdam",
+  "Europe/Stockholm",
+  "Europe/Moscow",
+  "Africa/Cairo",
+  "Africa/Johannesburg",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Bangkok",
+  "Asia/Singapore",
+  "Asia/Hong_Kong",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Asia/Seoul",
+  "Australia/Sydney",
+  "Australia/Melbourne",
+  "Australia/Perth",
+  "Pacific/Auckland",
+  "UTC",
+];

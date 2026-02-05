@@ -3,6 +3,7 @@ import { sendMagicLinkEmail, sendPasswordResetEmail } from "@/lib/email";
 import { sendWelcomeNotification } from "@/actions/email";
 import crypto from "crypto";
 import { rateLimiters, getRateLimitHeaders } from "@/lib/rate-limit";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Supabase Auth Webhook Types
 interface AuthWebhookPayload {
@@ -17,6 +18,7 @@ interface AuthWebhookPayload {
     email: string;
     user_metadata?: {
       username?: string;
+      invite_code?: string;
     };
   };
 }
@@ -100,6 +102,29 @@ export async function POST(request: NextRequest) {
             username,
             payload.email
           );
+
+          // Redeem invite code if provided (beta signup)
+          const inviteCode = payload.user.user_metadata?.invite_code;
+          if (inviteCode) {
+            try {
+              const adminClient = createAdminClient();
+              // Use the database function for atomic invite code redemption
+              const { data, error } = await (adminClient as any).rpc("use_invite_code", {
+                p_code: inviteCode.toUpperCase(),
+                p_user_id: payload.user.id,
+              });
+
+              if (error) {
+                console.error("Failed to redeem invite code:", error);
+              } else if (!data?.success) {
+                console.error("Invite code redemption failed:", data?.error);
+              } else {
+                console.log(`Invite code ${inviteCode} redeemed by user ${payload.user.id}`);
+              }
+            } catch (err) {
+              console.error("Error redeeming invite code:", err);
+            }
+          }
         }
 
         // If there's a confirmation token, send magic link

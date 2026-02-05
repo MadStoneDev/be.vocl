@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import {
   IconLoader2,
-  IconUser,
   IconSearch,
   IconShieldCheck,
   IconLock,
   IconLockOpen,
   IconBan,
 } from "@tabler/icons-react";
+import { Avatar } from "@/components/ui";
 import {
   getUsers,
   banUser,
@@ -180,21 +179,11 @@ export default function AdminUsersPage() {
                 <tr key={user.id} className="border-b border-white/5 last:border-0">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-vocl-surface-dark overflow-hidden">
-                        {user.avatarUrl ? (
-                          <Image
-                            src={user.avatarUrl}
-                            alt=""
-                            width={32}
-                            height={32}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <IconUser size={16} />
-                          </div>
-                        )}
-                      </div>
+                      <Avatar
+                        src={user.avatarUrl}
+                        username={user.username}
+                        size="sm"
+                      />
                       <div>
                         <div className="font-medium text-foreground">
                           @{user.username}

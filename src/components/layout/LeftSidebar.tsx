@@ -13,11 +13,11 @@ import {
   IconMessage,
   IconMessageFilled,
   IconSettings,
-  IconUser,
   IconStack2,
   IconLogout,
   IconShield,
 } from "@tabler/icons-react";
+import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
 
 interface LeftSidebarProps {
@@ -194,29 +194,16 @@ export function LeftSidebar({
                 : "text-foreground/70 hover:text-foreground hover:bg-white/5"
             }`}
           >
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-vocl-surface-dark shrink-0">
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt=""
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <IconUser size={16} aria-hidden="true" />
-                </div>
-              )}
-            </div>
+            <Avatar
+              src={avatarUrl}
+              username={username}
+              size="sm"
+            />
             <span className="text-sm font-medium truncate">@{username}</span>
           </Link>
         ) : (
           <div className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-foreground/70">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-vocl-surface-dark flex-shrink-0">
-              <div className="w-full h-full flex items-center justify-center">
-                <IconUser size={16} aria-hidden="true" />
-              </div>
-            </div>
+            <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
             <span className="h-4 w-20 bg-white/10 rounded animate-pulse" />
           </div>
         )}
