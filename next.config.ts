@@ -93,8 +93,6 @@ const nextConfig: NextConfig = {
 
   // Experimental optimizations
   experimental: {
-    // Optimize CSS output
-    optimizeCss: true,
     // Tree-shake large icon libraries
     optimizePackageImports: [
       "@tabler/icons-react",
