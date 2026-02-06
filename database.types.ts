@@ -50,6 +50,93 @@ export type Database = {
         }
         Relationships: []
       }
+      asks: {
+        Row: {
+          id: string
+          recipient_id: string
+          sender_id: string | null
+          question: string
+          is_anonymous: boolean
+          status: string
+          answered_post_id: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          recipient_id: string
+          sender_id?: string | null
+          question: string
+          is_anonymous?: boolean
+          status?: string
+          answered_post_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          recipient_id?: string
+          sender_id?: string | null
+          question?: string
+          is_anonymous?: boolean
+          status?: string
+          answered_post_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          actor_id: string | null
+          actor_username: string | null
+          actor_role: number
+          action: string
+          target_user_id: string | null
+          target_user_username: string | null
+          target_post_id: string | null
+          target_report_id: string | null
+          target_flag_id: string | null
+          target_appeal_id: string | null
+          details: Json | null
+          ip_address: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          actor_id?: string | null
+          actor_username?: string | null
+          actor_role: number
+          action: string
+          target_user_id?: string | null
+          target_user_username?: string | null
+          target_post_id?: string | null
+          target_report_id?: string | null
+          target_flag_id?: string | null
+          target_appeal_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          actor_id?: string | null
+          actor_username?: string | null
+          actor_role?: number
+          action?: string
+          target_user_id?: string | null
+          target_user_username?: string | null
+          target_post_id?: string | null
+          target_report_id?: string | null
+          target_flag_id?: string | null
+          target_appeal_id?: string | null
+          details?: Json | null
+          ip_address?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       banned_ips: {
         Row: {
           id: string
@@ -419,6 +506,72 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_code_uses: {
+        Row: {
+          id: string
+          code_id: string
+          user_id: string
+          used_at: string | null
+        }
+        Insert: {
+          id?: string
+          code_id: string
+          user_id: string
+          used_at?: string | null
+        }
+        Update: {
+          id?: string
+          code_id?: string
+          user_id?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      invite_codes: {
+        Row: {
+          id: string
+          code: string
+          creator_id: string | null
+          max_uses: number | null
+          uses: number | null
+          expires_at: string | null
+          is_revoked: boolean | null
+          revoked_at: string | null
+          revoked_by: string | null
+          note: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          code: string
+          creator_id?: string | null
+          max_uses?: number | null
+          uses?: number | null
+          expires_at?: string | null
+          is_revoked?: boolean | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          note?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          code?: string
+          creator_id?: string | null
+          max_uses?: number | null
+          uses?: number | null
+          expires_at?: string | null
+          is_revoked?: boolean | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          note?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           id: string
@@ -596,6 +749,30 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_votes: {
+        Row: {
+          id: string
+          post_id: string
+          user_id: string
+          option_index: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          user_id: string
+          option_index: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          user_id?: string
+          option_index?: number
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       post_tags: {
         Row: {
           post_id: string
@@ -744,6 +921,11 @@ export type Database = {
           email_messages: boolean | null
           email_frequency: string | null
           last_message_email_at: string | null
+          allow_asks: boolean
+          allow_anonymous_asks: boolean
+          invited_by: string | null
+          invite_code_used: string | null
+          invite_codes_remaining: number | null
         }
         Insert: {
           id: string
@@ -784,6 +966,11 @@ export type Database = {
           email_messages?: boolean | null
           email_frequency?: string | null
           last_message_email_at?: string | null
+          allow_asks?: boolean
+          allow_anonymous_asks?: boolean
+          invited_by?: string | null
+          invite_code_used?: string | null
+          invite_codes_remaining?: number | null
         }
         Update: {
           id?: string
@@ -824,6 +1011,11 @@ export type Database = {
           email_messages?: boolean | null
           email_frequency?: string | null
           last_message_email_at?: string | null
+          allow_asks?: boolean
+          allow_anonymous_asks?: boolean
+          invited_by?: string | null
+          invite_code_used?: string | null
+          invite_codes_remaining?: number | null
         }
         Relationships: []
       }
