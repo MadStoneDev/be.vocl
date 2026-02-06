@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback, memo, type ReactNode } from "react";
+import { useState, useRef, useMemo, useCallback, memo, createContext, useContext, type ReactNode } from "react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,6 +49,10 @@ export interface CommentData {
   content: string;
   timestamp: string;
 }
+export interface PostTag {
+  id: string;
+  name: string;
+}
 export interface UserData {
   id: string;
   username: string;
@@ -65,6 +69,7 @@ export interface PostProps {
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean; // NSFW content flag
+  tags?: PostTag[]; // Tags associated with this post
   comments?: CommentData[];
   likedBy?: UserData[];
   rebloggedBy?: UserData[];
@@ -75,6 +80,20 @@ export interface PostProps {
   onCommentsExpand?: () => void;
   onLikesExpand?: () => void;
   onReblogsExpand?: () => void;
+}
+
+// =============================================================================
+// Post Tags Context - allows content components to access tags and hover state
+// =============================================================================
+interface PostTagsContextValue {
+  tags: PostTag[];
+  isHovered: boolean;
+}
+
+const PostTagsContext = createContext<PostTagsContextValue | null>(null);
+
+export function usePostTags() {
+  return useContext(PostTagsContext);
 }
 
 // =============================================================================
@@ -479,6 +498,42 @@ function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, 
 }
 
 // =============================================================================
+// Tags Overlay Component (for image/video/gallery - absolute positioned)
+// =============================================================================
+interface TagsOverlayProps {
+  tags: PostTag[];
+  isVisible: boolean;
+}
+
+function TagsOverlay({ tags, isVisible }: TagsOverlayProps) {
+  if (tags.length === 0) return null;
+
+  return (
+    <div
+      className={`absolute top-0 right-0 w-1/3 py-2 px-4 z-20 transition-opacity duration-150 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <div className="flex flex-row flex-wrap gap-1 justify-end">
+        {tags.map((tag) => (
+          <Link
+            key={tag.id}
+            href={`/tag/${encodeURIComponent(tag.name)}`}
+            onClick={(e) => e.stopPropagation()}
+            className={`px-2 py-0.5 text-xs font-medium rounded bg-black/60 text-white truncate max-w-full transition-opacity ${
+              isVisible ? "opacity-90 hover:opacity-100" : "opacity-0"
+            }`}
+            style={{ maxWidth: "100%" }}
+          >
+            #{tag.name}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Main Post Component (Memoized for performance)
 // =============================================================================
 export const Post = memo(function Post({
@@ -490,6 +545,7 @@ export const Post = memo(function Post({
   stats,
   interactions,
   isSensitive = false,
+  tags = [],
   comments = [],
   likedBy = [],
   rebloggedBy = [],
@@ -501,6 +557,7 @@ export const Post = memo(function Post({
   onLikesExpand,
   onReblogsExpand,
 }: PostProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
   const [isContentRevealed, setIsContentRevealed] = useState(false);
   const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
@@ -578,7 +635,7 @@ export const Post = memo(function Post({
   }, []);
 
   return (
-    <div className="w-full max-w-full sm:max-w-sm">
+    <div className="w-full max-w-full sm:max-w-xl">
       <article
         className="relative shadow-xl overflow-hidden"
         data-post-id={id}
@@ -592,11 +649,25 @@ export const Post = memo(function Post({
         />
 
         {/* Content area with overlay */}
-        <div className="relative">
-          {/* The actual content */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* The actual content - wrapped in context for text/audio to access tags */}
           <div className="relative overflow-hidden" style={{
             borderRadius: contentBorderRadius
-          }}>{children}</div>
+          }}>
+            <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
+              {children}
+            </PostTagsContext.Provider>
+
+            {/* Tags overlay for image/video/gallery - positioned inside content */}
+            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+              <TagsOverlay tags={tags} isVisible={isHovered} />
+            )}
+          </div>
+
 
           {/* NSFW overlay - shown when content is sensitive and not revealed */}
           {showNSFWOverlay && (
@@ -608,7 +679,7 @@ export const Post = memo(function Post({
           {/* Dark overlay - only covers content, not header or action bar */}
           <div
             onClick={handleOverlayClick}
-            className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
+            className={`absolute inset-0 bg-black/60 transition-all duration-300 ${
               isReblogMenuOpen
                 ? "pointer-events-auto opacity-100"
                 : "pointer-events-none opacity-0"
@@ -689,14 +760,14 @@ export function ImageContent({ src, alt }: ImageContentProps) {
           src={src}
           alt={alt}
           fill
-          className="object-cover hover:brightness-95 transition-all"
+          className="object-cover hover:brightness-75 transition-all"
         />
       </div>
 
       {/* Lightbox */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-100 bg-black/95 flex items-center justify-center"
           onClick={() => setLightboxOpen(false)}
           role="dialog"
           aria-modal="true"
@@ -737,6 +808,10 @@ interface TextContentProps {
 }
 
 export function TextContent({ children, html }: TextContentProps) {
+  const postTags = usePostTags();
+  const tags = postTags?.tags || [];
+  const isHovered = postTags?.isHovered || false;
+
   return (
     <div className="p-3 sm:p-4 pb-18.5 sm:pb-18.5 bg-[#EBEBEB]">
       {html ? (
@@ -747,6 +822,30 @@ export function TextContent({ children, html }: TextContentProps) {
       ) : (
         <div className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 whitespace-pre-wrap">
           {children}
+        </div>
+      )}
+
+      {/* Tags - collapsible on hover */}
+      {tags.length > 0 && (
+        <div
+          className={`overflow-hidden transition-all duration-150 ease-out ${
+            isHovered ? "max-h-50 mt-3" : "mt-3 lg:mt-0 max-h-50 lg:max-h-0"
+          }`}
+        >
+          <div className="flex flex-row flex-wrap gap-1.5 pt-3 border-t border-neutral-300/50">
+            {tags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/tag/${encodeURIComponent(tag.name)}`}
+                className={`px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate transition-opacity ${
+                  isHovered ? "opacity-80 hover:opacity-100" : "opacity-100 lg:opacity-0"
+                }`}
+                style={{ maxWidth: "150px" }}
+              >
+                #{tag.name}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

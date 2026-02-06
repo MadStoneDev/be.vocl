@@ -413,7 +413,7 @@ export default function ProfilePage() {
 
       {/* Tab Content */}
       <div className="mt-6 px-4 sm:px-6">
-        <div className="max-w-sm mx-auto space-y-6">
+        <div className="max-w-xl mx-auto space-y-6">
           {activeTab === "posts" && (
             <>
               {/* Pinned Post */}

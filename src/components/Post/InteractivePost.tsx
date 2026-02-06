@@ -12,7 +12,7 @@ import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
 import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, unfollowUser } from "@/actions/follows";
-import { PostTags } from "./PostTags";
+import type { PostTag } from "./Post";
 
 // Lazy load heavy dialog components for better initial bundle size
 const PostMenu = dynamic(() => import("./PostMenu").then(mod => ({ default: mod.PostMenu })), {
@@ -27,11 +27,6 @@ const ReportDialog = dynamic(() => import("./ReportDialog").then(mod => ({ defau
 const UserReportDialog = dynamic(() => import("./UserReportDialog").then(mod => ({ default: mod.UserReportDialog })), {
   ssr: false,
 });
-
-interface PostTag {
-  id: string;
-  name: string;
-}
 
 interface InteractivePostProps {
   id: string;
@@ -315,6 +310,7 @@ export function InteractivePost({
         stats={stats}
         interactions={interactions}
         isSensitive={isSensitive}
+        tags={tags}
         comments={comments}
         likedBy={likedBy}
         rebloggedBy={rebloggedBy}
@@ -327,7 +323,6 @@ export function InteractivePost({
         onReblogsExpand={refreshRebloggedBy}
       >
         {children}
-        {tags.length > 0 && <PostTags tags={tags} />}
       </Post>
 
       {/* Post Menu */}

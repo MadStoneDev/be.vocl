@@ -487,6 +487,136 @@ interface PostWithDetails {
 }
 
 /**
+ * Get a single post by ID
+ */
+export async function getPostById(postId: string): Promise<{
+  success: boolean;
+  post?: PostWithDetails;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Get the post
+    const { data: post, error } = await (supabase as any)
+      .from("posts")
+      .select(
+        `
+        id,
+        author_id,
+        post_type,
+        content,
+        is_sensitive,
+        is_pinned,
+        created_at,
+        author:author_id (
+          username,
+          display_name,
+          avatar_url,
+          role
+        )
+      `
+      )
+      .eq("id", postId)
+      .eq("status", "published")
+      .single();
+
+    if (error || !post) {
+      console.error("Get post error:", error);
+      return { success: false, error: "Post not found" };
+    }
+
+    // Get counts and user interactions in parallel
+    const [likesResult, commentsResult, reblogsResult, userLike, userComment, userReblog, tagsResult] = await Promise.all([
+      // Get like count
+      (supabase as any)
+        .from("likes")
+        .select("id", { count: "exact", head: true })
+        .eq("post_id", postId),
+      // Get comment count
+      (supabase as any)
+        .from("comments")
+        .select("id", { count: "exact", head: true })
+        .eq("post_id", postId),
+      // Get reblog count
+      (supabase as any)
+        .from("posts")
+        .select("id", { count: "exact", head: true })
+        .eq("reblogged_from_id", postId)
+        .eq("status", "published"),
+      // Check if user liked
+      user
+        ? (supabase as any)
+            .from("likes")
+            .select("id")
+            .eq("post_id", postId)
+            .eq("user_id", user.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      // Check if user commented
+      user
+        ? (supabase as any)
+            .from("comments")
+            .select("id")
+            .eq("post_id", postId)
+            .eq("user_id", user.id)
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      // Check if user reblogged
+      user
+        ? (supabase as any)
+            .from("posts")
+            .select("id")
+            .eq("reblogged_from_id", postId)
+            .eq("author_id", user.id)
+            .neq("status", "deleted")
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      // Get tags
+      (supabase as any)
+        .from("post_tags")
+        .select("tag:tags(id, name)")
+        .eq("post_id", postId),
+    ]);
+
+    const postWithDetails: PostWithDetails = {
+      id: post.id,
+      authorId: post.author_id,
+      author: {
+        username: post.author.username,
+        displayName: post.author.display_name,
+        avatarUrl: post.author.avatar_url,
+        role: post.author.role || 0,
+      },
+      postType: post.post_type,
+      content: post.content,
+      isSensitive: post.is_sensitive,
+      isPinned: post.is_pinned,
+      isOwn: user?.id === post.author_id,
+      createdAt: post.created_at,
+      likeCount: likesResult.count || 0,
+      commentCount: commentsResult.count || 0,
+      reblogCount: reblogsResult.count || 0,
+      hasLiked: !!userLike.data,
+      hasCommented: !!userComment.data,
+      hasReblogged: !!userReblog.data,
+      tags: (tagsResult.data || [])
+        .filter((t: any) => t.tag)
+        .map((t: any) => ({ id: t.tag.id, name: t.tag.name })),
+    };
+
+    return { success: true, post: postWithDetails };
+  } catch (error) {
+    console.error("Get post by ID error:", error);
+    return { success: false, error: "Failed to fetch post" };
+  }
+}
+
+/**
  * Get posts by user ID
  */
 export async function getPostsByUser(

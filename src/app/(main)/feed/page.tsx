@@ -216,7 +216,7 @@ export default function FeedPage() {
   })), [posts]);
 
   return (
-    <div className="py-3 mx-auto max-w-sm">
+    <div className="py-3 mx-auto max-w-xl">
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
         <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />

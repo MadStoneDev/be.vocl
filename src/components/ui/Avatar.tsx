@@ -13,10 +13,10 @@ interface AvatarProps {
 
 const sizeClasses = {
   xs: "w-6 h-6 text-xs",
-  sm: "w-8 h-8 text-sm",
-  md: "w-10 h-10 text-base",
-  lg: "w-12 h-12 text-lg",
-  xl: "w-16 h-16 text-xl",
+  sm: "w-9 h-9 text-lg",
+  md: "w-10 h-10 text-lg",
+  lg: "w-12 h-12 text-xl",
+  xl: "w-16 h-16 text-2xl",
   "2xl": "w-24 h-24 text-3xl",
 };
 
@@ -73,12 +73,12 @@ export function Avatar({
   const bgColor = getAvatarColor(username);
 
   const baseClasses = `rounded-full overflow-hidden flex-shrink-0 ${sizeClasses[size]} ${className}`;
-  const clickableClasses = onClick ? "cursor-pointer hover:opacity-90 transition-opacity" : "";
+  const clickableClasses = onClick ? "cursor-pointer hover:opacity-90" : "";
 
   if (showFallback) {
     return (
       <div
-        className={`${baseClasses} ${bgColor} ${clickableClasses} flex items-center justify-center font-semibold text-white`}
+        className={`${baseClasses} bg-background hover:bg-vocl-accent ${clickableClasses} flex items-center justify-center font-semibold text-white transition-all;`}
         onClick={onClick}
         role={onClick ? "button" : undefined}
       >

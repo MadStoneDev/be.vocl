@@ -25,7 +25,7 @@ export function CreatePostFAB({ className = "" }: CreatePostFABProps) {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className={`fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 rounded-full bg-vocl-accent text-white shadow-lg shadow-vocl-accent/30 flex items-center justify-center hover:scale-110 hover:bg-vocl-accent-hover transition-all z-40 ${className}`}
+        className={`fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 rounded-full bg-vocl-accent text-white shadow-lg shadow-background/50 ring-20 ring-background flex items-center justify-center hover:scale-110 hover:bg-vocl-accent-hover transition-all z-100 ${className}`}
         aria-label="Create post"
       >
         <IconPlus size={28} stroke={2.5} />

@@ -13,10 +13,12 @@ import {
   IconEyeOff,
   IconLoader2,
   IconX,
+  IconHash,
 } from "@tabler/icons-react";
 import { completeOnboarding } from "@/actions/profile";
 import { followUser } from "@/actions/follows";
-import { getSuggestedUsers } from "@/actions/search";
+import { getSuggestedUsers, getTrendingTags } from "@/actions/search";
+import { followTagByName } from "@/actions/tags";
 import { toast } from "@/components/ui";
 
 interface OnboardingWizardProps {
@@ -33,11 +35,18 @@ interface SuggestedUser {
   followerCount: number;
 }
 
+interface SuggestedTag {
+  id: string;
+  name: string;
+  postCount: number;
+}
+
 const STEPS = [
   { id: "welcome", title: "Welcome" },
   { id: "profile", title: "Your Profile" },
   { id: "avatar", title: "Add a Photo" },
   { id: "content", title: "Content Preferences" },
+  { id: "interests", title: "Your Interests" },
   { id: "follow", title: "Find People" },
 ];
 
@@ -59,6 +68,20 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
+  // Suggested tags/interests state
+  const [suggestedTags, setSuggestedTags] = useState<SuggestedTag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [loadingTags, setLoadingTags] = useState(false);
+
+  // Auto-detected timezone
+  const [timezone] = useState(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      return "UTC";
+    }
+  });
+
   const loadSuggestedUsers = useCallback(async () => {
     setLoadingSuggestions(true);
     const result = await getSuggestedUsers(8);
@@ -66,6 +89,15 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
       setSuggestedUsers(result.users);
     }
     setLoadingSuggestions(false);
+  }, []);
+
+  const loadSuggestedTags = useCallback(async () => {
+    setLoadingTags(true);
+    const result = await getTrendingTags(20);
+    if (result.success && result.tags) {
+      setSuggestedTags(result.tags);
+    }
+    setLoadingTags(false);
   }, []);
 
   const handleAvatarSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +165,18 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
     }
   };
 
+  const toggleTag = (tagName: string) => {
+    setSelectedTags((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(tagName)) {
+        newSet.delete(tagName);
+      } else {
+        newSet.add(tagName);
+      }
+      return newSet;
+    });
+  };
+
   const handleNext = async () => {
     // Validation for profile step
     if (currentStep === 1 && !displayName.trim()) {
@@ -140,8 +184,13 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
       return;
     }
 
-    // Load suggestions when entering follow step
+    // Load tags when entering interests step
     if (currentStep === 3) {
+      loadSuggestedTags();
+    }
+
+    // Load user suggestions when entering follow step
+    if (currentStep === 4) {
       loadSuggestedUsers();
     }
 
@@ -166,13 +215,20 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         finalAvatarUrl = await uploadAvatar();
       }
 
-      // Save profile
+      // Follow selected tags
+      const tagPromises = Array.from(selectedTags).map((tagName) =>
+        followTagByName(tagName)
+      );
+      await Promise.all(tagPromises);
+
+      // Save profile with timezone
       const result = await completeOnboarding({
         displayName: displayName.trim(),
         bio: bio.trim() || undefined,
         avatarUrl: finalAvatarUrl || undefined,
         showSensitivePosts,
         blurSensitiveByDefault,
+        timezone,
       });
 
       if (result.success) {
@@ -402,7 +458,64 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
           </div>
         );
 
-      case 4: // Follow Suggestions
+      case 4: // Interests/Tags
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                What are you interested in?
+              </h2>
+              <p className="text-sm text-foreground/60">
+                Follow tags to see more content you love
+              </p>
+            </div>
+
+            {loadingTags ? (
+              <div className="flex items-center justify-center py-8">
+                <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+              </div>
+            ) : suggestedTags.length > 0 ? (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {suggestedTags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => toggleTag(tag.name)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                      selectedTags.has(tag.name)
+                        ? "bg-vocl-accent text-white"
+                        : "bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5"
+                    }`}
+                  >
+                    <IconHash size={14} />
+                    {tag.name}
+                    {selectedTags.has(tag.name) && (
+                      <IconCheck size={14} className="ml-0.5" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-foreground/50">
+                No tags available right now
+              </div>
+            )}
+
+            {selectedTags.size > 0 && (
+              <p className="text-sm text-center text-vocl-accent">
+                {selectedTags.size} {selectedTags.size === 1 ? "interest" : "interests"} selected
+              </p>
+            )}
+
+            <button
+              onClick={handleNext}
+              className="block mx-auto text-sm text-foreground/50 hover:text-foreground transition-colors"
+            >
+              Skip for now
+            </button>
+          </div>
+        );
+
+      case 5: // Follow Suggestions
         return (
           <div className="space-y-6">
             <div className="text-center">

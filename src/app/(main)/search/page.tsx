@@ -689,7 +689,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
   const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery";
 
   return (
-    <div className="max-w-sm mx-auto">
+    <div className="max-w-xl mx-auto">
       <InteractivePost
         id={post.id}
         author={{

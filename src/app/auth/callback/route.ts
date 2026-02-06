@@ -98,14 +98,15 @@ export async function GET(request: Request) {
             }
           }
 
-          return NextResponse.redirect(`${origin}${next}`);
+          // New signup - redirect to onboarding
+          return NextResponse.redirect(`${origin}/onboarding`);
         }
         case "email":
-          // Magic link sign in
+          // Magic link sign in - existing user
           return NextResponse.redirect(`${origin}${next}`);
         case "invite":
-          // Invitation accepted - go to onboarding or feed
-          return NextResponse.redirect(`${origin}/feed?welcome=true`);
+          // Invitation accepted - go to onboarding
+          return NextResponse.redirect(`${origin}/onboarding`);
         default:
           return NextResponse.redirect(`${origin}${next}`);
       }

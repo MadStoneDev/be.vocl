@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   IconPlayerPlay,
   IconPlayerPause,
@@ -10,6 +11,7 @@ import {
   IconMusic,
 } from "@tabler/icons-react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import { usePostTags, type PostTag } from "../Post";
 
 interface SpotifyData {
   track_id: string;
@@ -37,6 +39,11 @@ export function AudioContent({
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+
+  // Get tags from Post context
+  const postTags = usePostTags();
+  const tags: PostTag[] = postTags?.tags || [];
+  const isHovered = postTags?.isHovered || false;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -184,6 +191,30 @@ export function AudioContent({
           className="mt-4 pt-4 border-t border-white/10 text-foreground/80"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
+      )}
+
+      {/* Tags - collapsible on hover */}
+      {tags.length > 0 && (
+        <div
+          className={`overflow-hidden transition-all duration-150 ease-out ${
+            isHovered ? "max-h-50 mt-4" : "max-h-0"
+          }`}
+        >
+          <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-white/10">
+            {tags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/tag/${encodeURIComponent(tag.name)}`}
+                className={`px-2 py-1 text-xs font-medium rounded bg-white/10 text-foreground/70 truncate transition-opacity ${
+                  isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
+                }`}
+                style={{ maxWidth: "150px" }}
+              >
+                #{tag.name}
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

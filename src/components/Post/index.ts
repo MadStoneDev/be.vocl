@@ -1,4 +1,4 @@
-export { Post, ImageContent, TextContent } from "./Post";
+export { Post, ImageContent, TextContent, usePostTags } from "./Post";
 export { InteractivePost } from "./InteractivePost";
 export { PostMenu } from "./PostMenu";
 export { PostTags } from "./PostTags";
@@ -15,4 +15,5 @@ export type {
   PostInteractions,
   CommentData,
   UserData,
+  PostTag,
 } from "./Post";

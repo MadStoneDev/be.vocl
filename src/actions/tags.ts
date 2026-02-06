@@ -270,6 +270,250 @@ export async function getPostTags(postId: string): Promise<{
 }
 
 /**
+ * Get tag info by name
+ */
+export async function getTagByName(tagName: string): Promise<{
+  success: boolean;
+  tag?: {
+    id: string;
+    name: string;
+    postCount: number;
+    isFollowing: boolean;
+  };
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const normalizedName = tagName.toLowerCase().trim().replace(/^#/, "");
+
+    const { data: tag, error } = await supabase
+      .from("tags")
+      .select("id, name, post_count")
+      .eq("name", normalizedName)
+      .single();
+
+    if (error || !tag) {
+      return { success: false, error: "Tag not found" };
+    }
+
+    // Check if user is following
+    let isFollowing = false;
+    if (user) {
+      const { data: following } = await supabase
+        .from("followed_tags")
+        .select("profile_id")
+        .eq("profile_id", user.id)
+        .eq("tag_id", tag.id)
+        .single();
+      isFollowing = !!following;
+    }
+
+    return {
+      success: true,
+      tag: {
+        id: tag.id,
+        name: tag.name,
+        postCount: tag.post_count,
+        isFollowing,
+      },
+    };
+  } catch (error) {
+    console.error("Get tag by name error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Get posts by tag name
+ */
+export async function getPostsByTag(
+  tagName: string,
+  options?: { limit?: number; offset?: number }
+): Promise<{
+  success: boolean;
+  posts?: Array<{
+    id: string;
+    authorId: string;
+    author: {
+      username: string;
+      displayName: string | null;
+      avatarUrl: string | null;
+      role: number;
+    };
+    postType: string;
+    content: any;
+    isSensitive: boolean;
+    createdAt: string;
+    likeCount: number;
+    commentCount: number;
+    reblogCount: number;
+    hasLiked: boolean;
+    hasCommented: boolean;
+    hasReblogged: boolean;
+    tags: Array<{ id: string; name: string }>;
+  }>;
+  hasMore?: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const limit = options?.limit || 20;
+    const offset = options?.offset || 0;
+    const normalizedName = tagName.toLowerCase().trim().replace(/^#/, "");
+
+    // Get user's sensitive content preferences
+    let showSensitive = false;
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("show_sensitive_posts")
+        .eq("id", user.id)
+        .single();
+      showSensitive = profile?.show_sensitive_posts ?? false;
+    }
+
+    // Get tag ID
+    const { data: tag } = await supabase
+      .from("tags")
+      .select("id")
+      .eq("name", normalizedName)
+      .single();
+
+    if (!tag) {
+      return { success: true, posts: [], hasMore: false };
+    }
+
+    // Get post IDs with this tag
+    let query = supabase
+      .from("post_tags")
+      .select(`
+        post_id,
+        post:posts!post_id (
+          id,
+          author_id,
+          post_type,
+          content,
+          is_sensitive,
+          created_at,
+          status,
+          author:author_id (
+            username,
+            display_name,
+            avatar_url,
+            role
+          )
+        )
+      `)
+      .eq("tag_id", tag.id)
+      .order("created_at", { ascending: false, foreignTable: "posts" })
+      .range(offset, offset + limit);
+
+    const { data: postTags, error } = await query;
+
+    if (error) {
+      console.error("Get posts by tag error:", error);
+      return { success: false, error: "Failed to fetch posts" };
+    }
+
+    // Filter to published posts and respect sensitive settings
+    const validPosts = (postTags || [])
+      .filter((pt: any) => {
+        const post = pt.post;
+        if (!post || post.status !== "published") return false;
+        if (post.is_sensitive && !showSensitive) return false;
+        return true;
+      })
+      .map((pt: any) => pt.post);
+
+    if (validPosts.length === 0) {
+      return { success: true, posts: [], hasMore: false };
+    }
+
+    const postIds = validPosts.map((p: any) => p.id);
+
+    // Get counts and interactions in parallel
+    const [likeCounts, commentCounts, reblogCounts, userLikes, userComments, userReblogs, allTags] = await Promise.all([
+      supabase.from("likes").select("post_id").in("post_id", postIds),
+      supabase.from("comments").select("post_id").in("post_id", postIds),
+      supabase.from("posts").select("reblogged_from_id").in("reblogged_from_id", postIds).eq("status", "published"),
+      user ? supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
+      user ? supabase.from("comments").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
+      user ? supabase.from("posts").select("reblogged_from_id").eq("author_id", user.id).in("reblogged_from_id", postIds).neq("status", "deleted") : Promise.resolve({ data: [] }),
+      supabase.from("post_tags").select("post_id, tag:tags!tag_id(id, name)").in("post_id", postIds),
+    ]);
+
+    // Build count maps
+    const likeCountMap = new Map<string, number>();
+    const commentCountMap = new Map<string, number>();
+    const reblogCountMap = new Map<string, number>();
+    const userLikedSet = new Set((userLikes.data || []).map((l: any) => l.post_id));
+    const userCommentedSet = new Set((userComments.data || []).map((c: any) => c.post_id));
+    const userRebloggedSet = new Set((userReblogs.data || []).map((r: any) => r.reblogged_from_id));
+
+    for (const like of likeCounts.data || []) {
+      likeCountMap.set(like.post_id, (likeCountMap.get(like.post_id) || 0) + 1);
+    }
+    for (const comment of commentCounts.data || []) {
+      commentCountMap.set(comment.post_id, (commentCountMap.get(comment.post_id) || 0) + 1);
+    }
+    for (const reblog of reblogCounts.data || []) {
+      reblogCountMap.set(reblog.reblogged_from_id, (reblogCountMap.get(reblog.reblogged_from_id) || 0) + 1);
+    }
+
+    // Build tags map
+    const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
+    for (const pt of allTags.data || []) {
+      const tag = pt.tag as any;
+      if (tag && typeof tag === "object") {
+        if (!tagsMap.has(pt.post_id)) {
+          tagsMap.set(pt.post_id, []);
+        }
+        tagsMap.get(pt.post_id)!.push({ id: tag.id, name: tag.name });
+      }
+    }
+
+    const posts = validPosts.map((post: any) => ({
+      id: post.id,
+      authorId: post.author_id,
+      author: {
+        username: post.author.username,
+        displayName: post.author.display_name,
+        avatarUrl: post.author.avatar_url,
+        role: post.author.role || 0,
+      },
+      postType: post.post_type,
+      content: post.content,
+      isSensitive: post.is_sensitive,
+      createdAt: post.created_at,
+      likeCount: likeCountMap.get(post.id) || 0,
+      commentCount: commentCountMap.get(post.id) || 0,
+      reblogCount: reblogCountMap.get(post.id) || 0,
+      hasLiked: userLikedSet.has(post.id),
+      hasCommented: userCommentedSet.has(post.id),
+      hasReblogged: userRebloggedSet.has(post.id),
+      tags: tagsMap.get(post.id) || [],
+    }));
+
+    return {
+      success: true,
+      posts,
+      hasMore: posts.length === limit,
+    };
+  } catch (error) {
+    console.error("Get posts by tag error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Get tags for multiple posts (batch)
  */
 export async function getPostTagsBatch(postIds: string[]): Promise<{

@@ -545,6 +545,7 @@ export async function completeOnboarding(data: {
   avatarUrl?: string;
   showSensitivePosts?: boolean;
   blurSensitiveByDefault?: boolean;
+  timezone?: string;
 }): Promise<ProfileResult> {
   try {
     const supabase = await createClient();
@@ -562,6 +563,7 @@ export async function completeOnboarding(data: {
       avatar_url: data.avatarUrl || null,
       show_sensitive_posts: data.showSensitivePosts ?? false,
       blur_sensitive_by_default: data.blurSensitiveByDefault ?? true,
+      timezone: data.timezone || "UTC",
       onboarding_completed: true,
       updated_at: new Date().toISOString(),
     };
