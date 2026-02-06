@@ -172,7 +172,7 @@ function PostActionBar({
 }: PostActionBarProps) {
   return (
     <div
-      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between pt-2.5 pr-20 pb-3 sm:pb-4 pl-3 sm:pl-5`}
+      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between gap-6 sm:gap-8 pt-2.5 pr-20 pb-3 sm:pb-4 pl-3 sm:pl-5`}
       style={{ backgroundColor: "rgba(19, 19, 19, 0.9)", borderRadius: "0 0 40px 0" }}
     >
       {/* Comment button - icon AND count open panel */}

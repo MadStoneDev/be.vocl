@@ -58,11 +58,11 @@ export function MainNav({
           <Link
             href={username ? `/profile/${username}` : "/settings"}
             aria-label="Your profile"
-            className="ring ring-white hover:ring-2 hover:ring-vocl-accent transition-all rounded-full"
+            className="ml-2 ring ring-white hover:ring-2 hover:ring-vocl-accent transition-all rounded-full"
           >
             <Avatar
               src={avatarUrl}
-              username={username || "user"}
+              username={username || "-user"}
               size="sm"
             />
           </Link>

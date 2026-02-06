@@ -22,7 +22,7 @@ const sizeClasses = {
 
 const sizePx = {
   xs: 24,
-  sm: 32,
+  sm: 36,  // Matches w-9 (36px)
   md: 40,
   lg: 48,
   xl: 64,
@@ -78,7 +78,7 @@ export function Avatar({
   if (showFallback) {
     return (
       <div
-        className={`${baseClasses} bg-background hover:bg-vocl-accent ${clickableClasses} flex items-center justify-center font-semibold text-white transition-all;`}
+        className={`${baseClasses} bg-background hover:bg-vocl-accent ${clickableClasses} flex items-center justify-center font-semibold text-white transition-all`}
         onClick={onClick}
         role={onClick ? "button" : undefined}
       >
