@@ -42,6 +42,7 @@ interface FeedPost {
     // Caption (for media posts)
     captionHtml?: string;
   };
+  rawContent?: any; // Raw content for editing
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean;
@@ -95,6 +96,7 @@ export function FeedList({
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
           tags={post.tags}
+          content={post.rawContent}
         >
           {/* Image content */}
           {post.contentType === "image" && post.content.imageUrl && (

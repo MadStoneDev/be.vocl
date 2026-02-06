@@ -2,8 +2,12 @@
 
 import { useState, useCallback, useTransition, useMemo, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Post } from "./Post";
+import { Post, TextContent, ImageContent } from "./Post";
+import { VideoContent } from "./content/VideoContent";
+import { AudioContent } from "./content/AudioContent";
+import { GalleryContent } from "./content/GalleryContent";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
+import type { VideoEmbedPlatform } from "@/types/database";
 import { useLike } from "@/hooks/useLike";
 import { useComments } from "@/hooks/useComments";
 import { useReblog } from "@/hooks/useReblog";
@@ -27,6 +31,9 @@ const ReportDialog = dynamic(() => import("./ReportDialog").then(mod => ({ defau
 const UserReportDialog = dynamic(() => import("./UserReportDialog").then(mod => ({ default: mod.UserReportDialog })), {
   ssr: false,
 });
+const EditPostModal = dynamic(() => import("./create/EditPostModal").then(mod => ({ default: mod.EditPostModal })), {
+  ssr: false,
+});
 
 interface InteractivePostProps {
   id: string;
@@ -43,7 +50,7 @@ interface InteractivePostProps {
   contentPreview?: string;
   imageUrl?: string;
   tags?: PostTag[];
-  onEdit?: () => void;
+  content?: any; // Raw post content for editing
   onDeleted?: () => void;
 }
 
@@ -62,7 +69,7 @@ export function InteractivePost({
   contentPreview = "",
   imageUrl,
   tags = [],
-  onEdit,
+  content,
   onDeleted,
 }: InteractivePostProps) {
   // Menu and dialog state
@@ -70,6 +77,12 @@ export function InteractivePost({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isDeleted, setIsDeleted] = useState(false);
+
+  // Edit dialog state
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [currentIsSensitive, setCurrentIsSensitive] = useState(isSensitive);
+  const [currentTags, setCurrentTags] = useState(tags);
+  const [currentContent, setCurrentContent] = useState(content);
 
   // Reblog dialog state
   const [showReblogDialog, setShowReblogDialog] = useState(false);
@@ -295,6 +308,80 @@ export function InteractivePost({
     setShowReportUserDialog(true);
   }, []);
 
+  const handleEdit = useCallback(() => {
+    if (currentContent) {
+      setShowEditDialog(true);
+    } else {
+      toast.error("Unable to edit this post");
+    }
+  }, [currentContent]);
+
+  const handleEditSuccess = useCallback((updatedData: {
+    content: any;
+    isSensitive: boolean;
+    tags: Array<{ id: string; name: string }>;
+  }) => {
+    // Update local state with the edited data - no page reload needed
+    setCurrentContent(updatedData.content);
+    setCurrentIsSensitive(updatedData.isSensitive);
+    setCurrentTags(updatedData.tags);
+    toast.success("Post updated");
+  }, []);
+
+  // Render content based on content type and current content data
+  const renderContent = useCallback(() => {
+    const contentData = currentContent;
+    if (!contentData) return children;
+
+    switch (contentType) {
+      case "text":
+        return (
+          <TextContent html={contentData.html}>
+            {contentData.plain || contentData.text}
+          </TextContent>
+        );
+
+      case "image":
+        return (
+          <ImageContent
+            src={contentData.urls?.[0] || contentData.url}
+            alt="Post image"
+          />
+        );
+
+      case "gallery":
+        return (
+          <GalleryContent
+            images={contentData.urls || []}
+            caption={contentData.caption_html}
+          />
+        );
+
+      case "video":
+        return (
+          <VideoContent
+            src={contentData.url}
+            thumbnailUrl={contentData.thumbnail_url}
+            embedUrl={contentData.embed_url}
+            embedPlatform={contentData.embed_platform as VideoEmbedPlatform}
+            caption={contentData.caption_html}
+          />
+        );
+
+      case "audio":
+        return (
+          <AudioContent
+            src={contentData.url}
+            albumArtUrl={contentData.album_art_url}
+            caption={contentData.caption_html}
+          />
+        );
+
+      default:
+        return children;
+    }
+  }, [currentContent, contentType, children]);
+
   // Don't render if deleted
   if (isDeleted) {
     return null;
@@ -309,8 +396,8 @@ export function InteractivePost({
         contentType={contentType}
         stats={stats}
         interactions={interactions}
-        isSensitive={isSensitive}
-        tags={tags}
+        isSensitive={currentIsSensitive}
+        tags={currentTags}
         comments={comments}
         likedBy={likedBy}
         rebloggedBy={rebloggedBy}
@@ -322,7 +409,7 @@ export function InteractivePost({
         onLikesExpand={refreshLikes}
         onReblogsExpand={refreshRebloggedBy}
       >
-        {children}
+        {renderContent()}
       </Post>
 
       {/* Post Menu */}
@@ -333,7 +420,7 @@ export function InteractivePost({
         isOwn={isOwn}
         isPinned={currentlyPinned}
         authorUsername={author.username}
-        onEdit={onEdit}
+        onEdit={handleEdit}
         onDelete={handleDelete}
         onPin={handlePin}
         onMute={handleMute}
@@ -388,6 +475,22 @@ export function InteractivePost({
           userId={authorId}
           username={author.username}
           onSuccess={() => toast.success("Report submitted. Thank you!")}
+        />
+      )}
+
+      {/* Edit Post Dialog */}
+      {currentContent && (
+        <EditPostModal
+          isOpen={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          onSuccess={handleEditSuccess}
+          post={{
+            id,
+            postType: contentType,
+            content: currentContent,
+            isSensitive: currentIsSensitive,
+            tags: currentTags,
+          }}
         />
       )}
     </div>

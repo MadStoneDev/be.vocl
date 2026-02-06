@@ -254,6 +254,7 @@ export default function TagPage() {
             }}
             isSensitive={post.isSensitive}
             tags={post.tags}
+            content={post.content}
           >
             {renderPostContent(post)}
           </InteractivePost>

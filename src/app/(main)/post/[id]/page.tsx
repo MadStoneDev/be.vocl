@@ -177,6 +177,7 @@ export default function PostPage() {
         isOwn={post.isOwn}
         isPinned={post.isPinned}
         tags={post.tags}
+        content={post.content}
       >
         {renderContent()}
       </InteractivePost>

@@ -208,6 +208,7 @@ export default function FeedPage() {
       // Caption
       captionHtml: post.content.caption_html,
     },
+    rawContent: post.content, // For editing
     stats: post.stats,
     interactions: post.interactions,
     isSensitive: post.isSensitive,
