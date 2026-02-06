@@ -23,7 +23,8 @@
       "Bash(curl:*)",
       "Bash(npx supabase db execute:*)",
       "Bash(node -e:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(git push:*)"
     ]
   }
 }

@@ -344,7 +344,7 @@ export function InteractivePost({
       case "image":
         return (
           <ImageContent
-            src={contentData.urls?.[0] || contentData.url}
+            src={contentData.urls?.[0] || contentData.url || contentData.imageUrl || contentData.imageUrls?.[0]}
             alt="Post image"
           />
         );
@@ -352,28 +352,28 @@ export function InteractivePost({
       case "gallery":
         return (
           <GalleryContent
-            images={contentData.urls || []}
-            caption={contentData.caption_html}
+            images={contentData.urls || contentData.imageUrls || []}
+            caption={contentData.caption_html || contentData.captionHtml}
           />
         );
 
       case "video":
         return (
           <VideoContent
-            src={contentData.url}
-            thumbnailUrl={contentData.thumbnail_url}
-            embedUrl={contentData.embed_url}
-            embedPlatform={contentData.embed_platform as VideoEmbedPlatform}
-            caption={contentData.caption_html}
+            src={contentData.url || contentData.videoUrl}
+            thumbnailUrl={contentData.thumbnail_url || contentData.videoThumbnailUrl}
+            embedUrl={contentData.embed_url || contentData.embedUrl}
+            embedPlatform={(contentData.embed_platform || contentData.embedPlatform) as VideoEmbedPlatform}
+            caption={contentData.caption_html || contentData.captionHtml}
           />
         );
 
       case "audio":
         return (
           <AudioContent
-            src={contentData.url}
-            albumArtUrl={contentData.album_art_url}
-            caption={contentData.caption_html}
+            src={contentData.url || contentData.audioUrl}
+            albumArtUrl={contentData.album_art_url || contentData.albumArtUrl}
+            caption={contentData.caption_html || contentData.captionHtml}
           />
         );
 
