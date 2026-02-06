@@ -1,7 +1,7 @@
 # be.vocl - Project Summary
 
-> **Last Updated**: 2026-02-04
-> **Current Version**: 0.7.0
+> **Last Updated**: 2026-02-07
+> **Current Version**: 0.7.1
 > **Status**: Pre-release (preparing for beta testing)
 
 ## What is be.vocl?
@@ -122,15 +122,21 @@ be.vocl is a **Tumblr-like content sharing platform** built with Next.js 16 that
 - Staff badges
 - NSFW controls
 - IP banning
+- Edit post functionality (updates locally without page refresh)
+- Tags overlay on post hover (different positioning for text/audio vs image/video/gallery)
+- Onboarding wizard with interest tag selection and timezone auto-detection
+- "For You" feed algorithm (weighted interests, freshness bonus, creator boost, author diversity)
 
 ## What's In Progress / Recent
 
-- Comment loading optimization
+- Mobile layout refinements (action bar spacing, avatar sizing)
+- Video embeds (YouTube, Vimeo, etc.)
+- Carousel gallery with lightbox
 - Performance improvements (Turbopack)
-- Image optimization for R2
 
 ## What's Not Yet Done
 
+- PWA support (attempted but caused layout issues, reverted)
 - Data export processing (GDPR)
 - Video moderation polling completion
 - Test coverage
@@ -143,6 +149,9 @@ be.vocl is a **Tumblr-like content sharing platform** built with Next.js 16 that
 | Content Moderation | `src/lib/sightengine/client.ts` |
 | Admin Actions | `src/actions/admin.ts` |
 | Post Creation | `src/actions/posts.ts` |
+| Post Editing | `src/components/Post/create/EditPostModal.tsx` |
+| Feed Algorithm | `src/actions/recommendations.ts` |
+| Interactive Post | `src/components/Post/InteractivePost.tsx` |
 | Database Schema | `database.types.ts` |
 | Role System | `src/constants/roles.ts` |
 | Moderation Plan | `MODERATION_PLAN.md` |
