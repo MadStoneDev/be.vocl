@@ -69,7 +69,7 @@ export function useTypingPresence(
 
         setTypingUsers(typing);
       })
-      .on("presence", { event: "join" }, ({ key, newPresences }) => {
+      .on("presence", { event: "join" }, ({ key, newPresences }: { key: string; newPresences: any[] }) => {
         // Handle user joining
         if (key !== currentUserId && newPresences?.[0]) {
           const presence = newPresences[0] as any;
@@ -84,11 +84,11 @@ export function useTypingPresence(
           }
         }
       })
-      .on("presence", { event: "leave" }, ({ key }) => {
+      .on("presence", { event: "leave" }, ({ key }: { key: string }) => {
         // Handle user leaving
         setTypingUsers((prev) => prev.filter((u) => u.userId !== key));
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: string) => {
         if (status === "SUBSCRIBED") {
           // Track our initial presence (not typing)
           await channel.track({

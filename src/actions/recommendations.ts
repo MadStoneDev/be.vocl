@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { batchFetchPostStats } from "@/actions/shared/post-stats";
 
 interface RecommendedPost {
   id: string;
@@ -29,6 +30,24 @@ interface RecommendedPost {
   score: number;
   reason: "followed_tag" | "similar_interest" | "popular" | "followed_user";
 }
+
+// Shared post select fields to avoid repetition
+const POST_SELECT_FIELDS = `
+  id,
+  author_id,
+  post_type,
+  content,
+  is_sensitive,
+  is_pinned,
+  created_at,
+  published_at,
+  author:author_id (
+    username,
+    display_name,
+    avatar_url,
+    role
+  )
+`;
 
 /**
  * Get personalized feed recommendations
@@ -65,7 +84,7 @@ export async function getPersonalizedFeed(options?: {
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
-    // Parallel fetch: Get followed tags, liked posts, follows, and user's sensitive pref
+    // Phase 1: Parallel fetch user preferences (4 queries -> 1 round-trip)
     const [followedTagsResult, likedPostsResult, followsResult, profileResult] = await Promise.all([
       supabase.from("followed_tags").select("tag_id").eq("profile_id", user.id),
       supabase.from("likes").select("post_id, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
@@ -80,221 +99,181 @@ export async function getPersonalizedFeed(options?: {
     // Weight recent likes more heavily - last 20 likes get full weight
     const likedPostsWithWeight = (likedPostsResult.data || []).map((l: any, idx: number) => ({
       postId: l.post_id,
-      weight: Math.max(0.2, 1 - (idx * 0.04)), // 1.0 -> 0.2 over 20 items
+      weight: Math.max(0.2, 1 - (idx * 0.04)),
     }));
     const likedPostIds = likedPostsWithWeight.map((l) => l.postId);
 
-    // Get tag IDs from liked posts with weights
+    // Phase 2: Get tag interests + fetch candidate posts in parallel where possible
     const interestTagWeights = new Map<string, number>();
-    if (likedPostIds.length > 0) {
-      const { data: tagsFromLiked } = await supabase
-        .from("post_tags")
-        .select("post_id, tag_id")
-        .in("post_id", likedPostIds);
+    let taggedPostMapping = new Map<string, string[]>();
 
-      for (const t of tagsFromLiked || []) {
-        const likeWeight = likedPostsWithWeight.find((l) => l.postId === t.post_id)?.weight || 0.5;
-        const existing = interestTagWeights.get(t.tag_id) || 0;
-        interestTagWeights.set(t.tag_id, existing + likeWeight);
-      }
+    // Build interest tag weights from liked posts AND get tagged post IDs in parallel
+    const phase2Queries: Promise<any>[] = [];
+
+    if (likedPostIds.length > 0) {
+      phase2Queries.push(
+        (supabase as any).from("post_tags").select("post_id, tag_id").in("post_id", likedPostIds)
+      );
+    } else {
+      phase2Queries.push(Promise.resolve({ data: [] }));
+    }
+
+    const allRelevantTagIds = [...new Set([...followedTagIds])]; // Start with followed, add interest tags after
+
+    // We'll also fetch tagged posts if we have followed tags
+    if (followedTagIds.length > 0) {
+      phase2Queries.push(
+        (supabase as any).from("post_tags").select("post_id, tag_id").in("tag_id", followedTagIds)
+      );
+    } else {
+      phase2Queries.push(Promise.resolve({ data: [] }));
+    }
+
+    const [tagsFromLikedResult, followedTagPostsResult] = await Promise.all(phase2Queries);
+
+    // Process interest tags from liked posts
+    for (const t of tagsFromLikedResult.data || []) {
+      const likeWeight = likedPostsWithWeight.find((l) => l.postId === t.post_id)?.weight || 0.5;
+      const existing = interestTagWeights.get(t.tag_id) || 0;
+      interestTagWeights.set(t.tag_id, existing + likeWeight);
     }
 
     const interestTagIds = [...interestTagWeights.keys()];
+    const combinedRelevantTagIds = [...new Set([...followedTagIds, ...interestTagIds])];
 
-    // Combine all relevant tag IDs (followed tags have priority)
-    const allRelevantTagIds = [...new Set([...followedTagIds, ...interestTagIds])];
+    // Build post-tag mapping from followed tags
+    for (const tp of followedTagPostsResult.data || []) {
+      const existing = taggedPostMapping.get(tp.post_id) || [];
+      existing.push(tp.tag_id);
+      taggedPostMapping.set(tp.post_id, existing);
+    }
 
-    // Build post query
-    let candidatePosts: any[] = [];
-    const postIdsSet = new Set<string>();
-
-    // Optimized: Fetch tagged posts directly with a single query if we have relevant tags
-    if (allRelevantTagIds.length > 0) {
-      // Get post IDs for tagged posts with their tag info
-      const { data: taggedPostIds } = await supabase
+    // If we have interest tags that aren't in followed tags, fetch those post mappings too
+    const extraInterestTagIds = interestTagIds.filter((id) => !followedTagIds.includes(id));
+    if (extraInterestTagIds.length > 0) {
+      const { data: extraTagPosts } = await (supabase as any)
         .from("post_tags")
         .select("post_id, tag_id")
-        .in("tag_id", allRelevantTagIds);
+        .in("tag_id", extraInterestTagIds);
 
-      // Build a map of post_id -> tag_ids for scoring
-      const postTagMapping = new Map<string, string[]>();
-      for (const tp of taggedPostIds || []) {
-        const existing = postTagMapping.get(tp.post_id) || [];
+      for (const tp of extraTagPosts || []) {
+        const existing = taggedPostMapping.get(tp.post_id) || [];
         existing.push(tp.tag_id);
-        postTagMapping.set(tp.post_id, existing);
+        taggedPostMapping.set(tp.post_id, existing);
       }
+    }
 
-      const tagPostIds = [...postTagMapping.keys()];
+    // Phase 3: Fetch all candidate posts in parallel
+    const candidatePosts: any[] = [];
+    const postIdsSet = new Set<string>();
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-      if (tagPostIds.length > 0) {
-        // Get recent posts (last 2 weeks for better relevance)
-        const twoWeeksAgo = new Date();
-        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    const tagPostIds = [...taggedPostMapping.keys()];
+    const phase3Queries: Promise<any>[] = [];
 
-        const { data: tagPosts } = await supabase
+    // Query 1: Tagged posts (from followed tags + interest tags)
+    if (tagPostIds.length > 0) {
+      phase3Queries.push(
+        (supabase as any)
           .from("posts")
-          .select(`
-            id,
-            author_id,
-            post_type,
-            content,
-            is_sensitive,
-            is_pinned,
-            created_at,
-            published_at,
-            author:author_id (
-              username,
-              display_name,
-              avatar_url,
-              role
-            )
-          `)
+          .select(POST_SELECT_FIELDS)
           .in("id", tagPostIds.slice(0, 200))
           .eq("status", "published")
           .neq("author_id", user.id)
           .gte("created_at", twoWeeksAgo.toISOString())
-          .order("created_at", { ascending: false });
-
-        for (const post of tagPosts || []) {
-          if (!postIdsSet.has(post.id)) {
-            // Skip sensitive posts if user hasn't enabled them
-            if (post.is_sensitive && !showSensitive) continue;
-
-            postIdsSet.add(post.id);
-
-            // Calculate tag relevance score
-            const postTags = postTagMapping.get(post.id) || [];
-            const hasFollowedTag = postTags.some((tid) => followedTagIds.includes(tid));
-            const interestScore = postTags.reduce((acc, tid) => acc + (interestTagWeights.get(tid) || 0), 0);
-
-            candidatePosts.push({
-              ...post,
-              reason: hasFollowedTag ? "followed_tag" : "similar_interest",
-              tagRelevanceScore: hasFollowedTag ? 10 : interestScore,
-              isFromFollowedUser: followedUserIds.includes(post.author_id),
-            });
-          }
-        }
-      }
+          .order("created_at", { ascending: false })
+      );
+    } else {
+      phase3Queries.push(Promise.resolve({ data: [] }));
     }
 
-    // Add posts from followed users if we need more diversity
-    if (followedUserIds.length > 0 && candidatePosts.length < (limit + offset) * 2) {
-      const { data: followedUserPosts } = await supabase
-        .from("posts")
-        .select(`
-          id,
-          author_id,
-          post_type,
-          content,
-          is_sensitive,
-          is_pinned,
-          created_at,
-          published_at,
-          author:author_id (
-            username,
-            display_name,
-            avatar_url,
-            role
-          )
-        `)
-        .in("author_id", followedUserIds)
-        .eq("status", "published")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      for (const post of followedUserPosts || []) {
-        if (!postIdsSet.has(post.id)) {
-          if (post.is_sensitive && !showSensitive) continue;
-          postIdsSet.add(post.id);
-          candidatePosts.push({
-            ...post,
-            reason: "followed_user",
-            tagRelevanceScore: 0,
-            isFromFollowedUser: true,
-          });
-        }
-      }
+    // Query 2: Followed user posts
+    if (followedUserIds.length > 0) {
+      phase3Queries.push(
+        (supabase as any)
+          .from("posts")
+          .select(POST_SELECT_FIELDS)
+          .in("author_id", followedUserIds)
+          .eq("status", "published")
+          .order("created_at", { ascending: false })
+          .limit(50)
+      );
+    } else {
+      phase3Queries.push(Promise.resolve({ data: [] }));
     }
 
-    // Add popular/trending posts if we still need more
-    if (candidatePosts.length < (limit + offset) * 1.5) {
-      const neededMore = Math.max(30, (limit + offset) * 2 - candidatePosts.length);
-
-      const { data: popularPosts } = await supabase
+    // Query 3: Popular/trending posts (always fetch as fallback)
+    phase3Queries.push(
+      (supabase as any)
         .from("posts")
-        .select(`
-          id,
-          author_id,
-          post_type,
-          content,
-          is_sensitive,
-          is_pinned,
-          created_at,
-          published_at,
-          author:author_id (
-            username,
-            display_name,
-            avatar_url,
-            role
-          )
-        `)
+        .select(POST_SELECT_FIELDS)
         .eq("status", "published")
         .neq("author_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(neededMore);
+        .limit(30)
+    );
 
-      for (const post of popularPosts || []) {
-        if (!postIdsSet.has(post.id)) {
-          if (post.is_sensitive && !showSensitive) continue;
-          postIdsSet.add(post.id);
-          candidatePosts.push({
-            ...post,
-            reason: "popular",
-            tagRelevanceScore: 0,
-            isFromFollowedUser: followedUserIds.includes(post.author_id),
-          });
-        }
-      }
+    // Execute all 3 candidate queries in a single parallel round-trip
+    const [tagPostsResult, followedUserPostsResult, popularPostsResult] = await Promise.all(phase3Queries);
+
+    // Process tagged posts
+    for (const post of tagPostsResult.data || []) {
+      if (postIdsSet.has(post.id)) continue;
+      if (post.is_sensitive && !showSensitive) continue;
+
+      postIdsSet.add(post.id);
+      const postTags = taggedPostMapping.get(post.id) || [];
+      const hasFollowedTag = postTags.some((tid) => followedTagIds.includes(tid));
+      const interestScore = postTags.reduce((acc, tid) => acc + (interestTagWeights.get(tid) || 0), 0);
+
+      candidatePosts.push({
+        ...post,
+        reason: hasFollowedTag ? "followed_tag" : "similar_interest",
+        tagRelevanceScore: hasFollowedTag ? 10 : interestScore,
+        isFromFollowedUser: followedUserIds.includes(post.author_id),
+      });
     }
 
-    // Get all post IDs for batch queries
+    // Process followed user posts
+    for (const post of followedUserPostsResult.data || []) {
+      if (postIdsSet.has(post.id)) continue;
+      if (post.is_sensitive && !showSensitive) continue;
+
+      postIdsSet.add(post.id);
+      candidatePosts.push({
+        ...post,
+        reason: "followed_user" as const,
+        tagRelevanceScore: 0,
+        isFromFollowedUser: true,
+      });
+    }
+
+    // Process popular posts (fill remaining slots)
+    for (const post of popularPostsResult.data || []) {
+      if (postIdsSet.has(post.id)) continue;
+      if (post.is_sensitive && !showSensitive) continue;
+
+      postIdsSet.add(post.id);
+      candidatePosts.push({
+        ...post,
+        reason: "popular" as const,
+        tagRelevanceScore: 0,
+        isFromFollowedUser: followedUserIds.includes(post.author_id),
+      });
+    }
+
     const allPostIds = candidatePosts.map((p) => p.id);
 
     if (allPostIds.length === 0) {
       return { success: true, posts: [], hasMore: false };
     }
 
-    // Batch fetch engagement data, tags, and author follower counts
-    const [
-      likeCounts,
-      commentCounts,
-      reblogCounts,
-      userLikes,
-      userComments,
-      userReblogs,
-      postTagsData,
-      authorFollowerCounts,
-    ] = await Promise.all([
-      supabase.from("likes").select("post_id").in("post_id", allPostIds),
-      supabase.from("comments").select("post_id").in("post_id", allPostIds),
-      supabase.from("posts").select("reblogged_from_id").in("reblogged_from_id", allPostIds).eq("status", "published"),
-      supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allPostIds),
-      supabase.from("comments").select("post_id").eq("user_id", user.id).in("post_id", allPostIds),
-      supabase.from("posts").select("reblogged_from_id").eq("author_id", user.id).in("reblogged_from_id", allPostIds).neq("status", "deleted"),
-      supabase.from("post_tags").select("post_id, tag:tag_id (id, name)").in("post_id", allPostIds),
-      // Get follower counts for authors to boost smaller creators
-      supabase.from("follows").select("following_id").in("following_id", [...new Set(candidatePosts.map((p) => p.author_id))]),
+    // Phase 4: Batch fetch engagement data + author follower counts in parallel
+    const [stats, authorFollowerCounts] = await Promise.all([
+      batchFetchPostStats(supabase, allPostIds, user.id, { includeTags: true }),
+      (supabase as any).from("follows").select("following_id").in("following_id", [...new Set(candidatePosts.map((p) => p.author_id))]),
     ]);
-
-    // Build count maps
-    const likeCountMap = new Map<string, number>();
-    const commentCountMap = new Map<string, number>();
-    const reblogCountMap = new Map<string, number>();
-    const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
-    const userLikeSet = new Set((userLikes.data || []).map((l: any) => l.post_id));
-    const userCommentSet = new Set((userComments.data || []).map((c: any) => c.post_id));
-    const userReblogSet = new Set((userReblogs.data || []).map((r: any) => r.reblogged_from_id));
 
     // Build author follower count map
     const authorFollowerCountMap = new Map<string, number>();
@@ -302,30 +281,13 @@ export async function getPersonalizedFeed(options?: {
       authorFollowerCountMap.set(f.following_id, (authorFollowerCountMap.get(f.following_id) || 0) + 1);
     }
 
-    (likeCounts.data || []).forEach((l: any) => {
-      likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
-    });
-    (commentCounts.data || []).forEach((c: any) => {
-      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-    });
-    (reblogCounts.data || []).forEach((r: any) => {
-      reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
-    });
-    (postTagsData.data || []).forEach((pt: any) => {
-      if (pt.tag) {
-        const existing = tagsMap.get(pt.post_id) || [];
-        existing.push({ id: pt.tag.id, name: pt.tag.name });
-        tagsMap.set(pt.post_id, existing);
-      }
-    });
-
     // Calculate scores and format posts
     const now = Date.now();
     let scoredPosts: RecommendedPost[] = candidatePosts.map((post) => {
-      const likes = likeCountMap.get(post.id) || 0;
-      const comments = commentCountMap.get(post.id) || 0;
-      const reblogs = reblogCountMap.get(post.id) || 0;
-      const tags = tagsMap.get(post.id) || [];
+      const likes = stats.likeCountMap.get(post.id) || 0;
+      const comments = stats.commentCountMap.get(post.id) || 0;
+      const reblogs = stats.reblogCountMap.get(post.id) || 0;
+      const tags = stats.tagsMap.get(post.id) || [];
       const authorFollowers = authorFollowerCountMap.get(post.author_id) || 0;
 
       // Base engagement score (comments and reblogs weighted higher)
@@ -334,7 +296,7 @@ export async function getPersonalizedFeed(options?: {
       // Time decay (posts lose 50% score per week)
       const postAge = now - new Date(post.published_at || post.created_at).getTime();
       const hoursOld = postAge / (1000 * 60 * 60);
-      const timeDecay = Math.pow(0.5, hoursOld / 168); // 168 hours = 1 week
+      const timeDecay = Math.pow(0.5, hoursOld / 168);
 
       // Freshness bonus for very recent posts (< 6 hours)
       const freshnessBonus = hoursOld < 6 ? 2.0 : hoursOld < 24 ? 1.5 : 1.0;
@@ -349,7 +311,6 @@ export async function getPersonalizedFeed(options?: {
       const tagBonus = 1 + (post.tagRelevanceScore || 0) * 0.1;
 
       // Small creator boost (inverse of follower count, capped)
-      // Creators with < 10 followers get 2x boost, gradually decreasing
       const creatorBoost = Math.max(1, 2 - (authorFollowers / 20));
 
       // Followed user gets a boost
@@ -377,26 +338,25 @@ export async function getPersonalizedFeed(options?: {
         content: post.content,
         isSensitive: post.is_sensitive,
         isPinned: post.is_pinned,
-        isOwn: false, // We exclude own posts in the query
+        isOwn: false,
         createdAt: formatTimeAgo(post.created_at),
         publishedAt: post.published_at || post.created_at,
         likeCount: likes,
         commentCount: comments,
         reblogCount: reblogs,
-        hasLiked: userLikeSet.has(post.id),
-        hasCommented: userCommentSet.has(post.id),
-        hasReblogged: userReblogSet.has(post.id),
+        hasLiked: stats.userLikeSet.has(post.id),
+        hasCommented: stats.userCommentSet.has(post.id),
+        hasReblogged: stats.userReblogSet.has(post.id),
         tags,
         score,
         reason: post.reason,
       };
     });
 
-    // Filter out posts user has already interacted with (optional: remove this to show them)
-    // For now, we'll deprioritize them rather than hide completely
+    // Deprioritize already-interacted posts
     scoredPosts = scoredPosts.map((post) => {
       if (post.hasLiked || post.hasCommented || post.hasReblogged) {
-        return { ...post, score: post.score * 0.3 }; // Heavily deprioritize already-seen
+        return { ...post, score: post.score * 0.3 };
       }
       return post;
     });
@@ -414,7 +374,6 @@ export async function getPersonalizedFeed(options?: {
         diversePosts.push(post);
         authorPostCount.set(post.authorId, currentCount + 1);
       }
-      // Stop when we have enough posts for pagination
       if (diversePosts.length >= offset + limit + 10) break;
     }
 

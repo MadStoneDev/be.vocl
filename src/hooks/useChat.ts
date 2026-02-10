@@ -116,7 +116,7 @@ export function useChat(currentUserId?: string): UseChatReturn {
           schema: "public",
           table: "messages",
         },
-        (payload) => {
+        (payload: any) => {
           // Refresh conversations when a new message arrives
           refreshConversations();
         }
@@ -205,7 +205,7 @@ export function useMessages(
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const newMessage = payload.new as any;
           // Only add if not from current user (to avoid duplicates from optimistic updates)
           if (newMessage.sender_id !== currentUserId) {
@@ -239,7 +239,7 @@ export function useMessages(
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const updatedMessage = payload.new as any;
           setMessages((prev) =>
             prev.map((m) =>

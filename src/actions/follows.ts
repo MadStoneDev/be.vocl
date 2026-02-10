@@ -137,6 +137,33 @@ export async function isFollowing(targetUserId: string): Promise<boolean> {
 }
 
 /**
+ * Batch check if the current user follows multiple target users.
+ * Returns a Set of user IDs that the current user is following.
+ */
+export async function batchIsFollowing(targetUserIds: string[]): Promise<Set<string>> {
+  try {
+    if (targetUserIds.length === 0) return new Set();
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return new Set();
+
+    const { data } = await (supabase as any)
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id)
+      .in("following_id", targetUserIds);
+
+    return new Set((data || []).map((f: any) => f.following_id));
+  } catch {
+    return new Set();
+  }
+}
+
+/**
  * Get followers for a user
  */
 export async function getFollowers(

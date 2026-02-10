@@ -550,13 +550,14 @@ function FollowersListTab({
     avatarUrl: string | null;
     bio: string | null;
   }>>([]);
+  const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const { getFollowers, getFollowing } = await import("@/actions/follows");
+        const { getFollowers, getFollowing, batchIsFollowing } = await import("@/actions/follows");
         const result = type === "followers"
           ? await getFollowers(userId)
           : await getFollowing(userId);
@@ -564,14 +565,26 @@ function FollowersListTab({
           const userList = type === "followers"
             ? (result as { followers?: typeof users }).followers
             : (result as { following?: typeof users }).following;
-          setUsers(userList || []);
+          const fetchedUsers = userList || [];
+          setUsers(fetchedUsers);
+
+          // Batch check follow status for all users at once (1 query instead of N)
+          if (currentUserId && fetchedUsers.length > 0) {
+            const userIds = fetchedUsers
+              .filter((u) => u.id !== currentUserId)
+              .map((u) => u.id);
+            if (userIds.length > 0) {
+              const result = await batchIsFollowing(userIds);
+              setFollowingSet(result);
+            }
+          }
         }
       } finally {
         setIsLoading(false);
       }
     };
     fetchUsers();
-  }, [userId, type]);
+  }, [userId, type, currentUserId]);
 
   if (isLoading) {
     return (
@@ -594,7 +607,12 @@ function FollowersListTab({
   return (
     <div className="space-y-2">
       {users.map((user) => (
-        <FollowerCard key={user.id} user={user} currentUserId={currentUserId} />
+        <FollowerCard
+          key={user.id}
+          user={user}
+          currentUserId={currentUserId}
+          initialIsFollowing={followingSet.has(user.id)}
+        />
       ))}
     </div>
   );
@@ -604,6 +622,7 @@ function FollowersListTab({
 function FollowerCard({
   user,
   currentUserId,
+  initialIsFollowing = false,
 }: {
   user: {
     id: string;
@@ -613,20 +632,11 @@ function FollowerCard({
     bio: string | null;
   };
   currentUserId?: string;
+  initialIsFollowing?: boolean;
 }) {
-  const [isFollowingUser, setIsFollowingUser] = useState(false);
+  const [isFollowingUser, setIsFollowingUser] = useState(initialIsFollowing);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
   const isOwnCard = currentUserId === user.id;
-
-  useEffect(() => {
-    const checkFollowing = async () => {
-      if (!currentUserId || isOwnCard) return;
-      const { isFollowing } = await import("@/actions/follows");
-      const result = await isFollowing(user.id);
-      setIsFollowingUser(result);
-    };
-    checkFollowing();
-  }, [currentUserId, user.id, isOwnCard]);
 
   const handleFollowToggle = async () => {
     if (isOwnCard) return;

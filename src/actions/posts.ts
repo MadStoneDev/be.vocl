@@ -12,6 +12,7 @@ import type {
   AudioPostContent,
 } from "@/types/database";
 import { processMentions } from "@/actions/mentions";
+import { batchFetchPostStats } from "@/actions/shared/post-stats";
 
 interface CreatePostInput {
   postType: PostType;
@@ -486,6 +487,7 @@ interface PostWithDetails {
   tags?: Array<{ id: string; name: string }>;
 }
 
+
 /**
  * Get a single post by ID
  */
@@ -529,59 +531,8 @@ export async function getPostById(postId: string): Promise<{
       return { success: false, error: "Post not found" };
     }
 
-    // Get counts and user interactions in parallel
-    const [likesResult, commentsResult, reblogsResult, userLike, userComment, userReblog, tagsResult] = await Promise.all([
-      // Get like count
-      (supabase as any)
-        .from("likes")
-        .select("id", { count: "exact", head: true })
-        .eq("post_id", postId),
-      // Get comment count
-      (supabase as any)
-        .from("comments")
-        .select("id", { count: "exact", head: true })
-        .eq("post_id", postId),
-      // Get reblog count
-      (supabase as any)
-        .from("posts")
-        .select("id", { count: "exact", head: true })
-        .eq("reblogged_from_id", postId)
-        .eq("status", "published"),
-      // Check if user liked
-      user
-        ? (supabase as any)
-            .from("likes")
-            .select("id")
-            .eq("post_id", postId)
-            .eq("user_id", user.id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      // Check if user commented
-      user
-        ? (supabase as any)
-            .from("comments")
-            .select("id")
-            .eq("post_id", postId)
-            .eq("user_id", user.id)
-            .limit(1)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      // Check if user reblogged
-      user
-        ? (supabase as any)
-            .from("posts")
-            .select("id")
-            .eq("reblogged_from_id", postId)
-            .eq("author_id", user.id)
-            .neq("status", "deleted")
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      // Get tags
-      (supabase as any)
-        .from("post_tags")
-        .select("tag:tags(id, name)")
-        .eq("post_id", postId),
-    ]);
+    // Batch fetch all stats and interactions
+    const stats = await batchFetchPostStats(supabase, [postId], user?.id, { includeTags: true });
 
     const postWithDetails: PostWithDetails = {
       id: post.id,
@@ -598,15 +549,13 @@ export async function getPostById(postId: string): Promise<{
       isPinned: post.is_pinned,
       isOwn: user?.id === post.author_id,
       createdAt: post.created_at,
-      likeCount: likesResult.count || 0,
-      commentCount: commentsResult.count || 0,
-      reblogCount: reblogsResult.count || 0,
-      hasLiked: !!userLike.data,
-      hasCommented: !!userComment.data,
-      hasReblogged: !!userReblog.data,
-      tags: (tagsResult.data || [])
-        .filter((t: any) => t.tag)
-        .map((t: any) => ({ id: t.tag.id, name: t.tag.name })),
+      likeCount: stats.likeCountMap.get(postId) || 0,
+      commentCount: stats.commentCountMap.get(postId) || 0,
+      reblogCount: stats.reblogCountMap.get(postId) || 0,
+      hasLiked: stats.userLikeSet.has(postId),
+      hasCommented: stats.userCommentSet.has(postId),
+      hasReblogged: stats.userReblogSet.has(postId),
+      tags: stats.tagsMap.get(postId) || [],
     };
 
     return { success: true, post: postWithDetails };
@@ -677,62 +626,8 @@ export async function getPostsByUser(
       return { success: true, posts: [], total: 0 };
     }
 
-    // Parallel fetch: counts + user interactions
-    const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData] = await Promise.all([
-      // Get like counts
-      (supabase as any)
-        .from("likes")
-        .select("post_id")
-        .in("post_id", postIds),
-      // Get comment counts
-      (supabase as any)
-        .from("comments")
-        .select("post_id")
-        .in("post_id", postIds),
-      // Get reblog counts
-      (supabase as any)
-        .from("posts")
-        .select("reblogged_from_id")
-        .in("reblogged_from_id", postIds)
-        .eq("status", "published"),
-      // User likes (if logged in)
-      user ? (supabase as any)
-        .from("likes")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", postIds) : Promise.resolve({ data: [] }),
-      // User comments (if logged in)
-      user ? (supabase as any)
-        .from("comments")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", postIds) : Promise.resolve({ data: [] }),
-      // User reblogs (if logged in)
-      user ? (supabase as any)
-        .from("posts")
-        .select("reblogged_from_id")
-        .eq("author_id", user.id)
-        .in("reblogged_from_id", postIds)
-        .neq("status", "deleted") : Promise.resolve({ data: [] }),
-    ]);
-
-    const userLikes = (userLikesData?.data || []).map((l: any) => l.post_id);
-    const userComments = (userCommentsData?.data || []).map((c: any) => c.post_id);
-    const userReblogs = (userReblogsData?.data || []).map((r: any) => r.reblogged_from_id);
-
-    // Count likes/comments/reblogs per post
-    const likeCountMap = new Map<string, number>();
-    const commentCountMap = new Map<string, number>();
-    const reblogCountMap = new Map<string, number>();
-    (likeCounts?.data || []).forEach((l: any) => {
-      likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
-    });
-    (commentCounts?.data || []).forEach((c: any) => {
-      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-    });
-    (reblogCounts?.data || []).forEach((r: any) => {
-      reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
-    });
+    // Batch fetch all stats and interactions
+    const stats = await batchFetchPostStats(supabase, postIds, user?.id);
 
     const formattedPosts: PostWithDetails[] = (posts || []).map((post: any) => ({
       id: post.id,
@@ -749,12 +644,12 @@ export async function getPostsByUser(
       isPinned: post.is_pinned,
       isOwn: user ? post.author_id === user.id : false,
       createdAt: formatTimeAgo(post.created_at),
-      likeCount: likeCountMap.get(post.id) || 0,
-      commentCount: commentCountMap.get(post.id) || 0,
-      reblogCount: reblogCountMap.get(post.id) || 0,
-      hasLiked: userLikes.includes(post.id),
-      hasCommented: userComments.includes(post.id),
-      hasReblogged: userReblogs.includes(post.id),
+      likeCount: stats.likeCountMap.get(post.id) || 0,
+      commentCount: stats.commentCountMap.get(post.id) || 0,
+      reblogCount: stats.reblogCountMap.get(post.id) || 0,
+      hasLiked: stats.userLikeSet.has(post.id),
+      hasCommented: stats.userCommentSet.has(post.id),
+      hasReblogged: stats.userReblogSet.has(post.id),
     }));
 
     // Separate pinned post if requested
@@ -834,56 +729,8 @@ export async function getLikedPosts(
     const filteredLikes = (likes || []).filter((l: any) => l.post);
     const postIds = filteredLikes.map((l: any) => l.post.id);
 
-    // Get like, comment, and reblog counts for these posts
-    const { data: likeCounts } = await (supabase as any)
-      .from("likes")
-      .select("post_id")
-      .in("post_id", postIds);
-
-    const { data: commentCounts } = await (supabase as any)
-      .from("comments")
-      .select("post_id")
-      .in("post_id", postIds);
-
-    const { data: reblogCounts } = await (supabase as any)
-      .from("posts")
-      .select("reblogged_from_id")
-      .in("reblogged_from_id", postIds)
-      .eq("status", "published");
-
-    // Check if current user has commented/reblogged these posts
-    let userComments: string[] = [];
-    let userReblogs: string[] = [];
-    if (user) {
-      const { data: comments } = await (supabase as any)
-        .from("comments")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", postIds);
-      userComments = (comments || []).map((c: any) => c.post_id);
-
-      const { data: reblogs } = await (supabase as any)
-        .from("posts")
-        .select("reblogged_from_id")
-        .eq("author_id", user.id)
-        .in("reblogged_from_id", postIds)
-        .neq("status", "deleted");
-      userReblogs = (reblogs || []).map((r: any) => r.reblogged_from_id);
-    }
-
-    // Count per post
-    const likeCountMap = new Map<string, number>();
-    const commentCountMap = new Map<string, number>();
-    const reblogCountMap = new Map<string, number>();
-    (likeCounts || []).forEach((l: any) => {
-      likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
-    });
-    (commentCounts || []).forEach((c: any) => {
-      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-    });
-    (reblogCounts || []).forEach((r: any) => {
-      reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
-    });
+    // Batch fetch all stats and interactions in parallel
+    const stats = await batchFetchPostStats(supabase, postIds, user?.id);
 
     const posts = filteredLikes.map((l: any) => ({
       id: l.post.id,
@@ -900,12 +747,12 @@ export async function getLikedPosts(
       isPinned: false,
       isOwn: false,
       createdAt: formatTimeAgo(l.post.created_at),
-      likeCount: likeCountMap.get(l.post.id) || 0,
-      commentCount: commentCountMap.get(l.post.id) || 0,
-      reblogCount: reblogCountMap.get(l.post.id) || 0,
+      likeCount: stats.likeCountMap.get(l.post.id) || 0,
+      commentCount: stats.commentCountMap.get(l.post.id) || 0,
+      reblogCount: stats.reblogCountMap.get(l.post.id) || 0,
       hasLiked: true,
-      hasCommented: userComments.includes(l.post.id),
-      hasReblogged: userReblogs.includes(l.post.id),
+      hasCommented: stats.userCommentSet.has(l.post.id),
+      hasReblogged: stats.userReblogSet.has(l.post.id),
     }));
 
     return {
@@ -984,7 +831,8 @@ export async function getCommentedPosts(
         { count: "exact" }
       )
       .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit((offset + limit) * 3); // Fetch enough to handle deduplication, not entire history
 
     if (error) {
       console.error("Get commented posts error:", error);
@@ -1003,58 +851,9 @@ export async function getCommentedPosts(
     // Apply pagination after deduplication
     const paginatedComments = uniqueComments.slice(offset, offset + limit);
 
-    // Get like, comment, and reblog counts for these posts
+    // Batch fetch all stats and interactions in parallel
     const postIds = paginatedComments.map((c: any) => c.post.id);
-
-    const { data: likeCounts } = await (supabase as any)
-      .from("likes")
-      .select("post_id")
-      .in("post_id", postIds);
-
-    const { data: commentCounts } = await (supabase as any)
-      .from("comments")
-      .select("post_id")
-      .in("post_id", postIds);
-
-    const { data: reblogCounts } = await (supabase as any)
-      .from("posts")
-      .select("reblogged_from_id")
-      .in("reblogged_from_id", postIds)
-      .eq("status", "published");
-
-    // Check if current user has liked/reblogged these posts
-    let userLikes: string[] = [];
-    let userReblogs: string[] = [];
-    if (user) {
-      const { data: likes } = await (supabase as any)
-        .from("likes")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", postIds);
-      userLikes = (likes || []).map((l: any) => l.post_id);
-
-      const { data: reblogs } = await (supabase as any)
-        .from("posts")
-        .select("reblogged_from_id")
-        .eq("author_id", user.id)
-        .in("reblogged_from_id", postIds)
-        .neq("status", "deleted");
-      userReblogs = (reblogs || []).map((r: any) => r.reblogged_from_id);
-    }
-
-    // Count likes/comments/reblogs per post
-    const likeCountMap = new Map<string, number>();
-    const commentCountMap = new Map<string, number>();
-    const reblogCountMap = new Map<string, number>();
-    (likeCounts || []).forEach((l: any) => {
-      likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
-    });
-    (commentCounts || []).forEach((c: any) => {
-      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-    });
-    (reblogCounts || []).forEach((r: any) => {
-      reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
-    });
+    const stats = await batchFetchPostStats(supabase, postIds, user?.id);
 
     const posts: PostWithDetails[] = paginatedComments.map((c: any) => ({
       id: c.post.id,
@@ -1071,12 +870,12 @@ export async function getCommentedPosts(
       isPinned: false,
       isOwn: false,
       createdAt: formatTimeAgo(c.post.created_at),
-      likeCount: likeCountMap.get(c.post.id) || 0,
-      commentCount: commentCountMap.get(c.post.id) || 0,
-      reblogCount: reblogCountMap.get(c.post.id) || 0,
-      hasLiked: userLikes.includes(c.post.id),
+      likeCount: stats.likeCountMap.get(c.post.id) || 0,
+      commentCount: stats.commentCountMap.get(c.post.id) || 0,
+      reblogCount: stats.reblogCountMap.get(c.post.id) || 0,
+      hasLiked: stats.userLikeSet.has(c.post.id),
       hasCommented: true, // User definitely commented on these posts
-      hasReblogged: userReblogs.includes(c.post.id),
+      hasReblogged: stats.userReblogSet.has(c.post.id),
     }));
 
     return {
@@ -1165,42 +964,8 @@ export async function getFeedPosts(options?: {
 
     const postIds = posts.map((p: any) => p.id);
 
-    // Run all count queries in parallel
-    const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData, postTagsData] = await Promise.all([
-      (supabase as any).from("likes").select("post_id").in("post_id", postIds),
-      (supabase as any).from("comments").select("post_id").in("post_id", postIds),
-      (supabase as any).from("posts").select("reblogged_from_id").in("reblogged_from_id", postIds).eq("status", "published"),
-      user ? (supabase as any).from("likes").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
-      user ? (supabase as any).from("comments").select("post_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [] }),
-      user ? (supabase as any).from("posts").select("reblogged_from_id").eq("author_id", user.id).in("reblogged_from_id", postIds).neq("status", "deleted") : Promise.resolve({ data: [] }),
-      (supabase as any).from("post_tags").select("post_id, tag:tag_id (id, name)").in("post_id", postIds),
-    ]);
-
-    const userLikes = (userLikesData.data || []).map((l: any) => l.post_id);
-    const userComments = (userCommentsData.data || []).map((c: any) => c.post_id);
-    const userReblogs = (userReblogsData.data || []).map((r: any) => r.reblogged_from_id);
-
-    // Count likes/comments/reblogs per post
-    const likeCountMap = new Map<string, number>();
-    const commentCountMap = new Map<string, number>();
-    const reblogCountMap = new Map<string, number>();
-    const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
-    (likeCounts.data || []).forEach((l: any) => {
-      likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
-    });
-    (commentCounts.data || []).forEach((c: any) => {
-      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-    });
-    (reblogCounts.data || []).forEach((r: any) => {
-      reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
-    });
-    (postTagsData.data || []).forEach((pt: any) => {
-      if (pt.tag) {
-        const existing = tagsMap.get(pt.post_id) || [];
-        existing.push({ id: pt.tag.id, name: pt.tag.name });
-        tagsMap.set(pt.post_id, existing);
-      }
-    });
+    // Batch fetch all stats, interactions, and tags in parallel
+    const stats = await batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true });
 
     const formattedPosts: PostWithDetails[] = posts.map((post: any) => ({
       id: post.id,
@@ -1217,13 +982,13 @@ export async function getFeedPosts(options?: {
       isPinned: post.is_pinned,
       isOwn: user ? post.author_id === user.id : false,
       createdAt: formatTimeAgo(post.created_at),
-      likeCount: likeCountMap.get(post.id) || 0,
-      commentCount: commentCountMap.get(post.id) || 0,
-      reblogCount: reblogCountMap.get(post.id) || 0,
-      hasLiked: userLikes.includes(post.id),
-      hasCommented: userComments.includes(post.id),
-      hasReblogged: userReblogs.includes(post.id),
-      tags: tagsMap.get(post.id) || [],
+      likeCount: stats.likeCountMap.get(post.id) || 0,
+      commentCount: stats.commentCountMap.get(post.id) || 0,
+      reblogCount: stats.reblogCountMap.get(post.id) || 0,
+      hasLiked: stats.userLikeSet.has(post.id),
+      hasCommented: stats.userCommentSet.has(post.id),
+      hasReblogged: stats.userReblogSet.has(post.id),
+      tags: stats.tagsMap.get(post.id) || [],
     }));
 
     return {

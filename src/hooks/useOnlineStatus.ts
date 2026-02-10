@@ -52,7 +52,7 @@ export function useOnlineStatus(
         },
       });
 
-      globalChannel
+      globalChannel!
         .on("presence", { event: "sync" }, () => {
           if (!globalChannel) return;
           const state = globalChannel.presenceState();
