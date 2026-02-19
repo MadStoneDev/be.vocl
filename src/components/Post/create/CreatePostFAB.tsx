@@ -8,9 +8,10 @@ import { CreatePostModal } from "./CreatePostModal";
 
 interface CreatePostFABProps {
   className?: string;
+  hidden?: boolean;
 }
 
-export function CreatePostFAB({ className = "" }: CreatePostFABProps) {
+export function CreatePostFAB({ className = "", hidden = false }: CreatePostFABProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,7 +22,7 @@ export function CreatePostFAB({ className = "" }: CreatePostFABProps) {
   };
 
   return (
-    <article className={`hidden sm:flex`}>
+    <article className={`hidden sm:flex ${hidden ? "!hidden" : ""}`}>
       {/* FAB Button */}
       <button
         type="button"

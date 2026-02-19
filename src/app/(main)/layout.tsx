@@ -161,8 +161,8 @@ export default function MainLayout({
         </ErrorBoundary>
       )}
 
-      {/* Create Post FAB */}
-      <CreatePostFAB />
+      {/* Create Post FAB - hidden when chat is open */}
+      <CreatePostFAB hidden={isChatOpen} />
 
       {/* Security Warning Modal - shown once after first login */}
       <SecurityWarningModal isAuthenticated={!!user && !authLoading} />
