@@ -77,6 +77,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.r2.cloudflarestorage.com",
       },
+      {
+        protocol: "https",
+        hostname: "i.scdn.co",
+      },
     ],
     // Optimize image sizes for common breakpoints
     deviceSizes: [640, 750, 828, 1080, 1200],

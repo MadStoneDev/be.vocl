@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimiters } from "@/lib/rate-limit";
 
 interface MessageResult {
@@ -403,8 +404,11 @@ export async function startConversation(
       }
     }
 
-    // Create new conversation
-    const { data: conversation, error: convError } = await (supabase as any)
+    // Create new conversation and add both participants using admin client
+    // (RLS only allows inserting conversation_participants for your own profile_id)
+    const admin = createAdminClient();
+
+    const { data: conversation, error: convError } = await (admin as any)
       .from("conversations")
       .insert({})
       .select("id")
@@ -414,8 +418,7 @@ export async function startConversation(
       return { success: false, error: "Failed to create conversation" };
     }
 
-    // Add participants
-    const { error: partError } = await (supabase as any)
+    const { error: partError } = await (admin as any)
       .from("conversation_participants")
       .insert([
         { conversation_id: conversation.id, profile_id: user.id },
