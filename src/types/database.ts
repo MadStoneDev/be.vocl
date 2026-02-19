@@ -696,10 +696,21 @@ export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type Tag = Database["public"]["Tables"]["tags"]["Row"];
 export type PostTag = Database["public"]["Tables"]["post_tags"]["Row"];
 
+// Link preview data (stored in text post content at publish time)
+export interface LinkPreviewData {
+  url: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  favicon?: string;
+}
+
 // Content type definitions for posts
 export interface TextPostContent {
   html: string;
   plain: string;
+  link_previews?: LinkPreviewData[];
 }
 
 export interface ImagePostContent {

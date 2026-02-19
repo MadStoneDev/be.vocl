@@ -54,9 +54,12 @@ function transformPost(post: PostWithDetails) {
   let albumArtUrl: string | undefined;
   let captionHtml: string | undefined;
 
+  let linkPreviews: any[] | undefined;
+
   if (post.postType === "text") {
     text = postContent?.plain || postContent?.html?.replace(/<[^>]*>/g, "") || "";
     html = postContent?.html;
+    linkPreviews = postContent?.link_previews;
   } else if (post.postType === "image") {
     imageUrl = postContent?.urls?.[0] || postContent?.url;
     captionHtml = postContent?.caption_html;
@@ -80,7 +83,7 @@ function transformPost(post: PostWithDetails) {
     id: post.id,
     author: {
       username: post.author.username,
-      avatarUrl: post.author.avatarUrl || "https://via.placeholder.com/100",
+      avatarUrl: post.author.avatarUrl || "",
       role: post.author.role,
     },
     authorId: post.authorId,
@@ -98,6 +101,7 @@ function transformPost(post: PostWithDetails) {
       audioUrl,
       albumArtUrl,
       captionHtml,
+      linkPreviews,
     },
     rawContent: post.content,
     stats: {

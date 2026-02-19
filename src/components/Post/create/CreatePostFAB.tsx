@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { IconPlus } from "@tabler/icons-react";
 import { CreatePostModal } from "./CreatePostModal";
 
@@ -11,12 +12,12 @@ interface CreatePostFABProps {
 
 export function CreatePostFAB({ className = "" }: CreatePostFABProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSuccess = (postId: string) => {
-    // Navigate to feed after posting
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
     router.push("/feed");
-    router.refresh();
   };
 
   return (

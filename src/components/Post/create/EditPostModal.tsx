@@ -11,8 +11,10 @@ import {
 } from "@tabler/icons-react";
 import { RichTextEditor } from "./RichTextEditor";
 import { TagInput } from "./TagInput";
+import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
+import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { updatePost } from "@/actions/posts";
-import type { TextPostContent, ImagePostContent, VideoPostContent, AudioPostContent } from "@/types/database";
+import type { TextPostContent, ImagePostContent, VideoPostContent, AudioPostContent, LinkPreviewData } from "@/types/database";
 
 interface UpdatedPostData {
   content: any;
@@ -50,6 +52,20 @@ export function EditPostModal({
 
   // Sensitive flag
   const [isSensitive, setIsSensitive] = useState(false);
+
+  // Link previews for text posts
+  const isTextPost_ = post?.postType === "text";
+  const existingPreviews: LinkPreviewData[] =
+    isTextPost_ && post?.content?.link_previews ? post.content.link_previews : [];
+  const {
+    previews: linkPreviews,
+    isLoading: linkPreviewsLoading,
+    dismiss: dismissLinkPreview,
+    getPreviewsForSave,
+  } = useLinkPreviews({
+    text: isTextPost_ ? textContent.plain : "",
+    initialPreviews: existingPreviews,
+  });
 
   // Initialize state from post data when modal opens
   useEffect(() => {
@@ -95,9 +111,11 @@ export function EditPostModal({
       let updatedContent: any;
 
       if (post.postType === "text") {
+        const savedPreviews = getPreviewsForSave();
         updatedContent = {
           html: textContent.html,
           plain: textContent.plain,
+          ...(savedPreviews.length > 0 && { link_previews: savedPreviews }),
         } as TextPostContent;
       } else {
         // For media posts, preserve original content and update caption
@@ -178,6 +196,16 @@ export function EditPostModal({
               minHeight={isTextPost ? "120px" : "80px"}
             />
           </div>
+
+          {/* Link previews for text posts */}
+          {isTextPost && (linkPreviews.length > 0 || linkPreviewsLoading) && (
+            <LinkPreviewCarousel
+              previews={linkPreviews}
+              editable
+              onDismiss={dismissLinkPreview}
+              isLoading={linkPreviewsLoading}
+            />
+          )}
 
           {/* Tags */}
           <div>

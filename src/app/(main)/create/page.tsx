@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { CreatePostModal } from "@/components/Post/create";
 
 export default function CreatePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
@@ -16,7 +18,7 @@ export default function CreatePage() {
   }, [isOpen, router]);
 
   const handleSuccess = (postId: string) => {
-    // Redirect to the new post or feed
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
     router.push("/feed");
   };
 

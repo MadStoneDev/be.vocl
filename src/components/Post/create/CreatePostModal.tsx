@@ -24,6 +24,8 @@ import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
 import { RichTextEditor } from "./RichTextEditor";
 import { MediaUploader } from "./MediaUploader";
 import { TagInput } from "./TagInput";
+import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
+import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { createPost, generatePostId } from "@/actions/posts";
 import type {
   TextPostContent,
@@ -75,6 +77,16 @@ export function CreatePostModal({
 
   // Legal acknowledgment for file uploads
   const [hasAcknowledgedRights, setHasAcknowledgedRights] = useState(false);
+
+  // Link previews for text posts
+  const {
+    previews: linkPreviews,
+    isLoading: linkPreviewsLoading,
+    dismiss: dismissLinkPreview,
+    getPreviewsForSave,
+  } = useLinkPreviews({
+    text: postType === "text" ? content.plain : "",
+  });
 
   // Generate post ID for uploads
   useEffect(() => {
@@ -207,12 +219,15 @@ export function CreatePostModal({
         | "poll" = postType;
 
       switch (postType) {
-        case "text":
+        case "text": {
+          const savedPreviews = getPreviewsForSave();
           postContent = {
             html: content.html,
             plain: content.plain,
+            ...(savedPreviews.length > 0 && { link_previews: savedPreviews }),
           } as TextPostContent;
           break;
+        }
 
         case "image":
           postContent = {
@@ -690,6 +705,16 @@ export function CreatePostModal({
                 minHeight={postType === "text" ? "200px" : "80px"}
               />
             </div>
+          )}
+
+          {/* Link previews for text posts */}
+          {postType === "text" && (linkPreviews.length > 0 || linkPreviewsLoading) && (
+            <LinkPreviewCarousel
+              previews={linkPreviews}
+              editable
+              onDismiss={dismissLinkPreview}
+              isLoading={linkPreviewsLoading}
+            />
           )}
 
           {/* Tags */}

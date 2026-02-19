@@ -29,7 +29,7 @@ import { followUser, unfollowUser } from "@/actions/follows";
 import { followTag, unfollowTag, isFollowingTag } from "@/actions/tags";
 import { toast } from "@/components/ui";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
-import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, LinkPreviewCarousel } from "@/components/Post";
 
 type SearchTab = "all" | "users" | "tags" | "posts";
 
@@ -716,12 +716,26 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
           <ImageContent src={post.content.urls[0]} alt="" />
         )}
         {contentType === "text" && post.content?.html && (
-          <TextContent>
-            <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
-          </TextContent>
+          <>
+            <TextContent>
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
+            </TextContent>
+            {post.content.link_previews?.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={post.content.link_previews} />
+              </div>
+            )}
+          </>
         )}
         {contentType === "text" && post.content?.plain && !post.content?.html && (
-          <TextContent>{post.content.plain}</TextContent>
+          <>
+            <TextContent>{post.content.plain}</TextContent>
+            {post.content.link_previews?.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={post.content.link_previews} />
+              </div>
+            )}
+          </>
         )}
       </InteractivePost>
     </div>

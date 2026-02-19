@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
 import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
 import Link from "next/link";
@@ -95,9 +95,16 @@ export default function PostPage() {
     switch (post.postType) {
       case "text":
         return (
-          <TextContent html={content.html}>
-            {content.plain || content.text}
-          </TextContent>
+          <>
+            <TextContent html={content.html}>
+              {content.plain || content.text}
+            </TextContent>
+            {content.link_previews && content.link_previews.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={content.link_previews} />
+              </div>
+            )}
+          </>
         );
 
       case "image":

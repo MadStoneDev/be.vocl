@@ -16,7 +16,7 @@ import {
   type TabId,
 } from "@/components/profile";
 import { ReportModal } from "@/components/moderation";
-import { InteractivePost, ImageContent, TextContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, LinkPreviewCarousel } from "@/components/Post";
 import {
   getProfileByUsername,
   getProfileStats,
@@ -320,12 +320,26 @@ export default function ProfilePage() {
           <ImageContent src={post.content.urls[0]} alt="" />
         )}
         {contentType === "text" && post.content?.html && (
-          <TextContent>
-            <div dangerouslySetInnerHTML={{ __html: post.content.html }} />
-          </TextContent>
+          <>
+            <TextContent>
+              <div dangerouslySetInnerHTML={{ __html: post.content.html }} />
+            </TextContent>
+            {post.content.link_previews?.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={post.content.link_previews} />
+              </div>
+            )}
+          </>
         )}
         {contentType === "text" && post.content?.plain && !post.content?.html && (
-          <TextContent>{post.content.plain}</TextContent>
+          <>
+            <TextContent>{post.content.plain}</TextContent>
+            {post.content.link_previews?.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={post.content.link_previews} />
+              </div>
+            )}
+          </>
         )}
       </InteractivePost>
     );

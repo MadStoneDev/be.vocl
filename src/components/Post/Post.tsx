@@ -114,13 +114,12 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
       <div className="flex items-center gap-3">
         <Link
           href={`/profile/${author.username}`}
-          className="relative h-10 sm:h-12 w-10 sm:w-12 overflow-hidden rounded-full hover:opacity-90 transition-opacity"
+          className="hover:opacity-90 transition-opacity"
         >
-          <Image
+          <Avatar
             src={author.avatarUrl}
-            alt={author.username}
-            fill
-            className="object-cover"
+            username={author.username}
+            size="lg"
           />
         </Link>
         <div className="flex flex-col">
@@ -380,13 +379,12 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
             <div key={comment.id} className="flex gap-3 p-3 border-b border-neutral-100 last:border-0">
               <Link
                 href={`/profile/${comment.author.username}`}
-                className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full hover:opacity-90 transition-opacity"
+                className="shrink-0 hover:opacity-90 transition-opacity"
               >
-                <Image
+                <Avatar
                   src={comment.author.avatarUrl}
-                  alt={comment.author.username}
-                  fill
-                  className="object-cover"
+                  username={comment.author.username}
+                  size="sm"
                 />
               </Link>
               <div className="flex-1 min-w-0">

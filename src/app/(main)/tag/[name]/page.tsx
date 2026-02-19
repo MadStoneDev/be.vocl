@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import { getTagByName, getPostsByTag, followTag, unfollowTag } from "@/actions/tags";
 import { IconLoader2, IconHash, IconPlus, IconCheck } from "@tabler/icons-react";
 import type { VideoEmbedPlatform } from "@/types/database";
@@ -109,9 +109,16 @@ export default function TagPage() {
     switch (post.postType) {
       case "text":
         return (
-          <TextContent html={content.html}>
-            {content.plain || content.text}
-          </TextContent>
+          <>
+            <TextContent html={content.html}>
+              {content.plain || content.text}
+            </TextContent>
+            {content.link_previews?.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={content.link_previews} />
+              </div>
+            )}
+          </>
         );
       case "image":
         return (

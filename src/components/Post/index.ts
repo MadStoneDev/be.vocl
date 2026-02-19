@@ -6,6 +6,7 @@ export { ReportDialog } from "./ReportDialog";
 export { VideoContent } from "./content/VideoContent";
 export { AudioContent } from "./content/AudioContent";
 export { GalleryContent } from "./content/GalleryContent";
+export { LinkPreviewCarousel } from "./content/LinkPreviewCarousel";
 export { NSFWOverlay } from "./NSFWOverlay";
 export type {
   PostProps,

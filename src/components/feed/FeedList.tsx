@@ -1,10 +1,10 @@
 "use client";
 
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
 import { IconLoader2 } from "@tabler/icons-react";
 import { FeedSkeleton } from "@/components/ui";
-import type { VideoEmbedPlatform } from "@/types/database";
+import type { VideoEmbedPlatform, LinkPreviewData } from "@/types/database";
 
 interface FeedPost {
   id: string;
@@ -41,6 +41,8 @@ interface FeedPost {
     }>;
     // Caption (for media posts)
     captionHtml?: string;
+    // Link previews (for text posts)
+    linkPreviews?: LinkPreviewData[];
   };
   rawContent?: any; // Raw content for editing
   stats: PostStats;
@@ -105,7 +107,14 @@ export function FeedList({
 
           {/* Text content */}
           {post.contentType === "text" && (post.content.html || post.content.text) && (
-            <TextContent html={post.content.html}>{post.content.text}</TextContent>
+            <>
+              <TextContent html={post.content.html}>{post.content.text}</TextContent>
+              {post.content.linkPreviews && post.content.linkPreviews.length > 0 && (
+                <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                  <LinkPreviewCarousel previews={post.content.linkPreviews} />
+                </div>
+              )}
+            </>
           )}
 
           {/* Video content (embed or file) */}

@@ -49,7 +49,7 @@ const nextConfig: NextConfig = {
               "media-src 'self' blob: https: http:",
               "font-src 'self' data:",
               "connect-src 'self' https: wss:",
-              "frame-src 'self' https://open.spotify.com https://js.paddle.com",
+              "frame-src 'self' https://open.spotify.com https://js.paddle.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://rumble.com https://www.dailymotion.com",
               "frame-ancestors 'none'",
               "form-action 'self'",
               "base-uri 'self'",
