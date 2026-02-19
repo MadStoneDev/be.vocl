@@ -100,7 +100,7 @@ export function RichTextEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden">
+    <div className="rounded-2xl border border-white/10 overflow-hidden has-[:focus]:ring-2 has-[:focus]:ring-vocl-accent has-[:focus]:border-vocl-accent transition-colors">
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-white/10 bg-vocl-surface-dark/50">
         <ToolbarButton
@@ -150,11 +150,15 @@ export function RichTextEditor({
       </div>
 
       {/* Editor */}
-      <div className="p-4 bg-background/50 rounded-b-2xl transition-shadow has-[:focus]:ring-2 has-[:focus]:ring-vocl-accent">
+      <div className="p-4 bg-background/50">
         <EditorContent editor={editor} />
       </div>
 
       <style jsx global>{`
+        .ProseMirror:focus {
+          outline: none;
+          box-shadow: none;
+        }
         .ProseMirror p.is-editor-empty:first-child::before {
           content: attr(data-placeholder);
           float: left;
