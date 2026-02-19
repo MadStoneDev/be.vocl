@@ -109,7 +109,7 @@ export function AudioContent({
   };
 
   return (
-    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6">
+    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6 pb-18.5">
       <audio ref={audioRef} src={src} preload="metadata" />
 
       <div className="flex gap-4">

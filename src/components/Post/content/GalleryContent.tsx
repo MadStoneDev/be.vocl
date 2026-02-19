@@ -111,7 +111,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image" }: Galle
         {/* Caption */}
         {caption && (
           <div
-            className="p-4 bg-[#EBEBEB] text-neutral-700"
+            className="p-4 pb-18.5 bg-[#EBEBEB] text-neutral-700"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />
         )}
