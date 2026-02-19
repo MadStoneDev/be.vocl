@@ -424,7 +424,7 @@ export default function ProfilePage() {
         onMessage={async () => {
           const result = await startConversation(profile.id);
           if (result.success && result.conversationId) {
-            router.push(`/messages?conversation=${result.conversationId}`);
+            router.push(`?conversation=${result.conversationId}`, { scroll: false });
           } else {
             toast.error(result.error || "Could not start conversation");
           }

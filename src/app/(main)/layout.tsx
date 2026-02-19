@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
 import { ChatSidebar } from "@/components/chat";
 import { CreatePostFAB } from "@/components/Post/create";
@@ -56,7 +56,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
 
   // All hooks run immediately - they return default/empty values while loading
   const { profile, user, isLoading: authLoading } = useAuth();
@@ -88,6 +90,19 @@ export default function MainLayout({
 
     checkOnboarding();
   }, [user, authLoading, router]);
+
+  // Auto-open chat sidebar when ?conversation= is in the URL
+  useEffect(() => {
+    const conversationId = searchParams.get("conversation");
+    if (conversationId) {
+      setInitialConversationId(conversationId);
+      setIsChatOpen(true);
+      // Clean up the URL param
+      const url = new URL(window.location.href);
+      url.searchParams.delete("conversation");
+      router.replace(url.pathname + url.search, { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 
@@ -136,8 +151,12 @@ export default function MainLayout({
         <ErrorBoundary fallback={<ChatErrorFallback onClose={() => setIsChatOpen(false)} />}>
           <ChatSidebar
             isOpen={isChatOpen}
-            onClose={() => setIsChatOpen(false)}
+            onClose={() => {
+              setIsChatOpen(false);
+              setInitialConversationId(null);
+            }}
             currentUserId={profile?.id}
+            initialConversationId={initialConversationId}
           />
         </ErrorBoundary>
       )}

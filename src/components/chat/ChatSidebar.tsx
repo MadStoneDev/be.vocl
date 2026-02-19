@@ -15,9 +15,10 @@ interface ChatSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   currentUserId?: string;
+  initialConversationId?: string | null;
 }
 
-export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps) {
+export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversationId }: ChatSidebarProps) {
   const [view, setView] = useState<"list" | "chat">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -72,6 +73,17 @@ export function ChatSidebar({ isOpen, onClose, currentUserId }: ChatSidebarProps
       refreshConversations();
     }
   }, [isOpen, currentUserId, refreshConversations]);
+
+  // Auto-select initial conversation when provided and conversations are loaded
+  useEffect(() => {
+    if (initialConversationId && conversations.length > 0 && !activeConversation) {
+      const conv = conversations.find((c) => c.id === initialConversationId);
+      if (conv) {
+        setActiveConversation(conv);
+        setView("chat");
+      }
+    }
+  }, [initialConversationId, conversations, activeConversation]);
 
   // Update active conversation's online status when it changes
   useEffect(() => {
