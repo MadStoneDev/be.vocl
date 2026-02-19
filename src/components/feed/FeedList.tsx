@@ -33,6 +33,14 @@ interface FeedPost {
     // Audio content
     audioUrl?: string;
     albumArtUrl?: string;
+    spotifyData?: {
+      track_id: string;
+      name: string;
+      artist: string;
+      album: string;
+      album_art?: string;
+      external_url?: string;
+    };
     // Gallery content
     galleryItems?: Array<{
       type: "image" | "video";
@@ -129,10 +137,11 @@ export function FeedList({
           )}
 
           {/* Audio content */}
-          {post.contentType === "audio" && post.content.audioUrl && (
+          {post.contentType === "audio" && (post.content.audioUrl || post.content.spotifyData) && (
             <AudioContent
               src={post.content.audioUrl}
               albumArtUrl={post.content.albumArtUrl}
+              spotifyData={post.content.spotifyData}
               caption={post.content.captionHtml}
             />
           )}

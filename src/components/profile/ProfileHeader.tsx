@@ -14,6 +14,7 @@ import {
   IconCoin,
   IconFlag,
   IconMessageQuestion,
+  IconMessage,
 } from "@tabler/icons-react";
 import { VerificationBadge } from "@/components/payments";
 import { StaffBadge } from "@/components/ui/StaffBadge";
@@ -37,6 +38,7 @@ interface ProfileHeaderProps {
   onShare?: () => void;
   onTip?: () => void;
   onAsk?: () => void;
+  onMessage?: () => void | Promise<void>;
   onReport?: () => void;
   onAvatarClick?: () => void;
 }
@@ -60,6 +62,7 @@ export function ProfileHeader({
   onShare,
   onTip,
   onAsk,
+  onMessage,
   onReport,
   onAvatarClick,
 }: ProfileHeaderProps) {
@@ -209,10 +212,22 @@ export function ProfileHeader({
                   {showMenu && (
                     <>
                       <div
-                        className="fixed inset-0 z-40"
+                        className="fixed inset-0 z-[110]"
                         onClick={() => setShowMenu(false)}
                       />
-                      <div className="absolute right-0 mt-2 w-48 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl z-50">
+                      <div className="absolute right-0 mt-2 w-48 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl z-[120]">
+                        {onMessage && (
+                          <button
+                            onClick={() => {
+                              onMessage();
+                              setShowMenu(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                          >
+                            <IconMessage size={18} />
+                            Message
+                          </button>
+                        )}
                         <button
                           onClick={() => {
                             onShare?.();

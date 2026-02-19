@@ -18,10 +18,12 @@ interface SpotifyData {
   name: string;
   artist: string;
   album: string;
+  album_art?: string;
+  external_url?: string;
 }
 
 interface AudioContentProps {
-  src: string;
+  src?: string;
   albumArtUrl?: string;
   spotifyData?: SpotifyData;
   caption?: string;
@@ -44,6 +46,12 @@ export function AudioContent({
   const postTags = usePostTags();
   const tags: PostTag[] = postTags?.tags || [];
   const isHovered = postTags?.isHovered || false;
+
+  // Resolve album art: explicit prop, then spotify data fallback
+  const resolvedAlbumArt = albumArtUrl || spotifyData?.album_art;
+
+  // Spotify embed mode: has spotify data and no file src
+  const isSpotifyEmbed = !!spotifyData?.track_id && !src;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -108,15 +116,66 @@ export function AudioContent({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Spotify embed iframe
+  if (isSpotifyEmbed) {
+    return (
+      <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6 pb-18.5">
+        <div className="rounded-xl overflow-hidden">
+          <iframe
+            src={`https://open.spotify.com/embed/track/${spotifyData.track_id}?theme=0`}
+            width="100%"
+            height="152"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            className="border-0 rounded-xl"
+          />
+        </div>
+
+        {/* Caption */}
+        {caption && (
+          <div
+            className="mt-4 pt-4 border-t border-white/10 text-foreground/80"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
+          />
+        )}
+
+        {/* Tags - collapsible on hover */}
+        {tags.length > 0 && (
+          <div
+            className={`overflow-hidden transition-all duration-150 ease-out ${
+              isHovered ? "max-h-50 mt-4" : "max-h-0"
+            }`}
+          >
+            <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-white/10">
+              {tags.map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/tag/${encodeURIComponent(tag.name)}`}
+                  className={`px-2 py-1 text-xs font-medium rounded bg-white/10 text-foreground/70 truncate transition-opacity ${
+                    isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
+                  }`}
+                  style={{ maxWidth: "150px" }}
+                >
+                  #{tag.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // File upload audio player (original)
   return (
     <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6 pb-18.5">
-      <audio ref={audioRef} src={src} preload="metadata" />
+      {src && <audio ref={audioRef} src={src} preload="metadata" />}
 
       <div className="flex gap-4">
         {/* Album Art */}
         <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-vocl-surface-dark flex-shrink-0">
-          {albumArtUrl ? (
-            <Image src={albumArtUrl} alt="Album art" fill className="object-cover" />
+          {resolvedAlbumArt ? (
+            <Image src={resolvedAlbumArt} alt="Album art" fill className="object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <IconMusic size={40} className="text-foreground/20" />
@@ -124,19 +183,21 @@ export function AudioContent({
           )}
 
           {/* Play button overlay */}
-          <button
-            type="button"
-            onClick={togglePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
-          >
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-              {isPlaying ? (
-                <IconPlayerPause size={24} className="text-neutral-900" />
-              ) : (
-                <IconPlayerPlay size={24} className="text-neutral-900 ml-0.5" />
-              )}
-            </div>
-          </button>
+          {src && (
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+            >
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                {isPlaying ? (
+                  <IconPlayerPause size={24} className="text-neutral-900" />
+                ) : (
+                  <IconPlayerPlay size={24} className="text-neutral-900 ml-0.5" />
+                )}
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Track Info & Controls */}
@@ -158,30 +219,34 @@ export function AudioContent({
           )}
 
           {/* Progress bar */}
-          <div className="mt-3 space-y-1">
-            <div
-              className="h-1.5 bg-white/10 rounded-full cursor-pointer overflow-hidden"
-              onClick={handleSeek}
-            >
+          {src && (
+            <div className="mt-3 space-y-1">
               <div
-                className="h-full bg-vocl-accent transition-all"
-                style={{ width: `${progress}%` }}
-              />
+                className="h-1.5 bg-white/10 rounded-full cursor-pointer overflow-hidden"
+                onClick={handleSeek}
+              >
+                <div
+                  className="h-full bg-vocl-accent transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-foreground/40">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-xs text-foreground/40">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
+          )}
 
           {/* Volume */}
-          <button
-            type="button"
-            onClick={toggleMute}
-            className="mt-2 self-start p-1.5 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
-          >
-            {isMuted ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
-          </button>
+          {src && (
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="mt-2 self-start p-1.5 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+            >
+              {isMuted ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
+            </button>
+          )}
         </div>
       </div>
 

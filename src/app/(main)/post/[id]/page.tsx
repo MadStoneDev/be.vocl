@@ -139,6 +139,7 @@ export default function PostPage() {
           <AudioContent
             src={content.url}
             albumArtUrl={content.album_art_url}
+            spotifyData={content.spotify_data}
             caption={content.caption_html}
           />
         );

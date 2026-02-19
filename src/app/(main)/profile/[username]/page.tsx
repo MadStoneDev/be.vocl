@@ -16,7 +16,8 @@ import {
   type TabId,
 } from "@/components/profile";
 import { ReportModal } from "@/components/moderation";
-import { InteractivePost, ImageContent, TextContent, LinkPreviewCarousel } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
+import type { VideoEmbedPlatform } from "@/types/database";
 import {
   getProfileByUsername,
   getProfileStats,
@@ -26,6 +27,7 @@ import {
 import { getPostsByUser, getLikedPosts, getCommentedPosts } from "@/actions/posts";
 import { followUser, unfollowUser, isFollowing, blockUser, muteUser } from "@/actions/follows";
 import { canSendAskTo } from "@/actions/asks";
+import { startConversation } from "@/actions/messages";
 import { toast } from "@/components/ui";
 
 interface ProfileData {
@@ -341,6 +343,29 @@ export default function ProfilePage() {
             )}
           </>
         )}
+        {contentType === "video" && (
+          <VideoContent
+            src={post.content?.url}
+            thumbnailUrl={post.content?.thumbnail_url}
+            embedUrl={post.content?.embed_url}
+            embedPlatform={post.content?.embed_platform as VideoEmbedPlatform}
+            caption={post.content?.caption_html}
+          />
+        )}
+        {contentType === "audio" && (post.content?.url || post.content?.spotify_data) && (
+          <AudioContent
+            src={post.content?.url}
+            albumArtUrl={post.content?.album_art_url}
+            spotifyData={post.content?.spotify_data}
+            caption={post.content?.caption_html}
+          />
+        )}
+        {contentType === "gallery" && post.content?.urls && (
+          <GalleryContent
+            images={post.content.urls}
+            caption={post.content?.caption_html}
+          />
+        )}
       </InteractivePost>
     );
   };
@@ -396,6 +421,14 @@ export default function ProfilePage() {
         onBlock={handleBlock}
         onMute={handleMute}
         onShare={handleShare}
+        onMessage={async () => {
+          const result = await startConversation(profile.id);
+          if (result.success && result.conversationId) {
+            router.push(`/messages?conversation=${result.conversationId}`);
+          } else {
+            toast.error(result.error || "Could not start conversation");
+          }
+        }}
         onAsk={() => setAskModalOpen(true)}
         onReport={() => setReportModalOpen(true)}
         onAvatarClick={() => setAvatarModalOpen(true)}

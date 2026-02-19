@@ -19,8 +19,12 @@ import {
   IconLink,
   IconUpload,
   IconCheck,
+  IconBrandSpotify,
+  IconSearch,
 } from "@tabler/icons-react";
+import Image from "next/image";
 import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
+import type { SpotifyTrack } from "@/lib/spotify";
 import { RichTextEditor } from "./RichTextEditor";
 import { MediaUploader } from "./MediaUploader";
 import { TagInput } from "./TagInput";
@@ -75,6 +79,13 @@ export function CreatePostModal({
   const [videoEmbedUrl, setVideoEmbedUrl] = useState("");
   const [videoEmbedError, setVideoEmbedError] = useState<string | null>(null);
 
+  // Audio-specific state
+  const [audioMode, setAudioMode] = useState<"spotify" | "upload">("spotify");
+  const [spotifyQuery, setSpotifyQuery] = useState("");
+  const [spotifyResults, setSpotifyResults] = useState<SpotifyTrack[]>([]);
+  const [selectedTrack, setSelectedTrack] = useState<SpotifyTrack | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+
   // Legal acknowledgment for file uploads
   const [hasAcknowledgedRights, setHasAcknowledgedRights] = useState(false);
 
@@ -119,6 +130,12 @@ export function CreatePostModal({
       setVideoMode("embed");
       setVideoEmbedUrl("");
       setVideoEmbedError(null);
+      // Reset audio state
+      setAudioMode("spotify");
+      setSpotifyQuery("");
+      setSpotifyResults([]);
+      setSelectedTrack(null);
+      setIsSearching(false);
       // Reset legal acknowledgment
       setHasAcknowledgedRights(false);
     }
@@ -132,6 +149,29 @@ export function CreatePostModal({
       setScheduledDate(tomorrow.toISOString().split("T")[0]);
     }
   }, [publishMode, scheduledDate]);
+
+  // Debounced Spotify search
+  useEffect(() => {
+    if (!spotifyQuery.trim() || spotifyQuery.length < 2) {
+      setSpotifyResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/spotify/search?q=${encodeURIComponent(spotifyQuery)}`);
+        const data = await res.json();
+        setSpotifyResults(data.tracks || []);
+      } catch {
+        setSpotifyResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [spotifyQuery]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -165,13 +205,20 @@ export function CreatePostModal({
         }
       }
     } else if (postType === "audio") {
-      if (mediaUrls.length === 0) {
-        setError("Please upload an audio file");
-        return;
-      }
-      if (!hasAcknowledgedRights) {
-        setError("Please acknowledge that you have the rights to publish this content");
-        return;
+      if (audioMode === "spotify") {
+        if (!selectedTrack) {
+          setError("Please search and select a track");
+          return;
+        }
+      } else {
+        if (mediaUrls.length === 0) {
+          setError("Please upload an audio file");
+          return;
+        }
+        if (!hasAcknowledgedRights) {
+          setError("Please acknowledge that you have the rights to publish this content");
+          return;
+        }
       }
     } else if (postType === "image" && mediaUrls.length === 0) {
       setError("Please upload at least one image");
@@ -264,10 +311,25 @@ export function CreatePostModal({
           break;
 
         case "audio":
-          postContent = {
-            url: mediaUrls[0],
-            caption_html: content.html || undefined,
-          } as AudioPostContent;
+          if (audioMode === "spotify" && selectedTrack) {
+            postContent = {
+              spotify_data: {
+                track_id: selectedTrack.id,
+                name: selectedTrack.name,
+                artist: selectedTrack.artist,
+                album: selectedTrack.album,
+                album_art: selectedTrack.albumArt || undefined,
+                external_url: selectedTrack.externalUrl,
+              },
+              album_art_url: selectedTrack.albumArt || undefined,
+              caption_html: content.html || undefined,
+            } as AudioPostContent;
+          } else {
+            postContent = {
+              url: mediaUrls[0],
+              caption_html: content.html || undefined,
+            } as AudioPostContent;
+          }
           break;
 
         case "poll":
@@ -477,33 +539,174 @@ export function CreatePostModal({
             </div>
           )}
 
-          {/* Audio Post with Legal Disclaimer */}
-          {postType === "audio" && postId && (
-            <div className="space-y-3">
-              <MediaUploader
-                postId={postId}
-                mediaType="audio"
-                onUploadComplete={setMediaUrls}
-                maxFiles={1}
-                existingUrls={mediaUrls}
-              />
+          {/* Audio Post Options */}
+          {postType === "audio" && (
+            <div className="space-y-4">
+              {/* Mode Selector */}
+              <div className="flex rounded-xl bg-background/50 p-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAudioMode("spotify");
+                    setMediaUrls([]);
+                    setHasAcknowledgedRights(false);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    audioMode === "spotify"
+                      ? "bg-[#1DB954] text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconBrandSpotify size={16} />
+                  Spotify
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAudioMode("upload");
+                    setSelectedTrack(null);
+                    setSpotifyQuery("");
+                    setSpotifyResults([]);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    audioMode === "upload"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconUpload size={16} />
+                  Upload File
+                </button>
+              </div>
 
-              {/* Legal Disclaimer */}
-              <label className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasAcknowledgedRights}
-                  onChange={(e) => setHasAcknowledgedRights(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-white/20 bg-background/50 text-vocl-accent focus:ring-vocl-accent focus:ring-offset-0"
-                />
-                <div className="flex-1 text-xs text-foreground/70">
-                  <span className="font-medium text-amber-500">Rights Acknowledgment:</span>{" "}
-                  By uploading this file, I confirm that I own or have obtained the necessary rights,
-                  licenses, or permissions to publish this content. I understand that uploading
-                  copyrighted material without authorization may result in content removal and
-                  account action.
+              {/* Spotify Search */}
+              {audioMode === "spotify" && (
+                <div className="space-y-3">
+                  {!selectedTrack ? (
+                    <>
+                      {/* Search Input */}
+                      <div className="relative">
+                        <IconSearch size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40" />
+                        <input
+                          type="text"
+                          value={spotifyQuery}
+                          onChange={(e) => setSpotifyQuery(e.target.value)}
+                          placeholder="Search for a song..."
+                          className="w-full py-3 pl-10 pr-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[#1DB954] transition-colors"
+                        />
+                        {isSearching && (
+                          <IconLoader2 size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground/40 animate-spin" />
+                        )}
+                      </div>
+
+                      {/* Search Results */}
+                      {spotifyResults.length > 0 && (
+                        <div className="rounded-xl border border-white/10 overflow-hidden divide-y divide-white/5">
+                          {spotifyResults.map((track) => (
+                            <button
+                              key={track.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedTrack(track);
+                                setSpotifyQuery("");
+                                setSpotifyResults([]);
+                              }}
+                              className="w-full flex items-center gap-3 p-3 hover:bg-white/5 transition-colors text-left"
+                            >
+                              {/* Album Art Thumbnail */}
+                              <div className="relative w-10 h-10 rounded-md overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+                                {track.albumArt ? (
+                                  <Image
+                                    src={track.albumArt}
+                                    alt={track.album}
+                                    fill
+                                    className="object-cover"
+                                    sizes="40px"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <IconMusic size={16} className="text-foreground/20" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{track.name}</p>
+                                <p className="text-xs text-foreground/50 truncate">{track.artist} &middot; {track.album}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Empty state */}
+                      {spotifyQuery.length >= 2 && !isSearching && spotifyResults.length === 0 && (
+                        <p className="text-center text-sm text-foreground/40 py-4">No results found</p>
+                      )}
+                    </>
+                  ) : (
+                    /* Selected Track Card */
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 border border-[#1DB954]/30">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+                        {selectedTrack.albumArt ? (
+                          <Image
+                            src={selectedTrack.albumArt}
+                            alt={selectedTrack.album}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <IconMusic size={20} className="text-foreground/20" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{selectedTrack.name}</p>
+                        <p className="text-xs text-foreground/50 truncate">{selectedTrack.artist}</p>
+                        <p className="text-xs text-foreground/30 truncate">{selectedTrack.album}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTrack(null)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors flex-shrink-0"
+                      >
+                        <IconX size={16} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </label>
+              )}
+
+              {/* File Upload */}
+              {audioMode === "upload" && postId && (
+                <div className="space-y-3">
+                  <MediaUploader
+                    postId={postId}
+                    mediaType="audio"
+                    onUploadComplete={setMediaUrls}
+                    maxFiles={1}
+                    existingUrls={mediaUrls}
+                  />
+
+                  {/* Legal Disclaimer */}
+                  <label className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hasAcknowledgedRights}
+                      onChange={(e) => setHasAcknowledgedRights(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-white/20 bg-background/50 text-vocl-accent focus:ring-vocl-accent focus:ring-offset-0"
+                    />
+                    <div className="flex-1 text-xs text-foreground/70">
+                      <span className="font-medium text-amber-500">Rights Acknowledgment:</span>{" "}
+                      By uploading this file, I confirm that I own or have obtained the necessary rights,
+                      licenses, or permissions to publish this content. I understand that uploading
+                      copyrighted material without authorization may result in content removal and
+                      account action.
+                    </div>
+                  </label>
+                </div>
+              )}
             </div>
           )}
 

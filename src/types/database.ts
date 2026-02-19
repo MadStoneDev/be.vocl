@@ -735,13 +735,15 @@ export interface VideoPostContent {
 }
 
 export interface AudioPostContent {
-  url: string;
+  url?: string;
   album_art_url?: string;
   spotify_data?: {
     track_id: string;
     name: string;
     artist: string;
     album: string;
+    album_art?: string;
+    external_url?: string;
   };
   caption_html?: string;
 }

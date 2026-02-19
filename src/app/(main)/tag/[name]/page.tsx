@@ -149,6 +149,7 @@ export default function TagPage() {
           <AudioContent
             src={content.url}
             albumArtUrl={content.album_art_url}
+            spotifyData={content.spotify_data}
             caption={content.caption_html}
           />
         );

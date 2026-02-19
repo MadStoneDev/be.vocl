@@ -52,6 +52,7 @@ function transformPost(post: PostWithDetails) {
   let embedPlatform: VideoEmbedPlatform | undefined;
   let audioUrl: string | undefined;
   let albumArtUrl: string | undefined;
+  let spotifyData: any;
   let captionHtml: string | undefined;
 
   let linkPreviews: any[] | undefined;
@@ -77,6 +78,7 @@ function transformPost(post: PostWithDetails) {
     audioUrl = postContent?.url;
     albumArtUrl = postContent?.album_art_url;
     captionHtml = postContent?.caption_html;
+    spotifyData = postContent?.spotify_data;
   }
 
   return {
@@ -100,6 +102,7 @@ function transformPost(post: PostWithDetails) {
       embedPlatform,
       audioUrl,
       albumArtUrl,
+      spotifyData,
       captionHtml,
       linkPreviews,
     },

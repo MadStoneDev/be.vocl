@@ -373,6 +373,7 @@ export function InteractivePost({
           <AudioContent
             src={contentData.url || contentData.audioUrl}
             albumArtUrl={contentData.album_art_url || contentData.albumArtUrl}
+            spotifyData={contentData.spotify_data || contentData.spotifyData}
             caption={contentData.caption_html || contentData.captionHtml}
           />
         );
