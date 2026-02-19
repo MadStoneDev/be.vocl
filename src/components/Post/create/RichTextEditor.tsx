@@ -54,7 +54,7 @@ export function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: "prose prose-invert max-w-none focus:outline-none",
+        class: "prose prose-invert max-w-none focus:outline-none focus:ring-0",
         style: `min-height: ${minHeight}`,
       },
     },
@@ -150,7 +150,7 @@ export function RichTextEditor({
       </div>
 
       {/* Editor */}
-      <div className="p-4 bg-background/50">
+      <div className="p-4 bg-background/50 rounded-b-2xl transition-shadow has-[:focus]:ring-2 has-[:focus]:ring-vocl-accent">
         <EditorContent editor={editor} />
       </div>
 
