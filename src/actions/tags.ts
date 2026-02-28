@@ -69,14 +69,15 @@ export async function followTagByName(tagName: string): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const normalizedName = tagName.toLowerCase().trim().replace(/^#/, "");
+    const normalizedName = tagName.trim().replace(/^#/, "");
 
-    // Find or create the tag
-    let { data: tag } = await supabase
+    // Find or create the tag (case-insensitive lookup, preserve casing on create)
+    const { data: existingTags } = await supabase
       .from("tags")
       .select("id")
-      .eq("name", normalizedName)
-      .single();
+      .ilike("name", normalizedName)
+      .limit(1);
+    let tag = existingTags?.[0] || null;
 
     if (!tag) {
       const { data: newTag, error: createError } = await supabase
@@ -288,13 +289,14 @@ export async function getTagByName(tagName: string): Promise<{
       data: { user },
     } = await supabase.auth.getUser();
 
-    const normalizedName = tagName.toLowerCase().trim().replace(/^#/, "");
+    const normalizedName = tagName.trim().replace(/^#/, "");
 
-    const { data: tag, error } = await supabase
+    const { data: matchedTags, error } = await supabase
       .from("tags")
       .select("id, name, post_count")
-      .eq("name", normalizedName)
-      .single();
+      .ilike("name", normalizedName)
+      .limit(1);
+    const tag = matchedTags?.[0] || null;
 
     if (error || !tag) {
       return { success: false, error: "Tag not found" };
@@ -367,7 +369,7 @@ export async function getPostsByTag(
 
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
-    const normalizedName = tagName.toLowerCase().trim().replace(/^#/, "");
+    const normalizedName = tagName.trim().replace(/^#/, "");
 
     // Get user's sensitive content preferences
     let showSensitive = false;
@@ -380,12 +382,13 @@ export async function getPostsByTag(
       showSensitive = profile?.show_sensitive_posts ?? false;
     }
 
-    // Get tag ID
-    const { data: tag } = await supabase
+    // Get tag ID (case-insensitive)
+    const { data: matchedTags2 } = await supabase
       .from("tags")
       .select("id")
-      .eq("name", normalizedName)
-      .single();
+      .ilike("name", normalizedName)
+      .limit(1);
+    const tag = matchedTags2?.[0] || null;
 
     if (!tag) {
       return { success: true, posts: [], hasMore: false };

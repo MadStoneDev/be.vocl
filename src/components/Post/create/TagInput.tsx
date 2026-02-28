@@ -84,7 +84,20 @@ export function TagInput({
           <input
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value.includes(",")) {
+                const parts = value.split(",");
+                for (const part of parts.slice(0, -1)) {
+                  if (part.trim()) {
+                    addTag(part);
+                  }
+                }
+                setInputValue(parts[parts.length - 1]);
+              } else {
+                setInputValue(value);
+              }
+            }}
             onKeyDown={handleKeyDown}
             onBlur={() => inputValue && addTag(inputValue)}
             placeholder={placeholder}

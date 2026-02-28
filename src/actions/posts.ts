@@ -234,28 +234,30 @@ function extractTextContent(postType: PostType, content: PostContent): string | 
  * Optimized: Uses batch queries instead of N+1 (2-3 queries total instead of 2-3 per tag)
  */
 async function handleTags(supabase: any, postId: string, tagNames: string[]) {
-  // Normalize all tag names first
+  // Normalize tag names (preserve original casing for display)
   const normalizedTags = tagNames
     .map(name => name.trim().replace(/^#/, "").replace(/\s+/g, " "))
     .filter(name => name.length > 0);
 
   if (normalizedTags.length === 0) return;
 
-  // Batch fetch: Get all existing tags in one query
+  // Batch fetch: Get all existing tags case-insensitively
+  const orFilter = normalizedTags.map(name => `name.ilike.${name}`).join(",");
   const { data: existingTags } = await supabase
     .from("tags")
     .select("id, name")
-    .in("name", normalizedTags);
+    .or(orFilter);
 
+  // Map lowercase name → tag id for case-insensitive comparison
   const existingTagMap = new Map<string, string>();
   for (const tag of existingTags || []) {
-    existingTagMap.set(tag.name, tag.id);
+    existingTagMap.set(tag.name.toLowerCase(), tag.id);
   }
 
-  // Find tags that don't exist yet
-  const newTagNames = normalizedTags.filter(name => !existingTagMap.has(name));
+  // Find tags that don't exist yet (case-insensitive check)
+  const newTagNames = normalizedTags.filter(name => !existingTagMap.has(name.toLowerCase()));
 
-  // Batch insert: Create all new tags in one query
+  // Batch insert: Create all new tags in one query (preserves user's casing)
   if (newTagNames.length > 0) {
     const { data: createdTags } = await supabase
       .from("tags")
@@ -264,13 +266,13 @@ async function handleTags(supabase: any, postId: string, tagNames: string[]) {
 
     // Add newly created tags to the map
     for (const tag of createdTags || []) {
-      existingTagMap.set(tag.name, tag.id);
+      existingTagMap.set(tag.name.toLowerCase(), tag.id);
     }
   }
 
   // Batch insert: Link all tags to post in one query
   const postTagInserts = normalizedTags
-    .map(name => existingTagMap.get(name))
+    .map(name => existingTagMap.get(name.toLowerCase()))
     .filter((tagId): tagId is string => tagId !== undefined)
     .map(tagId => ({ post_id: postId, tag_id: tagId }));
 
