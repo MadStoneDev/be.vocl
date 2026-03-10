@@ -13,6 +13,8 @@ import {
   IconUserMinus,
   IconCheck,
   IconAlertTriangle,
+  IconBookmark,
+  IconBookmarkFilled,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -29,6 +31,8 @@ interface PostMenuProps {
   onUnfollow?: () => void;
   onFlagPost?: () => void;
   onReportUser?: () => void;
+  isBookmarked?: boolean;
+  onBookmark?: () => void;
 }
 
 export function PostMenu({
@@ -45,6 +49,8 @@ export function PostMenu({
   onUnfollow,
   onFlagPost,
   onReportUser,
+  isBookmarked = false,
+  onBookmark,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -111,14 +117,14 @@ export function PostMenu({
       {/* Menu */}
       <div
         ref={menuRef}
-        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-white shadow-xl border border-neutral-200 py-1 overflow-hidden"
+        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-vocl-surface shadow-xl border border-white/10 py-1 overflow-hidden"
         role="menu"
         aria-orientation="vertical"
       >
         {/* Copy Link */}
         <button
           onClick={handleCopyLink}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
           role="menuitem"
         >
           {copied ? (
@@ -134,6 +140,28 @@ export function PostMenu({
           )}
         </button>
 
+        {/* Bookmark */}
+        <button
+          onClick={() => {
+            onBookmark?.();
+            onClose();
+          }}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+          role="menuitem"
+        >
+          {isBookmarked ? (
+            <>
+              <IconBookmarkFilled size={18} className="text-vocl-accent" />
+              <span>Remove bookmark</span>
+            </>
+          ) : (
+            <>
+              <IconBookmark size={18} />
+              <span>Bookmark</span>
+            </>
+          )}
+        </button>
+
         {isOwn ? (
           <>
             {/* Pin Post */}
@@ -142,7 +170,7 @@ export function PostMenu({
                 onPin?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
               role="menuitem"
             >
               {isPinned ? (
@@ -164,7 +192,7 @@ export function PostMenu({
                 onEdit?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
               role="menuitem"
             >
               <IconPencil size={18} />
@@ -172,7 +200,7 @@ export function PostMenu({
             </button>
 
             {/* Divider */}
-            <div className="h-px bg-neutral-200 my-1" />
+            <div className="h-px bg-white/10 my-1" />
 
             {/* Delete Post */}
             <button
@@ -180,7 +208,7 @@ export function PostMenu({
                 onDelete?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-red-50 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
               role="menuitem"
             >
               <IconTrash size={18} />
@@ -195,7 +223,7 @@ export function PostMenu({
                 onMute?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
               role="menuitem"
             >
               <IconVolumeOff size={18} />
@@ -208,7 +236,7 @@ export function PostMenu({
                 onUnfollow?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
               role="menuitem"
             >
               <IconUserMinus size={18} />
@@ -216,7 +244,7 @@ export function PostMenu({
             </button>
 
             {/* Divider */}
-            <div className="h-px bg-neutral-200 my-1" />
+            <div className="h-px bg-white/10 my-1" />
 
             {/* Flag Post */}
             <button
@@ -224,7 +252,7 @@ export function PostMenu({
                 onFlagPost?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-amber-500 hover:bg-amber-500/10 transition-colors"
               role="menuitem"
             >
               <IconFlag size={18} />
@@ -237,7 +265,7 @@ export function PostMenu({
                 onReportUser?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-red-50 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
               role="menuitem"
             >
               <IconAlertTriangle size={18} />
