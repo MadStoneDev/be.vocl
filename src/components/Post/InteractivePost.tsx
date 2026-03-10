@@ -76,9 +76,9 @@ export function InteractivePost({
   initialBookmarked = false,
   onDeleted,
 }: InteractivePostProps) {
-  // User content settings
+  // User content settings - own posts always auto-reveal, otherwise check user preferences
   const { profile } = useAuth();
-  const autoRevealSensitive = profile?.showSensitivePosts === true && profile?.blurSensitiveByDefault === false;
+  const autoRevealSensitive = isOwn || (profile?.blurSensitiveByDefault === false);
 
   // Menu and dialog state
   const [isMenuOpen, setIsMenuOpen] = useState(false);

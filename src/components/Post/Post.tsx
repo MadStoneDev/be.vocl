@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback, memo, createContext, useContext, type ReactNode } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect, memo, createContext, useContext, type ReactNode } from "react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import Image from "next/image";
 import Link from "next/link";
@@ -562,6 +562,13 @@ export const Post = memo(function Post({
   const [isContentRevealed, setIsContentRevealed] = useState(autoRevealSensitive);
   const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
   const [lastPanel, setLastPanel] = useState<ExpandedPanel>(null);
+
+  // Sync auto-reveal when user profile loads asynchronously
+  useEffect(() => {
+    if (autoRevealSensitive && !isContentRevealed) {
+      setIsContentRevealed(true);
+    }
+  }, [autoRevealSensitive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Memoized computed values
   const displayPanel = useMemo(() => expandedPanel || lastPanel, [expandedPanel, lastPanel]);
