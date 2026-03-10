@@ -74,6 +74,11 @@ export function CreatePostModal({
     useState(false);
   const [pollAllowMultiple, setPollAllowMultiple] = useState(false);
 
+  // Image-specific state
+  const [imageMode, setImageMode] = useState<"upload" | "link">("upload");
+  const [imageLinkUrl, setImageLinkUrl] = useState("");
+  const [imageLinkError, setImageLinkError] = useState<string | null>(null);
+
   // Video-specific state
   const [videoMode, setVideoMode] = useState<"embed" | "upload">("embed");
   const [videoEmbedUrl, setVideoEmbedUrl] = useState("");
@@ -126,6 +131,10 @@ export function CreatePostModal({
       setPollExpiresAt("");
       setPollShowResultsBeforeVote(false);
       setPollAllowMultiple(false);
+      // Reset image state
+      setImageMode("upload");
+      setImageLinkUrl("");
+      setImageLinkError(null);
       // Reset video state
       setVideoMode("embed");
       setVideoEmbedUrl("");
@@ -220,9 +229,15 @@ export function CreatePostModal({
           return;
         }
       }
-    } else if (postType === "image" && mediaUrls.length === 0) {
-      setError("Please upload at least one image");
-      return;
+    } else if (postType === "image") {
+      if (imageMode === "upload" && mediaUrls.length === 0) {
+        setError("Please upload at least one image");
+        return;
+      }
+      if (imageMode === "link" && !imageLinkUrl.trim()) {
+        setError("Please enter an image URL");
+        return;
+      }
     }
     if (postType === "poll") {
       if (!pollQuestion.trim()) {
@@ -276,16 +291,18 @@ export function CreatePostModal({
           break;
         }
 
-        case "image":
+        case "image": {
+          const imageUrls = imageMode === "link" ? [imageLinkUrl.trim()] : mediaUrls;
           postContent = {
-            urls: mediaUrls,
-            alt_texts: mediaUrls.map(() => ""),
+            urls: imageUrls,
+            alt_texts: imageUrls.map(() => ""),
             caption_html: content.html || undefined,
           } as ImagePostContent;
-          if (mediaUrls.length > 1) {
+          if (imageUrls.length > 1) {
             actualPostType = "gallery";
           }
           break;
+        }
 
         case "video":
           if (videoMode === "embed") {
@@ -710,15 +727,114 @@ export function CreatePostModal({
             </div>
           )}
 
-          {/* Image Upload */}
-          {postType === "image" && postId && (
-            <MediaUploader
-              postId={postId}
-              mediaType="image"
-              onUploadComplete={setMediaUrls}
-              maxFiles={10}
-              existingUrls={mediaUrls}
-            />
+          {/* Image Options */}
+          {postType === "image" && (
+            <div className="space-y-4">
+              {/* Mode Selector */}
+              <div className="flex rounded-xl bg-background/50 p-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageMode("upload");
+                    setImageLinkUrl("");
+                    setImageLinkError(null);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    imageMode === "upload"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconUpload size={16} />
+                  Upload File
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageMode("link");
+                    setMediaUrls([]);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    imageMode === "link"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconLink size={16} />
+                  Insert by Link
+                </button>
+              </div>
+
+              {/* File Upload */}
+              {imageMode === "upload" && postId && (
+                <MediaUploader
+                  postId={postId}
+                  mediaType="image"
+                  onUploadComplete={setMediaUrls}
+                  maxFiles={10}
+                  existingUrls={mediaUrls}
+                />
+              )}
+
+              {/* Link Input */}
+              {imageMode === "link" && (
+                <div className="space-y-3">
+                  <div>
+                    <input
+                      type="url"
+                      value={imageLinkUrl}
+                      onChange={(e) => {
+                        setImageLinkUrl(e.target.value);
+                        setImageLinkError(null);
+                        if (e.target.value.trim()) {
+                          try {
+                            const url = new URL(e.target.value);
+                            if (!url.protocol.startsWith("http")) {
+                              setImageLinkError("Please enter a valid HTTP or HTTPS URL");
+                            }
+                          } catch {
+                            setImageLinkError("Please enter a valid URL");
+                          }
+                        }
+                      }}
+                      placeholder="Paste image URL (e.g. https://example.com/image.jpg)"
+                      className={`w-full py-3 px-4 rounded-xl bg-background/50 border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
+                        imageLinkError
+                          ? "border-vocl-like focus:border-vocl-like"
+                          : imageLinkUrl && !imageLinkError
+                            ? "border-green-500 focus:border-green-500"
+                            : "border-white/10 focus:border-vocl-accent"
+                      }`}
+                    />
+                    {imageLinkError && (
+                      <p className="mt-2 text-xs text-vocl-like">{imageLinkError}</p>
+                    )}
+                    {imageLinkUrl && !imageLinkError && (
+                      <p className="mt-2 text-xs text-green-500 flex items-center gap-1">
+                        <IconCheck size={14} />
+                        Image URL ready
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Preview */}
+                  {imageLinkUrl && !imageLinkError && (
+                    <div className="rounded-xl overflow-hidden border border-white/10">
+                      <img
+                        src={imageLinkUrl}
+                        alt="Preview"
+                        className="w-full max-h-64 object-contain bg-black/20"
+                        onError={() => setImageLinkError("Could not load image from this URL")}
+                      />
+                    </div>
+                  )}
+
+                  <p className="text-xs text-foreground/40">
+                    Paste a direct link to an image. Supported formats: JPG, PNG, GIF, WebP
+                  </p>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Poll Editor */}

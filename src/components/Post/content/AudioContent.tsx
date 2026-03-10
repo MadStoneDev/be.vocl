@@ -126,6 +126,7 @@ export function AudioContent({
             width="100%"
             height="352"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"
             loading="lazy"
             className="border-0 rounded-xl"
           />
