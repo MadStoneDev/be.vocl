@@ -2,6 +2,9 @@
  * Shared helper: batch-fetch engagement stats & user interactions for a set of post IDs.
  * Used by posts.ts and recommendations.ts to avoid duplicating this logic.
  * NOT a server action - imported by server action files.
+ *
+ * Optimized: Uses per-post count queries (head: true) instead of fetching all rows.
+ * For 20 posts with 50 likes each, this transfers 20 counts instead of 1000 rows.
  */
 export async function batchFetchPostStats(
   supabase: any,
@@ -22,10 +25,19 @@ export async function batchFetchPostStats(
     };
   }
 
+  // Build all queries in parallel - use count queries for totals, row queries only for user interactions
   const queries: Promise<any>[] = [
-    supabase.from("likes").select("post_id").in("post_id", postIds),
-    supabase.from("comments").select("post_id").in("post_id", postIds),
-    supabase.from("posts").select("reblogged_from_id").in("reblogged_from_id", postIds).eq("status", "published"),
+    // Count queries: use individual count per post for accurate counts without fetching rows
+    ...postIds.map((id) =>
+      supabase.from("likes").select("*", { count: "exact", head: true }).eq("post_id", id)
+    ),
+    ...postIds.map((id) =>
+      supabase.from("comments").select("*", { count: "exact", head: true }).eq("post_id", id)
+    ),
+    ...postIds.map((id) =>
+      supabase.from("posts").select("*", { count: "exact", head: true }).eq("reblogged_from_id", id).eq("status", "published")
+    ),
+    // User interaction queries: only fetch the user's own interactions (small result sets)
     userId
       ? supabase.from("likes").select("post_id").eq("user_id", userId).in("post_id", postIds)
       : Promise.resolve({ data: [] }),
@@ -49,31 +61,44 @@ export async function batchFetchPostStats(
     );
   }
 
-  const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData, postTagsData, userBookmarksData] =
-    await Promise.all(queries);
+  const results = await Promise.all(queries);
 
+  // Parse count results (3 groups of postIds.length)
+  const n = postIds.length;
   const likeCountMap = new Map<string, number>();
   const commentCountMap = new Map<string, number>();
   const reblogCountMap = new Map<string, number>();
-  const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
 
-  for (const l of likeCounts.data || []) {
-    likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
+  for (let i = 0; i < n; i++) {
+    likeCountMap.set(postIds[i], results[i].count || 0);
+    commentCountMap.set(postIds[i], results[n + i].count || 0);
+    reblogCountMap.set(postIds[i], results[2 * n + i].count || 0);
   }
-  for (const c of commentCounts.data || []) {
-    commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-  }
-  for (const r of reblogCounts.data || []) {
-    reblogCountMap.set(r.reblogged_from_id, (reblogCountMap.get(r.reblogged_from_id) || 0) + 1);
-  }
-  if (postTagsData) {
-    for (const pt of postTagsData.data || []) {
+
+  // Parse user interaction results
+  const userLikesData = results[3 * n];
+  const userCommentsData = results[3 * n + 1];
+  const userReblogsData = results[3 * n + 2];
+
+  // Parse optional results
+  const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
+  let optIdx = 3 * n + 3;
+  if (options?.includeTags) {
+    const postTagsData = results[optIdx];
+    for (const pt of postTagsData?.data || []) {
       if (pt.tag) {
         const existing = tagsMap.get(pt.post_id) || [];
         existing.push({ id: pt.tag.id, name: pt.tag.name });
         tagsMap.set(pt.post_id, existing);
       }
     }
+    optIdx++;
+  }
+
+  let userBookmarkSet = new Set<string>();
+  if (options?.includeBookmarks && userId) {
+    const userBookmarksData = results[optIdx];
+    userBookmarkSet = new Set((userBookmarksData?.data || []).map((b: any) => b.post_id));
   }
 
   return {
@@ -83,7 +108,7 @@ export async function batchFetchPostStats(
     userLikeSet: new Set((userLikesData.data || []).map((l: any) => l.post_id)),
     userCommentSet: new Set((userCommentsData.data || []).map((c: any) => c.post_id)),
     userReblogSet: new Set((userReblogsData.data || []).map((r: any) => r.reblogged_from_id)),
-    userBookmarkSet: new Set((userBookmarksData?.data || []).map((b: any) => b.post_id)),
+    userBookmarkSet,
     tagsMap,
   };
 }

@@ -18,15 +18,9 @@ import {
 import { ReportModal } from "@/components/moderation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import type { VideoEmbedPlatform } from "@/types/database";
-import {
-  getProfileByUsername,
-  getProfileStats,
-  getProfileLinks,
-  getCurrentProfile,
-} from "@/actions/profile";
-import { getPostsByUser, getLikedPosts, getCommentedPosts } from "@/actions/posts";
-import { followUser, unfollowUser, isFollowing, blockUser, muteUser } from "@/actions/follows";
-import { canSendAskTo } from "@/actions/asks";
+import { getFullProfile } from "@/actions/profile";
+import { getLikedPosts, getCommentedPosts } from "@/actions/posts";
+import { followUser, unfollowUser, blockUser, muteUser } from "@/actions/follows";
 import { startConversation } from "@/actions/messages";
 import { toast } from "@/components/ui";
 
@@ -114,78 +108,37 @@ export default function ProfilePage() {
     setError(null);
 
     try {
-      // First, fetch profile and current user in parallel (we need profile.id for other calls)
-      const [profileResult, currentProfileResult] = await Promise.all([
-        getProfileByUsername(username),
-        getCurrentProfile(),
-      ]);
+      // Single server action that fetches everything in parallel
+      const result = await getFullProfile(username);
 
-      if (!profileResult.success || !profileResult.profile) {
-        setError("Profile not found");
+      if (!result.success || !result.profile) {
+        setError(result.error || "Profile not found");
         setIsLoading(false);
         return;
       }
 
-      const profileData = profileResult.profile;
       setProfile({
-        id: profileData.id,
-        username: profileData.username,
-        displayName: profileData.displayName,
-        avatarUrl: profileData.avatarUrl,
-        headerUrl: profileData.headerUrl,
-        bio: profileData.bio,
-        showLikes: profileData.showLikes,
-        showComments: profileData.showComments,
-        showFollowers: profileData.showFollowers,
-        showFollowing: profileData.showFollowing,
-        role: profileData.role,
+        id: result.profile.id,
+        username: result.profile.username,
+        displayName: result.profile.displayName,
+        avatarUrl: result.profile.avatarUrl,
+        headerUrl: result.profile.headerUrl,
+        bio: result.profile.bio,
+        showLikes: result.profile.showLikes,
+        showComments: result.profile.showComments,
+        showFollowers: result.profile.showFollowers,
+        showFollowing: result.profile.showFollowing,
+        role: result.profile.role,
       });
 
-      // Check if own profile
-      const currentProfile = currentProfileResult.success ? currentProfileResult.profile : null;
-      const isOwn = currentProfile?.id === profileData.id;
-      setIsOwnProfile(isOwn);
-      setCurrentUserId(currentProfile?.id);
-
-      // Now fetch everything else in parallel
-      const fetchPromises: Promise<any>[] = [
-        getProfileStats(profileData.id),
-        getProfileLinks(profileData.id),
-        getPostsByUser(profileData.id, { includePinned: true }),
-      ];
-
-      // Only fetch following/ask status if not own profile and logged in
-      if (!isOwn && currentProfile) {
-        fetchPromises.push(isFollowing(profileData.id));
-        fetchPromises.push(canSendAskTo(profileData.username));
-      }
-
-      const results = await Promise.all(fetchPromises);
-
-      // Stats
-      const statsResult = results[0];
-      if (statsResult.success && statsResult.stats) {
-        setStats(statsResult.stats);
-      }
-
-      // Links
-      const linksResult = results[1];
-      if (linksResult.success && linksResult.links) {
-        setLinks(linksResult.links);
-      }
-
-      // Posts
-      const postsResult = results[2];
-      if (postsResult.success) {
-        setPosts(postsResult.posts || []);
-        setPinnedPost(postsResult.pinnedPost || null);
-      }
-
-      // Following status (if applicable)
-      if (!isOwn && currentProfile) {
-        setFollowing(results[3] || false);
-        setAllowsAsks(results[4]?.canAsk || false);
-      }
+      setIsOwnProfile(result.isOwnProfile || false);
+      setCurrentUserId(result.currentUserId);
+      setStats(result.stats || { posts: 0, followers: 0, following: 0 });
+      setLinks(result.links || []);
+      setPosts(result.posts || []);
+      setPinnedPost(result.pinnedPost || null);
+      setFollowing(result.isFollowing || false);
+      setAllowsAsks(result.canAsk || false);
     } catch (err) {
       setError("Failed to load profile");
     } finally {
