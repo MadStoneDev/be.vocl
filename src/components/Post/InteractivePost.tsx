@@ -11,11 +11,13 @@ import type { VideoEmbedPlatform } from "@/types/database";
 import { useLike } from "@/hooks/useLike";
 import { useComments } from "@/hooks/useComments";
 import { useReblog } from "@/hooks/useReblog";
+import { useBookmark } from "@/hooks/useBookmark";
 import { ConfirmDialog, toast } from "@/components/ui";
 import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
 import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, unfollowUser } from "@/actions/follows";
+import { useAuth } from "@/hooks/useAuth";
 import type { PostTag } from "./Post";
 
 // Lazy load heavy dialog components for better initial bundle size
@@ -51,6 +53,7 @@ interface InteractivePostProps {
   imageUrl?: string;
   tags?: PostTag[];
   content?: any; // Raw post content for editing
+  initialBookmarked?: boolean;
   onDeleted?: () => void;
 }
 
@@ -70,8 +73,13 @@ export function InteractivePost({
   imageUrl,
   tags = [],
   content,
+  initialBookmarked = false,
   onDeleted,
 }: InteractivePostProps) {
+  // User content settings
+  const { profile } = useAuth();
+  const autoRevealSensitive = profile?.showSensitivePosts === true && profile?.blurSensitiveByDefault === false;
+
   // Menu and dialog state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -124,6 +132,15 @@ export function InteractivePost({
     postId: id,
     initialCount: initialStats.comments,
     initialHasCommented: initialInteractions.hasCommented,
+  });
+
+  // Use bookmark hook
+  const {
+    isBookmarked,
+    handleBookmark,
+  } = useBookmark({
+    postId: id,
+    initialBookmarked,
   });
 
   // Use reblog hook
@@ -398,6 +415,7 @@ export function InteractivePost({
         stats={stats}
         interactions={interactions}
         isSensitive={currentIsSensitive}
+        autoRevealSensitive={autoRevealSensitive}
         tags={currentTags}
         comments={comments}
         likedBy={likedBy}
@@ -428,6 +446,8 @@ export function InteractivePost({
         onUnfollow={handleUnfollow}
         onFlagPost={handleFlagPost}
         onReportUser={handleReportUser}
+        isBookmarked={isBookmarked}
+        onBookmark={handleBookmark}
       />
 
       {/* Delete Confirmation */}

@@ -69,6 +69,7 @@ export interface PostProps {
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean; // NSFW content flag
+  autoRevealSensitive?: boolean; // When true, sensitive content is shown without overlay (user preference)
   tags?: PostTag[]; // Tags associated with this post
   comments?: CommentData[];
   likedBy?: UserData[];
@@ -109,7 +110,7 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
   return (
     <div
       className="flex items-center justify-between p-2 border-b border-vocl-surface-dark/20 z-50"
-      style={{ backgroundColor: "#EBEBEB", borderRadius: "30px 0 0 0" }}
+      style={{ backgroundColor: "var(--vocl-surface-muted)", borderRadius: "30px 0 0 0" }}
     >
       <div className="flex items-center gap-3">
         <Link
@@ -172,7 +173,7 @@ function PostActionBar({
   return (
     <div
       className={`absolute right-0 bottom-0 left-0 flex items-center justify-between gap-6 sm:gap-8 pt-2.5 pr-20 pb-3 sm:pb-4 pl-3 sm:pl-5`}
-      style={{ backgroundColor: "rgba(19, 19, 19, 0.9)", borderRadius: "0 0 40px 0" }}
+      style={{ backgroundColor: "color-mix(in srgb, var(--vocl-action-bar) 90%, transparent)", borderRadius: "0 0 40px 0" }}
     >
       {/* Comment button - icon AND count open panel */}
       <button
@@ -543,6 +544,7 @@ export const Post = memo(function Post({
   stats,
   interactions,
   isSensitive = false,
+  autoRevealSensitive = false,
   tags = [],
   comments = [],
   likedBy = [],
@@ -557,7 +559,7 @@ export const Post = memo(function Post({
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
-  const [isContentRevealed, setIsContentRevealed] = useState(false);
+  const [isContentRevealed, setIsContentRevealed] = useState(autoRevealSensitive);
   const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
   const [lastPanel, setLastPanel] = useState<ExpandedPanel>(null);
 
@@ -633,7 +635,7 @@ export const Post = memo(function Post({
   }, []);
 
   return (
-    <div className="w-full max-w-full sm:max-w-xl">
+    <div className="w-full max-w-full md:max-w-xl">
       <article
         className="relative shadow-xl overflow-hidden"
         data-post-id={id}
@@ -703,7 +705,7 @@ export const Post = memo(function Post({
         />
 
         {/* Fake Border */}
-        <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border sm:border-6 border-[#EBEBEB] z-40`} style={{
+        <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-vocl-surface-muted z-40`} style={{
           borderRadius: articleBorderRadius,
         }}></div>
       </article>

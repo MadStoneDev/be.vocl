@@ -152,9 +152,9 @@ export function EditPostModal({
   const title = isTextPost ? "Edit Post" : "Edit Caption & Tags";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70">
       <div
-        className="relative w-full max-w-lg bg-vocl-surface rounded-2xl shadow-xl overflow-hidden"
+        className="relative w-full h-full md:h-auto max-w-none md:max-w-lg bg-vocl-surface rounded-none md:rounded-2xl shadow-xl overflow-hidden flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-modal-title"
@@ -175,7 +175,7 @@ export function EditPostModal({
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 space-y-4 flex-1 overflow-y-auto md:max-h-[70vh]">
           {/* Error message */}
           {error && (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
