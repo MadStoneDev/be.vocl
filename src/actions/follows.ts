@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "./shared/auth";
 
 interface FollowResult {
   success: boolean;
@@ -13,11 +13,7 @@ interface FollowResult {
  */
 export async function followUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -38,12 +34,11 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Already following" };
     }
 
-    // Check if blocked
+    // Check if blocked (either direction)
     const { data: blocked } = await (supabase as any)
       .from("blocks")
       .select("blocker_id")
-      .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`)
-      .or(`blocker_id.eq.${targetUserId},blocked_id.eq.${targetUserId}`)
+      .or(`and(blocker_id.eq.${user.id},blocked_id.eq.${targetUserId}),and(blocker_id.eq.${targetUserId},blocked_id.eq.${user.id})`)
       .limit(1);
 
     if (blocked && blocked.length > 0) {
@@ -83,11 +78,7 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
  */
 export async function unfollowUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -116,11 +107,7 @@ export async function unfollowUser(targetUserId: string): Promise<FollowResult> 
  */
 export async function isFollowing(targetUserId: string): Promise<boolean> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) return false;
 
     const { data } = await (supabase as any)
@@ -144,11 +131,7 @@ export async function batchIsFollowing(targetUserIds: string[]): Promise<Set<str
   try {
     if (targetUserIds.length === 0) return new Set();
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) return new Set();
 
     const { data } = await (supabase as any)
@@ -172,7 +155,7 @@ export async function getFollowers(
   offset = 0
 ): Promise<{ success: boolean; followers?: any[]; total?: number; error?: string }> {
   try {
-    const supabase = await createClient();
+    const { supabase } = await requireAuth();
 
     const { data, error, count } = await (supabase as any)
       .from("follows")
@@ -218,7 +201,7 @@ export async function getFollowing(
   offset = 0
 ): Promise<{ success: boolean; following?: any[]; total?: number; error?: string }> {
   try {
-    const supabase = await createClient();
+    const { supabase } = await requireAuth();
 
     const { data, error, count } = await (supabase as any)
       .from("follows")
@@ -260,21 +243,16 @@ export async function getFollowing(
  */
 export async function blockUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Remove any existing follow relationships
+    // Remove any existing follow relationships (both directions)
     await (supabase as any)
       .from("follows")
       .delete()
-      .or(`follower_id.eq.${user.id},following_id.eq.${user.id}`)
-      .or(`follower_id.eq.${targetUserId},following_id.eq.${targetUserId}`);
+      .or(`and(follower_id.eq.${user.id},following_id.eq.${targetUserId}),and(follower_id.eq.${targetUserId},following_id.eq.${user.id})`);
 
     // Create block
     const { error } = await (supabase as any).from("blocks").insert({
@@ -299,11 +277,7 @@ export async function blockUser(targetUserId: string): Promise<FollowResult> {
  */
 export async function unblockUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -336,11 +310,7 @@ export async function getFollowStatusBatch(
       return { success: true, followingIds: [] };
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: true, followingIds: [] };
     }
@@ -371,11 +341,7 @@ export async function getFollowStatusBatch(
  */
 export async function muteUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -401,11 +367,7 @@ export async function muteUser(targetUserId: string): Promise<FollowResult> {
  */
 export async function unmuteUser(targetUserId: string): Promise<FollowResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }

@@ -486,6 +486,7 @@ interface PostWithDetails {
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
+  hasBookmarked?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -966,8 +967,8 @@ export async function getFeedPosts(options?: {
 
     const postIds = posts.map((p: any) => p.id);
 
-    // Batch fetch all stats, interactions, and tags in parallel
-    const stats = await batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true });
+    // Batch fetch all stats, interactions, tags, and bookmarks in parallel
+    const stats = await batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true, includeBookmarks: true });
 
     const formattedPosts: PostWithDetails[] = posts.map((post: any) => ({
       id: post.id,
@@ -990,6 +991,7 @@ export async function getFeedPosts(options?: {
       hasLiked: stats.userLikeSet.has(post.id),
       hasCommented: stats.userCommentSet.has(post.id),
       hasReblogged: stats.userReblogSet.has(post.id),
+      hasBookmarked: stats.userBookmarkSet.has(post.id),
       tags: stats.tagsMap.get(post.id) || [],
     }));
 

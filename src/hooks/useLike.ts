@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useTransition } from "react";
 import { toggleLike, getLikesByPost } from "@/actions/likes";
+import { toast } from "@/components/ui";
 
 interface UserData {
   id: string;
@@ -51,7 +52,7 @@ export function useLike({
         // Revert optimistic update on failure
         setIsLiked(wasLiked);
         setLikeCount((prev) => (wasLiked ? prev + 1 : prev - 1));
-        console.error("Like failed:", result.error);
+        toast.error("Failed to like post");
       } else {
         // Sync with server response
         if (result.liked !== undefined) {

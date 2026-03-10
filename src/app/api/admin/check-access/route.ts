@@ -21,12 +21,7 @@ export async function GET() {
     // Require at least moderator role (5) for admin access
     const authorized = profile?.role >= 5;
 
-    return NextResponse.json({
-      authorized,
-      role: profile?.role || 0,
-      isAdmin: profile?.role >= 10,
-      isModerator: profile?.role >= 5,
-    });
+    return NextResponse.json({ authorized });
   } catch (error) {
     console.error("Admin access check error:", error);
     return NextResponse.json({ authorized: false });

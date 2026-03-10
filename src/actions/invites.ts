@@ -420,6 +420,28 @@ export async function getCodeUses(codeId: string): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
+    // Verify ownership or staff access
+    const { data: code } = await (supabase as any)
+      .from("invite_codes")
+      .select("creator_id")
+      .eq("id", codeId)
+      .single();
+
+    if (!code) {
+      return { success: false, error: "Code not found" };
+    }
+
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const isStaff = profile?.role >= 5;
+    if (code.creator_id !== user.id && !isStaff) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const { data: uses, error } = await (supabase as any)
       .from("invite_code_uses")
       .select(`

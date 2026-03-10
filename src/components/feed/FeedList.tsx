@@ -57,6 +57,7 @@ interface FeedPost {
   interactions: PostInteractions;
   isSensitive?: boolean;
   isOwn?: boolean;
+  isBookmarked?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -107,6 +108,7 @@ export function FeedList({
           imageUrl={post.content.imageUrl}
           tags={post.tags}
           content={post.rawContent}
+          initialBookmarked={post.isBookmarked}
         >
           {/* Image content */}
           {post.contentType === "image" && post.content.imageUrl && (
@@ -118,7 +120,7 @@ export function FeedList({
             <>
               <TextContent html={post.content.html}>{post.content.text}</TextContent>
               {post.content.linkPreviews && post.content.linkPreviews.length > 0 && (
-                <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <div className="bg-vocl-surface-muted -mt-16 pb-16">
                   <LinkPreviewCarousel previews={post.content.linkPreviews} />
                 </div>
               )}

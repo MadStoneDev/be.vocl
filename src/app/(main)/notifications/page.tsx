@@ -8,6 +8,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { NotificationList, type Notification } from "@/components/notifications";
+import { ConfirmDialog, toast } from "@/components/ui";
 import {
   getNotifications,
   markAsRead,
@@ -20,6 +21,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isClearing, setIsClearing] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
@@ -28,6 +30,8 @@ export default function NotificationsPage() {
       if (result.success) {
         setNotifications(result.notifications || []);
         setUnreadCount(result.unreadCount || 0);
+      } else {
+        toast.error("Failed to load notifications");
       }
     } finally {
       setIsLoading(false);
@@ -62,8 +66,11 @@ export default function NotificationsPage() {
     if (result.success) {
       setNotifications([]);
       setUnreadCount(0);
+    } else {
+      toast.error("Failed to clear notifications");
     }
     setIsClearing(false);
+    setShowClearConfirm(false);
   };
 
   return (
@@ -97,7 +104,7 @@ export default function NotificationsPage() {
               </button>
             )}
             <button
-              onClick={handleClearAll}
+              onClick={() => setShowClearConfirm(true)}
               disabled={isClearing}
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-vocl-like/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
             >
@@ -135,6 +142,19 @@ export default function NotificationsPage() {
           onMarkAsRead={handleMarkAsRead}
         />
       )}
+
+      {/* Clear All Confirmation */}
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={handleClearAll}
+        title="Clear All Notifications"
+        message="Are you sure you want to clear all notifications? This action cannot be undone."
+        confirmText="Clear all"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isClearing}
+      />
     </div>
   );
 }

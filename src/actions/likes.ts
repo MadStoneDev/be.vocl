@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "./shared/auth";
 
 interface LikeResult {
   success: boolean;
@@ -28,11 +28,7 @@ interface LikesData {
  */
 export async function toggleLike(postId: string): Promise<LikeResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -114,10 +110,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
  */
 export async function getLikesByPost(postId: string): Promise<LikesData> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, supabase } = await requireAuth();
 
     // Get likes with user profiles
     const { data: likesData, error: likesError } = await (supabase as any)
@@ -178,11 +171,7 @@ export async function hasUserLiked(postId: string): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: true, hasLiked: false };
     }

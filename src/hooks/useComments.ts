@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useTransition } from "react";
 import { createComment, deleteComment, getCommentsByPost } from "@/actions/comments";
+import { toast } from "@/components/ui";
 
 interface CommentData {
   id: string;
@@ -56,7 +57,7 @@ export function useComments({
             setHasCommented(true);
             resolve(true);
           } else {
-            console.error("Add comment failed:", result.error);
+            toast.error("Failed to add comment");
             resolve(false);
           }
         });
@@ -81,7 +82,7 @@ export function useComments({
             // Revert optimistic update
             setComments(originalComments);
             setCount(originalCount);
-            console.error("Delete comment failed:", result.error);
+            toast.error("Failed to delete comment");
             resolve(false);
           } else {
             // Check if user still has comments

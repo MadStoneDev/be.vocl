@@ -6,18 +6,18 @@ import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { getFeedPosts } from "@/actions/posts";
 import { getPersonalizedFeed } from "@/actions/recommendations";
-import type { VideoEmbedPlatform } from "@/types/database";
+import type { VideoEmbedPlatform, PostType } from "@/types/database";
 
 interface PostWithDetails {
   id: string;
   authorId: string;
   author: {
     username: string;
-    displayName?: string | null;
+    displayName: string | null;
     avatarUrl: string | null;
     role: number;
   };
-  postType: string;
+  postType: PostType;
   content: any;
   isSensitive: boolean;
   isPinned: boolean;
@@ -29,6 +29,7 @@ interface PostWithDetails {
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
+  hasBookmarked?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -119,6 +120,7 @@ function transformPost(post: PostWithDetails) {
     },
     isSensitive: post.isSensitive,
     isOwn: post.isOwn,
+    isBookmarked: post.hasBookmarked || false,
     tags: post.tags,
   };
 }
@@ -187,7 +189,7 @@ export default function FeedClient({
   const feedListPosts = useMemo(() => {
     if (!data?.pages) return [];
     return data.pages.flatMap((page) =>
-      page.posts.map((post: PostWithDetails) => transformPost(post))
+      page.posts.map((post) => transformPost(post as PostWithDetails))
     );
   }, [data]);
 

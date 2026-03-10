@@ -59,11 +59,11 @@ export function ConfirmDialog({
 
   const variantStyles = {
     danger: {
-      icon: "text-vocl-like bg-red-100",
+      icon: "text-vocl-like bg-vocl-like/10",
       button: "bg-vocl-like hover:bg-red-600",
     },
     warning: {
-      icon: "text-yellow-600 bg-yellow-100",
+      icon: "text-yellow-500 bg-yellow-500/10",
       button: "bg-yellow-500 hover:bg-yellow-600",
     },
     default: {
@@ -86,7 +86,7 @@ export function ConfirmDialog({
       {/* Dialog */}
       <div
         ref={dialogRef}
-        className="relative z-10 w-full max-w-sm mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface rounded-2xl shadow-2xl overflow-hidden"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
@@ -97,7 +97,7 @@ export function ConfirmDialog({
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="absolute top-3 right-3 p-1.5 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 p-1.5 rounded-full text-foreground/40 hover:text-foreground/60 hover:bg-white/10 transition-colors disabled:opacity-50"
           aria-label="Close"
         >
           <IconX size={18} />
@@ -113,7 +113,7 @@ export function ConfirmDialog({
           {/* Title */}
           <h2
             id="dialog-title"
-            className="text-lg font-semibold text-neutral-900 text-center mb-2"
+            className="text-lg font-semibold text-foreground text-center mb-2"
           >
             {title}
           </h2>
@@ -121,7 +121,7 @@ export function ConfirmDialog({
           {/* Message */}
           <p
             id="dialog-description"
-            className="text-sm text-neutral-600 text-center mb-6"
+            className="text-sm text-foreground/60 text-center mb-6"
           >
             {message}
           </p>
@@ -131,7 +131,7 @@ export function ConfirmDialog({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-neutral-200 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-white/10 text-foreground/80 font-medium hover:bg-white/10 transition-colors disabled:opacity-50"
             >
               {cancelText}
             </button>

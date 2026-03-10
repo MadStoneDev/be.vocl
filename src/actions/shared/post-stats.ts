@@ -7,7 +7,7 @@ export async function batchFetchPostStats(
   supabase: any,
   postIds: string[],
   userId?: string,
-  options?: { includeTags?: boolean }
+  options?: { includeTags?: boolean; includeBookmarks?: boolean }
 ) {
   if (postIds.length === 0) {
     return {
@@ -17,6 +17,7 @@ export async function batchFetchPostStats(
       userLikeSet: new Set<string>(),
       userCommentSet: new Set<string>(),
       userReblogSet: new Set<string>(),
+      userBookmarkSet: new Set<string>(),
       tagsMap: new Map<string, Array<{ id: string; name: string }>>(),
     };
   }
@@ -42,7 +43,13 @@ export async function batchFetchPostStats(
     );
   }
 
-  const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData, postTagsData] =
+  if (options?.includeBookmarks && userId) {
+    queries.push(
+      supabase.from("bookmarks").select("post_id").eq("user_id", userId).in("post_id", postIds)
+    );
+  }
+
+  const [likeCounts, commentCounts, reblogCounts, userLikesData, userCommentsData, userReblogsData, postTagsData, userBookmarksData] =
     await Promise.all(queries);
 
   const likeCountMap = new Map<string, number>();
@@ -76,6 +83,7 @@ export async function batchFetchPostStats(
     userLikeSet: new Set((userLikesData.data || []).map((l: any) => l.post_id)),
     userCommentSet: new Set((userCommentsData.data || []).map((c: any) => c.post_id)),
     userReblogSet: new Set((userReblogsData.data || []).map((r: any) => r.reblogged_from_id)),
+    userBookmarkSet: new Set((userBookmarksData?.data || []).map((b: any) => b.post_id)),
     tagsMap,
   };
 }

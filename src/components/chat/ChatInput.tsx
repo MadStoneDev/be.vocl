@@ -9,6 +9,7 @@ import {
   IconX,
   IconLoader2,
 } from "@tabler/icons-react";
+import { toast } from "@/components/ui";
 import Image from "next/image";
 import { GifPicker } from "./GifPicker";
 import { EmojiPicker } from "./EmojiPicker";
@@ -132,6 +133,8 @@ export function ChatInput({
       await onSend(message.trim(), mediaFile || undefined);
       setMessage("");
       handleClearMedia();
+    } catch {
+      toast.error("Failed to send message");
     } finally {
       setIsSending(false);
     }

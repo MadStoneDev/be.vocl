@@ -24,7 +24,15 @@
       "Bash(npx supabase db execute:*)",
       "Bash(node -e:*)",
       "Bash(echo:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:www.tumblr.com)",
+      "Bash(npx next build)",
+      "Bash(git config:*)",
+      "Bash(mkdir -p ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null)",
+      "Bash(ssh-keygen -t ed25519 -C \"richard@haddads.net.au\" -f ~/.ssh/id_ed25519 -N \"\")",
+      "Bash(find /mnt/d/\"Development Sandbox\"/be.vocl/src/actions -name \"*.ts\" -type f | xargs basename -a | sort)"
     ]
   }
 }

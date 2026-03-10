@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "./shared/auth";
 import { processMentions } from "@/actions/mentions";
 import { sanitizeHtml } from "@/lib/sanitize";
 
@@ -39,11 +39,7 @@ export async function createComment(
   content: string
 ): Promise<CommentResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -114,11 +110,7 @@ export async function createComment(
  */
 export async function deleteComment(commentId: string): Promise<CommentResult> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { user, supabase } = await requireAuth();
     if (!user) {
       return { success: false, error: "Unauthorized" };
     }
@@ -169,10 +161,7 @@ export async function deleteComment(commentId: string): Promise<CommentResult> {
  */
 export async function getCommentsByPost(postId: string): Promise<CommentsData> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, supabase } = await requireAuth();
 
     // Get comments with user profiles
     const { data: commentsData, error: commentsError } = await (supabase as any)
@@ -238,7 +227,7 @@ export async function getCommentCount(postId: string): Promise<{
   error?: string;
 }> {
   try {
-    const supabase = await createClient();
+    const { supabase } = await requireAuth();
 
     const { count, error } = await (supabase as any)
       .from("comments")
