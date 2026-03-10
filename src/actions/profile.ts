@@ -284,6 +284,12 @@ export async function getProfileLinks(
   try {
     const supabase = await createClient();
 
+    // Verify user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     const { data, error } = await (supabase as any)
       .from("profile_links")
       .select("*")

@@ -34,14 +34,13 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Already following" };
     }
 
-    // Check if blocked (either direction)
-    const { data: blocked } = await (supabase as any)
-      .from("blocks")
-      .select("blocker_id")
-      .or(`and(blocker_id.eq.${user.id},blocked_id.eq.${targetUserId}),and(blocker_id.eq.${targetUserId},blocked_id.eq.${user.id})`)
-      .limit(1);
+    // Check if blocked (either direction) - use two separate queries to avoid template literal injection
+    const [{ data: blockedByMe }, { data: blockedByThem }] = await Promise.all([
+      (supabase as any).from("blocks").select("id").eq("blocker_id", user.id).eq("blocked_id", targetUserId).limit(1),
+      (supabase as any).from("blocks").select("id").eq("blocker_id", targetUserId).eq("blocked_id", user.id).limit(1),
+    ]);
 
-    if (blocked && blocked.length > 0) {
+    if ((blockedByMe && blockedByMe.length > 0) || (blockedByThem && blockedByThem.length > 0)) {
       return { success: false, error: "Unable to follow this user" };
     }
 
@@ -248,11 +247,11 @@ export async function blockUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Remove any existing follow relationships (both directions)
-    await (supabase as any)
-      .from("follows")
-      .delete()
-      .or(`and(follower_id.eq.${user.id},following_id.eq.${targetUserId}),and(follower_id.eq.${targetUserId},following_id.eq.${user.id})`);
+    // Remove any existing follow relationships (both directions) - separate queries to avoid injection
+    await Promise.all([
+      (supabase as any).from("follows").delete().eq("follower_id", user.id).eq("following_id", targetUserId),
+      (supabase as any).from("follows").delete().eq("follower_id", targetUserId).eq("following_id", user.id),
+    ]);
 
     // Create block
     const { error } = await (supabase as any).from("blocks").insert({

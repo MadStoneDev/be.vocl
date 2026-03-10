@@ -835,7 +835,7 @@ export async function getCommentedPosts(
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit((offset + limit) * 3); // Fetch enough to handle deduplication, not entire history
+      .limit((offset + limit) * 2); // Fetch 2x to handle deduplication after filtering deleted
 
     if (error) {
       console.error("Get commented posts error:", error);

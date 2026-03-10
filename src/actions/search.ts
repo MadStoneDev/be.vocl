@@ -132,38 +132,34 @@ export async function searchUsers(
       bio: string | null;
     };
 
-    // Get follower counts and following status
-    const users = await Promise.all(
-      ((profiles || []) as ProfileResult[]).map(async (profile) => {
-        // Get follower count
-        const { count: followerCount } = await supabase
-          .from("follows")
-          .select("*", { count: "exact", head: true })
-          .eq("following_id", profile.id);
+    // Batch fetch follower counts and following status (avoids N+1)
+    const profileIds = ((profiles || []) as ProfileResult[]).map((p) => p.id);
 
-        // Check if current user is following
-        let isFollowing = false;
-        if (user && user.id !== profile.id) {
-          const { data: followData } = await supabase
-            .from("follows")
-            .select("id")
-            .eq("follower_id", user.id)
-            .eq("following_id", profile.id)
-            .single();
-          isFollowing = !!followData;
-        }
+    const [followerData, followingSet] = await Promise.all([
+      supabase.from("follows").select("following_id").in("following_id", profileIds),
+      user
+        ? supabase.from("follows").select("following_id").eq("follower_id", user.id).in("following_id", profileIds)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-        return {
-          id: profile.id,
-          username: profile.username,
-          displayName: profile.display_name,
-          avatarUrl: profile.avatar_url,
-          bio: profile.bio,
-          followerCount: followerCount || 0,
-          isFollowing,
-        };
-      })
-    );
+    // Build follower count map
+    const followerCountMap = new Map<string, number>();
+    for (const f of (followerData.data || []) as any[]) {
+      followerCountMap.set(f.following_id, (followerCountMap.get(f.following_id) || 0) + 1);
+    }
+
+    // Build following set
+    const followingIds = new Set(((followingSet as any).data || []).map((f: any) => f.following_id));
+
+    const users = ((profiles || []) as ProfileResult[]).map((profile) => ({
+      id: profile.id,
+      username: profile.username,
+      displayName: profile.display_name,
+      avatarUrl: profile.avatar_url,
+      bio: profile.bio,
+      followerCount: followerCountMap.get(profile.id) || 0,
+      isFollowing: followingIds.has(profile.id),
+    }));
 
     return { success: true, users, total: count || 0 };
   } catch (error) {
@@ -376,40 +372,41 @@ async function formatPosts(supabase: any, posts: any[]): Promise<SearchResult["p
     }
   });
 
-  return Promise.all(
-    posts.map(async (post) => {
-      // Get like count
-      const { count: likeCount } = await supabase
-        .from("likes")
-        .select("*", { count: "exact", head: true })
-        .eq("post_id", post.id);
+  // Batch fetch like and comment counts (avoids N+1)
+  const [likeData, commentData] = await Promise.all([
+    supabase.from("likes").select("post_id").in("post_id", postIds),
+    supabase.from("comments").select("post_id").in("post_id", postIds),
+  ]);
 
-      // Get comment count
-      const { count: commentCount } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("post_id", post.id);
+  const likeCountMap = new Map<string, number>();
+  for (const l of (likeData.data || []) as any[]) {
+    likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
+  }
 
-      const profile = post.profiles;
+  const commentCountMap = new Map<string, number>();
+  for (const c of (commentData.data || []) as any[]) {
+    commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
+  }
 
-      return {
-        id: post.id,
-        authorId: post.author_id,
-        author: {
-          username: profile?.username || "unknown",
-          displayName: profile?.display_name,
-          avatarUrl: profile?.avatar_url,
-        },
-        postType: post.post_type,
-        content: post.content,
-        isSensitive: post.is_sensitive,
-        createdAt: post.created_at,
-        likeCount: likeCount || 0,
-        commentCount: commentCount || 0,
-        tags: tagsMap.get(post.id) || [],
-      };
-    })
-  );
+  return posts.map((post) => {
+    const profile = post.profiles;
+    return {
+      id: post.id,
+      authorId: post.author_id,
+      author: {
+        username: profile?.username || "unknown",
+        displayName: profile?.display_name,
+        avatarUrl: profile?.avatar_url,
+      },
+      postType: post.post_type,
+      content: post.content,
+      isSensitive: post.is_sensitive,
+      createdAt: post.created_at,
+      likeCount: likeCountMap.get(post.id) || 0,
+      commentCount: commentCountMap.get(post.id) || 0,
+      tags: tagsMap.get(post.id) || [],
+    };
+  });
 }
 
 export async function getPostsByTag(
@@ -533,36 +530,32 @@ export async function getSuggestedUsers(
       bio: string | null;
     };
 
-    // Get follower counts and filter out already followed users
-    const usersWithCounts = await Promise.all(
-      ((profiles || []) as ProfileResult[]).map(async (profile) => {
-        const { count: followerCount } = await supabase
-          .from("follows")
-          .select("*", { count: "exact", head: true })
-          .eq("following_id", profile.id);
+    // Batch fetch follower counts and following status (avoids N+1)
+    const profileIds = ((profiles || []) as ProfileResult[]).map((p) => p.id);
 
-        let isFollowing = false;
-        if (user) {
-          const { data: followData } = await supabase
-            .from("follows")
-            .select("id")
-            .eq("follower_id", user.id)
-            .eq("following_id", profile.id)
-            .single();
-          isFollowing = !!followData;
-        }
+    const [followerData, followingData] = await Promise.all([
+      supabase.from("follows").select("following_id").in("following_id", profileIds),
+      user
+        ? supabase.from("follows").select("following_id").eq("follower_id", user.id).in("following_id", profileIds)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-        return {
-          id: profile.id,
-          username: profile.username,
-          displayName: profile.display_name,
-          avatarUrl: profile.avatar_url,
-          bio: profile.bio,
-          followerCount: followerCount || 0,
-          isFollowing,
-        };
-      })
-    );
+    const followerCountMap = new Map<string, number>();
+    for (const f of (followerData.data || []) as any[]) {
+      followerCountMap.set(f.following_id, (followerCountMap.get(f.following_id) || 0) + 1);
+    }
+
+    const followingIds = new Set(((followingData as any).data || []).map((f: any) => f.following_id));
+
+    const usersWithCounts = ((profiles || []) as ProfileResult[]).map((profile) => ({
+      id: profile.id,
+      username: profile.username,
+      displayName: profile.display_name,
+      avatarUrl: profile.avatar_url,
+      bio: profile.bio,
+      followerCount: followerCountMap.get(profile.id) || 0,
+      isFollowing: followingIds.has(profile.id),
+    }));
 
     // Sort by follower count and filter out already followed
     const suggested = usersWithCounts

@@ -66,7 +66,7 @@ export async function getNotifications(
           avatar_url
         ),
         post:post_id (
-          content
+          post_type
         ),
         comment:comment_id (
           content_html
@@ -91,16 +91,6 @@ export async function getNotifications(
 
     // Transform notifications
     const notifications: Notification[] = (data || []).map((n: any) => {
-      // Extract post preview text
-      let postPreview: string | undefined;
-      if (n.post?.content) {
-        if (typeof n.post.content === "string") {
-          postPreview = n.post.content.slice(0, 100);
-        } else if (n.post.content.text) {
-          postPreview = n.post.content.text.slice(0, 100);
-        }
-      }
-
       // Extract comment content
       let content: string | undefined;
       if (n.comment?.content_html) {
@@ -117,7 +107,7 @@ export async function getNotifications(
           avatarUrl: n.actor?.avatar_url,
         },
         postId: n.post_id,
-        postPreview,
+        postPreview: undefined,
         commentId: n.comment_id,
         content,
         isRead: n.is_read,

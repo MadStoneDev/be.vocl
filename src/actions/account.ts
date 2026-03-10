@@ -124,8 +124,8 @@ export async function requestDataExport(): Promise<{
       return { success: false, error: "Failed to create export request" };
     }
 
-    // TODO: Trigger background job to compile data
-    // For now, we'll handle this via a cron job that processes pending requests
+    // Data export is processed by the /api/cron/data-export endpoint
+    // which runs every 15 minutes and picks up pending requests
 
     return { success: true, requestId: request.id };
   } catch (error) {
@@ -230,11 +230,11 @@ export async function deleteAccount(): Promise<{
       .delete()
       .eq("profile_id", user.id);
 
-    // Delete follows (both directions)
-    await (supabase as any)
-      .from("follows")
-      .delete()
-      .or(`follower_id.eq.${user.id},following_id.eq.${user.id}`);
+    // Delete follows (both directions) - separate queries to avoid injection
+    await Promise.all([
+      (supabase as any).from("follows").delete().eq("follower_id", user.id),
+      (supabase as any).from("follows").delete().eq("following_id", user.id),
+    ]);
 
     // Delete likes
     await (supabase as any)
