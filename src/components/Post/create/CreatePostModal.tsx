@@ -292,7 +292,31 @@ export function CreatePostModal({
         }
 
         case "image": {
-          const imageUrls = imageMode === "link" ? [imageLinkUrl.trim()] : mediaUrls;
+          let imageUrls: string[];
+
+          if (imageMode === "link") {
+            // Download external image and re-host on R2
+            const rehostRes = await fetch("/api/upload/from-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                url: imageLinkUrl.trim(),
+                postId,
+              }),
+            });
+
+            if (!rehostRes.ok) {
+              const data = await rehostRes.json();
+              setError(data.error || "Failed to download image");
+              return;
+            }
+
+            const { publicUrl } = await rehostRes.json();
+            imageUrls = [publicUrl];
+          } else {
+            imageUrls = mediaUrls;
+          }
+
           postContent = {
             urls: imageUrls,
             alt_texts: imageUrls.map(() => ""),
@@ -1221,9 +1245,15 @@ export function CreatePostModal({
           </div>
 
           {/* Sensitive Content Toggle */}
-          <label className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isSensitive}
+            onClick={() => setIsSensitive((v) => !v)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer w-full text-left"
+          >
             <div
-              className={`relative w-12 h-7 rounded-full transition-colors ${
+              className={`relative w-12 h-7 rounded-full transition-colors flex-shrink-0 ${
                 isSensitive ? "bg-vocl-like" : "bg-white/10"
               }`}
             >
@@ -1233,12 +1263,6 @@ export function CreatePostModal({
                 }`}
               />
             </div>
-            <input
-              type="checkbox"
-              checked={isSensitive}
-              onChange={(e) => setIsSensitive(e.target.checked)}
-              className="sr-only"
-            />
             <div className="flex-1">
               <div className="flex items-center gap-2 text-foreground">
                 <IconAlertTriangle size={18} />
@@ -1248,7 +1272,7 @@ export function CreatePostModal({
                 Mark this post as containing mature content
               </p>
             </div>
-          </label>
+          </button>
 
           {/* Error Message */}
           {error && (
