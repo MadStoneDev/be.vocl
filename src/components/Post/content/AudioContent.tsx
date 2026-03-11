@@ -122,11 +122,12 @@ export function AudioContent({
       <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6 pb-18.5">
         <div className="rounded-xl overflow-hidden">
           <iframe
-            src={`https://open.spotify.com/embed/track/${spotifyData.track_id}?utm_source=generator&theme=0`}
+            src={`https://open.spotify.com/embed?uri=${encodeURIComponent(`https://open.spotify.com/track/${spotifyData.track_id}`)}&view=coverart&theme=0`}
             width="100%"
             height="352"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
+            frameBorder="0"
+            allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            title={spotifyData.name}
             className="border-0 rounded-xl"
           />
         </div>
