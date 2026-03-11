@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import { ImageLightbox } from "./ImageLightbox";
+
+// Clamp aspect ratio between 4:5 (portrait) and 2:1 (landscape)
+const MIN_ASPECT = 4 / 5;
+const MAX_ASPECT = 2 / 1;
+const DEFAULT_ASPECT = 4 / 3;
 
 interface GalleryContentProps {
   images: string[];
@@ -16,11 +21,21 @@ export function GalleryContent({ images, caption, alt = "Gallery image" }: Galle
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
 
   const openLightbox = (index: number) => {
     setCurrentIndex(index);
     setLightboxOpen(true);
   };
+
+  const handleImageLoad = useCallback((index: number, e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      const natural = img.naturalWidth / img.naturalHeight;
+      const clamped = Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, natural));
+      setAspectRatios((prev) => ({ ...prev, [index]: clamped }));
+    }
+  }, []);
 
   const scrollBy = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;
@@ -32,9 +47,14 @@ export function GalleryContent({ images, caption, alt = "Gallery image" }: Galle
     });
   };
 
+  // For single images, use that image's ratio; for multi, use the current image's ratio or default
+  const containerAspect = images.length === 1
+    ? (aspectRatios[0] ?? DEFAULT_ASPECT)
+    : (aspectRatios[currentIndex] ?? DEFAULT_ASPECT);
+
   return (
     <>
-      <div className="bg-neutral-100 relative group">
+      <div className="bg-black/5 relative group">
         {/* Carousel Navigation Buttons */}
         {images.length > 1 && (
           <>
@@ -71,12 +91,16 @@ export function GalleryContent({ images, caption, alt = "Gallery image" }: Galle
               }}
               onClick={() => openLightbox(index)}
             >
-              <div className="relative aspect-[4/3] w-full">
+              <div
+                className="relative w-full overflow-hidden"
+                style={{ aspectRatio: `${aspectRatios[index] ?? DEFAULT_ASPECT}` }}
+              >
                 <Image
                   src={src}
                   alt={`${alt} ${index + 1}`}
                   fill
                   className="object-cover hover:brightness-95 transition-all"
+                  onLoad={(e) => handleImageLoad(index, e)}
                 />
               </div>
             </div>
