@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), interest-cohort=(), encrypted-media=(self \"https://open.spotify.com\"), autoplay=(self \"https://open.spotify.com\")",
+            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
           {
             key: "Content-Security-Policy",
