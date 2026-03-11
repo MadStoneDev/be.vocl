@@ -754,13 +754,27 @@ interface ImageContentProps {
   alt: string;
 }
 
+// Clamp aspect ratio between 4:5 (portrait) and 2:1 (landscape)
+const MIN_ASPECT = 4 / 5; // 0.8
+const MAX_ASPECT = 2 / 1; // 2.0
+
 export function ImageContent({ src, alt }: ImageContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      const natural = img.naturalWidth / img.naturalHeight;
+      setAspectRatio(Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, natural)));
+    }
+  };
 
   return (
     <>
       <div
-        className="relative aspect-square w-full cursor-pointer"
+        className="relative w-full cursor-pointer overflow-hidden bg-black/5"
+        style={aspectRatio ? { aspectRatio: `${aspectRatio}` } : { aspectRatio: "1" }}
         onClick={() => setLightboxOpen(true)}
       >
         <Image
@@ -768,6 +782,7 @@ export function ImageContent({ src, alt }: ImageContentProps) {
           alt={alt}
           fill
           className="object-cover hover:brightness-75 transition-all"
+          onLoad={handleImageLoad}
         />
       </div>
 
