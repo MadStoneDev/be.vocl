@@ -5,7 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { getFeedPosts } from "@/actions/posts";
-import { getPersonalizedFeed } from "@/actions/recommendations";
+import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations";
 import type { VideoEmbedPlatform, PostType } from "@/types/database";
 
 interface PostWithDetails {
@@ -152,7 +152,9 @@ export default function FeedClient({
       const result =
         activeTab === "engagement"
           ? await getPersonalizedFeed({ limit: POSTS_PER_PAGE, offset: pageParam })
-          : await getFeedPosts({ limit: POSTS_PER_PAGE, offset: pageParam, sortBy: activeTab });
+          : activeTab === "trending"
+            ? await getTrendingFeed({ limit: POSTS_PER_PAGE, offset: pageParam })
+            : await getFeedPosts({ limit: POSTS_PER_PAGE, offset: pageParam, sortBy: activeTab });
 
       if (!result.success) {
         throw new Error(result.error || "Failed to load posts");

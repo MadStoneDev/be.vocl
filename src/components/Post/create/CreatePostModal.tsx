@@ -21,6 +21,7 @@ import {
   IconCheck,
   IconBrandSpotify,
   IconSearch,
+  IconCamera,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
@@ -76,7 +77,7 @@ export function CreatePostModal({
   const [pollAllowMultiple, setPollAllowMultiple] = useState(false);
 
   // Image-specific state
-  const [imageMode, setImageMode] = useState<"upload" | "link">("upload");
+  const [imageMode, setImageMode] = useState<"upload" | "link" | "unsplash">("upload");
   const [imageLinkUrl, setImageLinkUrl] = useState("");
   const [imageLinkError, setImageLinkError] = useState<string | null>(null);
 
@@ -91,6 +92,12 @@ export function CreatePostModal({
   const [spotifyResults, setSpotifyResults] = useState<SpotifyTrack[]>([]);
   const [selectedTrack, setSelectedTrack] = useState<SpotifyTrack | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Unsplash-specific state
+  const [unsplashQuery, setUnsplashQuery] = useState("");
+  const [unsplashResults, setUnsplashResults] = useState<any[]>([]);
+  const [isSearchingUnsplash, setIsSearchingUnsplash] = useState(false);
+  const [selectedUnsplash, setSelectedUnsplash] = useState<any | null>(null);
 
   // Legal acknowledgment for file uploads
   const [hasAcknowledgedRights, setHasAcknowledgedRights] = useState(false);
@@ -137,6 +144,11 @@ export function CreatePostModal({
       setImageMode("upload");
       setImageLinkUrl("");
       setImageLinkError(null);
+      // Reset unsplash state
+      setUnsplashQuery("");
+      setUnsplashResults([]);
+      setIsSearchingUnsplash(false);
+      setSelectedUnsplash(null);
       // Reset video state
       setVideoMode("embed");
       setVideoEmbedUrl("");
@@ -183,6 +195,29 @@ export function CreatePostModal({
 
     return () => clearTimeout(timer);
   }, [spotifyQuery]);
+
+  // Debounced Unsplash search
+  useEffect(() => {
+    if (!unsplashQuery.trim() || unsplashQuery.length < 2) {
+      setUnsplashResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingUnsplash(true);
+      try {
+        const res = await fetch(`/api/unsplash/search?q=${encodeURIComponent(unsplashQuery)}`);
+        const data = await res.json();
+        setUnsplashResults(data.results || []);
+      } catch {
+        setUnsplashResults([]);
+      } finally {
+        setIsSearchingUnsplash(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [unsplashQuery]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -238,6 +273,10 @@ export function CreatePostModal({
       }
       if (imageMode === "link" && !imageLinkUrl.trim()) {
         setError("Please enter an image URL");
+        return;
+      }
+      if (imageMode === "unsplash" && !selectedUnsplash) {
+        setError("Please search and select a photo from Unsplash");
         return;
       }
     }
@@ -315,6 +354,9 @@ export function CreatePostModal({
 
             const { publicUrl } = await rehostRes.json();
             imageUrls = [publicUrl];
+          } else if (imageMode === "unsplash" && selectedUnsplash) {
+            // Unsplash: hotlink directly (required by Unsplash API guidelines)
+            imageUrls = [selectedUnsplash.urls.regular];
           } else {
             imageUrls = mediaUrls;
           }
@@ -324,6 +366,16 @@ export function CreatePostModal({
             alt_texts: imageUrls.map(() => ""),
             caption_html: content.html || undefined,
           } as ImagePostContent;
+
+          // Store Unsplash attribution data
+          if (imageMode === "unsplash" && selectedUnsplash) {
+            (postContent as any).unsplash_attribution = {
+              photographer: selectedUnsplash.user.name,
+              photographer_username: selectedUnsplash.user.username,
+              profile_url: `${selectedUnsplash.user.links.html}?utm_source=bevocl&utm_medium=referral`,
+              photo_id: selectedUnsplash.id,
+            };
+          }
           if (imageUrls.length > 1) {
             actualPostType = "gallery";
           }
@@ -418,6 +470,7 @@ export function CreatePostModal({
     if (mediaUrls.length > 0) return true;
     if (imageLinkUrl.trim()) return true;
     if (selectedTrack) return true;
+    if (selectedUnsplash) return true;
     if (tags.length > 0) return true;
     if (pollOptions.some(o => o.trim())) return true;
     return false;
@@ -815,6 +868,22 @@ export function CreatePostModal({
                   <IconLink size={16} />
                   Insert by Link
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageMode("unsplash");
+                    setMediaUrls([]);
+                    setImageLinkUrl("");
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    imageMode === "unsplash"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconCamera size={16} />
+                  Unsplash
+                </button>
               </div>
 
               {/* File Upload */}
@@ -884,6 +953,103 @@ export function CreatePostModal({
                   <p className="text-xs text-foreground/40">
                     Paste a direct link to an image. Supported formats: JPG, PNG, GIF, WebP
                   </p>
+                </div>
+              )}
+
+              {/* Unsplash Search */}
+              {imageMode === "unsplash" && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <IconSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40" />
+                    <input
+                      type="text"
+                      value={unsplashQuery}
+                      onChange={(e) => setUnsplashQuery(e.target.value)}
+                      placeholder="Search Unsplash photos..."
+                      className="w-full pl-10 pr-3 py-2.5 text-sm bg-background/50 rounded-xl border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                    />
+                  </div>
+
+                  {isSearchingUnsplash && (
+                    <div className="flex justify-center py-8">
+                      <IconLoader2 size={24} className="animate-spin text-vocl-accent" />
+                    </div>
+                  )}
+
+                  {/* Selected photo */}
+                  {selectedUnsplash && (
+                    <div className="relative rounded-xl overflow-hidden border border-vocl-accent/50">
+                      <img
+                        src={selectedUnsplash.urls.small}
+                        alt={selectedUnsplash.alt_description || ""}
+                        className="w-full max-h-64 object-cover"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-3 py-2 text-xs text-white">
+                        Photo by{" "}
+                        <a
+                          href={`${selectedUnsplash.user.links.html}?utm_source=bevocl&utm_medium=referral`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          {selectedUnsplash.user.name}
+                        </a>{" "}
+                        on{" "}
+                        <a
+                          href="https://unsplash.com/?utm_source=bevocl&utm_medium=referral"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          Unsplash
+                        </a>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUnsplash(null)}
+                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+                      >
+                        <IconX size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Results grid */}
+                  {!selectedUnsplash && unsplashResults.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
+                      {unsplashResults.map((photo: any) => (
+                        <button
+                          key={photo.id}
+                          type="button"
+                          onClick={async () => {
+                            setSelectedUnsplash(photo);
+                            // Trigger download tracking (Unsplash requirement)
+                            try {
+                              await fetch("/api/unsplash/download", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ downloadLocation: photo.links.download_location }),
+                              });
+                            } catch {}
+                          }}
+                          className="relative rounded-lg overflow-hidden hover:opacity-80 transition-opacity aspect-square"
+                        >
+                          <img
+                            src={photo.urls.thumb}
+                            alt={photo.alt_description || ""}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 text-[10px] text-white truncate">
+                            {photo.user.name}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {!isSearchingUnsplash && unsplashQuery.length >= 2 && unsplashResults.length === 0 && (
+                    <p className="text-center text-foreground/40 text-sm py-4">No photos found</p>
+                  )}
                 </div>
               )}
             </div>

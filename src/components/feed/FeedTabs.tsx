@@ -1,8 +1,8 @@
 "use client";
 
-import { IconClock, IconTrendingUp } from "@tabler/icons-react";
+import { IconClock, IconTrendingUp, IconFlame } from "@tabler/icons-react";
 
-export type FeedTab = "chronological" | "engagement";
+export type FeedTab = "chronological" | "engagement" | "trending";
 
 interface FeedTabsProps {
   activeTab: FeedTab;
@@ -22,6 +22,12 @@ export function FeedTabs({ activeTab, onTabChange }: FeedTabsProps) {
       label: "For You",
       icon: IconTrendingUp,
       description: "Posts you might like",
+    },
+    {
+      id: "trending" as const,
+      label: "Trending",
+      icon: IconFlame,
+      description: "What everyone is talking about",
     },
   ];
 
