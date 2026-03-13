@@ -310,6 +310,29 @@ export async function sendMessage(
       return { success: false, error: "Access denied" };
     }
 
+    // Check if either user has blocked the other
+    const { data: otherPart } = await (supabase as any)
+      .from("conversation_participants")
+      .select("profile_id")
+      .eq("conversation_id", conversationId)
+      .neq("profile_id", user.id)
+      .single();
+
+    if (otherPart) {
+      const { data: block } = await (supabase as any)
+        .from("blocks")
+        .select("blocker_id")
+        .or(
+          `and(blocker_id.eq.${user.id},blocked_id.eq.${otherPart.profile_id}),and(blocker_id.eq.${otherPart.profile_id},blocked_id.eq.${user.id})`
+        )
+        .limit(1)
+        .maybeSingle();
+
+      if (block) {
+        return { success: false, error: "Unable to send message" };
+      }
+    }
+
     // Create message
     const { data: message, error } = await (supabase as any)
       .from("messages")
@@ -378,6 +401,20 @@ export async function startConversation(
 
     if (user.id === participantId) {
       return { success: false, error: "Cannot start conversation with yourself" };
+    }
+
+    // Check if either user has blocked the other
+    const { data: block } = await (supabase as any)
+      .from("blocks")
+      .select("blocker_id")
+      .or(
+        `and(blocker_id.eq.${user.id},blocked_id.eq.${participantId}),and(blocker_id.eq.${participantId},blocked_id.eq.${user.id})`
+      )
+      .limit(1)
+      .maybeSingle();
+
+    if (block) {
+      return { success: false, error: "Unable to send message" };
     }
 
     // Check if conversation already exists using a single optimized query

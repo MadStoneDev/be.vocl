@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { VerificationBadge } from "@/components/payments";
 import { StaffBadge } from "@/components/ui/StaffBadge";
+import { MutualBadge } from "@/components/ui/MutualBadge";
 
 interface ProfileHeaderProps {
   username: string;
@@ -28,6 +29,7 @@ interface ProfileHeaderProps {
   isOwnProfile: boolean;
   isFollowing: boolean;
   isVerified?: boolean;
+  isMutual?: boolean;
   role?: number;
   allowsAsks?: boolean;
   onFollow?: () => Promise<void>;
@@ -52,6 +54,7 @@ export function ProfileHeader({
   isOwnProfile,
   isFollowing,
   isVerified,
+  isMutual: isMutualProp,
   role = 0,
   allowsAsks,
   onFollow,
@@ -140,7 +143,10 @@ export function ProfileHeader({
                 {isVerified && <VerificationBadge size={20} />}
                 <StaffBadge role={role} size={20} />
               </h1>
-              <p className="text-sm sm:text-base text-foreground/50">@{username}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm sm:text-base text-foreground/50">@{username}</p>
+                {isMutualProp && <MutualBadge />}
+              </div>
             </div>
           </div>
 

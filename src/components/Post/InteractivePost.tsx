@@ -18,6 +18,7 @@ import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
 import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, unfollowUser } from "@/actions/follows";
+import { mutePostNotifications, unmutePostNotifications } from "@/actions/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import type { PostTag } from "./Post";
 
@@ -109,6 +110,9 @@ export function InteractivePost({
   // Mute/unfollow state
   const [isMuted, setIsMuted] = useState(false);
   const [isUnfollowed, setIsUnfollowed] = useState(false);
+
+  // Notification mute state
+  const [isNotificationMuted, setIsNotificationMuted] = useState(false);
   // Use likes hook
   const {
     isLiked,
@@ -198,6 +202,23 @@ export function InteractivePost({
     hasLiked: isLiked,
     hasReblogged,
   }), [hasCommented, isLiked, hasReblogged]);
+
+  // Handle share
+  const handleShare = useCallback(async () => {
+    const url = `${window.location.origin}/post/${id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ url });
+      } catch {
+        // User cancelled or share failed, fall back to clipboard
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied!");
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied!");
+    }
+  }, [id]);
 
   // Handle comment submission
   const handleComment = useCallback(async (content: string) => {
@@ -326,6 +347,24 @@ export function InteractivePost({
     setShowReportUserDialog(true);
   }, []);
 
+  const handleMuteNotifications = useCallback(() => {
+    if (isNotificationMuted) {
+      unmutePostNotifications(id).then((r) => {
+        if (r.success) {
+          setIsNotificationMuted(false);
+          toast.success("Notifications unmuted for this post");
+        }
+      });
+    } else {
+      mutePostNotifications(id).then((r) => {
+        if (r.success) {
+          setIsNotificationMuted(true);
+          toast.success("Notifications muted for this post");
+        }
+      });
+    }
+  }, [id, isNotificationMuted]);
+
   const handleEdit = useCallback(() => {
     if (currentContent) {
       setShowEditDialog(true);
@@ -431,10 +470,12 @@ export function InteractivePost({
         onLike={handleLike}
         onComment={handleComment}
         onReblog={handleReblog}
+        onShare={handleShare}
         onMenuClick={handleMenuClick}
         onCommentsExpand={refreshComments}
         onLikesExpand={refreshLikes}
         onReblogsExpand={refreshRebloggedBy}
+        contentWarning={currentContent?.content_warning}
       >
         {renderContent()}
       </Post>
@@ -456,6 +497,8 @@ export function InteractivePost({
         onReportUser={handleReportUser}
         isBookmarked={isBookmarked}
         onBookmark={handleBookmark}
+        isNotificationMuted={isNotificationMuted}
+        onMuteNotifications={handleMuteNotifications}
       />
 
       {/* Delete Confirmation */}

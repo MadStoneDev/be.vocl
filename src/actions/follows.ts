@@ -336,6 +336,48 @@ export async function getFollowStatusBatch(
 }
 
 /**
+ * Check if two users are mutuals (follow each other)
+ */
+export async function isMutual(targetUserId: string): Promise<{ success: boolean; isMutual: boolean }> {
+  try {
+    const { user, supabase } = await requireAuth();
+    if (!user) return { success: false, isMutual: false };
+
+    const [{ data: iFollow }, { data: theyFollow }] = await Promise.all([
+      (supabase as any).from("follows").select("id").eq("follower_id", user.id).eq("following_id", targetUserId).limit(1),
+      (supabase as any).from("follows").select("id").eq("follower_id", targetUserId).eq("following_id", user.id).limit(1),
+    ]);
+
+    return { success: true, isMutual: !!(iFollow?.length && theyFollow?.length) };
+  } catch {
+    return { success: false, isMutual: false };
+  }
+}
+
+/**
+ * Batch check mutuals for a list of user IDs
+ */
+export async function batchCheckMutuals(userIds: string[]): Promise<{ success: boolean; mutualIds: string[] }> {
+  try {
+    const { user, supabase } = await requireAuth();
+    if (!user || userIds.length === 0) return { success: true, mutualIds: [] };
+
+    const [{ data: iFollow }, { data: theyFollow }] = await Promise.all([
+      (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", userIds),
+      (supabase as any).from("follows").select("follower_id").eq("following_id", user.id).in("follower_id", userIds),
+    ]);
+
+    const iFollowSet = new Set((iFollow || []).map((f: any) => f.following_id));
+    const theyFollowSet = new Set((theyFollow || []).map((f: any) => f.follower_id));
+    const mutualIds = userIds.filter(id => iFollowSet.has(id) && theyFollowSet.has(id));
+
+    return { success: true, mutualIds };
+  } catch {
+    return { success: false, mutualIds: [] };
+  }
+}
+
+/**
  * Mute a user
  */
 export async function muteUser(targetUserId: string): Promise<FollowResult> {

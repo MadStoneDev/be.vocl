@@ -913,14 +913,26 @@ export async function getFeedPosts(options?: {
     // Get user first
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Get followed IDs (only if logged in)
+    // Get followed IDs and muted IDs (only if logged in)
     let followedIds: string[] = [];
+    let mutedIds: string[] = [];
     if (user) {
-      const { data: follows } = await (supabase as any)
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", user.id);
-      followedIds = [...(follows || []).map((f: any) => f.following_id), user.id];
+      const [{ data: follows }, { data: mutes }] = await Promise.all([
+        (supabase as any)
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", user.id),
+        (supabase as any)
+          .from("mutes")
+          .select("muted_id")
+          .eq("muter_id", user.id),
+      ]);
+      mutedIds = (mutes || []).map((m: any) => m.muted_id);
+      const mutedSet = new Set(mutedIds);
+      followedIds = [
+        ...(follows || []).map((f: any) => f.following_id).filter((id: string) => !mutedSet.has(id)),
+        user.id,
+      ];
     }
 
     // Build and execute the main posts query
@@ -948,6 +960,11 @@ export async function getFeedPosts(options?: {
     // Filter by followed users if logged in and following someone
     if (user && followedIds.length > 0) {
       query = query.in("author_id", followedIds);
+    }
+
+    // Exclude muted users' posts
+    if (mutedIds.length > 0) {
+      query = query.not("author_id", "in", `(${mutedIds.join(",")})`);
     }
 
     query = query.order("created_at", { ascending: false });

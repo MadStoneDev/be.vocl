@@ -60,6 +60,7 @@ export function CreatePostModal({
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [isSensitive, setIsSensitive] = useState(false);
+  const [contentWarning, setContentWarning] = useState("");
   const [publishMode, setPublishMode] = useState<PublishMode>("now");
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [scheduledTime, setScheduledTime] = useState<string>("12:00");
@@ -120,6 +121,7 @@ export function CreatePostModal({
       setMediaUrls([]);
       setTags([]);
       setIsSensitive(false);
+      setContentWarning("");
       setPublishMode("now");
       setScheduledDate("");
       setScheduledTime("12:00");
@@ -384,6 +386,11 @@ export function CreatePostModal({
           break;
       }
 
+      // Add content warning to post content if provided
+      if (contentWarning.trim()) {
+        (postContent as any).content_warning = contentWarning.trim();
+      }
+
       const result = await createPost({
         postType: actualPostType,
         content: postContent,
@@ -405,6 +412,27 @@ export function CreatePostModal({
     });
   };
 
+  const hasUnsavedChanges = () => {
+    if (content.plain?.trim()) return true;
+    if (content.html?.trim() && content.html !== "<p></p>") return true;
+    if (mediaUrls.length > 0) return true;
+    if (imageLinkUrl.trim()) return true;
+    if (selectedTrack) return true;
+    if (tags.length > 0) return true;
+    if (pollOptions.some(o => o.trim())) return true;
+    return false;
+  };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges()) {
+      if (window.confirm("You have unsaved changes. Are you sure you want to close?")) {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   const postTypes = [
@@ -418,7 +446,7 @@ export function CreatePostModal({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/70 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/70 z-50" onClick={handleClose} />
 
       {/* Modal */}
       <div className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl bg-vocl-surface-dark rounded-none md:rounded-3xl z-50 flex flex-col h-full md:h-auto md:max-h-[90vh] overflow-hidden">
@@ -427,7 +455,7 @@ export function CreatePostModal({
           <h2 className="font-semibold text-foreground text-lg">Create Post</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-all"
           >
             <IconX size={20} />
@@ -1274,6 +1302,24 @@ export function CreatePostModal({
             </div>
           </button>
 
+          {/* Content Warning */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground/70">
+              Content Warning (optional)
+            </label>
+            <input
+              type="text"
+              value={contentWarning}
+              onChange={(e) => setContentWarning(e.target.value)}
+              placeholder="e.g. spoilers, food mention, flashing images..."
+              maxLength={200}
+              className="w-full px-3 py-2 text-sm bg-background/50 rounded-xl border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+            />
+            {contentWarning && (
+              <span className="text-xs text-foreground/40">{contentWarning.length}/200</span>
+            )}
+          </div>
+
           {/* Error Message */}
           {error && (
             <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
@@ -1287,7 +1333,7 @@ export function CreatePostModal({
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isPending}
               className="px-5 py-2.5 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors font-medium"
             >

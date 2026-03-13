@@ -20,7 +20,7 @@ import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent,
 import type { VideoEmbedPlatform } from "@/types/database";
 import { getFullProfile } from "@/actions/profile";
 import { getLikedPosts, getCommentedPosts } from "@/actions/posts";
-import { followUser, unfollowUser, blockUser, muteUser } from "@/actions/follows";
+import { followUser, unfollowUser, blockUser, muteUser, isMutual } from "@/actions/follows";
 import { startConversation } from "@/actions/messages";
 import { toast } from "@/components/ui";
 
@@ -77,6 +77,7 @@ export default function ProfilePage() {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [following, setFollowing] = useState(false);
+  const [mutual, setMutual] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("posts");
   const [error, setError] = useState<string | null>(null);
 
@@ -139,6 +140,17 @@ export default function ProfilePage() {
       setPinnedPost(result.pinnedPost || null);
       setFollowing(result.isFollowing || false);
       setAllowsAsks(result.canAsk || false);
+
+      // Check mutual status for non-own profiles
+      if (!result.isOwnProfile && result.profile.id) {
+        isMutual(result.profile.id).then((mutualResult) => {
+          if (mutualResult.success) {
+            setMutual(mutualResult.isMutual);
+          }
+        });
+      } else {
+        setMutual(false);
+      }
     } catch (err) {
       setError("Failed to load profile");
     } finally {
@@ -190,6 +202,10 @@ export default function ProfilePage() {
       setFollowing(true);
       setStats((prev) => ({ ...prev, followers: prev.followers + 1 }));
       toast.success(`Following @${profile.username}`);
+      // Re-check mutual status after following
+      isMutual(profile.id).then((mutualResult) => {
+        if (mutualResult.success) setMutual(mutualResult.isMutual);
+      });
     } else {
       toast.error(result.error || "Failed to follow user");
     }
@@ -200,6 +216,7 @@ export default function ProfilePage() {
     const result = await unfollowUser(profile.id);
     if (result.success) {
       setFollowing(false);
+      setMutual(false);
       setStats((prev) => ({ ...prev, followers: prev.followers - 1 }));
       toast.success(`Unfollowed @${profile.username}`);
     } else {
@@ -366,6 +383,7 @@ export default function ProfilePage() {
         bio={profile.bio}
         isOwnProfile={isOwnProfile}
         isFollowing={following}
+        isMutual={mutual}
         role={profile.role}
         allowsAsks={allowsAsks}
         onFollow={handleFollow}

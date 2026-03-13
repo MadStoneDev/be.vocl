@@ -15,6 +15,8 @@ import {
   IconAlertTriangle,
   IconBookmark,
   IconBookmarkFilled,
+  IconBell,
+  IconBellOff,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -33,6 +35,8 @@ interface PostMenuProps {
   onReportUser?: () => void;
   isBookmarked?: boolean;
   onBookmark?: () => void;
+  isNotificationMuted?: boolean;
+  onMuteNotifications?: () => void;
 }
 
 export function PostMenu({
@@ -51,6 +55,8 @@ export function PostMenu({
   onReportUser,
   isBookmarked = false,
   onBookmark,
+  isNotificationMuted = false,
+  onMuteNotifications,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -182,6 +188,28 @@ export function PostMenu({
                 <>
                   <IconPin size={18} />
                   <span>Pin to profile</span>
+                </>
+              )}
+            </button>
+
+            {/* Mute Notifications */}
+            <button
+              onClick={() => {
+                onMuteNotifications?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+              role="menuitem"
+            >
+              {isNotificationMuted ? (
+                <>
+                  <IconBell size={18} className="text-vocl-accent" />
+                  <span>Unmute notifications</span>
+                </>
+              ) : (
+                <>
+                  <IconBellOff size={18} />
+                  <span>Mute notifications</span>
                 </>
               )}
             </button>

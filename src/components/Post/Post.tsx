@@ -16,6 +16,7 @@ import {
   IconCalendar,
   IconHourglass,
   IconSend,
+  IconShare,
   IconX,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
@@ -78,9 +79,11 @@ export interface PostProps {
   onLike?: () => void;
   onReblog?: (type: "instant" | "with-comment" | "schedule" | "queue") => void;
   onMenuClick?: () => void;
+  onShare?: () => void;
   onCommentsExpand?: () => void;
   onLikesExpand?: () => void;
   onReblogsExpand?: () => void;
+  contentWarning?: string;
 }
 
 // =============================================================================
@@ -156,6 +159,7 @@ interface PostActionBarProps {
   onLike?: () => void;
   onLikesClick: () => void;
   onReblogsClick: () => void;
+  onShare?: () => void;
   onReblogClick: () => void;
 }
 
@@ -168,6 +172,7 @@ function PostActionBar({
   onLike,
   onLikesClick,
   onReblogsClick,
+  onShare,
   onReblogClick,
 }: PostActionBarProps) {
   return (
@@ -231,6 +236,15 @@ function PostActionBar({
         aria-label="View reblogs"
       >
         {stats.reblogs}
+      </button>
+
+      {/* Share button */}
+      <button
+        onClick={onShare}
+        className="cursor-pointer transition-colors"
+        aria-label="Share post"
+      >
+        <IconShare size={22} className="text-neutral-400 hover:text-vocl-accent" />
       </button>
 
       {/* Reblog button */}
@@ -360,16 +374,22 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Add a comment..."
-          className="flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+          maxLength={2000}
+          className={`flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-accent"}`}
         />
         <button
           type="submit"
-          disabled={!newComment.trim()}
+          disabled={!newComment.trim() || newComment.length > 2000}
           className="p-2 rounded-full bg-vocl-accent text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
         >
           <IconSend size={18} />
         </button>
       </form>
+      {newComment.length >= 1800 && (
+        <span className={`text-xs px-3 ${newComment.length >= 2000 ? "text-vocl-like" : "text-foreground/40"}`}>
+          {newComment.length}/2000
+        </span>
+      )}
 
       {/* Comments list */}
       <div className="max-h-64 overflow-y-auto">
@@ -552,16 +572,19 @@ export const Post = memo(function Post({
   onComment,
   onLike,
   onReblog,
+  onShare,
   onMenuClick,
   onCommentsExpand,
   onLikesExpand,
   onReblogsExpand,
+  contentWarning,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
   const [isContentRevealed, setIsContentRevealed] = useState(autoRevealSensitive);
   const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
   const [lastPanel, setLastPanel] = useState<ExpandedPanel>(null);
+  const [isCWDismissed, setIsCWDismissed] = useState(false);
 
   // Sync auto-reveal when user profile loads asynchronously
   useEffect(() => {
@@ -683,6 +706,25 @@ export const Post = memo(function Post({
             </div>
           )}
 
+          {/* Content Warning overlay */}
+          {contentWarning && !isCWDismissed && !showNSFWOverlay && (
+            <div
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-surface-dark/95 backdrop-blur-sm"
+              style={{ borderRadius: contentBorderRadius }}
+            >
+              <div className="text-center px-6 max-w-sm">
+                <p className="text-foreground/60 text-xs uppercase tracking-wider mb-2">Content Warning</p>
+                <p className="text-foreground font-medium text-base mb-4">{contentWarning}</p>
+                <button
+                  onClick={() => setIsCWDismissed(true)}
+                  className="px-5 py-2 rounded-full bg-vocl-accent text-neutral-900 font-medium text-sm hover:brightness-110 transition-all"
+                >
+                  Show Content
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Dark overlay - only covers content, not header or action bar */}
           <div
             onClick={handleOverlayClick}
@@ -708,6 +750,7 @@ export const Post = memo(function Post({
           onLike={onLike}
           onLikesClick={handleLikesClick}
           onReblogsClick={handleReblogsClick}
+          onShare={onShare}
           onReblogClick={handleReblogClick}
         />
 

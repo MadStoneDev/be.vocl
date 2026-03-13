@@ -85,12 +85,14 @@ export async function getPersonalizedFeed(options?: {
     const offset = options?.offset || 0;
 
     // Phase 1: Parallel fetch user preferences (4 queries -> 1 round-trip)
-    const [followedTagsResult, likedPostsResult, followsResult, profileResult] = await Promise.all([
+    const [followedTagsResult, likedPostsResult, followsResult, profileResult, mutesResult] = await Promise.all([
       supabase.from("followed_tags").select("tag_id").eq("profile_id", user.id),
       supabase.from("likes").select("post_id, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
       supabase.from("follows").select("following_id").eq("follower_id", user.id),
       supabase.from("profiles").select("show_sensitive_posts").eq("id", user.id).single(),
+      supabase.from("mutes").select("muted_id").eq("muter_id", user.id),
     ]);
+    const mutedUserIds = new Set((mutesResult.data || []).map((m: any) => m.muted_id));
 
     const showSensitive = profileResult.data?.show_sensitive_posts ?? false;
     const followedTagIds = (followedTagsResult.data || []).map((ft: any) => ft.tag_id);
@@ -220,6 +222,7 @@ export async function getPersonalizedFeed(options?: {
     // Process tagged posts
     for (const post of tagPostsResult.data || []) {
       if (postIdsSet.has(post.id)) continue;
+      if (mutedUserIds.has(post.author_id)) continue;
       if (post.is_sensitive && !showSensitive) continue;
 
       postIdsSet.add(post.id);
@@ -238,6 +241,7 @@ export async function getPersonalizedFeed(options?: {
     // Process followed user posts
     for (const post of followedUserPostsResult.data || []) {
       if (postIdsSet.has(post.id)) continue;
+      if (mutedUserIds.has(post.author_id)) continue;
       if (post.is_sensitive && !showSensitive) continue;
 
       postIdsSet.add(post.id);
@@ -252,6 +256,7 @@ export async function getPersonalizedFeed(options?: {
     // Process popular posts (fill remaining slots)
     for (const post of popularPostsResult.data || []) {
       if (postIdsSet.has(post.id)) continue;
+      if (mutedUserIds.has(post.author_id)) continue;
       if (post.is_sensitive && !showSensitive) continue;
 
       postIdsSet.add(post.id);

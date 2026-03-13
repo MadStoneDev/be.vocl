@@ -11,3 +11,4 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { EmptyState, EmptyFeed, EmptyNotifications, EmptyQueue, EmptyMessages, EmptySearch, EmptyPosts } from './EmptyState';
 export { OnlineIndicator } from './OnlineIndicator';
 export { StaffBadge } from './StaffBadge';
+export { MutualBadge } from './MutualBadge';
