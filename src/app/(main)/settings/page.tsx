@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   IconUser,
   IconLock,
+  IconShieldLock,
   IconBell,
   IconEye,
   IconPalette,
@@ -29,6 +30,12 @@ const settingsLinks = [
     icon: IconLock,
     title: "Password & Security",
     description: "Update password and security settings",
+  },
+  {
+    href: "/settings/security",
+    icon: IconShieldLock,
+    title: "Two-Factor Auth",
+    description: "Add an extra layer of security with 2FA",
   },
   {
     href: "/settings/notifications",

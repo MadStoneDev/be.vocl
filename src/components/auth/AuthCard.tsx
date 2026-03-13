@@ -347,37 +347,37 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
         )}
 
         {/* OAuth Buttons - Hide for forgot mode */}
-        {/*{mode !== "forgot" && (*/}
-        {/*  <>*/}
-        {/*    <div className="space-y-2 mb-3">*/}
-        {/*      <button*/}
-        {/*        type="button"*/}
-        {/*        onClick={() => handleOAuthSignIn("google")}*/}
-        {/*        disabled={isPending}*/}
-        {/*        className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"*/}
-        {/*      >*/}
-        {/*        <IconBrandGoogle size={20} />*/}
-        {/*        Continue with Google*/}
-        {/*      </button>*/}
-        {/*      <button*/}
-        {/*        type="button"*/}
-        {/*        onClick={() => handleOAuthSignIn("github")}*/}
-        {/*        disabled={isPending}*/}
-        {/*        className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"*/}
-        {/*      >*/}
-        {/*        <IconBrandGithub size={20} />*/}
-        {/*        Continue with GitHub*/}
-        {/*      </button>*/}
-        {/*    </div>*/}
-        
-        {/*    /!* Divider *!/*/}
-        {/*    <div className="flex items-center gap-4 mb-3">*/}
-        {/*      <div className="flex-1 h-px bg-white/10" />*/}
-        {/*      <span className="text-foreground/40 text-sm">or</span>*/}
-        {/*      <div className="flex-1 h-px bg-white/10" />*/}
-        {/*    </div>*/}
-        {/*  </>*/}
-        {/*)}*/}
+        {mode !== "forgot" && (
+          <>
+            <div className="space-y-2 mb-3">
+              <button
+                type="button"
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={isPending}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"
+              >
+                <IconBrandGoogle size={20} />
+                Continue with Google
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOAuthSignIn("github")}
+                disabled={isPending}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"
+              >
+                <IconBrandGithub size={20} />
+                Continue with GitHub
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 mb-3">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-foreground/40 text-sm">or</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+          </>
+        )}
 
         {/* Email/Password Form */}
         <form onSubmit={handleSubmit} className="space-y-3">

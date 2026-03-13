@@ -50,6 +50,22 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Check if this is a new OAuth user (no profile yet)
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", user.id)
+          .single();
+
+        if (!profile) {
+          // New OAuth user - redirect to onboarding
+          return NextResponse.redirect(`${origin}/onboarding`);
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
 
