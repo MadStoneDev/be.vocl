@@ -6,6 +6,7 @@ import { Post, TextContent, ImageContent } from "./Post";
 import { VideoContent } from "./content/VideoContent";
 import { AudioContent } from "./content/AudioContent";
 import { GalleryContent } from "./content/GalleryContent";
+import { LinkPreviewCarousel } from "./content/LinkPreviewCarousel";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
 import type { VideoEmbedPlatform } from "@/types/database";
 import { useLike } from "@/hooks/useLike";
@@ -353,9 +354,16 @@ export function InteractivePost({
     switch (contentType) {
       case "text":
         return (
-          <TextContent html={contentData.html}>
-            {contentData.plain || contentData.text}
-          </TextContent>
+          <>
+            <TextContent html={contentData.html}>
+              {contentData.plain || contentData.text}
+            </TextContent>
+            {contentData.link_previews && contentData.link_previews.length > 0 && (
+              <div className="bg-vocl-surface-muted -mt-16 pb-16">
+                <LinkPreviewCarousel previews={contentData.link_previews} />
+              </div>
+            )}
+          </>
         );
 
       case "image":

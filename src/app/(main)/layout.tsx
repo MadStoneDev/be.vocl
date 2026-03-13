@@ -67,6 +67,12 @@ export default function MainLayout({
   // Track online presence
   useOnlineStatus(profile?.id, profile?.username);
 
+  // Update page title with unread count
+  useEffect(() => {
+    const total = (notificationCount || 0) + (totalUnread || 0);
+    document.title = total > 0 ? `(${total}) be.vocl` : "be.vocl";
+  }, [notificationCount, totalUnread]);
+
   // Check onboarding status - runs when auth state is known
   useEffect(() => {
     if (authLoading || !user) return;
