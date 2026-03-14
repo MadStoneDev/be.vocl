@@ -17,6 +17,7 @@ import {
   IconBookmarkFilled,
   IconBell,
   IconBellOff,
+  IconShare,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -37,6 +38,7 @@ interface PostMenuProps {
   onBookmark?: () => void;
   isNotificationMuted?: boolean;
   onMuteNotifications?: () => void;
+  onShare?: () => void;
 }
 
 export function PostMenu({
@@ -57,6 +59,7 @@ export function PostMenu({
   onBookmark,
   isNotificationMuted = false,
   onMuteNotifications,
+  onShare,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -123,7 +126,7 @@ export function PostMenu({
       {/* Menu */}
       <div
         ref={menuRef}
-        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-vocl-surface shadow-xl border border-white/10 py-1 overflow-hidden"
+        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-vocl-surface-dark shadow-xl border border-white/10 py-1 overflow-hidden"
         role="menu"
         aria-orientation="vertical"
       >
@@ -144,6 +147,19 @@ export function PostMenu({
               <span>Copy link</span>
             </>
           )}
+        </button>
+
+        {/* Share */}
+        <button
+          onClick={() => {
+            onShare?.();
+            onClose();
+          }}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+          role="menuitem"
+        >
+          <IconShare size={18} />
+          <span>Share</span>
         </button>
 
         {/* Bookmark */}

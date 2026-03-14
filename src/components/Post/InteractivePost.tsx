@@ -470,7 +470,6 @@ export function InteractivePost({
         onLike={handleLike}
         onComment={handleComment}
         onReblog={handleReblog}
-        onShare={handleShare}
         onMenuClick={handleMenuClick}
         onCommentsExpand={refreshComments}
         onLikesExpand={refreshLikes}
@@ -499,6 +498,7 @@ export function InteractivePost({
         onBookmark={handleBookmark}
         isNotificationMuted={isNotificationMuted}
         onMuteNotifications={handleMuteNotifications}
+        onShare={handleShare}
       />
 
       {/* Delete Confirmation */}

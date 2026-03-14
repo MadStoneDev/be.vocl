@@ -16,7 +16,6 @@ import {
   IconCalendar,
   IconHourglass,
   IconSend,
-  IconShare,
   IconX,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
@@ -159,7 +158,6 @@ interface PostActionBarProps {
   onLike?: () => void;
   onLikesClick: () => void;
   onReblogsClick: () => void;
-  onShare?: () => void;
   onReblogClick: () => void;
 }
 
@@ -172,7 +170,6 @@ function PostActionBar({
   onLike,
   onLikesClick,
   onReblogsClick,
-  onShare,
   onReblogClick,
 }: PostActionBarProps) {
   return (
@@ -236,15 +233,6 @@ function PostActionBar({
         aria-label="View reblogs"
       >
         {stats.reblogs}
-      </button>
-
-      {/* Share button */}
-      <button
-        onClick={onShare}
-        className="cursor-pointer transition-colors"
-        aria-label="Share post"
-      >
-        <IconShare size={22} className="text-neutral-400 hover:text-vocl-accent" />
       </button>
 
       {/* Reblog button */}
@@ -759,7 +747,6 @@ export const Post = memo(function Post({
           onLike={onLike}
           onLikesClick={handleLikesClick}
           onReblogsClick={handleReblogsClick}
-          onShare={onShare}
           onReblogClick={handleReblogClick}
         />
 
