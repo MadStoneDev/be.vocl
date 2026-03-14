@@ -277,14 +277,14 @@ export function LeftSidebar({
         <button
           type="button"
           onClick={toggleFullscreen}
-          title={collapsed ? (isFullscreen ? "Show Browser UI" : "Hide Browser UI") : undefined}
+          title={collapsed ? (isFullscreen ? "Exit Fullscreen" : "Fullscreen") : undefined}
           className={`flex items-center mt-1 w-full rounded-xl text-foreground/50 hover:text-foreground hover:bg-white/5 transition-all duration-300 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           }`}
         >
           {isFullscreen ? <IconMinimize size={22} aria-hidden="true" className="flex-shrink-0" /> : <IconMaximize size={22} aria-hidden="true" className="flex-shrink-0" />}
           <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-            {isFullscreen ? "Show Browser UI" : "Hide Browser UI"}
+            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </span>
         </button>
 
