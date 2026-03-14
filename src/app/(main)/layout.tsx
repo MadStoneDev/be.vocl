@@ -148,22 +148,26 @@ export default function MainLayout({
         </div>
       </main>
 
-      {/* Desktop Messages Button - centered floating button */}
-      {!isChatOpen && (
-        <button
-          type="button"
-          onClick={toggleChat}
-          className="hidden md:flex fixed bottom-8 right-8 items-center gap-2 px-5 py-3 rounded-full bg-vocl-accent text-white shadow-lg hover:bg-vocl-accent-hover hover:shadow-xl hover:scale-105 transition-all duration-200 z-30"
-        >
-          <IconMessage size={20} />
-          <span className="text-sm font-medium">Messages</span>
-          {totalUnread > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-white text-vocl-accent text-xs font-bold">
-              {totalUnread > 99 ? "99+" : totalUnread}
-            </span>
-          )}
-        </button>
-      )}
+      {/* Desktop Messages Button - circle pinned to right edge, vertically centered */}
+      <button
+        type="button"
+        onClick={toggleChat}
+        className={`hidden md:flex fixed top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-vocl-accent text-white shadow-lg items-center justify-center transition-all duration-300 ease-in-out z-30 hover:shadow-xl ${
+          isChatOpen ? "right-[calc(24rem+0.5rem)]" : "-right-[10px]"
+        }`}
+      >
+        <IconMessage
+          size={20}
+          className={`transition-all duration-300 ease-in-out ${
+            isChatOpen ? "ml-0" : "-ml-[10px]"
+          }`}
+        />
+        {totalUnread > 0 && !isChatOpen && (
+          <span className="absolute -top-1 -left-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold">
+            {totalUnread > 99 ? "99+" : totalUnread}
+          </span>
+        )}
+      </button>
 
       {/* Bottom Navigation (Mobile) */}
       <BottomNav
