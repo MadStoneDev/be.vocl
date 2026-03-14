@@ -178,7 +178,7 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p className="text-foreground/80 mb-4">
               You can manage your privacy settings in your account settings. To
-              exercise other rights, please contact us at privacy@bevocl.app.
+              exercise other rights, please contact us at hello@bevocl.app.
             </p>
           </section>
 
@@ -263,7 +263,7 @@ export default function PrivacyPolicyPage() {
               practices, please contact us at:
             </p>
             <p className="text-foreground/80 mb-4">
-              Email: privacy@bevocl.app
+              Email: hello@bevocl.app
             </p>
           </section>
         </div>
