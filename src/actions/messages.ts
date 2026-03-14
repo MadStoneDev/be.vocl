@@ -546,6 +546,43 @@ export async function deleteMessage(messageId: string): Promise<MessageResult> {
 }
 
 /**
+ * Hide a conversation from the user's list (soft delete — only hides for this user)
+ */
+export async function hideConversation(
+  conversationId: string
+): Promise<MessageResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Remove the user's participation record — this hides the conversation
+    // from their list without affecting the other participant
+    const { error } = await (supabase as any)
+      .from("conversation_participants")
+      .delete()
+      .eq("conversation_id", conversationId)
+      .eq("profile_id", user.id);
+
+    if (error) {
+      console.error("Hide conversation error:", error);
+      return { success: false, error: "Failed to delete conversation" };
+    }
+
+    revalidatePath("/messages");
+    return { success: true, conversationId };
+  } catch (error) {
+    console.error("Hide conversation error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Mark conversation as read
  */
 export async function markConversationAsRead(

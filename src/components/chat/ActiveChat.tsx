@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
-import { IconArrowLeft, IconDots } from "@tabler/icons-react";
+import { IconArrowLeft, IconDots, IconTrash } from "@tabler/icons-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { ChatInput } from "./ChatInput";
@@ -37,6 +37,7 @@ interface ActiveChatProps {
   onSendMessage: (content: string, mediaFile?: File) => Promise<void>;
   onEditMessage: (messageId: string, newContent: string) => void;
   onDeleteMessage: (messageId: string) => void;
+  onDeleteConversation?: () => void;
   onTyping: () => void;
 }
 
@@ -50,9 +51,11 @@ export function ActiveChat({
   onSendMessage,
   onEditMessage,
   onDeleteMessage,
+  onDeleteConversation,
   onTyping,
 }: ActiveChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -106,9 +109,35 @@ export function ActiveChat({
         </div>
 
         {/* Menu */}
-        <button className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors">
-          <IconDots size={20} />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+          >
+            <IconDots size={20} />
+          </button>
+
+          {showMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowMenu(false)}
+              />
+              <div className="absolute right-0 mt-2 w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl z-50">
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onDeleteConversation?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                >
+                  <IconTrash size={18} />
+                  Delete conversation
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Messages */}

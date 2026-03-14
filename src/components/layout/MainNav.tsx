@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,8 @@ import {
   IconShield,
   IconLogout,
   IconDots,
+  IconMaximize,
+  IconMinimize,
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
@@ -28,6 +30,28 @@ export function MainNav({
 }: MainNavProps) {
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Track fullscreen state changes
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      } else {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      }
+    } catch {
+      // Fullscreen API not supported or denied
+    }
+  };
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -95,6 +119,18 @@ export function MainNav({
                       Admin Dashboard
                     </Link>
                   )}
+
+                  {/* Fullscreen / Hide Browser UI */}
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      toggleFullscreen();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                  >
+                    {isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
+                    {isFullscreen ? "Show Browser UI" : "Hide Browser UI"}
+                  </button>
 
                   {/* Settings */}
                   <Link

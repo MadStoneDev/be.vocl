@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { IconMessagePlus } from "@tabler/icons-react";
+import { IconMessagePlus, IconTrash } from "@tabler/icons-react";
 
 interface Conversation {
   id: string;
@@ -25,6 +26,7 @@ interface ConversationListProps {
   searchQuery: string;
   onSelect: (conversationId: string) => void;
   onNewChat: () => void;
+  onDeleteConversation?: (conversationId: string) => void;
 }
 
 export function ConversationList({
@@ -32,7 +34,38 @@ export function ConversationList({
   searchQuery,
   onSelect,
   onNewChat,
+  onDeleteConversation,
 }: ConversationListProps) {
+  const [contextMenu, setContextMenu] = useState<{
+    conversationId: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const longPressTriggered = useRef(false);
+
+  const handleTouchStart = useCallback((conversationId: string, e: React.TouchEvent) => {
+    longPressTriggered.current = false;
+    const touch = e.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      setContextMenu({ conversationId, x, y });
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const handleContextMenuEvent = useCallback((conversationId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ conversationId, x: e.clientX, y: e.clientY });
+  }, []);
   // Filter conversations by search query
   const filteredConversations = conversations.filter((conv) =>
     conv.participant.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,10 +103,45 @@ export function ConversationList({
 
   return (
     <div className="divide-y divide-white/5">
+      {/* Context menu overlay */}
+      {contextMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setContextMenu(null)}
+          />
+          <div
+            className="fixed z-50 w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl"
+            style={{
+              left: Math.min(contextMenu.x, window.innerWidth - 220),
+              top: Math.min(contextMenu.y, window.innerHeight - 60),
+            }}
+          >
+            <button
+              onClick={() => {
+                onDeleteConversation?.(contextMenu.conversationId);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
+            >
+              <IconTrash size={18} />
+              Delete conversation
+            </button>
+          </div>
+        </>
+      )}
+
       {filteredConversations.map((conversation) => (
         <button
           key={conversation.id}
-          onClick={() => onSelect(conversation.id)}
+          onClick={() => {
+            if (longPressTriggered.current) return;
+            onSelect(conversation.id);
+          }}
+          onContextMenu={(e) => handleContextMenuEvent(conversation.id, e)}
+          onTouchStart={(e) => handleTouchStart(conversation.id, e)}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchEnd}
           className="w-full flex items-center gap-3 p-4 hover:bg-white/5 transition-colors text-left"
         >
           {/* Avatar with online indicator */}

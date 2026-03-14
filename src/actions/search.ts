@@ -613,21 +613,6 @@ export async function getSuggestedUsers(
       data: { user },
     } = await supabase.auth.getUser();
 
-    // Get users with most followers that current user isn't following
-    let query = supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url, bio")
-      .limit(limit + 10); // Get extra to filter
-
-    if (user) {
-      // Exclude current user
-      query = query.neq("id", user.id);
-    }
-
-    const { data: profiles, error } = await query;
-
-    if (error) throw error;
-
     type ProfileResult = {
       id: string;
       username: string;
@@ -636,42 +621,155 @@ export async function getSuggestedUsers(
       bio: string | null;
     };
 
-    // Batch fetch follower counts and following status (avoids N+1)
-    const profileIds = ((profiles || []) as ProfileResult[]).map((p) => p.id);
+    // If logged in, try smart suggestions first
+    if (user) {
+      // 1. Get who the current user follows
+      const { data: myFollowing } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", user.id);
 
-    const [followerData, followingData] = await Promise.all([
-      supabase.from("follows").select("following_id").in("following_id", profileIds),
-      user
-        ? supabase.from("follows").select("following_id").eq("follower_id", user.id).in("following_id", profileIds)
-        : Promise.resolve({ data: [] }),
-    ]);
+      const myFollowingIds = new Set((myFollowing || []).map((f: any) => f.following_id));
 
-    const followerCountMap = new Map<string, number>();
-    for (const f of (followerData.data || []) as any[]) {
-      followerCountMap.set(f.following_id, (followerCountMap.get(f.following_id) || 0) + 1);
+      // 2. Get "friends of friends" — people followed by those I follow
+      let friendsOfFriends: string[] = [];
+      if (myFollowingIds.size > 0) {
+        const { data: fofData } = await supabase
+          .from("follows")
+          .select("following_id")
+          .in("follower_id", Array.from(myFollowingIds))
+          .not("following_id", "eq", user.id);
+
+        if (fofData) {
+          // Count how many mutual connections each suggested user has
+          const fofCountMap = new Map<string, number>();
+          for (const f of fofData as any[]) {
+            if (!myFollowingIds.has(f.following_id)) {
+              fofCountMap.set(f.following_id, (fofCountMap.get(f.following_id) || 0) + 1);
+            }
+          }
+          // Sort by mutual connection count (most connections first)
+          friendsOfFriends = Array.from(fofCountMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([id]) => id)
+            .slice(0, limit * 3); // Get extra for filtering
+        }
+      }
+
+      // 3. If we have friend-of-friend suggestions, fetch their profiles
+      if (friendsOfFriends.length > 0) {
+        const { data: fofProfiles } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_url, bio")
+          .in("id", friendsOfFriends);
+
+        if (fofProfiles && fofProfiles.length > 0) {
+          const fofProfileIds = (fofProfiles as ProfileResult[]).map((p) => p.id);
+          const { data: fofFollowerData } = await supabase
+            .from("follows")
+            .select("following_id")
+            .in("following_id", fofProfileIds);
+
+          const fofFollowerCountMap = new Map<string, number>();
+          for (const f of (fofFollowerData?.data || fofFollowerData || []) as any[]) {
+            fofFollowerCountMap.set(f.following_id, (fofFollowerCountMap.get(f.following_id) || 0) + 1);
+          }
+
+          const smartSuggestions = (fofProfiles as ProfileResult[])
+            .map((p) => ({
+              id: p.id,
+              username: p.username,
+              displayName: p.display_name,
+              avatarUrl: p.avatar_url,
+              bio: p.bio,
+              followerCount: fofFollowerCountMap.get(p.id) || 0,
+              isFollowing: false,
+            }))
+            // Maintain the friends-of-friends ordering (most mutual connections first)
+            .sort((a, b) => {
+              const aIdx = friendsOfFriends.indexOf(a.id);
+              const bIdx = friendsOfFriends.indexOf(b.id);
+              return aIdx - bIdx;
+            });
+
+          if (smartSuggestions.length >= limit) {
+            return { success: true, users: smartSuggestions.slice(0, limit) };
+          }
+
+          // If we don't have enough smart suggestions, we'll fill with popular users below
+          // but first return what we have + fallback
+          const smartIds = new Set(smartSuggestions.map((u) => u.id));
+          const needed = limit - smartSuggestions.length;
+
+          const fallback = await getFallbackSuggestions(supabase, user.id, myFollowingIds, smartIds, needed);
+          return { success: true, users: [...smartSuggestions, ...fallback] };
+        }
+      }
+
+      // 4. Fallback: popular users not already followed
+      const fallback = await getFallbackSuggestions(supabase, user.id, myFollowingIds, new Set(), limit);
+      return { success: true, users: fallback };
     }
 
-    const followingIds = new Set(((followingData as any).data || []).map((f: any) => f.following_id));
-
-    const usersWithCounts = ((profiles || []) as ProfileResult[]).map((profile) => ({
-      id: profile.id,
-      username: profile.username,
-      displayName: profile.display_name,
-      avatarUrl: profile.avatar_url,
-      bio: profile.bio,
-      followerCount: followerCountMap.get(profile.id) || 0,
-      isFollowing: followingIds.has(profile.id),
-    }));
-
-    // Sort by follower count and filter out already followed
-    const suggested = usersWithCounts
-      .filter((u) => !u.isFollowing)
-      .sort((a, b) => b.followerCount - a.followerCount)
-      .slice(0, limit);
-
-    return { success: true, users: suggested };
+    // Not logged in: just show popular users
+    const fallback = await getFallbackSuggestions(supabase, null, new Set(), new Set(), limit);
+    return { success: true, users: fallback };
   } catch (error) {
     console.error("Get suggested users error:", error);
     return { success: false, error: "Failed to get suggested users" };
   }
+}
+
+async function getFallbackSuggestions(
+  supabase: any,
+  userId: string | null,
+  alreadyFollowing: Set<string>,
+  excludeIds: Set<string>,
+  limit: number
+): Promise<SearchResult["users"]> {
+  type ProfileResult = {
+    id: string;
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    bio: string | null;
+  };
+
+  let query = supabase
+    .from("profiles")
+    .select("id, username, display_name, avatar_url, bio")
+    .limit(limit + alreadyFollowing.size + excludeIds.size + 10);
+
+  if (userId) {
+    query = query.neq("id", userId);
+  }
+
+  const { data: profiles, error } = await query;
+  if (error) throw error;
+
+  const profileIds = ((profiles || []) as ProfileResult[]).map((p) => p.id);
+
+  const { data: followerData } = await supabase
+    .from("follows")
+    .select("following_id")
+    .in("following_id", profileIds);
+
+  const followerCountMap = new Map<string, number>();
+  for (const f of (followerData || []) as any[]) {
+    followerCountMap.set(f.following_id, (followerCountMap.get(f.following_id) || 0) + 1);
+  }
+
+  return ((profiles || []) as ProfileResult[])
+    .filter((p) => !alreadyFollowing.has(p.id) && !excludeIds.has(p.id))
+    .map((p) => ({
+      id: p.id,
+      username: p.username,
+      displayName: p.display_name,
+      avatarUrl: p.avatar_url,
+      bio: p.bio,
+      followerCount: followerCountMap.get(p.id) || 0,
+      isFollowing: false,
+    }))
+    .sort((a, b) => b.followerCount - a.followerCount)
+    .slice(0, limit);
 }

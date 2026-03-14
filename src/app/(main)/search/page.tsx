@@ -38,7 +38,7 @@ type SearchTab = "all" | "users" | "tags" | "posts";
 
 function SearchLoading() {
   return (
-    <div className="py-6 max-w-2xl mx-auto">
+    <div className="py-6 px-4 max-w-2xl mx-auto">
       <div className="animate-pulse">
         <div className="h-12 bg-white/10 rounded-xl mb-6" />
         <div className="space-y-4">
@@ -315,7 +315,7 @@ function SearchContent() {
   const showDiscovery = !query && !browsingTag && !isSearching;
 
   return (
-    <div className="py-6 max-w-2xl mx-auto">
+    <div className="py-6 px-4 max-w-2xl mx-auto">
       {/* Search Input */}
       <div className="relative mb-6">
         <IconSearch
@@ -893,7 +893,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
               <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
             </TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+              <div className="bg-[#EBEBEB]">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}
@@ -903,7 +903,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
           <>
             <TextContent>{post.content.plain}</TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+              <div className="bg-[#EBEBEB]">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}

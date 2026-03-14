@@ -9,7 +9,8 @@ import { useChat, useMessages } from "@/hooks/useChat";
 import { useTypingPresence } from "@/hooks/useTypingPresence";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsOnline } from "@/hooks/useOnlineStatus";
-import { toast } from "@/components/ui";
+import { toast, ConfirmDialog } from "@/components/ui";
+import { hideConversation } from "@/actions/messages";
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -23,6 +24,9 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   const [searchQuery, setSearchQuery] = useState("");
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Get current user profile for username
   const { profile } = useAuth();
@@ -220,6 +224,32 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     }, 500);
   }, [refreshConversations, handleSelectConversation]);
 
+  // Handle delete conversation (from list or active chat)
+  const handleDeleteConversation = useCallback((conversationId: string) => {
+    setPendingDeleteId(conversationId);
+    setShowDeleteConfirm(true);
+  }, []);
+
+  const confirmDeleteConversation = useCallback(async () => {
+    if (!pendingDeleteId) return;
+    setIsDeleting(true);
+    const result = await hideConversation(pendingDeleteId);
+    setIsDeleting(false);
+    setShowDeleteConfirm(false);
+
+    if (result.success) {
+      toast.success("Conversation deleted");
+      if (activeConversation?.id === pendingDeleteId) {
+        setView("list");
+        setActiveConversation(null);
+      }
+      refreshConversations();
+    } else {
+      toast.error(result.error || "Failed to delete conversation");
+    }
+    setPendingDeleteId(null);
+  }, [pendingDeleteId, activeConversation, refreshConversations]);
+
   if (!isOpen) return null;
 
   // Convert messages to ActiveChat format
@@ -298,6 +328,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
                   searchQuery={searchQuery}
                   onSelect={handleSelectConversation}
                   onNewChat={handleNewChat}
+                  onDeleteConversation={handleDeleteConversation}
                 />
               )}
             </div>
@@ -314,6 +345,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
             onSendMessage={handleSendWithTypingStop}
             onEditMessage={handleEditMessage}
             onDeleteMessage={handleDeleteMessage}
+            onDeleteConversation={() => handleDeleteConversation(activeConversation.id)}
             onTyping={handleTyping}
           />
         ) : null}
@@ -325,6 +357,22 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
         onClose={() => setShowNewChatModal(false)}
         onConversationCreated={handleConversationCreated}
         currentUserId={currentUserId}
+      />
+
+      {/* Delete Conversation Confirmation */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setPendingDeleteId(null);
+        }}
+        onConfirm={confirmDeleteConversation}
+        title="Delete Conversation"
+        message="This will remove the conversation from your list. The other person will still be able to see it."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </>
   );
