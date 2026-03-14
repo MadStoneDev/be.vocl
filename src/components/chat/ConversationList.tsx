@@ -2,7 +2,15 @@
 
 import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { IconMessagePlus, IconTrash } from "@tabler/icons-react";
+import {
+  IconMessagePlus,
+  IconTrash,
+  IconDots,
+  IconMailOpened,
+  IconBellOff,
+  IconBan,
+  IconFlag,
+} from "@tabler/icons-react";
 
 interface Conversation {
   id: string;
@@ -27,6 +35,10 @@ interface ConversationListProps {
   onSelect: (conversationId: string) => void;
   onNewChat: () => void;
   onDeleteConversation?: (conversationId: string) => void;
+  onMarkAsRead?: (conversationId: string) => void;
+  onMuteNotifications?: (conversationId: string) => void;
+  onBlockUser?: (conversationId: string) => void;
+  onReportUser?: (conversationId: string) => void;
 }
 
 export function ConversationList({
@@ -35,6 +47,10 @@ export function ConversationList({
   onSelect,
   onNewChat,
   onDeleteConversation,
+  onMarkAsRead,
+  onMuteNotifications,
+  onBlockUser,
+  onReportUser,
 }: ConversationListProps) {
   const [contextMenu, setContextMenu] = useState<{
     conversationId: string;
@@ -114,9 +130,50 @@ export function ConversationList({
             className="fixed z-50 w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
-              top: Math.min(contextMenu.y, window.innerHeight - 60),
+              top: Math.min(contextMenu.y, window.innerHeight - 280),
             }}
           >
+            <button
+              onClick={() => {
+                onMarkAsRead?.(contextMenu.conversationId);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+            >
+              <IconMailOpened size={18} />
+              Mark as read
+            </button>
+            <button
+              onClick={() => {
+                onMuteNotifications?.(contextMenu.conversationId);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+            >
+              <IconBellOff size={18} />
+              Mute notifications
+            </button>
+            <div className="my-1 border-t border-white/5" />
+            <button
+              onClick={() => {
+                onBlockUser?.(contextMenu.conversationId);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+            >
+              <IconBan size={18} />
+              Block user
+            </button>
+            <button
+              onClick={() => {
+                onReportUser?.(contextMenu.conversationId);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+            >
+              <IconFlag size={18} />
+              Report user
+            </button>
             <button
               onClick={() => {
                 onDeleteConversation?.(contextMenu.conversationId);
@@ -201,6 +258,29 @@ export function ConversationList({
               </span>
             </div>
           )}
+
+          {/* Menu button */}
+          <div
+            className="flex-shrink-0"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = e.currentTarget.getBoundingClientRect();
+                setContextMenu({
+                  conversationId: conversation.id,
+                  x: rect.left,
+                  y: rect.bottom + 4,
+                });
+              }}
+              className="p-1.5 rounded-lg text-foreground/30 hover:text-foreground/70 hover:bg-white/5 transition-colors"
+            >
+              <IconDots size={16} />
+            </button>
+          </div>
         </button>
       ))}
     </div>

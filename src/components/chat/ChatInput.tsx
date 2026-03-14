@@ -171,15 +171,15 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Input area */}
-      <div className="relative flex items-center gap-2">
-        {/* GIF Picker */}
-        <GifPicker
-          isOpen={showGifPicker}
-          onClose={() => setShowGifPicker(false)}
-          onSelect={handleGifSelect}
-        />
+      {/* GIF Picker - rendered outside flex to avoid layout interference */}
+      <GifPicker
+        isOpen={showGifPicker}
+        onClose={() => setShowGifPicker(false)}
+        onSelect={handleGifSelect}
+      />
 
+      {/* Input area */}
+      <div className="flex items-center gap-2">
         {/* Media & GIF buttons - collapse when input is focused */}
         <div
           className={`flex items-center gap-0 overflow-hidden transition-all duration-200 ${

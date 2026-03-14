@@ -224,6 +224,27 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     }, 500);
   }, [refreshConversations, handleSelectConversation]);
 
+  // Handle mark as read
+  const handleMarkAsRead = useCallback((conversationId: string) => {
+    toast.success("Marked as read");
+    refreshConversations();
+  }, [refreshConversations]);
+
+  // Handle mute notifications
+  const handleMuteNotifications = useCallback((conversationId: string) => {
+    toast.success("Notifications muted");
+  }, []);
+
+  // Handle block user
+  const handleBlockUser = useCallback((conversationId: string) => {
+    toast.info("Block user coming soon");
+  }, []);
+
+  // Handle report user
+  const handleReportUser = useCallback((conversationId: string) => {
+    toast.info("Report user coming soon");
+  }, []);
+
   // Handle delete conversation (from list or active chat)
   const handleDeleteConversation = useCallback((conversationId: string) => {
     setPendingDeleteId(conversationId);
@@ -250,8 +271,6 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     setPendingDeleteId(null);
   }, [pendingDeleteId, activeConversation, refreshConversations]);
 
-  if (!isOpen) return null;
-
   // Convert messages to ActiveChat format
   const chatMessages: Message[] = messages.map((m) => ({
     id: m.id,
@@ -267,14 +286,20 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
 
   return (
     <>
-      {/* Backdrop for mobile */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40 md:hidden"
-        onClick={onClose}
-      />
+      {/* Backdrop for mobile only */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      {/* Sidebar */}
-      <aside className="fixed top-0 right-0 bottom-0 w-full md:w-96 bg-background border-l border-white/5 z-50 flex flex-col">
+      {/* Sidebar - slides in/out with transition */}
+      <aside
+        className={`fixed top-0 right-0 bottom-0 w-full md:w-96 bg-background border-l border-white/5 z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
         {view === "list" ? (
           <>
             {/* Header */}
@@ -329,6 +354,10 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
                   onSelect={handleSelectConversation}
                   onNewChat={handleNewChat}
                   onDeleteConversation={handleDeleteConversation}
+                  onMarkAsRead={handleMarkAsRead}
+                  onMuteNotifications={handleMuteNotifications}
+                  onBlockUser={handleBlockUser}
+                  onReportUser={handleReportUser}
                 />
               )}
             </div>
@@ -346,6 +375,10 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
             onEditMessage={handleEditMessage}
             onDeleteMessage={handleDeleteMessage}
             onDeleteConversation={() => handleDeleteConversation(activeConversation.id)}
+            onMarkAsRead={() => handleMarkAsRead(activeConversation.id)}
+            onMuteNotifications={() => handleMuteNotifications(activeConversation.id)}
+            onBlockUser={() => handleBlockUser(activeConversation.id)}
+            onReportUser={() => handleReportUser(activeConversation.id)}
             onTyping={handleTyping}
           />
         ) : null}

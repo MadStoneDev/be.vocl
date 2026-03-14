@@ -2,7 +2,15 @@
 
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
-import { IconArrowLeft, IconDots, IconTrash } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconDots,
+  IconTrash,
+  IconMailOpened,
+  IconBellOff,
+  IconBan,
+  IconFlag,
+} from "@tabler/icons-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { ChatInput } from "./ChatInput";
@@ -38,6 +46,10 @@ interface ActiveChatProps {
   onEditMessage: (messageId: string, newContent: string) => void;
   onDeleteMessage: (messageId: string) => void;
   onDeleteConversation?: () => void;
+  onMarkAsRead?: () => void;
+  onMuteNotifications?: () => void;
+  onBlockUser?: () => void;
+  onReportUser?: () => void;
   onTyping: () => void;
 }
 
@@ -52,6 +64,10 @@ export function ActiveChat({
   onEditMessage,
   onDeleteMessage,
   onDeleteConversation,
+  onMarkAsRead,
+  onMuteNotifications,
+  onBlockUser,
+  onReportUser,
   onTyping,
 }: ActiveChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -124,6 +140,47 @@ export function ActiveChat({
                 onClick={() => setShowMenu(false)}
               />
               <div className="absolute right-0 mt-2 w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl z-50">
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onMarkAsRead?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                >
+                  <IconMailOpened size={18} />
+                  Mark as read
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onMuteNotifications?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                >
+                  <IconBellOff size={18} />
+                  Mute notifications
+                </button>
+                <div className="my-1 border-t border-white/5" />
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onBlockUser?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                >
+                  <IconBan size={18} />
+                  Block user
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onReportUser?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                >
+                  <IconFlag size={18} />
+                  Report user
+                </button>
                 <button
                   onClick={() => {
                     setShowMenu(false);

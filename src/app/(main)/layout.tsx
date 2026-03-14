@@ -12,7 +12,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { checkOnboardingStatus } from "@/actions/profile";
 import { ErrorBoundary } from "@/components/ui";
-import { IconMessageOff, IconX } from "@tabler/icons-react";
+import { IconMessage, IconMessageOff, IconX } from "@tabler/icons-react";
 
 // Chat-specific error fallback
 function ChatErrorFallback({ onClose }: { onClose: () => void }) {
@@ -125,6 +125,7 @@ export default function MainLayout({
         onChatToggle={toggleChat}
         isLoading={authLoading}
         role={profile?.role}
+        collapsed={isChatOpen}
       />
 
       {/* Top Navigation (Mobile) */}
@@ -137,13 +138,32 @@ export default function MainLayout({
       {/* Main Content - renders children immediately */}
       <main
         id="main-content"
-        className="pt-12 pb-14 md:pt-0 md:pb-8 md:pl-52 lg:pl-56"
+        className={`pt-12 pb-14 md:pt-0 md:pb-8 transition-all duration-300 ease-in-out ${
+          isChatOpen ? "md:pl-16 md:pr-96" : "md:pl-52 lg:pl-56"
+        }`}
         tabIndex={-1}
       >
         <div className="max-w-2xl mx-auto sm:px-4 pb-4">
           {children}
         </div>
       </main>
+
+      {/* Desktop Messages Button - centered floating button */}
+      {!isChatOpen && (
+        <button
+          type="button"
+          onClick={toggleChat}
+          className="hidden md:flex fixed bottom-8 right-8 items-center gap-2 px-5 py-3 rounded-full bg-vocl-accent text-white shadow-lg hover:bg-vocl-accent-hover hover:shadow-xl hover:scale-105 transition-all duration-200 z-30"
+        >
+          <IconMessage size={20} />
+          <span className="text-sm font-medium">Messages</span>
+          {totalUnread > 0 && (
+            <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-white text-vocl-accent text-xs font-bold">
+              {totalUnread > 99 ? "99+" : totalUnread}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* Bottom Navigation (Mobile) */}
       <BottomNav
@@ -153,19 +173,17 @@ export default function MainLayout({
       />
 
       {/* Chat Sidebar */}
-      {isChatOpen && (
-        <ErrorBoundary fallback={<ChatErrorFallback onClose={() => setIsChatOpen(false)} />}>
-          <ChatSidebar
-            isOpen={isChatOpen}
-            onClose={() => {
-              setIsChatOpen(false);
-              setInitialConversationId(null);
-            }}
-            currentUserId={profile?.id}
-            initialConversationId={initialConversationId}
-          />
-        </ErrorBoundary>
-      )}
+      <ErrorBoundary fallback={<ChatErrorFallback onClose={() => setIsChatOpen(false)} />}>
+        <ChatSidebar
+          isOpen={isChatOpen}
+          onClose={() => {
+            setIsChatOpen(false);
+            setInitialConversationId(null);
+          }}
+          currentUserId={profile?.id}
+          initialConversationId={initialConversationId}
+        />
+      </ErrorBoundary>
 
       {/* Create Post FAB - hidden when chat is open */}
       <CreatePostFAB hidden={isChatOpen} />
