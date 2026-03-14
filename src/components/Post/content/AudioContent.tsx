@@ -119,7 +119,7 @@ export function AudioContent({
   // Spotify embed iframe
   if (isSpotifyEmbed) {
     return (
-      <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 pb-18 sm:pb-18.5">
+      <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 ">
         <div className="rounded-xl overflow-hidden">
           <iframe
             src={`https://open.spotify.com/embed/track/${spotifyData.track_id}?utm_source=oembed&theme=0`}
@@ -145,7 +145,7 @@ export function AudioContent({
         {tags.length > 0 && (
           <div
             className={`overflow-hidden transition-all duration-150 ease-out ${
-              isHovered ? "max-h-50 mt-4" : "max-h-0"
+              isHovered ? "max-h-50 mt-4" : "max-h-50 mt-4 sm:max-h-0 sm:mt-0"
             }`}
           >
             <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-white/10">
@@ -154,7 +154,7 @@ export function AudioContent({
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
                   className={`px-2 py-1 text-xs font-medium rounded bg-white/10 text-foreground/70 truncate transition-opacity ${
-                    isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
+                    isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-100 sm:opacity-0"
                   }`}
                   style={{ maxWidth: "150px" }}
                 >
@@ -170,7 +170,7 @@ export function AudioContent({
 
   // File upload audio player (original)
   return (
-    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 pb-18 sm:pb-18.5">
+    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 ">
       {src && <audio ref={audioRef} src={src} preload="metadata" />}
 
       <div className="flex gap-4">

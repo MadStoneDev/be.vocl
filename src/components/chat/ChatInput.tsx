@@ -35,6 +35,7 @@ export function ChatInput({
   const [isSending, setIsSending] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -171,7 +172,7 @@ export function ChatInput({
       )}
 
       {/* Input area */}
-      <div className="relative flex items-end gap-2">
+      <div className="relative flex items-center gap-2">
         {/* GIF Picker */}
         <GifPicker
           isOpen={showGifPicker}
@@ -179,16 +180,41 @@ export function ChatInput({
           onSelect={handleGifSelect}
         />
 
-        {/* Media button */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || isSending}
-          className="flex-shrink-0 p-2.5 rounded-xl text-foreground/50 hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50"
-          title="Upload image or video"
+        {/* Media & GIF buttons - collapse when input is focused */}
+        <div
+          className={`flex items-center gap-0 overflow-hidden transition-all duration-200 ${
+            isFocused ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"
+          }`}
         >
-          <IconPhoto size={20} />
-        </button>
+          {/* Media button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled || isSending}
+            className="flex-shrink-0 p-2.5 rounded-xl text-foreground/50 hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50"
+            title="Upload image or video"
+          >
+            <IconPhoto size={20} />
+          </button>
+
+          {/* GIF button */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowGifPicker(!showGifPicker);
+              setShowEmojiPicker(false);
+            }}
+            disabled={disabled || isSending}
+            className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+              showGifPicker
+                ? "bg-vocl-accent text-white"
+                : "text-foreground/50 hover:text-foreground hover:bg-white/5"
+            }`}
+            title="Send a GIF"
+          >
+            <IconGif size={20} />
+          </button>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -197,24 +223,6 @@ export function ChatInput({
           className="hidden"
         />
 
-        {/* GIF button */}
-        <button
-          type="button"
-          onClick={() => {
-            setShowGifPicker(!showGifPicker);
-            setShowEmojiPicker(false);
-          }}
-          disabled={disabled || isSending}
-          className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
-            showGifPicker
-              ? "bg-vocl-accent text-white"
-              : "text-foreground/50 hover:text-foreground hover:bg-white/5"
-          }`}
-          title="Send a GIF"
-        >
-          <IconGif size={20} />
-        </button>
-
         {/* Text input */}
         <div className="flex-1 relative">
           <textarea
@@ -222,6 +230,8 @@ export function ChatInput({
             value={message}
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
             disabled={disabled || isSending}
             rows={1}

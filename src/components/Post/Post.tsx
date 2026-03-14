@@ -174,8 +174,8 @@ function PostActionBar({
 }: PostActionBarProps) {
   return (
     <div
-      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5`}
-      style={{ backgroundColor: "color-mix(in srgb, var(--vocl-action-bar) 90%, transparent)" }}
+      className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5`}
+      style={{ backgroundColor: "var(--vocl-action-bar)" }}
     >
       {/* Comment button - icon AND count open panel */}
       <button
@@ -517,7 +517,7 @@ function TagsOverlay({ tags, isVisible }: TagsOverlayProps) {
 
   return (
     <div
-      className={`absolute top-0 right-0 w-1/3 py-2 px-4 z-20 transition-opacity duration-150 ${
+      className={`absolute top-0 right-0 w-1/3 py-2 px-4 z-20 transition-opacity duration-150 hidden sm:block ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -535,6 +535,58 @@ function TagsOverlay({ tags, isVisible }: TagsOverlayProps) {
             #{tag.name}
           </Link>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// Tags strip shown below content on mobile/tablet for image/video/gallery posts
+function MobileTagsStrip({ tags }: { tags: PostTag[] }) {
+  if (tags.length === 0) return null;
+
+  return (
+    <div className="sm:hidden bg-[#EBEBEB] px-2.5 pt-2 pb-1">
+      <div className="flex flex-row flex-wrap gap-1.5">
+        {tags.map((tag) => (
+          <Link
+            key={tag.id}
+            href={`/tag/${encodeURIComponent(tag.name)}`}
+            className="px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate"
+            style={{ maxWidth: "150px" }}
+          >
+            #{tag.name}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Tags for text posts - rendered at Post level after children (including link previews)
+function TextPostTags({ tags, isHovered }: { tags: PostTag[]; isHovered: boolean }) {
+  if (tags.length === 0) return null;
+
+  return (
+    <div className="bg-[#EBEBEB] px-2.5 sm:px-4 pb-2.5 sm:pb-4">
+      <div
+        className={`overflow-hidden transition-all duration-150 ease-out ${
+          isHovered ? "max-h-50" : "max-h-50 lg:max-h-0"
+        }`}
+      >
+        <div className="flex flex-row flex-wrap gap-1.5 pt-3 border-t border-neutral-300/50">
+          {tags.map((tag) => (
+            <Link
+              key={tag.id}
+              href={`/tag/${encodeURIComponent(tag.name)}`}
+              className={`px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate transition-opacity ${
+                isHovered ? "opacity-80 hover:opacity-100" : "opacity-100 lg:opacity-0"
+              }`}
+              style={{ maxWidth: "150px" }}
+            >
+              #{tag.name}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -593,7 +645,7 @@ export const Post = memo(function Post({
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
   }, []);
-  const contentBorderRadius = useMemo(() => isMobile ? "0" : expandedPanel ? "0" : "0 0 40px 0", [expandedPanel, isMobile]);
+  const contentBorderRadius = "0";
   const articleBorderRadius = useMemo(() => isMobile ? "0" : expandedPanel ? "30px 0 0 0" : "30px 0 40px 0", [expandedPanel, isMobile]);
 
   const handleReblogClick = useCallback(() => {
@@ -689,9 +741,19 @@ export const Post = memo(function Post({
               {children}
             </PostTagsContext.Provider>
 
-            {/* Tags overlay for image/video/gallery - positioned inside content */}
+            {/* Tags overlay for image/video/gallery - desktop hover only */}
             {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
               <TagsOverlay tags={tags} isVisible={isHovered} />
+            )}
+
+            {/* Mobile tags strip for image/video/gallery */}
+            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+              <MobileTagsStrip tags={tags} />
+            )}
+
+            {/* Text post tags - rendered after children (including link previews) */}
+            {contentType === "text" && tags && tags.length > 0 && (
+              <TextPostTags tags={tags} isHovered={isHovered} />
             )}
           </div>
 
@@ -874,7 +936,7 @@ export function TextContent({ children, html }: TextContentProps) {
   const isHovered = postTags?.isHovered || false;
 
   return (
-    <div className="px-2.5 pt-2.5 sm:p-4 pb-18 sm:pb-18.5 bg-[#EBEBEB]">
+    <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB]">
       {html ? (
         <div
           className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0"
@@ -886,29 +948,6 @@ export function TextContent({ children, html }: TextContentProps) {
         </div>
       )}
 
-      {/* Tags - collapsible on hover */}
-      {tags.length > 0 && (
-        <div
-          className={`overflow-hidden transition-all duration-150 ease-out ${
-            isHovered ? "max-h-50 mt-3" : "mt-3 lg:mt-0 max-h-50 lg:max-h-0"
-          }`}
-        >
-          <div className="flex flex-row flex-wrap gap-1.5 pt-3 border-t border-neutral-300/50">
-            {tags.map((tag) => (
-              <Link
-                key={tag.id}
-                href={`/tag/${encodeURIComponent(tag.name)}`}
-                className={`px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate transition-opacity ${
-                  isHovered ? "opacity-80 hover:opacity-100" : "opacity-100 lg:opacity-0"
-                }`}
-                style={{ maxWidth: "150px" }}
-              >
-                #{tag.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

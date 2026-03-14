@@ -120,7 +120,7 @@ export function FeedList({
             <>
               <TextContent html={post.content.html}>{post.content.text}</TextContent>
               {post.content.linkPreviews && post.content.linkPreviews.length > 0 && (
-                <div className="bg-vocl-surface-muted -mt-16 pb-16">
+                <div className="bg-vocl-surface-muted">
                   <LinkPreviewCarousel previews={post.content.linkPreviews} />
                 </div>
               )}

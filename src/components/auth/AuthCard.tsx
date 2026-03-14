@@ -346,8 +346,8 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
           </div>
         )}
 
-        {/* OAuth Buttons - Hide for forgot mode */}
-        {mode !== "forgot" && (
+        {/* OAuth Buttons - Hidden during invite-only beta, unhide later */}
+        {/* {mode !== "forgot" && (
           <>
             <div className="space-y-2 mb-3">
               <button
@@ -370,14 +370,13 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               </button>
             </div>
 
-            {/* Divider */}
             <div className="flex items-center gap-4 mb-3">
               <div className="flex-1 h-px bg-white/10" />
               <span className="text-foreground/40 text-sm">or</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
           </>
-        )}
+        )} */}
 
         {/* Email/Password Form */}
         <form onSubmit={handleSubmit} className="space-y-3">

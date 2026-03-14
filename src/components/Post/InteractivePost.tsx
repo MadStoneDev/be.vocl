@@ -398,7 +398,7 @@ export function InteractivePost({
               {contentData.plain || contentData.text}
             </TextContent>
             {contentData.link_previews && contentData.link_previews.length > 0 && (
-              <div className="bg-vocl-surface-muted -mt-16 pb-16">
+              <div className="bg-vocl-surface-muted">
                 <LinkPreviewCarousel previews={contentData.link_previews} />
               </div>
             )}
