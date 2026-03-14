@@ -3,8 +3,8 @@ import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | vocl",
-  description: "Terms of Service for vocl - Share your voice freely",
+  title: "Terms of Service | BeVocl",
+  description: "Terms of Service for BeVocl - Share your voice freely",
 };
 
 export default function TermsOfServicePage() {
@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-4">1. Acceptance of Terms</h2>
             <p className="text-foreground/80">
-              By accessing or using VOCL (&quot;the Service&quot;), you agree to be bound by these Terms of
+              By accessing or using BeVocl (&quot;the Service&quot;), you agree to be bound by these Terms of
               Service. If you do not agree to these terms, do not use the Service.
             </p>
           </section>
@@ -65,7 +65,7 @@ export default function TermsOfServicePage() {
             </h2>
             <div className="space-y-4 text-foreground/90">
               <p className="font-medium">
-                VOCL maintains a strict zero tolerance policy regarding any content that sexualizes,
+                BeVocl maintains a strict zero tolerance policy regarding any content that sexualizes,
                 exploits, endangers, or otherwise harms minors (anyone under 18 years of age).
               </p>
               <p>The following content is absolutely prohibited:</p>
@@ -111,7 +111,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">6. Sensitive Content</h2>
             <div className="space-y-3 text-foreground/80">
               <p>
-                VOCL allows certain adult content between consenting adults, provided it is properly
+                BeVocl allows certain adult content between consenting adults, provided it is properly
                 marked as sensitive.
               </p>
               <p>If you post sensitive content, you must:</p>
@@ -173,12 +173,12 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">9. Intellectual Property</h2>
             <div className="space-y-3 text-foreground/80">
               <p>
-                You retain ownership of content you post to VOCL. By posting content, you grant us
+                You retain ownership of content you post to BeVocl. By posting content, you grant us
                 a non-exclusive, worldwide, royalty-free license to display and distribute your
                 content within the Service.
               </p>
               <p>
-                You may not use VOCL&apos;s name, logo, or branding without our written permission.
+                You may not use BeVocl&apos;s name, logo, or branding without our written permission.
               </p>
             </div>
           </section>
@@ -212,8 +212,8 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">12. Contact</h2>
             <p className="text-foreground/80">
               For questions about these Terms, please contact us at{" "}
-              <a href="mailto:legal@vocl.app" className="text-vocl-accent hover:underline">
-                legal@vocl.app
+              <a href="mailto:legal@bevocl.app" className="text-vocl-accent hover:underline">
+                legal@bevocl.app
               </a>
               .
             </p>
@@ -224,8 +224,8 @@ export default function TermsOfServicePage() {
             <p className="text-foreground/80">
               If you encounter content that violates these terms, please report it using the report
               function on the content or contact us at{" "}
-              <a href="mailto:safety@vocl.app" className="text-vocl-accent hover:underline">
-                safety@vocl.app
+              <a href="mailto:safety@bevocl.app" className="text-vocl-accent hover:underline">
+                safety@bevocl.app
               </a>
               . We take all reports seriously and review them promptly.
             </p>

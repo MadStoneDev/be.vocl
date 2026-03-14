@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | vocl",
-  description: "Privacy Policy for vocl - Share your voice freely",
+  title: "Privacy Policy | BeVocl",
+  description: "Privacy Policy for BeVocl - Share your voice freely",
 };
 
 export default function PrivacyPolicyPage() {
@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
               1. Introduction
             </h2>
             <p className="text-foreground/80 mb-4">
-              Welcome to vocl. We respect your privacy and are committed to
+              Welcome to BeVocl. We respect your privacy and are committed to
               protecting your personal data. This Privacy Policy explains how we
               collect, use, disclose, and safeguard your information when you use
               our service.
@@ -178,7 +178,7 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p className="text-foreground/80 mb-4">
               You can manage your privacy settings in your account settings. To
-              exercise other rights, please contact us at privacy@vocl.app.
+              exercise other rights, please contact us at privacy@bevocl.app.
             </p>
           </section>
 
@@ -263,7 +263,7 @@ export default function PrivacyPolicyPage() {
               practices, please contact us at:
             </p>
             <p className="text-foreground/80 mb-4">
-              Email: privacy@vocl.app
+              Email: privacy@bevocl.app
             </p>
           </section>
         </div>
