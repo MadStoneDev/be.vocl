@@ -37,7 +37,7 @@ export function MainNav({
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 md:hidden">
-      <div className="px-4 h-14 flex items-center justify-between">
+      <div className="px-3 h-12 flex items-center justify-between">
         {/* Logo */}
         <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors">
           <Logo className={`min-h-12.5`} />

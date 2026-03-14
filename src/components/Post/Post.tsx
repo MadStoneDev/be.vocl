@@ -112,8 +112,8 @@ interface PostHeaderProps {
 function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
   return (
     <div
-      className="flex items-center justify-between p-2 border-b border-vocl-surface-dark/20 z-50"
-      style={{ backgroundColor: "var(--vocl-surface-muted)", borderRadius: "30px 0 0 0" }}
+      className="flex items-center justify-between p-1.5 sm:p-2 border-b border-vocl-surface-dark/20 z-50"
+      style={{ backgroundColor: "var(--vocl-surface-muted)" }}
     >
       <div className="flex items-center gap-3">
         <Link
@@ -177,8 +177,8 @@ function PostActionBar({
 }: PostActionBarProps) {
   return (
     <div
-      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between gap-6 sm:gap-8 pt-2.5 pr-20 pb-3 sm:pb-4 pl-3 sm:pl-5`}
-      style={{ backgroundColor: "color-mix(in srgb, var(--vocl-action-bar) 90%, transparent)", borderRadius: "0 0 40px 0" }}
+      className={`absolute right-0 bottom-0 left-0 flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5`}
+      style={{ backgroundColor: "color-mix(in srgb, var(--vocl-action-bar) 90%, transparent)" }}
     >
       {/* Comment button - icon AND count open panel */}
       <button
@@ -596,8 +596,17 @@ export const Post = memo(function Post({
   // Memoized computed values
   const displayPanel = useMemo(() => expandedPanel || lastPanel, [expandedPanel, lastPanel]);
   const showNSFWOverlay = useMemo(() => isSensitive && !isContentRevealed, [isSensitive, isContentRevealed]);
-  const contentBorderRadius = useMemo(() => expandedPanel ? "0" : "0 0 40px 0", [expandedPanel]);
-  const articleBorderRadius = useMemo(() => expandedPanel ? "30px 0 0 0" : "30px 0 40px 0", [expandedPanel]);
+  // On mobile (< 640px), use flat corners for edge-to-edge feel
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 639px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+  const contentBorderRadius = useMemo(() => isMobile ? "0" : expandedPanel ? "0" : "0 0 40px 0", [expandedPanel, isMobile]);
+  const articleBorderRadius = useMemo(() => isMobile ? "0" : expandedPanel ? "30px 0 0 0" : "30px 0 40px 0", [expandedPanel, isMobile]);
 
   const handleReblogClick = useCallback(() => {
     setIsReblogMenuOpen(prev => !prev);
@@ -665,7 +674,7 @@ export const Post = memo(function Post({
   }, []);
 
   return (
-    <div className="w-full max-w-full md:max-w-xl">
+    <div className="w-full max-w-full sm:max-w-xl">
       <article
         className="relative shadow-xl overflow-hidden"
         data-post-id={id}
@@ -701,7 +710,7 @@ export const Post = memo(function Post({
 
           {/* NSFW overlay - shown when content is sensitive and not revealed */}
           {showNSFWOverlay && (
-            <div style={{ borderRadius: "0 0 40px 0" }} className="overflow-hidden">
+            <div style={{ borderRadius: contentBorderRadius }} className="overflow-hidden">
               <NSFWOverlay onReveal={handleRevealContent} />
             </div>
           )}
@@ -767,7 +776,7 @@ export const Post = memo(function Post({
           maxHeight: expandedPanel ? "384px" : "0px",
           opacity: expandedPanel ? 1 : 0,
           transition: "max-height 300ms ease-out, opacity 200ms ease-out",
-          borderRadius: "0 0 20px 20px",
+          borderRadius: isMobile ? "0" : "0 0 20px 20px",
           marginTop: "0px",
           position: "relative",
           zIndex: 1,
@@ -878,7 +887,7 @@ export function TextContent({ children, html }: TextContentProps) {
   const isHovered = postTags?.isHovered || false;
 
   return (
-    <div className="p-3 sm:p-4 pb-18.5 sm:pb-18.5 bg-[#EBEBEB]">
+    <div className="px-2.5 pt-2.5 sm:p-4 pb-18 sm:pb-18.5 bg-[#EBEBEB]">
       {html ? (
         <div
           className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0"

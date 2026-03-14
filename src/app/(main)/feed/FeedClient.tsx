@@ -196,7 +196,7 @@ export default function FeedClient({
   }, [data]);
 
   return (
-    <div className="py-3 mx-auto max-w-xl">
+    <div className="py-1 sm:py-3 mx-auto max-w-xl">
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
         <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />

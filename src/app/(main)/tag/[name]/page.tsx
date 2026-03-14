@@ -167,9 +167,9 @@ export default function TagPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto py-6">
+    <div className="max-w-xl mx-auto py-3 sm:py-6">
       {/* Tag Header */}
-      <div className="px-4 mb-6">
+      <div className="px-2 sm:px-4 mb-4 sm:mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-vocl-accent/20 flex items-center justify-center">
@@ -237,7 +237,7 @@ export default function TagPage() {
       )}
 
       {/* Posts */}
-      <div className="flex flex-col gap-5 px-4">
+      <div className="flex flex-col gap-2 sm:gap-5 px-0 sm:px-4">
         {posts.map((post) => (
           <InteractivePost
             key={post.id}

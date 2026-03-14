@@ -137,10 +137,10 @@ export default function MainLayout({
       {/* Main Content - renders children immediately */}
       <main
         id="main-content"
-        className="pt-14 pb-20 md:pt-0 md:pb-8 md:pl-52 lg:pl-56"
+        className="pt-12 pb-14 md:pt-0 md:pb-8 md:pl-52 lg:pl-56"
         tabIndex={-1}
       >
-        <div className="max-w-2xl mx-auto px-2 sm:px-4 pb-6">
+        <div className="max-w-2xl mx-auto sm:px-4 pb-4">
           {children}
         </div>
       </main>

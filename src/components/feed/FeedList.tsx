@@ -91,7 +91,7 @@ export function FeedList({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-2 sm:gap-5">
       {posts.map((post) => (
         <InteractivePost
           key={post.id}

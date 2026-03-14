@@ -143,7 +143,7 @@ export function VideoContent({
       {/* Caption */}
       {caption && (
         <div
-          className="p-4 pb-18.5 bg-[#EBEBEB] text-neutral-700"
+          className="px-2.5 pt-2.5 sm:p-4 pb-18 sm:pb-18.5 bg-[#EBEBEB] text-neutral-700"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}

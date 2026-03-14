@@ -85,7 +85,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <div className="py-6 max-w-2xl mx-auto px-4">
+    <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">Explore</h1>
@@ -292,7 +292,7 @@ export default function ExplorePage() {
 
 function ExploreSkeleton() {
   return (
-    <div className="py-6 max-w-2xl mx-auto px-4 animate-pulse">
+    <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4 animate-pulse">
       {/* Header skeleton */}
       <div className="mb-8">
         <div className="h-8 w-32 bg-white/10 rounded-lg" />

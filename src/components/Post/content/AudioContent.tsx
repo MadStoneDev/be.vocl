@@ -119,7 +119,7 @@ export function AudioContent({
   // Spotify embed iframe
   if (isSpotifyEmbed) {
     return (
-      <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6 pb-18.5">
+      <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 pb-18 sm:pb-18.5">
         <div className="rounded-xl overflow-hidden">
           <iframe
             src={`https://open.spotify.com/embed/track/${spotifyData.track_id}?utm_source=oembed&theme=0`}
@@ -170,7 +170,7 @@ export function AudioContent({
 
   // File upload audio player (original)
   return (
-    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-6 pb-18.5">
+    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 pb-18 sm:pb-18.5">
       {src && <audio ref={audioRef} src={src} preload="metadata" />}
 
       <div className="flex gap-4">
