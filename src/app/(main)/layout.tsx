@@ -176,18 +176,20 @@ export default function MainLayout({
         onChatToggle={toggleChat}
       />
 
-      {/* Chat Sidebar */}
-      <ErrorBoundary fallback={<ChatErrorFallback onClose={() => setIsChatOpen(false)} />}>
-        <ChatSidebar
-          isOpen={isChatOpen}
-          onClose={() => {
-            setIsChatOpen(false);
-            setInitialConversationId(null);
-          }}
-          currentUserId={profile?.id}
-          initialConversationId={initialConversationId}
-        />
-      </ErrorBoundary>
+      {/* Chat Sidebar - only mount when open to avoid hook side effects blocking navigation */}
+      {isChatOpen && (
+        <ErrorBoundary fallback={<ChatErrorFallback onClose={() => setIsChatOpen(false)} />}>
+          <ChatSidebar
+            isOpen={isChatOpen}
+            onClose={() => {
+              setIsChatOpen(false);
+              setInitialConversationId(null);
+            }}
+            currentUserId={profile?.id}
+            initialConversationId={initialConversationId}
+          />
+        </ErrorBoundary>
+      )}
 
       {/* Create Post FAB */}
       <CreatePostFAB />

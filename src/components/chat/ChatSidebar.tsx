@@ -284,8 +284,6 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     createdAt: m.createdAt,
   }));
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Backdrop for mobile only */}
