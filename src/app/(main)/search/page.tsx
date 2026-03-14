@@ -14,6 +14,9 @@ import {
   IconTrendingUp,
   IconUserPlus,
   IconX,
+  IconFilter,
+  IconChevronDown,
+  IconChevronUp,
 } from "@tabler/icons-react";
 import {
   searchUsers,
@@ -86,6 +89,15 @@ function SearchContent() {
   const [trendingTags, setTrendingTags] = useState<SearchResult["tags"]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<SearchResult["users"]>([]);
   const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true);
+
+  // Advanced filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterPostType, setFilterPostType] = useState<string>("");
+  const [filterSortBy, setFilterSortBy] = useState<"recent" | "popular">("recent");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [filterHasMedia, setFilterHasMedia] = useState(false);
+  const [filterAuthor, setFilterAuthor] = useState("");
 
   // Tag browsing
   const [browsingTag, setBrowsingTag] = useState<{
@@ -186,7 +198,15 @@ function SearchContent() {
           const [usersResult, tagsResult, postsResult] = await Promise.all([
             activeTab === "all" ? searchUsers(searchQuery, { limit: 5 }) : Promise.resolve({ success: true, users: [], total: 0 }),
             activeTab === "all" ? searchTags(searchQuery, { limit: 5 }) : Promise.resolve({ success: true, tags: [], total: 0 }),
-            searchPosts(searchQuery, { includeSensitive: forceIncludeSensitive }),
+            searchPosts(searchQuery, {
+              includeSensitive: forceIncludeSensitive,
+              postType: filterPostType || undefined,
+              dateFrom: filterDateFrom || undefined,
+              dateTo: filterDateTo || undefined,
+              sortBy: filterSortBy,
+              hasMedia: filterHasMedia || undefined,
+              authorUsername: filterAuthor || undefined,
+            }),
           ]);
 
           if (usersResult.success) {
@@ -208,7 +228,7 @@ function SearchContent() {
         setIsSearching(false);
       }
     },
-    [activeTab, sensitiveConfirmed]
+    [activeTab, sensitiveConfirmed, filterPostType, filterSortBy, filterDateFrom, filterDateTo, filterHasMedia, filterAuthor]
   );
 
   // Search on query change (debounced)
@@ -443,6 +463,158 @@ function SearchContent() {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Advanced Filters (shown on posts tab when searching) */}
+      {query && !browsingTag && (activeTab === "posts" || activeTab === "all") && (
+        <div className="mb-6">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-foreground/70 hover:bg-white/10 transition-colors text-sm font-medium"
+          >
+            <IconFilter size={16} />
+            <span>Filters</span>
+            {showFilters ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+          </button>
+
+          {showFilters && (
+            <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 space-y-5">
+              {/* Post Type */}
+              <div>
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
+                  Post Type
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: "", label: "All" },
+                    { value: "text", label: "Text" },
+                    { value: "image", label: "Image" },
+                    { value: "video", label: "Video" },
+                    { value: "audio", label: "Audio" },
+                    { value: "gallery", label: "Gallery" },
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => setFilterPostType(type.value)}
+                      className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                        filterPostType === type.value
+                          ? "bg-vocl-accent text-white"
+                          : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sort By */}
+              <div>
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
+                  Sort By
+                </label>
+                <div className="flex gap-2">
+                  {([
+                    { value: "recent" as const, label: "Recent" },
+                    { value: "popular" as const, label: "Popular" },
+                  ]).map((sort) => (
+                    <button
+                      key={sort.value}
+                      onClick={() => setFilterSortBy(sort.value)}
+                      className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                        filterSortBy === sort.value
+                          ? "bg-vocl-accent text-white"
+                          : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                      }`}
+                    >
+                      {sort.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
+                  Date Range
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="date"
+                    value={filterDateFrom}
+                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    placeholder="From"
+                  />
+                  <span className="text-foreground/40 text-sm">to</span>
+                  <input
+                    type="date"
+                    value={filterDateTo}
+                    onChange={(e) => setFilterDateTo(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    placeholder="To"
+                  />
+                </div>
+              </div>
+
+              {/* Has Media + Author row */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Has Media */}
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="hasMedia"
+                    className="text-sm font-medium text-foreground/70"
+                  >
+                    Media only
+                  </label>
+                  <button
+                    id="hasMedia"
+                    role="switch"
+                    aria-checked={filterHasMedia}
+                    onClick={() => setFilterHasMedia(!filterHasMedia)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      filterHasMedia ? "bg-vocl-accent" : "bg-white/10"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        filterHasMedia ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Author */}
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={filterAuthor}
+                    onChange={(e) => setFilterAuthor(e.target.value)}
+                    placeholder="Filter by username..."
+                    className="w-full px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Clear Filters */}
+              {(filterPostType || filterSortBy !== "recent" || filterDateFrom || filterDateTo || filterHasMedia || filterAuthor) && (
+                <button
+                  onClick={() => {
+                    setFilterPostType("");
+                    setFilterSortBy("recent");
+                    setFilterDateFrom("");
+                    setFilterDateTo("");
+                    setFilterHasMedia(false);
+                    setFilterAuthor("");
+                  }}
+                  className="text-sm text-vocl-accent hover:underline"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 

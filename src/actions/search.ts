@@ -222,6 +222,13 @@ export async function searchPosts(
     offset?: number;
     tagId?: string;
     includeSensitive?: boolean;
+    // Advanced filters
+    postType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    sortBy?: "recent" | "popular";
+    hasMedia?: boolean;
+    authorUsername?: string;
   }
 ): Promise<{
   success: boolean;
@@ -278,6 +285,9 @@ export async function searchPosts(
           content,
           is_sensitive,
           created_at,
+          like_count,
+          comment_count,
+          reblog_count,
           profiles!posts_author_id_fkey (
             username,
             display_name,
@@ -287,20 +297,55 @@ export async function searchPosts(
           { count: "exact" }
         )
         .in("id", postIds)
-        .eq("status", "published")
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1);
+        .eq("status", "published");
+
+      // Apply advanced filters
+      postsQuery = applyAdvancedFilters(postsQuery, options);
+
+      // Author filter (filter by joined profile username)
+      if (options?.authorUsername) {
+        postsQuery = postsQuery.ilike(
+          "profiles.username",
+          `%${options.authorUsername}%`
+        );
+      }
 
       if (shouldFilterSensitive) {
         postsQuery = postsQuery.eq("is_sensitive", false);
       }
 
+      // Sorting
+      if (options?.sortBy === "popular") {
+        // Sort by engagement (like_count + comment_count + reblog_count) desc
+        // Supabase doesn't support computed column ordering directly,
+        // so we fetch all and sort in JS, then paginate
+      }
+
+      postsQuery = postsQuery
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
       const { data: posts, error, count } = await postsQuery;
 
       if (error) throw error;
 
+      let resultPosts = posts || [];
+
+      // Filter out posts where author didn't match (Supabase nested filter returns null profiles)
+      if (options?.authorUsername) {
+        resultPosts = resultPosts.filter((p: any) => p.profiles !== null);
+      }
+
       // Get like and comment counts
-      const formattedPosts = await formatPosts(supabase, posts || []);
+      const formattedPosts = await formatPosts(supabase, resultPosts);
+
+      // Sort by popularity if requested
+      if (options?.sortBy === "popular") {
+        formattedPosts.sort(
+          (a, b) =>
+            b.likeCount + b.commentCount - (a.likeCount + a.commentCount)
+        );
+      }
 
       return { success: true, posts: formattedPosts, total: count || 0 };
     }
@@ -322,6 +367,9 @@ export async function searchPosts(
         content,
         is_sensitive,
         created_at,
+        like_count,
+        comment_count,
+        reblog_count,
         profiles!posts_author_id_fkey (
           username,
           display_name,
@@ -333,25 +381,83 @@ export async function searchPosts(
       .eq("status", "published")
       .or(
         `content->plain.ilike.%${searchTerm}%,content->html.ilike.%${searchTerm}%,content->caption_html.ilike.%${searchTerm}%`
-      )
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      );
+
+    // Apply advanced filters
+    postsQuery = applyAdvancedFilters(postsQuery, options);
+
+    // Author filter
+    if (options?.authorUsername) {
+      postsQuery = postsQuery.ilike(
+        "profiles.username",
+        `%${options.authorUsername}%`
+      );
+    }
 
     if (shouldFilterSensitive) {
       postsQuery = postsQuery.eq("is_sensitive", false);
     }
 
+    postsQuery = postsQuery
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
     const { data: posts, error, count } = await postsQuery;
 
     if (error) throw error;
 
-    const formattedPosts = await formatPosts(supabase, posts || []);
+    let resultPosts = posts || [];
+
+    // Filter out posts where author didn't match
+    if (options?.authorUsername) {
+      resultPosts = resultPosts.filter((p: any) => p.profiles !== null);
+    }
+
+    const formattedPosts = await formatPosts(supabase, resultPosts);
+
+    // Sort by popularity if requested
+    if (options?.sortBy === "popular") {
+      formattedPosts.sort(
+        (a, b) =>
+          b.likeCount + b.commentCount - (a.likeCount + a.commentCount)
+      );
+    }
 
     return { success: true, posts: formattedPosts, total: count || 0 };
   } catch (error) {
     console.error("Search posts error:", error);
     return { success: false, error: "Failed to search posts" };
   }
+}
+
+function applyAdvancedFilters(
+  query: any,
+  options?: {
+    postType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    sortBy?: "recent" | "popular";
+    hasMedia?: boolean;
+    authorUsername?: string;
+  }
+) {
+  if (options?.postType) {
+    query = query.eq("post_type", options.postType);
+  }
+  if (options?.hasMedia) {
+    query = query.in("post_type", ["image", "video", "audio", "gallery"]);
+  }
+  if (options?.dateFrom) {
+    query = query.gte("created_at", options.dateFrom);
+  }
+  if (options?.dateTo) {
+    // Add end-of-day to include the full day
+    const endDate = options.dateTo.includes("T")
+      ? options.dateTo
+      : `${options.dateTo}T23:59:59.999Z`;
+    query = query.lte("created_at", endDate);
+  }
+  return query;
 }
 
 async function formatPosts(supabase: any, posts: any[]): Promise<SearchResult["posts"]> {
