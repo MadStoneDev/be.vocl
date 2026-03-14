@@ -671,7 +671,7 @@ export async function getSuggestedUsers(
             .in("following_id", fofProfileIds);
 
           const fofFollowerCountMap = new Map<string, number>();
-          for (const f of (fofFollowerData?.data || fofFollowerData || []) as any[]) {
+          for (const f of (fofFollowerData || []) as any[]) {
             fofFollowerCountMap.set(f.following_id, (fofFollowerCountMap.get(f.following_id) || 0) + 1);
           }
 
