@@ -284,21 +284,19 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     createdAt: m.createdAt,
   }));
 
+  if (!isOpen) return null;
+
   return (
     <>
       {/* Backdrop for mobile only */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={onClose}
-        />
-      )}
+      <div
+        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        onClick={onClose}
+      />
 
-      {/* Sidebar - slides in/out with transition */}
+      {/* Sidebar - slides in with animation */}
       <aside
-        className={`fixed top-0 right-0 bottom-0 w-full md:w-96 bg-background border-l border-white/5 z-50 flex flex-col transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"
-        }`}
+        className="fixed top-0 right-0 bottom-0 w-full md:w-96 bg-background border-l border-white/5 z-50 flex flex-col animate-slide-in-right"
       >
         {view === "list" ? (
           <>
