@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
   IconMessagePlus,
@@ -119,15 +120,15 @@ export function ConversationList({
 
   return (
     <div className="divide-y divide-white/5">
-      {/* Context menu overlay */}
-      {contextMenu && (
+      {/* Context menu - portaled to body to escape overflow clipping */}
+      {contextMenu && createPortal(
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[60]"
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-50 w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl"
+            className="fixed z-[70] w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
               top: Math.min(contextMenu.y, window.innerHeight - 280),
@@ -185,7 +186,8 @@ export function ConversationList({
               Delete conversation
             </button>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {filteredConversations.map((conversation) => (
