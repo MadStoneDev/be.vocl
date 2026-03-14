@@ -243,8 +243,8 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
             return;
           }
 
-          router.push("/feed");
-          router.refresh();
+          // Hard navigation to ensure fresh server data with new auth cookies
+          window.location.href = "/feed";
         }
       } catch {
         setError("An unexpected error occurred");

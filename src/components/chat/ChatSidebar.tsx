@@ -297,7 +297,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       {/* Sidebar - slides in/out with transition */}
       <aside
         className={`fixed top-0 right-0 bottom-0 w-full md:w-96 bg-background border-l border-white/5 z-50 flex flex-col transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+          isOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"
         }`}
       >
         {view === "list" ? (
