@@ -40,13 +40,13 @@ export function SecurityWarningModal({ isAuthenticated }: SecurityWarningModalPr
         onClick={handleClose}
       />
 
-      <div className="relative w-full max-w-sm bg-vocl-surface rounded-xl border border-white/10 overflow-hidden">
+      <div className="relative w-full max-w-sm bg-vocl-surface-dark rounded-xl border border-white/10 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <h2 className="text-base font-semibold text-vocl-surface-dark">Stay Safe</h2>
+          <h2 className="text-base font-semibold text-foreground">Stay Safe</h2>
           <button
             onClick={handleClose}
-            className="p-1 rounded-lg text-vocl-surface-dark/50 hover:text-vocl-surface-dark/30 hover:bg-white/10 transition-colors"
+            className="p-1 rounded-lg text-foreground/50 hover:text-foreground/70 hover:bg-white/10 transition-colors"
           >
             <IconX size={18} />
           </button>
@@ -54,11 +54,11 @@ export function SecurityWarningModal({ isAuthenticated }: SecurityWarningModalPr
 
         {/* Content */}
         <div className="px-4 py-4 space-y-3 text-sm">
-          <p className="text-vocl-surface-dark/80">
-            <strong className="text-vocl-surface-dark">Beware of scammers:</strong> The be.vocl team will never ask for your password or ask you to change your email.
+          <p className="text-foreground/80">
+            <strong className="text-foreground">Beware of scammers:</strong> The be.vocl team will never ask for your password or ask you to change your email.
           </p>
 
-          <p className="text-vocl-surface-dark/80">
+          <p className="text-foreground/80">
             If we need to contact you, we&apos;ll message you on be.vocl. All staff have a{" "}
             <IconShieldCheckFilled size={14} className="inline text-blue-500" />{" "}
             <span className="text-blue-400">badge</span> next to their name.

@@ -319,7 +319,7 @@ export default function BookmarksPage() {
             {menuOpenId === col.id && (
               <div
                 ref={menuRef}
-                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface border border-white/10 rounded-xl shadow-xl py-1 min-w-[140px]"
+                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl py-1 min-w-[140px]"
               >
                 <button
                   onClick={() => {
@@ -457,7 +457,7 @@ export default function BookmarksPage() {
 
                     {/* Move dropdown */}
                     {moveMenuPostId === post.id && (
-                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface border border-white/10 rounded-xl shadow-xl py-1 min-w-[180px]">
+                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl py-1 min-w-[180px]">
                         <button
                           onClick={() => handleMoveBookmark(post.id, null)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${

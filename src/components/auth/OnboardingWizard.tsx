@@ -618,7 +618,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         </div>
 
         {/* Step content */}
-        <div className="bg-vocl-surface rounded-2xl border border-white/10 p-6">
+        <div className="bg-vocl-surface-dark rounded-2xl border border-white/10 p-6">
           {renderStep()}
         </div>
 

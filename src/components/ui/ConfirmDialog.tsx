@@ -86,7 +86,7 @@ export function ConfirmDialog({
       {/* Dialog */}
       <div
         ref={dialogRef}
-        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface rounded-2xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface-dark rounded-2xl shadow-2xl overflow-hidden"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="dialog-title"

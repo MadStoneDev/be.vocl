@@ -562,8 +562,10 @@ export async function hideConversation(
     }
 
     // Remove the user's participation record — this hides the conversation
-    // from their list without affecting the other participant
-    const { error } = await (supabase as any)
+    // from their list without affecting the other participant.
+    // Uses admin client to bypass RLS (DELETE policy may not exist yet).
+    const admin = createAdminClient();
+    const { error } = await (admin as any)
       .from("conversation_participants")
       .delete()
       .eq("conversation_id", conversationId)
