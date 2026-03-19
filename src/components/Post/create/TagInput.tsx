@@ -1,7 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { IconX, IconHash } from "@tabler/icons-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { IconX, IconHash, IconLoader2 } from "@tabler/icons-react";
+import { searchTags } from "@/actions/search";
+
+interface TagSuggestion {
+  id: string;
+  name: string;
+  postCount: number;
+}
 
 interface TagInputProps {
   tags: string[];
@@ -17,13 +24,20 @@ export function TagInput({
   placeholder = "Add tags...",
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("");
+  const [suggestions, setSuggestions] = useState<TagSuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const addTag = useCallback(
     (tag: string) => {
       const normalizedTag = tag
         .trim()
         .replace(/^#/, "")
-        .replace(/\s+/g, " "); // Normalize multiple spaces to single space
+        .replace(/\s+/g, " ");
 
       if (
         normalizedTag &&
@@ -34,6 +48,9 @@ export function TagInput({
         onChange([...tags, normalizedTag]);
       }
       setInputValue("");
+      setSuggestions([]);
+      setShowDropdown(false);
+      setHighlightedIndex(-1);
     },
     [tags, onChange, maxTags]
   );
@@ -45,14 +62,111 @@ export function TagInput({
     [tags, onChange]
   );
 
+  // Fetch suggestions with debounce
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const query = inputValue.trim().replace(/^#/, "");
+    if (query.length < 1) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const result = await searchTags(query, { limit: 8 });
+        if (result.success && result.tags) {
+          // Filter out tags already added
+          const filtered = result.tags.filter(
+            (t) => !tags.includes(t.name)
+          );
+          setSuggestions(filtered);
+          setShowDropdown(true);
+          setHighlightedIndex(-1);
+        }
+      } catch {
+        // Silently fail — user can still type tags manually
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [inputValue, tags]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
+    const qNorm = inputValue.trim().replace(/^#/, "");
+    const hasCreateOption = qNorm.length >= 2 && !suggestions.some(
+      (s) => s.name.toLowerCase() === qNorm.toLowerCase()
+    );
+    const totalItems = suggestions.length + (hasCreateOption ? 1 : 0);
+
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      addTag(inputValue);
+      if (showDropdown && totalItems > 0) {
+        setHighlightedIndex((prev) =>
+          prev < totalItems - 1 ? prev + 1 : 0
+        );
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (showDropdown && totalItems > 0) {
+        setHighlightedIndex((prev) =>
+          prev > 0 ? prev - 1 : totalItems - 1
+        );
+      }
+    } else if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+        addTag(suggestions[highlightedIndex].name);
+      } else {
+        addTag(inputValue);
+      }
+    } else if (e.key === "Escape") {
+      setShowDropdown(false);
+      setHighlightedIndex(-1);
     } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
       removeTag(tags[tags.length - 1]);
     }
   };
+
+  // Scroll highlighted item into view
+  useEffect(() => {
+    if (highlightedIndex >= 0 && dropdownRef.current) {
+      const item = dropdownRef.current.children[highlightedIndex] as HTMLElement;
+      item?.scrollIntoView({ block: "nearest" });
+    }
+  }, [highlightedIndex]);
+
+  const queryNormalized = inputValue.trim().replace(/^#/, "");
+  const exactMatchExists = suggestions.some(
+    (s) => s.name.toLowerCase() === queryNormalized.toLowerCase()
+  );
 
   return (
     <div className="space-y-2">
@@ -81,7 +195,14 @@ export function TagInput({
             size={18}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
           />
+          {isLoading && (
+            <IconLoader2
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 animate-spin"
+            />
+          )}
           <input
+            ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => {
@@ -99,11 +220,74 @@ export function TagInput({
               }
             }}
             onKeyDown={handleKeyDown}
-            onBlur={() => inputValue && addTag(inputValue)}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowDropdown(true);
+            }}
+            onBlur={() => {
+              // Delay to allow click on suggestion
+              setTimeout(() => {
+                if (inputValue) addTag(inputValue);
+              }, 200);
+            }}
             placeholder={placeholder}
             className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent transition-colors text-sm"
             maxLength={30}
+            autoComplete="off"
           />
+
+          {/* Suggestions dropdown */}
+          {showDropdown && (suggestions.length > 0 || (queryNormalized.length >= 2 && !exactMatchExists)) && (
+            <div
+              ref={dropdownRef}
+              className="absolute z-50 left-0 right-0 mt-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl overflow-hidden max-h-52 overflow-y-auto"
+            >
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.id}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // Prevent blur
+                    addTag(suggestion.name);
+                  }}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
+                    index === highlightedIndex
+                      ? "bg-vocl-accent/20 text-foreground"
+                      : "text-foreground/80 hover:bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-sm">
+                    <IconHash size={14} className="text-vocl-accent shrink-0" />
+                    {suggestion.name}
+                  </span>
+                  <span className="text-xs text-foreground/40">
+                    {suggestion.postCount} {suggestion.postCount === 1 ? "post" : "posts"}
+                  </span>
+                </button>
+              ))}
+
+              {/* Create new tag option */}
+              {queryNormalized.length >= 2 && !exactMatchExists && (
+                <button
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    addTag(queryNormalized);
+                  }}
+                  onMouseEnter={() => setHighlightedIndex(suggestions.length)}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left border-t border-white/5 transition-colors ${
+                    highlightedIndex === suggestions.length
+                      ? "bg-vocl-accent/20 text-foreground"
+                      : "text-foreground/60 hover:bg-white/5"
+                  }`}
+                >
+                  <span className="text-sm">
+                    Create <span className="text-vocl-accent font-medium">#{queryNormalized}</span>
+                  </span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
