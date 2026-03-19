@@ -649,7 +649,10 @@ export const Post = memo(function Post({
   const articleBorderRadius = useMemo(() => isMobile ? "0" : expandedPanel ? "30px 0 0 0" : "30px 0 40px 0", [expandedPanel, isMobile]);
 
   const handleReblogClick = useCallback(() => {
-    setIsReblogMenuOpen(prev => !prev);
+    setIsReblogMenuOpen(prev => {
+      if (!prev) setIsHovered(false); // Clear hover when opening menu
+      return !prev;
+    });
     setExpandedPanel(null);
   }, []);
 
@@ -730,8 +733,8 @@ export const Post = memo(function Post({
         {/* Content area with overlay */}
         <div
           className="relative"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => !isReblogMenuOpen && setIsHovered(true)}
+          onMouseLeave={() => !isReblogMenuOpen && setIsHovered(false)}
         >
           {/* The actual content - wrapped in context for text/audio to access tags */}
           <div className="relative overflow-hidden" style={{
