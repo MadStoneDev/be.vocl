@@ -189,6 +189,12 @@ export function RichTextEditor({
           padding-left: 1.5em;
           margin: 0.5em 0;
         }
+        .ProseMirror ul {
+          list-style-type: disc;
+        }
+        .ProseMirror ol {
+          list-style-type: decimal;
+        }
         .ProseMirror li {
           margin: 0.25em 0;
         }
