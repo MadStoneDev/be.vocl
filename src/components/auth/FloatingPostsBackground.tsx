@@ -326,7 +326,7 @@ function TextPostCard({ post }: { post: FloatingPost }) {
     <>
       <PostCardHeader post={post} />
       <div className="px-3 pt-2.5 pb-2 bg-[#EBEBEB]">
-        <p className="text-xs text-neutral-700 font-light leading-relaxed whitespace-pre-line line-clamp-5">
+        <p className="text-sm text-neutral-700 font-light leading-relaxed whitespace-pre-line line-clamp-6">
           {post.content}
         </p>
       </div>
@@ -341,7 +341,7 @@ function ImagePostCard({ post }: { post: FloatingPost }) {
     <>
       <PostCardHeader post={post} />
       {post.imageUrl && (
-        <div className="relative w-full h-36">
+        <div className="relative w-full h-44">
           <Image
             src={post.imageUrl}
             alt={post.caption || "Post image"}
@@ -368,7 +368,7 @@ function ImagePostCard({ post }: { post: FloatingPost }) {
       )}
       {post.caption && (
         <div className="px-3 pt-2 pb-1.5 bg-[#EBEBEB]">
-          <p className="text-xs text-neutral-700 font-light leading-relaxed line-clamp-2">
+          <p className="text-sm text-neutral-700 font-light leading-relaxed line-clamp-2">
             {post.caption}
           </p>
         </div>
@@ -385,7 +385,7 @@ function AudioPostCard({ post }: { post: FloatingPost }) {
       <PostCardHeader post={post} />
       {post.content && (
         <div className="px-3 pt-2 pb-1.5 bg-[#EBEBEB]">
-          <p className="text-xs text-neutral-700 font-light leading-relaxed line-clamp-2">
+          <p className="text-sm text-neutral-700 font-light leading-relaxed line-clamp-2">
             {post.content}
           </p>
         </div>
@@ -429,11 +429,11 @@ function AudioPostCard({ post }: { post: FloatingPost }) {
 function PostCard({ post }: { post: FloatingPost }) {
   return (
     <div
-      className="absolute w-60 rounded-2xl bg-vocl-surface shadow-xl overflow-hidden pointer-events-none border border-neutral-200/30"
+      className="absolute w-72 sm:w-80 rounded-2xl bg-vocl-surface shadow-xl overflow-hidden pointer-events-none border border-neutral-200/30"
       style={{
         left: `${post.x}%`,
         top: `${post.y}%`,
-        transform: `rotate(${post.rotation}deg) scale(${post.scale})`,
+        transform: `translate(-50%, -50%) rotate(${post.rotation}deg) scale(${post.scale})`,
         opacity: post.opacity,
         transition:
           "transform 0.1s linear, left 0.1s linear, top 0.1s linear",
@@ -458,13 +458,13 @@ export function FloatingPostsBackground() {
     return samplePosts.map((sample, index) => ({
       ...sample,
       id: index,
-      x: Math.random() * 80 + 10,
-      y: Math.random() * 80 + 10,
-      rotation: Math.random() * 16 - 8, // -8 to 8 degrees — slightly tighter
-      scale: 0.65 + Math.random() * 0.25, // 0.65 to 0.9
-      speed: 0.015 + Math.random() * 0.025, // Slow drift
+      x: Math.random() * 90 + 5, // 5-95% — full spread
+      y: Math.random() * 90 + 5,
+      rotation: Math.random() * 16 - 8,
+      scale: 0.85 + Math.random() * 0.15, // 0.85 to 1.0 — readable
+      speed: 0.015 + Math.random() * 0.025,
       direction: Math.random() * Math.PI * 2,
-      opacity: 0.35 + Math.random() * 0.3, // 0.35 to 0.65
+      opacity: 0.4 + Math.random() * 0.3, // 0.4 to 0.7
     }));
   }, []);
 
@@ -491,13 +491,13 @@ export function FloatingPostsBackground() {
           let newY = post.y + Math.sin(post.direction) * post.speed;
           let newDirection = post.direction;
 
-          if (newX < -5 || newX > 92) {
+          if (newX < 0 || newX > 100) {
             newDirection = Math.PI - newDirection;
-            newX = Math.max(-5, Math.min(92, newX));
+            newX = Math.max(0, Math.min(100, newX));
           }
-          if (newY < -5 || newY > 88) {
+          if (newY < 0 || newY > 100) {
             newDirection = -newDirection;
-            newY = Math.max(-5, Math.min(88, newY));
+            newY = Math.max(0, Math.min(100, newY));
           }
 
           const newRotation =
