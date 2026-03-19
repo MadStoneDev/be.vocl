@@ -156,12 +156,7 @@ export default function MainLayout({
           isChatOpen ? "right-[calc(24rem+0.5rem)]" : "-right-[10px]"
         }`}
       >
-        <IconMessage
-          size={20}
-          className={`transition-all duration-300 ease-in-out ${
-            isChatOpen ? "ml-0" : "-ml-[10px]"
-          }`}
-        />
+        <IconMessage size={20} />
         {totalUnread > 0 && !isChatOpen && (
           <span className="absolute -top-1 -left-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold">
             {totalUnread > 99 ? "99+" : totalUnread}
