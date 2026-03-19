@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { IconX, IconHash, IconLoader2 } from "@tabler/icons-react";
-import { searchTags } from "@/actions/search";
+import { IconX, IconHash, IconLoader2, IconUser } from "@tabler/icons-react";
+import { suggestTags } from "@/actions/tags";
 
 interface TagSuggestion {
   id: string;
   name: string;
   postCount: number;
+  isOwn: boolean;
 }
 
 interface TagInputProps {
@@ -79,9 +80,8 @@ export function TagInput({
     debounceRef.current = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const result = await searchTags(query, { limit: 8 });
+        const result = await suggestTags(query, { limit: 10 });
         if (result.success && result.tags) {
-          // Filter out tags already added
           const filtered = result.tags.filter(
             (t) => !tags.includes(t.name)
           );
@@ -259,6 +259,9 @@ export function TagInput({
                   <span className="flex items-center gap-2 text-sm">
                     <IconHash size={14} className="text-vocl-accent shrink-0" />
                     {suggestion.name}
+                    {suggestion.isOwn && (
+                      <IconUser size={12} className="text-vocl-accent/60" title="Used by you" />
+                    )}
                   </span>
                   <span className="text-xs text-foreground/40">
                     {suggestion.postCount} {suggestion.postCount === 1 ? "post" : "posts"}

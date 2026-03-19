@@ -570,3 +570,86 @@ export async function getPostTagsBatch(postIds: string[]): Promise<{
     return { success: false, error: "An unexpected error occurred" };
   }
 }
+
+/**
+ * Suggest tags for autocomplete — prioritises the user's previously used tags,
+ * then falls back to popular tags. Uses fuzzy (contains) matching.
+ */
+export async function suggestTags(
+  query: string,
+  options?: { limit?: number }
+): Promise<{
+  success: boolean;
+  tags?: { id: string; name: string; postCount: number; isOwn: boolean }[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const limit = options?.limit ?? 10;
+    const searchTerm = query.startsWith("#") ? query.slice(1) : query;
+
+    if (!searchTerm.trim()) {
+      return { success: true, tags: [] };
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    type TagRow = { id: string; name: string; post_count: number };
+
+    // 1. Fetch user's own tags (tags they've used on their posts) matching the query
+    let ownTagIds = new Set<string>();
+    if (user) {
+      const { data: userPostTags } = await supabase
+        .from("post_tags")
+        .select("tag_id, post:posts!post_id(author_id)")
+        .eq("post.author_id", user.id);
+
+      if (userPostTags) {
+        for (const pt of userPostTags as any[]) {
+          if (pt.post) {
+            ownTagIds.add(pt.tag_id);
+          }
+        }
+      }
+    }
+
+    // 2. Search all matching tags (fuzzy contains)
+    const { data: allMatching, error } = await supabase
+      .from("tags")
+      .select("id, name, post_count")
+      .ilike("name", `%${searchTerm}%`)
+      .order("post_count", { ascending: false })
+      .limit(limit * 3); // Fetch extra to allow sorting
+
+    if (error) throw error;
+
+    const matchingTags = (allMatching || []) as TagRow[];
+
+    // 3. Split into own tags and others, then combine
+    const ownTags = matchingTags.filter((t) => ownTagIds.has(t.id));
+    const otherTags = matchingTags.filter((t) => !ownTagIds.has(t.id));
+
+    // Sort own tags by post_count descending, then others by post_count descending
+    const combined = [
+      ...ownTags.map((t) => ({
+        id: t.id,
+        name: t.name,
+        postCount: t.post_count ?? 0,
+        isOwn: true,
+      })),
+      ...otherTags.map((t) => ({
+        id: t.id,
+        name: t.name,
+        postCount: t.post_count ?? 0,
+        isOwn: false,
+      })),
+    ].slice(0, limit);
+
+    return { success: true, tags: combined };
+  } catch (error) {
+    console.error("Suggest tags error:", error);
+    return { success: false, error: "Failed to suggest tags" };
+  }
+}
