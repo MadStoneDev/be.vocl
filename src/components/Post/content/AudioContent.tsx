@@ -136,7 +136,7 @@ export function AudioContent({
         {/* Caption */}
         {caption && (
           <div
-            className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-6 prose-ol:pl-6"
+            className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />
         )}
@@ -255,7 +255,7 @@ export function AudioContent({
       {/* Caption */}
       {caption && (
         <div
-          className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-6 prose-ol:pl-6"
+          className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}

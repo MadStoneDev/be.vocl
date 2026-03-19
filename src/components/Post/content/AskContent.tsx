@@ -63,7 +63,7 @@ export function AskContent({ content }: AskContentProps) {
             {/* Question */}
             {content.question_html ? (
               <div
-                className="text-neutral-800 prose prose-sm max-w-none prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-6 prose-ol:pl-6"
+                className="text-neutral-800 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtmlWithSafeLinks(content.question_html),
                 }}
@@ -78,7 +78,7 @@ export function AskContent({ content }: AskContentProps) {
       {/* Answer section */}
       <div className="p-4">
         <div
-          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-6 prose-ol:pl-6"
+          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{
             __html: sanitizeHtmlWithSafeLinks(content.answer_html),
           }}

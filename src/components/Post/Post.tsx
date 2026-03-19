@@ -939,7 +939,7 @@ export function TextContent({ children, html }: TextContentProps) {
     <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB]">
       {html ? (
         <div
-          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-6 prose-ol:pl-6"
+          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
         />
       ) : (
