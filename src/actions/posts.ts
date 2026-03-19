@@ -933,6 +933,7 @@ export async function getFeedPosts(options?: {
         ...(follows || []).map((f: any) => f.following_id).filter((id: string) => !mutedSet.has(id)),
         user.id,
       ];
+      console.log("[getFeedPosts] user:", user.id, "follows:", follows?.length, "followedIds:", followedIds);
     }
 
     // Build and execute the main posts query
@@ -971,6 +972,11 @@ export async function getFeedPosts(options?: {
     query = query.range(offset, offset + limit);
 
     const { data: posts, error } = await query;
+
+    console.log("[getFeedPosts] query returned:", posts?.length, "posts, error:", error);
+    if (posts?.length) {
+      console.log("[getFeedPosts] authors:", [...new Set(posts.map((p: any) => p.author_id))]);
+    }
 
     if (error) {
       console.error("Get feed posts error:", error);
