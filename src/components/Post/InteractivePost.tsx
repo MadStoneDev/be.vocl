@@ -17,7 +17,7 @@ import { ConfirmDialog, toast } from "@/components/ui";
 import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
 import { pinPost, unpinPost } from "@/actions/profile";
-import { muteUser, unfollowUser } from "@/actions/follows";
+import { muteUser, followUser, unfollowUser } from "@/actions/follows";
 import { mutePostNotifications, unmutePostNotifications } from "@/actions/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import type { PostTag } from "./Post";
@@ -50,6 +50,7 @@ interface InteractivePostProps {
   initialInteractions: PostInteractions;
   isSensitive?: boolean;
   isOwn?: boolean;
+  isFollowingAuthor?: boolean;
   isPinned?: boolean;
   contentPreview?: string;
   imageUrl?: string;
@@ -70,6 +71,7 @@ export function InteractivePost({
   initialInteractions,
   isSensitive = false,
   isOwn = false,
+  isFollowingAuthor = false,
   isPinned = false,
   contentPreview = "",
   imageUrl,
@@ -107,9 +109,9 @@ export function InteractivePost({
   const [currentlyPinned, setCurrentlyPinned] = useState(isPinned);
   const [isPinning, startPinTransition] = useTransition();
 
-  // Mute/unfollow state
+  // Mute/follow state
   const [isMuted, setIsMuted] = useState(false);
-  const [isUnfollowed, setIsUnfollowed] = useState(false);
+  const [currentlyFollowing, setCurrentlyFollowing] = useState(isFollowingAuthor);
 
   // Notification mute state
   const [isNotificationMuted, setIsNotificationMuted] = useState(false);
@@ -323,21 +325,31 @@ export function InteractivePost({
     });
   }, [authorId, author.username]);
 
-  const handleUnfollow = useCallback(() => {
+  const handleFollowToggle = useCallback(() => {
     if (!authorId) {
-      toast.error("Unable to unfollow user");
+      toast.error("Unable to update follow status");
       return;
     }
     startPinTransition(async () => {
-      const result = await unfollowUser(authorId);
-      if (result.success) {
-        setIsUnfollowed(true);
-        toast.success(`Unfollowed @${author.username}`);
+      if (currentlyFollowing) {
+        const result = await unfollowUser(authorId);
+        if (result.success) {
+          setCurrentlyFollowing(false);
+          toast.success(`Unfollowed @${author.username}`);
+        } else {
+          toast.error(result.error || "Failed to unfollow user");
+        }
       } else {
-        toast.error(result.error || "Failed to unfollow user");
+        const result = await followUser(authorId);
+        if (result.success) {
+          setCurrentlyFollowing(true);
+          toast.success(`Following @${author.username}`);
+        } else {
+          toast.error(result.error || "Failed to follow user");
+        }
       }
     });
-  }, [authorId, author.username]);
+  }, [authorId, author.username, currentlyFollowing]);
 
   const handleFlagPost = useCallback(() => {
     setShowFlagDialog(true);
@@ -491,7 +503,8 @@ export function InteractivePost({
         onDelete={handleDelete}
         onPin={handlePin}
         onMute={handleMute}
-        onUnfollow={handleUnfollow}
+        isFollowingAuthor={currentlyFollowing}
+        onFollowToggle={handleFollowToggle}
         onFlagPost={handleFlagPost}
         onReportUser={handleReportUser}
         isBookmarked={isBookmarked}

@@ -487,6 +487,7 @@ interface PostWithDetails {
   hasCommented: boolean;
   hasReblogged: boolean;
   hasBookmarked?: boolean;
+  isFollowingAuthor?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -933,7 +934,6 @@ export async function getFeedPosts(options?: {
         ...(follows || []).map((f: any) => f.following_id).filter((id: string) => !mutedSet.has(id)),
         user.id,
       ];
-      console.log("[getFeedPosts] user:", user.id, "follows:", follows?.length, "followedIds:", followedIds);
     }
 
     // Build and execute the main posts query
@@ -973,11 +973,6 @@ export async function getFeedPosts(options?: {
 
     const { data: posts, error } = await query;
 
-    console.log("[getFeedPosts] query returned:", posts?.length, "posts, error:", error);
-    if (posts?.length) {
-      console.log("[getFeedPosts] authors:", [...new Set(posts.map((p: any) => p.author_id))]);
-    }
-
     if (error) {
       console.error("Get feed posts error:", error);
       return { success: false, error: "Failed to fetch posts" };
@@ -990,8 +985,17 @@ export async function getFeedPosts(options?: {
 
     const postIds = posts.map((p: any) => p.id);
 
-    // Batch fetch all stats, interactions, tags, and bookmarks in parallel
-    const stats = await batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true, includeBookmarks: true });
+    // Batch fetch all stats, interactions, tags, bookmarks, and follow status in parallel
+    const uniqueAuthorIds = [...new Set(posts.map((p: any) => p.author_id).filter((id: string) => user && id !== user.id))];
+
+    const [stats, followData] = await Promise.all([
+      batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true, includeBookmarks: true }),
+      user && uniqueAuthorIds.length > 0
+        ? (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", uniqueAuthorIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const followingSet = new Set((followData.data || []).map((f: any) => f.following_id));
 
     const formattedPosts: PostWithDetails[] = posts.map((post: any) => ({
       id: post.id,
@@ -1007,6 +1011,7 @@ export async function getFeedPosts(options?: {
       isSensitive: post.is_sensitive,
       isPinned: post.is_pinned,
       isOwn: user ? post.author_id === user.id : false,
+      isFollowingAuthor: followingSet.has(post.author_id),
       createdAt: formatTimeAgo(post.created_at),
       likeCount: stats.likeCountMap.get(post.id) || 0,
       commentCount: stats.commentCountMap.get(post.id) || 0,

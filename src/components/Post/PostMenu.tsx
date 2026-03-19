@@ -11,6 +11,7 @@ import {
   IconVolume,
   IconVolumeOff,
   IconUserMinus,
+  IconUserPlus,
   IconCheck,
   IconAlertTriangle,
   IconBookmark,
@@ -31,7 +32,8 @@ interface PostMenuProps {
   onDelete?: () => void;
   onPin?: () => void;
   onMute?: () => void;
-  onUnfollow?: () => void;
+  isFollowingAuthor?: boolean;
+  onFollowToggle?: () => void;
   onFlagPost?: () => void;
   onReportUser?: () => void;
   isBookmarked?: boolean;
@@ -52,7 +54,8 @@ export function PostMenu({
   onDelete,
   onPin,
   onMute,
-  onUnfollow,
+  isFollowingAuthor = false,
+  onFollowToggle,
   onFlagPost,
   onReportUser,
   isBookmarked = false,
@@ -274,17 +277,26 @@ export function PostMenu({
               <span>Mute @{authorUsername}</span>
             </button>
 
-            {/* Unfollow User */}
+            {/* Follow/Unfollow User */}
             <button
               onClick={() => {
-                onUnfollow?.();
+                onFollowToggle?.();
                 onClose();
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
               role="menuitem"
             >
-              <IconUserMinus size={18} />
-              <span>Unfollow @{authorUsername}</span>
+              {isFollowingAuthor ? (
+                <>
+                  <IconUserMinus size={18} />
+                  <span>Unfollow @{authorUsername}</span>
+                </>
+              ) : (
+                <>
+                  <IconUserPlus size={18} />
+                  <span>Follow @{authorUsername}</span>
+                </>
+              )}
             </button>
 
             {/* Divider */}

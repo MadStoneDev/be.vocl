@@ -57,6 +57,7 @@ interface FeedPost {
   interactions: PostInteractions;
   isSensitive?: boolean;
   isOwn?: boolean;
+  isFollowingAuthor?: boolean;
   isBookmarked?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
@@ -104,6 +105,7 @@ export function FeedList({
           initialInteractions={post.interactions}
           isSensitive={post.isSensitive}
           isOwn={post.isOwn}
+          isFollowingAuthor={post.isFollowingAuthor}
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
           tags={post.tags}

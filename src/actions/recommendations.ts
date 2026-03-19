@@ -25,6 +25,7 @@ interface RecommendedPost {
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
+  isFollowingAuthor?: boolean;
   tags: Array<{ id: string; name: string }>;
   // Recommendation metadata
   score: number;
@@ -349,6 +350,7 @@ export async function getPersonalizedFeed(options?: {
         isSensitive: post.is_sensitive,
         isPinned: post.is_pinned,
         isOwn: false,
+        isFollowingAuthor: followedUserIds.includes(post.author_id),
         createdAt: formatTimeAgo(post.created_at),
         publishedAt: post.published_at || post.created_at,
         likeCount: likes,
@@ -432,17 +434,20 @@ export async function getTrendingFeed(options?: {
 
     // Phase 1: Fetch user preferences (if logged in) in parallel
     let followedTagIds: string[] = [];
+    let followedUserIds: string[] = [];
     let mutedUserIds = new Set<string>();
     let showSensitive = false;
 
     if (user) {
-      const [followedTagsResult, mutesResult, profileResult] = await Promise.all([
+      const [followedTagsResult, followsResult, mutesResult, profileResult] = await Promise.all([
         supabase.from("followed_tags").select("tag_id").eq("profile_id", user.id),
+        supabase.from("follows").select("following_id").eq("follower_id", user.id),
         supabase.from("mutes").select("muted_id").eq("muter_id", user.id),
         supabase.from("profiles").select("show_sensitive_posts").eq("id", user.id).single(),
       ]);
 
       followedTagIds = (followedTagsResult.data || []).map((ft: any) => ft.tag_id);
+      followedUserIds = (followsResult.data || []).map((f: any) => f.following_id);
       mutedUserIds = new Set((mutesResult.data || []).map((m: any) => m.muted_id));
       showSensitive = profileResult.data?.show_sensitive_posts ?? false;
     }
@@ -580,6 +585,7 @@ export async function getTrendingFeed(options?: {
         isSensitive: post.is_sensitive,
         isPinned: post.is_pinned,
         isOwn: user ? post.author_id === user.id : false,
+        isFollowingAuthor: followedUserIds.includes(post.author_id),
         createdAt: formatTimeAgo(post.created_at),
         publishedAt: post.published_at || post.created_at,
         likeCount: item.likes,

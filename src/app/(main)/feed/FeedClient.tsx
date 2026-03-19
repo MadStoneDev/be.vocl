@@ -30,6 +30,7 @@ interface PostWithDetails {
   hasCommented: boolean;
   hasReblogged: boolean;
   hasBookmarked?: boolean;
+  isFollowingAuthor?: boolean;
   tags?: Array<{ id: string; name: string }>;
 }
 
@@ -120,6 +121,7 @@ function transformPost(post: PostWithDetails) {
     },
     isSensitive: post.isSensitive,
     isOwn: post.isOwn,
+    isFollowingAuthor: post.isFollowingAuthor || false,
     isBookmarked: post.hasBookmarked || false,
     tags: post.tags,
   };
