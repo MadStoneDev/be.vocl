@@ -489,6 +489,15 @@ interface PostWithDetails {
   hasBookmarked?: boolean;
   isFollowingAuthor?: boolean;
   tags?: Array<{ id: string; name: string }>;
+  // Reblog metadata
+  isReblog?: boolean;
+  reblogCommentHtml?: string | null;
+  originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
 }
 
 
@@ -948,6 +957,9 @@ export async function getFeedPosts(options?: {
         is_sensitive,
         is_pinned,
         created_at,
+        original_post_id,
+        reblogged_from_id,
+        reblog_comment_html,
         author:author_id (
           username,
           display_name,
@@ -988,40 +1000,67 @@ export async function getFeedPosts(options?: {
     // Batch fetch all stats, interactions, tags, bookmarks, and follow status in parallel
     const uniqueAuthorIds = [...new Set(posts.map((p: any) => p.author_id).filter((id: string) => user && id !== user.id))];
 
-    const [stats, followData] = await Promise.all([
+    // Fetch original post authors for reblogs
+    const reblogOriginalIds = [...new Set(
+      posts.filter((p: any) => p.original_post_id).map((p: any) => p.original_post_id)
+    )];
+
+    const [stats, followData, originalPostsData] = await Promise.all([
       batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true, includeBookmarks: true }),
       user && uniqueAuthorIds.length > 0
         ? (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", uniqueAuthorIds)
+        : Promise.resolve({ data: [] }),
+      reblogOriginalIds.length > 0
+        ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogOriginalIds)
         : Promise.resolve({ data: [] }),
     ]);
 
     const followingSet = new Set((followData.data || []).map((f: any) => f.following_id));
 
-    const formattedPosts: PostWithDetails[] = posts.map((post: any) => ({
-      id: post.id,
-      authorId: post.author_id,
-      author: {
-        username: post.author?.username || "unknown",
-        displayName: post.author?.display_name,
-        avatarUrl: post.author?.avatar_url,
-        role: post.author?.role || 0,
-      },
-      postType: post.post_type,
-      content: post.content,
-      isSensitive: post.is_sensitive,
-      isPinned: post.is_pinned,
-      isOwn: user ? post.author_id === user.id : false,
-      isFollowingAuthor: followingSet.has(post.author_id),
-      createdAt: formatTimeAgo(post.created_at),
-      likeCount: stats.likeCountMap.get(post.id) || 0,
-      commentCount: stats.commentCountMap.get(post.id) || 0,
-      reblogCount: stats.reblogCountMap.get(post.id) || 0,
-      hasLiked: stats.userLikeSet.has(post.id),
-      hasCommented: stats.userCommentSet.has(post.id),
-      hasReblogged: stats.userReblogSet.has(post.id),
-      hasBookmarked: stats.userBookmarkSet.has(post.id),
-      tags: stats.tagsMap.get(post.id) || [],
-    }));
+    // Map original post ID → original author
+    const originalAuthorMap = new Map<string, any>();
+    for (const op of originalPostsData.data || []) {
+      originalAuthorMap.set(op.id, op.author);
+    }
+
+    const formattedPosts: PostWithDetails[] = posts.map((post: any) => {
+      const isReblog = !!post.original_post_id;
+      const origAuthor = isReblog ? originalAuthorMap.get(post.original_post_id) : null;
+
+      return {
+        id: post.id,
+        authorId: post.author_id,
+        author: {
+          username: post.author?.username || "unknown",
+          displayName: post.author?.display_name,
+          avatarUrl: post.author?.avatar_url,
+          role: post.author?.role || 0,
+        },
+        postType: post.post_type,
+        content: post.content,
+        isSensitive: post.is_sensitive,
+        isPinned: post.is_pinned,
+        isOwn: user ? post.author_id === user.id : false,
+        isFollowingAuthor: followingSet.has(post.author_id),
+        createdAt: formatTimeAgo(post.created_at),
+        likeCount: stats.likeCountMap.get(post.id) || 0,
+        commentCount: stats.commentCountMap.get(post.id) || 0,
+        reblogCount: stats.reblogCountMap.get(post.id) || 0,
+        hasLiked: stats.userLikeSet.has(post.id),
+        hasCommented: stats.userCommentSet.has(post.id),
+        hasReblogged: stats.userReblogSet.has(post.id),
+        hasBookmarked: stats.userBookmarkSet.has(post.id),
+        tags: stats.tagsMap.get(post.id) || [],
+        isReblog,
+        reblogCommentHtml: post.reblog_comment_html || null,
+        originalAuthor: origAuthor ? {
+          username: origAuthor.username || "unknown",
+          displayName: origAuthor.display_name,
+          avatarUrl: origAuthor.avatar_url,
+          role: origAuthor.role || 0,
+        } : null,
+      };
+    });
 
     return {
       success: true,

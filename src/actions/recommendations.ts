@@ -27,6 +27,15 @@ interface RecommendedPost {
   hasReblogged: boolean;
   isFollowingAuthor?: boolean;
   tags: Array<{ id: string; name: string }>;
+  // Reblog metadata
+  isReblog?: boolean;
+  reblogCommentHtml?: string | null;
+  originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
   // Recommendation metadata
   score: number;
   reason: "followed_tag" | "similar_interest" | "popular" | "followed_user";
@@ -42,6 +51,9 @@ const POST_SELECT_FIELDS = `
   is_pinned,
   created_at,
   published_at,
+  original_post_id,
+  reblogged_from_id,
+  reblog_comment_html,
   author:author_id (
     username,
     display_name,
@@ -292,6 +304,21 @@ export async function getPersonalizedFeed(options?: {
       authorFollowerCountMap.set(authorId, authorCountResults[i].count || 0);
     });
 
+    // Fetch original post authors for reblogs
+    const reblogOriginalIds = [...new Set(
+      candidatePosts.filter((p) => p.original_post_id).map((p) => p.original_post_id)
+    )];
+    const originalAuthorMap = new Map<string, any>();
+    if (reblogOriginalIds.length > 0) {
+      const { data: origPosts } = await (supabase as any)
+        .from("posts")
+        .select("id, author:author_id(username, display_name, avatar_url, role)")
+        .in("id", reblogOriginalIds);
+      for (const op of origPosts || []) {
+        originalAuthorMap.set(op.id, op.author);
+      }
+    }
+
     // Calculate scores and format posts
     const now = Date.now();
     let scoredPosts: RecommendedPost[] = candidatePosts.map((post) => {
@@ -360,6 +387,12 @@ export async function getPersonalizedFeed(options?: {
         hasCommented: stats.userCommentSet.has(post.id),
         hasReblogged: stats.userReblogSet.has(post.id),
         tags,
+        isReblog: !!post.original_post_id,
+        reblogCommentHtml: post.reblog_comment_html || null,
+        originalAuthor: post.original_post_id ? (() => {
+          const oa = originalAuthorMap.get(post.original_post_id);
+          return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : null;
+        })() : null,
         score,
         reason: post.reason,
       };
@@ -568,6 +601,21 @@ export async function getTrendingFeed(options?: {
     // Paginate
     const paginatedItems = diversePosts.slice(offset, offset + limit);
 
+    // Fetch original post authors for reblogs in trending
+    const trendingReblogOrigIds = [...new Set(
+      paginatedItems.filter((i: any) => i.post.original_post_id).map((i: any) => i.post.original_post_id)
+    )];
+    const trendingOrigAuthorMap = new Map<string, any>();
+    if (trendingReblogOrigIds.length > 0) {
+      const { data: origPosts } = await (supabase as any)
+        .from("posts")
+        .select("id, author:author_id(username, display_name, avatar_url, role)")
+        .in("id", trendingReblogOrigIds);
+      for (const op of origPosts || []) {
+        trendingOrigAuthorMap.set(op.id, op.author);
+      }
+    }
+
     // Format posts in the same shape as getPersonalizedFeed
     const formattedPosts: RecommendedPost[] = paginatedItems.map((item: any) => {
       const post = item.post;
@@ -595,6 +643,12 @@ export async function getTrendingFeed(options?: {
         hasCommented: user ? stats.userCommentSet.has(post.id) : false,
         hasReblogged: user ? stats.userReblogSet.has(post.id) : false,
         tags: item.tags,
+        isReblog: !!post.original_post_id,
+        reblogCommentHtml: post.reblog_comment_html || null,
+        originalAuthor: post.original_post_id ? (() => {
+          const oa = trendingOrigAuthorMap.get(post.original_post_id);
+          return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : null;
+        })() : null,
         score: item.score,
         reason: "popular" as const,
       };

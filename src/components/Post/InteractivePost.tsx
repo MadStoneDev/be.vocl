@@ -51,6 +51,14 @@ interface InteractivePostProps {
   isSensitive?: boolean;
   isOwn?: boolean;
   isFollowingAuthor?: boolean;
+  isReblog?: boolean;
+  reblogCommentHtml?: string | null;
+  originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
   isPinned?: boolean;
   contentPreview?: string;
   imageUrl?: string;
@@ -72,6 +80,9 @@ export function InteractivePost({
   isSensitive = false,
   isOwn = false,
   isFollowingAuthor = false,
+  isReblog = false,
+  reblogCommentHtml,
+  originalAuthor,
   isPinned = false,
   contentPreview = "",
   imageUrl,
@@ -473,6 +484,9 @@ export function InteractivePost({
         contentType={contentType}
         stats={stats}
         interactions={interactions}
+        isReblog={isReblog}
+        reblogCommentHtml={reblogCommentHtml}
+        originalAuthor={originalAuthor}
         isSensitive={currentIsSensitive}
         autoRevealSensitive={autoRevealSensitive}
         tags={currentTags}

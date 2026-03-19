@@ -83,6 +83,15 @@ export interface PostProps {
   onLikesExpand?: () => void;
   onReblogsExpand?: () => void;
   contentWarning?: string;
+  // Reblog metadata
+  isReblog?: boolean;
+  reblogCommentHtml?: string | null;
+  originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
 }
 
 // =============================================================================
@@ -618,6 +627,9 @@ export const Post = memo(function Post({
   onLikesExpand,
   onReblogsExpand,
   contentWarning,
+  isReblog = false,
+  reblogCommentHtml,
+  originalAuthor,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
@@ -718,14 +730,39 @@ export const Post = memo(function Post({
 
   return (
     <div className="w-full max-w-full sm:max-w-xl">
+      {/* Reblog attribution banner */}
+      {isReblog && (
+        <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground/50">
+          <IconRefresh size={14} className="text-vocl-reblog shrink-0" />
+          <span>
+            <Link href={`/profile/${author.username}`} className="font-medium text-foreground/70 hover:text-vocl-accent transition-colors">
+              {author.username}
+            </Link>
+            {" reblogged"}
+            {originalAuthor && (
+              <>
+                {" from "}
+                <Link href={`/profile/${originalAuthor.username}`} className="font-medium text-foreground/70 hover:text-vocl-accent transition-colors">
+                  {originalAuthor.username}
+                </Link>
+              </>
+            )}
+          </span>
+        </div>
+      )}
+
       <article
-        className="relative shadow-xl overflow-hidden"
+        className={`relative shadow-xl overflow-hidden ${isReblog ? "border-l-3 border-vocl-accent/40" : ""}`}
         data-post-id={id}
         data-content-type={contentType}
       >
-        {/* Header - always visible, never dimmed */}
+        {/* Header — for reblogs, show original author; otherwise the post author */}
         <PostHeader
-          author={author}
+          author={isReblog && originalAuthor ? {
+            username: originalAuthor.username,
+            avatarUrl: originalAuthor.avatarUrl || "",
+            role: originalAuthor.role,
+          } : author}
           timestamp={timestamp}
           onMenuClick={onMenuClick}
         />
@@ -798,6 +835,24 @@ export const Post = memo(function Post({
             aria-hidden="true"
           />
         </div>
+
+        {/* Reblog comment — shown below original content */}
+        {isReblog && reblogCommentHtml && (
+          <div className="border-t border-vocl-accent/20 bg-vocl-surface-dark/30">
+            <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
+              <Link href={`/profile/${author.username}`} className="flex items-center gap-2 group">
+                <Avatar src={author.avatarUrl} username={author.username} size="sm" />
+                <span className="text-xs font-medium text-foreground/60 group-hover:text-vocl-accent transition-colors">
+                  {author.username}
+                </span>
+              </Link>
+            </div>
+            <div
+              className="px-3 pb-2.5 text-sm text-foreground/80 font-light leading-relaxed prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml) }}
+            />
+          </div>
+        )}
 
         {/* Radial FAB Menu - positioned relative to article (around reblog button) */}
         <ReblogFabMenu isOpen={isReblogMenuOpen} onSelect={handleReblogSelect} />

@@ -32,6 +32,14 @@ interface PostWithDetails {
   hasBookmarked?: boolean;
   isFollowingAuthor?: boolean;
   tags?: Array<{ id: string; name: string }>;
+  isReblog?: boolean;
+  reblogCommentHtml?: string | null;
+  originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
 }
 
 interface FeedClientProps {
@@ -124,6 +132,9 @@ function transformPost(post: PostWithDetails) {
     isFollowingAuthor: post.isFollowingAuthor || false,
     isBookmarked: post.hasBookmarked || false,
     tags: post.tags,
+    isReblog: post.isReblog || false,
+    reblogCommentHtml: post.reblogCommentHtml || null,
+    originalAuthor: post.originalAuthor || null,
   };
 }
 

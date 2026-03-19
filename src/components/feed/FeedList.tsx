@@ -60,6 +60,14 @@ interface FeedPost {
   isFollowingAuthor?: boolean;
   isBookmarked?: boolean;
   tags?: Array<{ id: string; name: string }>;
+  isReblog?: boolean;
+  reblogCommentHtml?: string | null;
+  originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
 }
 
 interface FeedListProps {
@@ -106,6 +114,9 @@ export function FeedList({
           isSensitive={post.isSensitive}
           isOwn={post.isOwn}
           isFollowingAuthor={post.isFollowingAuthor}
+          isReblog={post.isReblog}
+          reblogCommentHtml={post.reblogCommentHtml}
+          originalAuthor={post.originalAuthor}
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
           tags={post.tags}
