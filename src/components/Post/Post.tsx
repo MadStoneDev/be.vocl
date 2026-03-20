@@ -785,21 +785,11 @@ export const Post = memo(function Post({
                 {originalAuthor.role !== undefined && <StaffBadge role={originalAuthor.role} size={14} />}
               </div>
 
-              {/* Original post content */}
+              {/* Original post content (no tags here — they go under the caption) */}
               <div className="relative overflow-hidden">
-                <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
+                <PostTagsContext.Provider value={{ tags: [], isHovered: false }}>
                   {children}
                 </PostTagsContext.Provider>
-
-                {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-                  <TagsOverlay tags={tags} isVisible={isHovered} />
-                )}
-                {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-                  <MobileTagsStrip tags={tags} />
-                )}
-                {contentType === "text" && tags && tags.length > 0 && (
-                  <TextPostTags tags={tags} isHovered={isHovered} />
-                )}
               </div>
             </div>
           )}
@@ -862,14 +852,29 @@ export const Post = memo(function Post({
           />
         </div>
 
-        {/* Reblog comment — shown below original content, white background */}
+        {/* Reblog caption — shown below original content */}
         {isReblog && reblogCommentHtml && (
-          <div className="bg-[#EBEBEB] px-2.5 sm:px-3 pt-2 pb-2.5">
+          <div className="bg-[#EBEBEB] px-2.5 pt-2.5 pb-2.5 sm:p-4">
             <div
-              className="text-sm text-neutral-700 font-light leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+              className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
               dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml) }}
             />
           </div>
+        )}
+
+        {/* Reblog tags — shown under the caption, not under the original content */}
+        {isReblog && (
+          <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
+            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+              <TagsOverlay tags={tags} isVisible={isHovered} />
+            )}
+            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+              <MobileTagsStrip tags={tags} />
+            )}
+            {tags && tags.length > 0 && (
+              <TextPostTags tags={tags} isHovered={isHovered} />
+            )}
+          </PostTagsContext.Provider>
         )}
 
         {/* Radial FAB Menu - positioned relative to article (around reblog button) */}
