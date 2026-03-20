@@ -60,7 +60,7 @@ export function QueueItem({
     if (post.originalPost?.content?.text) {
       return post.originalPost.content.text.slice(0, 100);
     }
-    return "Reblogged post";
+    return "Echoed post";
   };
 
   return (

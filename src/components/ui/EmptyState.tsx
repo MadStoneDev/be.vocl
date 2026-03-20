@@ -50,7 +50,7 @@ export function EmptyQueue() {
     <EmptyState
       icon={<span className="text-3xl">📋</span>}
       title="Queue is empty"
-      description="Reblog posts to your queue to schedule them for later."
+      description="Echo posts to your queue to schedule them for later."
     />
   );
 }

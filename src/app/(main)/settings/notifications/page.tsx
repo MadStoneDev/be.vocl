@@ -247,8 +247,8 @@ export default function NotificationsSettingsPage() {
 
         <NotificationRow
           icon={IconRefresh}
-          title="Reblogs"
-          description="When someone reblogs your post"
+          title="Echoes"
+          description="When someone echoes your post"
           emailEnabled={settings.emailReblogs}
           onEmailChange={(v) => updateSetting("emailReblogs", v)}
           disabled={isEmailDisabled}

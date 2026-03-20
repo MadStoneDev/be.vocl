@@ -269,7 +269,7 @@ export async function sendReblogNotificationEmail(
     const { data, error } = await resend.emails.send({
       from: emailConfig.from.notifications,
       to: options.to,
-      subject: `@${options.rebloggerUsername} reblogged your post`,
+      subject: `@${options.rebloggerUsername} echoed your post`,
       react: ReblogNotificationEmail({
         rebloggerUsername: options.rebloggerUsername,
         rebloggerAvatarUrl: options.rebloggerAvatarUrl,

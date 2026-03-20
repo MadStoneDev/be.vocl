@@ -234,14 +234,14 @@ export function ReblogDialog({
                     ? "Adding..."
                     : mode === "schedule"
                     ? "Scheduling..."
-                    : "Reblogging..."}
+                    : "Echoing..."}
                 </>
               ) : mode === "queue" ? (
                 "Add to queue"
               ) : mode === "schedule" ? (
                 "Schedule"
               ) : (
-                "Reblog now"
+                "Echo now"
               )}
             </button>
           </div>

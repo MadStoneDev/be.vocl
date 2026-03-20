@@ -24,7 +24,7 @@ interface DailyDigestEmailProps {
 const typeLabels: Record<DigestItem["type"], { singular: string; plural: string; icon: string }> = {
   like: { singular: "like", plural: "likes", icon: "❤️" },
   comment: { singular: "comment", plural: "comments", icon: "💬" },
-  reblog: { singular: "reblog", plural: "reblogs", icon: "🔄" },
+  reblog: { singular: "echo", plural: "echoes", icon: "🔄" },
   follow: { singular: "new follower", plural: "new followers", icon: "👤" },
   mention: { singular: "mention", plural: "mentions", icon: "@" },
   message: { singular: "message", plural: "messages", icon: "✉️" },

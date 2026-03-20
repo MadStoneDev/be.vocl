@@ -26,6 +26,7 @@ interface EditPostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (updatedData: UpdatedPostData) => void;
+  isReblogEdit?: boolean;
   post: {
     id: string;
     postType: string;
@@ -39,6 +40,7 @@ export function EditPostModal({
   isOpen,
   onClose,
   onSuccess,
+  isReblogEdit = false,
   post,
 }: EditPostModalProps) {
   const [isPending, startTransition] = useTransition();
@@ -100,14 +102,36 @@ export function EditPostModal({
   const handleSubmit = async () => {
     setError(null);
 
-    // Validate text content for text posts
-    if (post.postType === "text" && !textContent.plain.trim()) {
+    // Validate text content for text posts (but allow empty for reblog edits — clearing the caption is OK)
+    if (post.postType === "text" && !isReblogEdit && !textContent.plain.trim()) {
       setError("Please write something");
       return;
     }
 
     startTransition(async () => {
-      // Build updated content
+      if (isReblogEdit) {
+        // For reblog edits, only update the reblog comment
+        const result = await updatePost({
+          postId: post.id,
+          reblogComment: textContent.html || null,
+          isSensitive,
+          tags,
+        });
+
+        if (result.success) {
+          onSuccess?.({
+            content: { html: textContent.html, plain: textContent.plain },
+            isSensitive,
+            tags: tags.map((name, idx) => ({ id: `temp-${idx}`, name })),
+          });
+          onClose();
+        } else {
+          setError(result.error || "Failed to update post");
+        }
+        return;
+      }
+
+      // Build updated content for regular posts
       let updatedContent: any;
 
       if (post.postType === "text") {
@@ -133,7 +157,6 @@ export function EditPostModal({
       });
 
       if (result.success) {
-        // Pass back the updated data so the post can update locally without page refresh
         onSuccess?.({
           content: updatedContent,
           isSensitive,
@@ -149,7 +172,7 @@ export function EditPostModal({
   if (!isOpen) return null;
 
   const isTextPost = post.postType === "text";
-  const title = isTextPost ? "Edit Post" : "Edit Caption & Tags";
+  const title = isReblogEdit ? "Edit Echo" : isTextPost ? "Edit Post" : "Edit Caption & Tags";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70">

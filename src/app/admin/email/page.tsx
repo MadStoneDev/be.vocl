@@ -536,7 +536,7 @@ function TemplatesTab() {
     { id: "follow", name: "New Follower", description: "Someone followed you" },
     { id: "like", name: "Post Liked", description: "Someone liked your post" },
     { id: "comment", name: "New Comment", description: "Someone commented on your post" },
-    { id: "reblog", name: "Post Reblogged", description: "Someone reblogged your post" },
+    { id: "reblog", name: "Post Echoed", description: "Someone echoed your post" },
     { id: "message", name: "New Message", description: "You received a message" },
     { id: "mention", name: "Mentioned", description: "Someone mentioned you" },
     { id: "digest", name: "Daily Digest", description: "Daily notification summary" },
@@ -738,7 +738,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Your post was reblogged! 🔄</h2>
+          <h2 className="text-xl font-semibold text-center mb-4">Your post was echoed! 🔄</h2>
           <p className="mb-4">Hey @username,</p>
           <div className="bg-[#2a2a2a] p-4 rounded-xl mb-4">
             <div className="flex items-center gap-2 mb-2">

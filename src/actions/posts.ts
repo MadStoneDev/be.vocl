@@ -284,6 +284,7 @@ async function handleTags(supabase: any, postId: string, tagNames: string[]) {
 interface UpdatePostInput {
   postId: string;
   content?: PostContent;
+  reblogComment?: string | null;
   isSensitive?: boolean;
   tags?: string[];
 }
@@ -299,7 +300,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
       return { success: false, error: "Unauthorized" };
     }
 
-    const { postId, content, isSensitive, tags } = input;
+    const { postId, content, reblogComment, isSensitive, tags } = input;
 
     // Verify ownership
     const { data: existingPost } = await (supabase as any)
@@ -315,6 +316,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     // Update the post
     const updateData: any = { updated_at: new Date().toISOString() };
     if (content !== undefined) updateData.content = content;
+    if (reblogComment !== undefined) updateData.reblog_comment_html = reblogComment;
     if (isSensitive !== undefined) updateData.is_sensitive = isSensitive;
 
     const { error: updateError } = await (supabase as any)
@@ -336,8 +338,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
       }
     }
 
-    revalidatePath("/feed");
-    revalidatePath(`/post/${postId}`);
+    // Revalidation removed — local state updates handle UI, prevents SSR crash
     return { success: true, postId };
   } catch (error) {
     console.error("Update post error:", error);
@@ -1011,7 +1012,7 @@ export async function getFeedPosts(options?: {
         ? (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", uniqueAuthorIds)
         : Promise.resolve({ data: [] }),
       reblogOriginalIds.length > 0
-        ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogOriginalIds)
+        ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogOriginalIds).then((res: any) => res).catch(() => ({ data: [] }))
         : Promise.resolve({ data: [] }),
     ]);
 

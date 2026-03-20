@@ -106,6 +106,7 @@ export function InteractivePost({
   const [currentIsSensitive, setCurrentIsSensitive] = useState(isSensitive);
   const [currentTags, setCurrentTags] = useState(tags);
   const [currentContent, setCurrentContent] = useState(content);
+  const [currentReblogComment, setCurrentReblogComment] = useState(reblogCommentHtml);
 
   // Reblog dialog state
   const [showReblogDialog, setShowReblogDialog] = useState(false);
@@ -247,7 +248,7 @@ export function InteractivePost({
         if (result.success) {
           setHasReblogged(true);
           setReblogCount((prev) => prev + 1);
-          toast.success("Reblogged!");
+          toast.success("Echoed!");
         } else {
           toast.error(result.error || "Failed to reblog");
         }
@@ -268,7 +269,7 @@ export function InteractivePost({
   const handleReblogSuccess = useCallback(() => {
     setHasReblogged(true);
     setReblogCount((prev) => prev + 1);
-    toast.success("Reblogged!");
+    toast.success("Echoed!");
   }, []);
 
   // Menu handlers
@@ -389,24 +390,28 @@ export function InteractivePost({
   }, [id, isNotificationMuted]);
 
   const handleEdit = useCallback(() => {
-    if (currentContent) {
+    if (isReblog || currentContent) {
       setShowEditDialog(true);
     } else {
       toast.error("Unable to edit this post");
     }
-  }, [currentContent]);
+  }, [currentContent, isReblog]);
 
   const handleEditSuccess = useCallback((updatedData: {
     content: any;
     isSensitive: boolean;
     tags: Array<{ id: string; name: string }>;
   }) => {
-    // Update local state with the edited data - no page reload needed
-    setCurrentContent(updatedData.content);
+    if (isReblog) {
+      // For reblogs, the edited content is the reblog caption
+      setCurrentReblogComment(updatedData.content?.html || null);
+    } else {
+      setCurrentContent(updatedData.content);
+    }
     setCurrentIsSensitive(updatedData.isSensitive);
     setCurrentTags(updatedData.tags);
     toast.success("Post updated");
-  }, []);
+  }, [isReblog]);
 
   // Render content based on content type and current content data
   const renderContent = useCallback(() => {
@@ -485,7 +490,7 @@ export function InteractivePost({
         stats={stats}
         interactions={interactions}
         isReblog={isReblog}
-        reblogCommentHtml={reblogCommentHtml}
+        reblogCommentHtml={currentReblogComment}
         originalAuthor={originalAuthor}
         isSensitive={currentIsSensitive}
         autoRevealSensitive={autoRevealSensitive}
@@ -578,15 +583,18 @@ export function InteractivePost({
       )}
 
       {/* Edit Post Dialog */}
-      {currentContent && (
+      {(currentContent || isReblog) && (
         <EditPostModal
           isOpen={showEditDialog}
           onClose={() => setShowEditDialog(false)}
           onSuccess={handleEditSuccess}
+          isReblogEdit={isReblog}
           post={{
             id,
-            postType: contentType,
-            content: currentContent,
+            postType: isReblog ? "text" : contentType,
+            content: isReblog
+              ? { html: currentReblogComment || "", plain: "" }
+              : currentContent,
             isSensitive: currentIsSensitive,
             tags: currentTags,
           }}

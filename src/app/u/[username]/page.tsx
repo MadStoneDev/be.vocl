@@ -380,7 +380,7 @@ function PublicPostCard({
         {post.reblog_count > 0 && (
           <span>
             {post.reblog_count}{" "}
-            {post.reblog_count === 1 ? "reblog" : "reblogs"}
+            {post.reblog_count === 1 ? "echo" : "echoes"}
           </span>
         )}
       </div>

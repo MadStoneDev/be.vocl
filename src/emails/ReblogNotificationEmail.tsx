@@ -26,12 +26,12 @@ export function ReblogNotificationEmail({
   reblogPostId,
 }: ReblogNotificationEmailProps) {
   return (
-    <EmailLayout preview={`@${rebloggerUsername} reblogged your post`}>
+    <EmailLayout preview={`@${rebloggerUsername} echoed your post`}>
       <Section style={headerSection}>
         <Text style={reblogIcon}>🔄</Text>
       </Section>
 
-      <Heading style={emailStyles.heading}>Your post was reblogged!</Heading>
+      <Heading style={emailStyles.heading}>Your post was echoed!</Heading>
 
       <Text style={{ ...emailStyles.paragraph, textAlign: "center" }}>
         <span style={{ color: emailStyles.colors.accent, fontWeight: "600" }}>
@@ -57,7 +57,7 @@ export function ReblogNotificationEmail({
         )}
         <div>
           <Text style={rebloggerName}>@{rebloggerUsername}</Text>
-          <Text style={reblogAction}>reblogged your post</Text>
+          <Text style={reblogAction}>echoed your post</Text>
         </div>
       </Section>
 

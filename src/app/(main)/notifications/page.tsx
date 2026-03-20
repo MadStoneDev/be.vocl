@@ -121,7 +121,7 @@ export default function NotificationsPage() {
 
       {/* Filter tabs - optional future enhancement */}
       {/* <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {["All", "Follows", "Likes", "Comments", "Reblogs"].map((filter) => (
+        {["All", "Follows", "Likes", "Comments", "Echoes"].map((filter) => (
           <button
             key={filter}
             className="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap bg-white/5 text-foreground/70 hover:bg-white/10 hover:text-foreground transition-colors"

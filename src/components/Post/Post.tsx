@@ -115,9 +115,10 @@ interface PostHeaderProps {
   author: PostAuthor;
   timestamp: string;
   onMenuClick?: () => void;
+  reblogFrom?: string | null;
 }
 
-function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
+function PostHeader({ author, timestamp, onMenuClick, reblogFrom }: PostHeaderProps) {
   return (
     <div
       className="flex items-center justify-between p-1.5 sm:p-2 border-b border-vocl-surface-dark/20 z-50"
@@ -138,13 +139,29 @@ function PostHeader({ author, timestamp, onMenuClick }: PostHeaderProps) {
           <div className="flex items-center gap-1">
             <Link
               href={`/profile/${author.username}`}
-              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-accent transition-colors"
+              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-pink transition-colors"
             >
               {author.username}
             </Link>
             {author.role !== undefined && <StaffBadge role={author.role} size={16} />}
           </div>
-          <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">{timestamp}</span>
+          <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">
+            {reblogFrom ? (
+              <>
+                echoed from{" "}
+                <Link
+                  href={`/profile/${reblogFrom}`}
+                  className="font-bold hover:underline"
+                  style={{ color: "#F20D5E" }}
+                >
+                  {reblogFrom}
+                </Link>
+                {" · "}{timestamp}
+              </>
+            ) : (
+              timestamp
+            )}
+          </span>
         </div>
       </div>
       <button
@@ -239,7 +256,7 @@ function PostActionBar({
         className={`font-sans text-sm font-medium cursor-pointer transition-colors ${
           interactions.hasReblogged ? "text-vocl-reblog" : "text-neutral-400"
         }`}
-        aria-label="View reblogs"
+        aria-label="View echoes"
       >
         {stats.reblogs}
       </button>
@@ -247,12 +264,12 @@ function PostActionBar({
       {/* Reblog button */}
       <button
           onClick={onReblogClick}
-          className={`absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-surface-dark/50"} transition-all duration-300 ${
+          className={`group absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-surface-dark/50"} bg-vocl-accent transition-all duration-300 ${
               isReblogMenuOpen
-                  ? "bg-vocl-accent scale-105"
-                  : "bg-vocl-accent hover:scale-105"
+                  ? "scale-105"
+                  : "hover:scale-105"
           } z-50`}
-          aria-label="Reblog options"
+          aria-label="Echo options"
           aria-expanded={isReblogMenuOpen}
       >
         <div className="hidden sm:flex items-center justify-center">
@@ -284,7 +301,7 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
   const menuItems = [
     { type: "queue" as const, icon: IconHourglass, label: "Add to queue" },
     { type: "schedule" as const, icon: IconCalendar, label: "Schedule reblog" },
-    { type: "with-comment" as const, icon: IconPencil, label: "Reblog with comment" },
+    { type: "with-comment" as const, icon: IconPencil, label: "Echo with comment" },
   ];
 
   // Radial menu: items fan out in an arc from the reblog button (bottom-right corner)
@@ -409,7 +426,7 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/profile/${comment.author.username}`}
-                    className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors"
+                    className="font-medium text-sm text-neutral-800 hover:text-vocl-pink transition-colors"
                   >
                     {comment.author.username}
                   </Link>
@@ -451,7 +468,7 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors">{user.displayName || user.username}</span>
+                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-pink transition-colors">{user.displayName || user.username}</span>
                 {user.role !== undefined && <StaffBadge role={user.role} size={14} />}
               </div>
               <span className="text-xs text-neutral-400">@{user.username}</span>
@@ -479,7 +496,7 @@ function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, 
   const titles = {
     comments: "Comments",
     likes: "Liked by",
-    reblogs: "Reblogged by",
+    reblogs: "Echoed by",
   };
 
   return (
@@ -730,41 +747,17 @@ export const Post = memo(function Post({
 
   return (
     <div className="w-full max-w-full sm:max-w-xl">
-      {/* Reblog attribution banner */}
-      {isReblog && (
-        <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground/50">
-          <IconRefresh size={14} className="text-vocl-reblog shrink-0" />
-          <span>
-            <Link href={`/profile/${author.username}`} className="font-medium text-foreground/70 hover:text-vocl-accent transition-colors">
-              {author.username}
-            </Link>
-            {" reblogged"}
-            {originalAuthor && (
-              <>
-                {" from "}
-                <Link href={`/profile/${originalAuthor.username}`} className="font-medium text-foreground/70 hover:text-vocl-accent transition-colors">
-                  {originalAuthor.username}
-                </Link>
-              </>
-            )}
-          </span>
-        </div>
-      )}
-
       <article
-        className={`relative shadow-xl overflow-hidden ${isReblog ? "border-l-3 border-vocl-accent/40" : ""}`}
+        className="relative shadow-xl overflow-hidden"
         data-post-id={id}
         data-content-type={contentType}
       >
-        {/* Header — for reblogs, show original author; otherwise the post author */}
+        {/* Header — always shows the post author (reblogger for reblogs) */}
         <PostHeader
-          author={isReblog && originalAuthor ? {
-            username: originalAuthor.username,
-            avatarUrl: originalAuthor.avatarUrl || "",
-            role: originalAuthor.role,
-          } : author}
+          author={author}
           timestamp={timestamp}
           onMenuClick={onMenuClick}
+          reblogFrom={isReblog && originalAuthor ? originalAuthor.username : null}
         />
 
         {/* Content area with overlay */}
@@ -773,29 +766,62 @@ export const Post = memo(function Post({
           onMouseEnter={() => !isReblogMenuOpen && setIsHovered(true)}
           onMouseLeave={() => !isReblogMenuOpen && setIsHovered(false)}
         >
-          {/* The actual content - wrapped in context for text/audio to access tags */}
-          <div className="relative overflow-hidden" style={{
-            borderRadius: contentBorderRadius
-          }}>
-            <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
-              {children}
-            </PostTagsContext.Provider>
+          {/* For reblogs: original author header + green border wrapper */}
+          {isReblog && originalAuthor && (
+            <div className="border-b-3 border-vocl-accent bg-white overflow-hidden">
+              {/* Original author mini-header */}
+              <div
+                className="flex items-center gap-2 px-3 py-1.5 bg-vocl-accent"
+              >
+                <Link href={`/profile/${originalAuthor.username}`} className="hover:opacity-90 transition-opacity">
+                  <Avatar src={originalAuthor.avatarUrl || ""} username={originalAuthor.username} size="sm" />
+                </Link>
+                <Link
+                  href={`/profile/${originalAuthor.username}`}
+                  className="font-display text-sm font-normal text-neutral-900 hover:text-white transition-colors"
+                >
+                  {originalAuthor.username}
+                </Link>
+                {originalAuthor.role !== undefined && <StaffBadge role={originalAuthor.role} size={14} />}
+              </div>
 
-            {/* Tags overlay for image/video/gallery - desktop hover only */}
-            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-              <TagsOverlay tags={tags} isVisible={isHovered} />
-            )}
+              {/* Original post content */}
+              <div className="relative overflow-hidden">
+                <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
+                  {children}
+                </PostTagsContext.Provider>
 
-            {/* Mobile tags strip for image/video/gallery */}
-            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-              <MobileTagsStrip tags={tags} />
-            )}
+                {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+                  <TagsOverlay tags={tags} isVisible={isHovered} />
+                )}
+                {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+                  <MobileTagsStrip tags={tags} />
+                )}
+                {contentType === "text" && tags && tags.length > 0 && (
+                  <TextPostTags tags={tags} isHovered={isHovered} />
+                )}
+              </div>
+            </div>
+          )}
 
-            {/* Text post tags - rendered after children (including link previews) */}
-            {contentType === "text" && tags && tags.length > 0 && (
-              <TextPostTags tags={tags} isHovered={isHovered} />
-            )}
-          </div>
+          {/* For non-reblogs: normal content */}
+          {!isReblog && (
+            <div className="relative overflow-hidden" style={{ borderRadius: contentBorderRadius }}>
+              <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
+                {children}
+              </PostTagsContext.Provider>
+
+              {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+                <TagsOverlay tags={tags} isVisible={isHovered} />
+              )}
+              {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
+                <MobileTagsStrip tags={tags} />
+              )}
+              {contentType === "text" && tags && tags.length > 0 && (
+                <TextPostTags tags={tags} isHovered={isHovered} />
+              )}
+            </div>
+          )}
 
 
           {/* NSFW overlay - shown when content is sensitive and not revealed */}
@@ -836,19 +862,11 @@ export const Post = memo(function Post({
           />
         </div>
 
-        {/* Reblog comment — shown below original content */}
+        {/* Reblog comment — shown below original content, white background */}
         {isReblog && reblogCommentHtml && (
-          <div className="border-t border-vocl-accent/20 bg-vocl-surface-dark/30">
-            <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
-              <Link href={`/profile/${author.username}`} className="flex items-center gap-2 group">
-                <Avatar src={author.avatarUrl} username={author.username} size="sm" />
-                <span className="text-xs font-medium text-foreground/60 group-hover:text-vocl-accent transition-colors">
-                  {author.username}
-                </span>
-              </Link>
-            </div>
+          <div className="bg-[#EBEBEB] px-2.5 sm:px-3 pt-2 pb-2.5">
             <div
-              className="px-3 pb-2.5 text-sm text-foreground/80 font-light leading-relaxed prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+              className="text-sm text-neutral-700 font-light leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
               dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml) }}
             />
           </div>

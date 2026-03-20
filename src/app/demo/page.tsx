@@ -69,7 +69,7 @@ export default function DemoPage() {
 
   const handleReblog = (type: "instant" | "with-comment" | "schedule" | "queue") => {
     console.log("Reblog type:", type);
-    alert(`Reblog action: ${type}\n\nThis will be implemented with server functionality.`);
+    alert(`Echo action: ${type}\n\nThis will be implemented with server functionality.`);
   };
 
   return (

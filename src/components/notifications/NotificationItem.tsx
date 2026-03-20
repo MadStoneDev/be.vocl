@@ -54,7 +54,7 @@ const notificationConfig: Record<
     icon: IconRefresh,
     color: "text-vocl-reblog",
     bgColor: "bg-vocl-reblog/20",
-    getText: (username) => `${username} reblogged your post`,
+    getText: (username) => `${username} echoed your post`,
   },
   mention: {
     icon: IconAt,

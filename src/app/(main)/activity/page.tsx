@@ -37,7 +37,7 @@ const statCards = [
   },
   {
     key: "totalReblogs" as const,
-    label: "Reblogs Received",
+    label: "Echoes Received",
     icon: IconRepeat,
     color: "text-emerald-400",
     bg: "bg-emerald-400/10",
@@ -68,7 +68,7 @@ function getActivityDescription(item: ActivityItem): string {
     case "comment":
       return `${item.actorUsername} commented on your post`;
     case "reblog":
-      return `${item.actorUsername} reblogged your post`;
+      return `${item.actorUsername} echoed your post`;
     case "follow":
       return `${item.actorUsername} followed you`;
     case "mention":
