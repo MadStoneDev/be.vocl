@@ -391,7 +391,7 @@ export async function getPersonalizedFeed(options?: {
         reblogCommentHtml: post.reblog_comment_html || null,
         originalAuthor: post.original_post_id ? (() => {
           const oa = originalAuthorMap.get(post.original_post_id);
-          return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : null;
+          return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
         })() : null,
         score,
         reason: post.reason,
@@ -647,7 +647,7 @@ export async function getTrendingFeed(options?: {
         reblogCommentHtml: post.reblog_comment_html || null,
         originalAuthor: post.original_post_id ? (() => {
           const oa = trendingOrigAuthorMap.get(post.original_post_id);
-          return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : null;
+          return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
         })() : null,
         score: item.score,
         reason: "popular" as const,

@@ -36,20 +36,24 @@ export function useReblog({
   const [rebloggedBy, setRebloggedBy] = useState<UserData[]>([]);
 
   const refreshRebloggedBy = useCallback(async () => {
-    const result = await getRebloggedBy(postId);
-    if (result.success && result.users) {
-      setRebloggedBy(
-        result.users.map((user) => ({
-          id: user.id,
-          username: user.username,
-          displayName: user.displayName,
-          avatarUrl: user.avatarUrl,
-          role: user.role,
-        }))
-      );
-      if (result.total !== undefined) {
-        setReblogCount(result.total);
+    try {
+      const result = await getRebloggedBy(postId);
+      if (result.success && result.users) {
+        setRebloggedBy(
+          result.users.map((user) => ({
+            id: user.id,
+            username: user.username,
+            displayName: user.displayName,
+            avatarUrl: user.avatarUrl,
+            role: user.role,
+          }))
+        );
+        if (result.total !== undefined) {
+          setReblogCount(result.total);
+        }
       }
+    } catch (error) {
+      console.error("Failed to refresh reblogged by:", error);
     }
   }, [postId]);
 

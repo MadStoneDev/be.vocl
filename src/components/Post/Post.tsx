@@ -300,7 +300,7 @@ interface ReblogFabMenuProps {
 function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
   const menuItems = [
     { type: "queue" as const, icon: IconHourglass, label: "Add to queue" },
-    { type: "schedule" as const, icon: IconCalendar, label: "Schedule reblog" },
+    { type: "schedule" as const, icon: IconCalendar, label: "Schedule echo" },
     { type: "with-comment" as const, icon: IconPencil, label: "Echo with comment" },
   ];
 
@@ -524,7 +524,7 @@ function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, 
         <UsersList users={likedBy} emptyMessage="No likes yet" actionColor="bg-vocl-like" />
       )}
       {type === "reblogs" && (
-        <UsersList users={rebloggedBy} emptyMessage="No reblogs yet" actionColor="bg-vocl-reblog" />
+        <UsersList users={rebloggedBy} emptyMessage="No echoes yet" actionColor="bg-vocl-reblog" />
       )}
     </div>
   );

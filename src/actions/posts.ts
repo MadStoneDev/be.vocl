@@ -199,8 +199,8 @@ function extractMediaUrls(
       for (const url of imageContent.urls) {
         urls.push({ url, type: "image" });
       }
-    } else if (imageContent.urls) {
-      urls.push({ url: imageContent.urls, type: "image" });
+    } else if ((imageContent as any).url) {
+      urls.push({ url: (imageContent as any).url, type: "image" });
     }
   } else if (postType === "video") {
     const videoContent = content as VideoPostContent;
@@ -1054,12 +1054,12 @@ export async function getFeedPosts(options?: {
         tags: stats.tagsMap.get(post.id) || [],
         isReblog,
         reblogCommentHtml: post.reblog_comment_html || null,
-        originalAuthor: origAuthor ? {
+        originalAuthor: isReblog ? (origAuthor ? {
           username: origAuthor.username || "unknown",
           displayName: origAuthor.display_name,
           avatarUrl: origAuthor.avatar_url,
           role: origAuthor.role || 0,
-        } : null,
+        } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 }) : null,
       };
     });
 

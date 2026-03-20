@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import { getReblogThread } from "@/actions/reblog-thread";
 import { Avatar } from "@/components/ui";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 
 interface ThreadEntry {
   id: string;
@@ -83,7 +84,7 @@ function ThreadEntry({ entry, isLast }: { entry: ThreadEntry; isLast: boolean })
               {entry.depth > 0 && (
                 <>
                   <IconArrowForward size={12} className="text-vocl-accent/60" />
-                  <span className="text-vocl-accent/60">reblogged</span>
+                  <span className="text-vocl-accent/60">echoed</span>
                 </>
               )}
             </div>
@@ -94,7 +95,7 @@ function ThreadEntry({ entry, isLast }: { entry: ThreadEntry; isLast: boolean })
         {entry.reblogComment && (
           <div
             className="mb-3 text-sm text-foreground/80 border-l-2 border-vocl-accent/30 pl-3"
-            dangerouslySetInnerHTML={{ __html: entry.reblogComment }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(entry.reblogComment) }}
           />
         )}
 

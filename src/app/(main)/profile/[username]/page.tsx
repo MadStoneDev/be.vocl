@@ -23,6 +23,7 @@ import { getLikedPosts, getCommentedPosts } from "@/actions/posts";
 import { followUser, unfollowUser, blockUser, muteUser, isMutual } from "@/actions/follows";
 import { startConversation } from "@/actions/messages";
 import { toast } from "@/components/ui";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 
 interface ProfileData {
   id: string;
@@ -294,7 +295,7 @@ export default function ProfilePage() {
         {contentType === "text" && post.content?.html && (
           <>
             <TextContent>
-              <div dangerouslySetInnerHTML={{ __html: post.content.html }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
             </TextContent>
             {post.content.link_previews?.length > 0 && (
               <div className="bg-[#EBEBEB] -mt-16 pb-16">

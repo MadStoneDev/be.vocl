@@ -101,7 +101,7 @@ export function ReblogDialog({
         <div className="flex items-center justify-between p-4 border-b border-white/5">
           <div className="flex items-center gap-2">
             <IconRefresh size={20} className="text-vocl-accent" />
-            <h2 className="font-semibold text-foreground">Reblog</h2>
+            <h2 className="font-semibold text-foreground">Echo</h2>
           </div>
           <button
             type="button"

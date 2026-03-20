@@ -182,7 +182,8 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
       `
       )
       .eq("post_id", postId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(100);
 
     if (commentsError) {
       console.error("Get comments error:", commentsError);

@@ -378,6 +378,9 @@ export function InteractivePost({
           setIsNotificationMuted(false);
           toast.success("Notifications unmuted for this post");
         }
+      }).catch((error) => {
+        console.error("Failed to unmute notifications:", error);
+        toast.error("Failed to unmute notifications");
       });
     } else {
       mutePostNotifications(id).then((r) => {
@@ -385,6 +388,9 @@ export function InteractivePost({
           setIsNotificationMuted(true);
           toast.success("Notifications muted for this post");
         }
+      }).catch((error) => {
+        console.error("Failed to mute notifications:", error);
+        toast.error("Failed to mute notifications");
       });
     }
   }, [id, isNotificationMuted]);

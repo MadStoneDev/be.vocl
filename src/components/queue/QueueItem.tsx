@@ -8,6 +8,7 @@ import {
   IconSend,
   IconLoader2,
 } from "@tabler/icons-react";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 
 interface QueueItemProps {
   post: {
@@ -111,7 +112,7 @@ export function QueueItem({
         {post.reblogCommentHtml && (
           <div
             className="mt-2 text-xs text-foreground/50 line-clamp-1"
-            dangerouslySetInnerHTML={{ __html: post.reblogCommentHtml }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.reblogCommentHtml) }}
           />
         )}
       </div>
