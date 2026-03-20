@@ -68,6 +68,12 @@ interface FeedPost {
     avatarUrl: string | null;
     role: number;
   } | null;
+  rebloggedFromAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
 }
 
 interface FeedListProps {
@@ -117,6 +123,7 @@ export function FeedList({
           isReblog={post.isReblog}
           reblogCommentHtml={post.reblogCommentHtml}
           originalAuthor={post.originalAuthor}
+          rebloggedFromAuthor={post.rebloggedFromAuthor}
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
           tags={post.tags}

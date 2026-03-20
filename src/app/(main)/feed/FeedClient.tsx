@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { FeedTabs, FeedList, type FeedTab } from "@/components/feed";
+import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { getFeedPosts } from "@/actions/posts";
 import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations";
@@ -35,6 +35,12 @@ interface PostWithDetails {
   isReblog?: boolean;
   reblogCommentHtml?: string | null;
   originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
+  rebloggedFromAuthor?: {
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
@@ -135,6 +141,7 @@ function transformPost(post: PostWithDetails) {
     isReblog: post.isReblog || false,
     reblogCommentHtml: post.reblogCommentHtml || null,
     originalAuthor: post.originalAuthor || null,
+    rebloggedFromAuthor: post.rebloggedFromAuthor || null,
   };
 }
 
@@ -219,6 +226,10 @@ export default function FeedClient({
       {showFlaggedBanner && <FlaggedContentBanner />}
 
       <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {(activeTab === "chronological" || activeTab === "engagement") && (
+        <WhoToFollow />
+      )}
 
       {isError && !isLoading && (
         <div className="text-center py-8">

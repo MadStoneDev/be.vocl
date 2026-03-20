@@ -6,6 +6,7 @@
   --foreground: #ededed;
 
   /* Brand colors */
+  --vocl-pink: #F20D5E;
   --vocl-accent: #5B9A8B;
   --vocl-accent-hover: #4A8578;
   --vocl-comment: #E8A87C;
@@ -22,6 +23,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-vocl-pink: var(--vocl-pink);
   --color-vocl-accent: var(--vocl-accent);
   --color-vocl-accent-hover: var(--vocl-accent-hover);
   --color-vocl-comment: var(--vocl-comment);

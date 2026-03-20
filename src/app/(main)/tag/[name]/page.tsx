@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
-import { getTagByName, getPostsByTag, followTag, unfollowTag } from "@/actions/tags";
-import { IconLoader2, IconHash, IconPlus, IconCheck } from "@tabler/icons-react";
+import { getTagByName, getPostsByTag, followTag, unfollowTag, muteTag, unmuteTag } from "@/actions/tags";
+import { IconLoader2, IconHash, IconPlus, IconCheck, IconVolume, IconVolumeOff } from "@tabler/icons-react";
 import type { VideoEmbedPlatform } from "@/types/database";
 
 interface TagInfo {
@@ -12,6 +12,7 @@ interface TagInfo {
   name: string;
   postCount: number;
   isFollowing: boolean;
+  isMuting: boolean;
 }
 
 interface PostData {
@@ -47,6 +48,7 @@ export default function TagPage() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowPending, setIsFollowPending] = useState(false);
+  const [isMutePending, setIsMutePending] = useState(false);
 
   // Fetch tag info
   useEffect(() => {
@@ -98,9 +100,27 @@ export default function TagPage() {
       : await followTag(tag.id);
 
     if (result.success) {
-      setTag({ ...tag, isFollowing: !tag.isFollowing });
+      setTag({ ...tag, isFollowing: !tag.isFollowing, isMuting: !tag.isFollowing ? false : tag.isMuting });
     }
     setIsFollowPending(false);
+  };
+
+  const handleMuteToggle = async () => {
+    if (!tag || isMutePending) return;
+
+    setIsMutePending(true);
+    const result = tag.isMuting
+      ? await unmuteTag(tag.id)
+      : await muteTag(tag.id);
+
+    if (result.success) {
+      setTag({
+        ...tag,
+        isMuting: !tag.isMuting,
+        isFollowing: !tag.isMuting ? false : tag.isFollowing,
+      });
+    }
+    setIsMutePending(false);
   };
 
   const renderPostContent = (post: PostData) => {
@@ -186,29 +206,54 @@ export default function TagPage() {
           </div>
 
           {tag && (
-            <button
-              onClick={handleFollowToggle}
-              disabled={isFollowPending}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
-                tag.isFollowing
-                  ? "bg-vocl-accent text-white"
-                  : "bg-white/10 text-foreground hover:bg-white/20"
-              }`}
-            >
-              {isFollowPending ? (
-                <IconLoader2 size={16} className="animate-spin" />
-              ) : tag.isFollowing ? (
-                <>
-                  <IconCheck size={16} />
-                  Following
-                </>
-              ) : (
-                <>
-                  <IconPlus size={16} />
-                  Follow
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleMuteToggle}
+                disabled={isMutePending}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+                  tag.isMuting
+                    ? "bg-red-500/20 text-red-400"
+                    : "bg-white/10 text-foreground/60 hover:bg-white/20"
+                }`}
+              >
+                {isMutePending ? (
+                  <IconLoader2 size={16} className="animate-spin" />
+                ) : tag.isMuting ? (
+                  <>
+                    <IconVolumeOff size={16} />
+                    Muted
+                  </>
+                ) : (
+                  <>
+                    <IconVolume size={16} />
+                    Mute
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleFollowToggle}
+                disabled={isFollowPending}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+                  tag.isFollowing
+                    ? "bg-vocl-accent text-white"
+                    : "bg-white/10 text-foreground hover:bg-white/20"
+                }`}
+              >
+                {isFollowPending ? (
+                  <IconLoader2 size={16} className="animate-spin" />
+                ) : tag.isFollowing ? (
+                  <>
+                    <IconCheck size={16} />
+                    Following
+                  </>
+                ) : (
+                  <>
+                    <IconPlus size={16} />
+                    Follow
+                  </>
+                )}
+              </button>
+            </div>
           )}
         </div>
       </div>

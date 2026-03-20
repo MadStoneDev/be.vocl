@@ -22,6 +22,7 @@ import {
   IconBrandSpotify,
   IconSearch,
   IconCamera,
+  IconGif,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
@@ -29,6 +30,7 @@ import type { SpotifyTrack } from "@/lib/spotify";
 import { RichTextEditor } from "./RichTextEditor";
 import { MediaUploader } from "./MediaUploader";
 import { TagInput } from "./TagInput";
+import { GifPicker } from "@/components/chat/GifPicker";
 import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { createPost, generatePostId } from "@/actions/posts";
@@ -40,7 +42,7 @@ import type {
   PollPostContent,
 } from "@/types/database";
 
-type PostType = "text" | "image" | "video" | "audio" | "poll";
+type PostType = "text" | "image" | "video" | "audio" | "poll" | "gif";
 type PublishMode = "now" | "queue" | "schedule";
 
 interface CreatePostModalProps {
@@ -98,6 +100,10 @@ export function CreatePostModal({
   const [unsplashResults, setUnsplashResults] = useState<any[]>([]);
   const [isSearchingUnsplash, setIsSearchingUnsplash] = useState(false);
   const [selectedUnsplash, setSelectedUnsplash] = useState<any | null>(null);
+
+  // GIF-specific state
+  const [selectedGifUrl, setSelectedGifUrl] = useState<string | null>(null);
+  const [gifPickerOpen, setGifPickerOpen] = useState(false);
 
   // Legal acknowledgment for file uploads
   const [hasAcknowledgedRights, setHasAcknowledgedRights] = useState(false);
@@ -159,6 +165,9 @@ export function CreatePostModal({
       setSpotifyResults([]);
       setSelectedTrack(null);
       setIsSearching(false);
+      // Reset GIF state
+      setSelectedGifUrl(null);
+      setGifPickerOpen(false);
       // Reset legal acknowledgment
       setHasAcknowledgedRights(false);
     }
@@ -280,6 +289,10 @@ export function CreatePostModal({
         return;
       }
     }
+    if (postType === "gif" && !selectedGifUrl) {
+      setError("Please select a GIF");
+      return;
+    }
     if (postType === "poll") {
       if (!pollQuestion.trim()) {
         setError("Please enter a poll question");
@@ -319,7 +332,7 @@ export function CreatePostModal({
         | "video"
         | "audio"
         | "gallery"
-        | "poll" = postType;
+        | "poll" = postType === "gif" ? "image" : postType;
 
       switch (postType) {
         case "text": {
@@ -379,6 +392,16 @@ export function CreatePostModal({
           if (imageUrls.length > 1) {
             actualPostType = "gallery";
           }
+          break;
+        }
+
+        case "gif": {
+          actualPostType = "image";
+          postContent = {
+            urls: [selectedGifUrl!],
+            alt_texts: [""],
+            caption_html: content.html || undefined,
+          } as ImagePostContent;
           break;
         }
 
@@ -471,6 +494,7 @@ export function CreatePostModal({
     if (imageLinkUrl.trim()) return true;
     if (selectedTrack) return true;
     if (selectedUnsplash) return true;
+    if (selectedGifUrl) return true;
     if (tags.length > 0) return true;
     if (pollOptions.some(o => o.trim())) return true;
     return false;
@@ -493,6 +517,7 @@ export function CreatePostModal({
     { type: "image" as const, icon: IconPhoto, label: "Image" },
     { type: "video" as const, icon: IconVideo, label: "Video" },
     { type: "audio" as const, icon: IconMusic, label: "Audio" },
+    { type: "gif" as const, icon: IconGif, label: "GIF" },
     { type: "poll" as const, icon: IconChartBar, label: "Poll" },
   ];
 
@@ -526,6 +551,12 @@ export function CreatePostModal({
                 onClick={() => {
                   setPostType(type);
                   setMediaUrls([]);
+                  if (type === "gif") {
+                    setGifPickerOpen(true);
+                  } else {
+                    setGifPickerOpen(false);
+                    setSelectedGifUrl(null);
+                  }
                 }}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
                   postType === type
@@ -1049,6 +1080,53 @@ export function CreatePostModal({
 
                   {!isSearchingUnsplash && unsplashQuery.length >= 2 && unsplashResults.length === 0 && (
                     <p className="text-center text-foreground/40 text-sm py-4">No photos found</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GIF Picker */}
+          {postType === "gif" && (
+            <div className="space-y-4">
+              {selectedGifUrl ? (
+                <div className="relative rounded-xl overflow-hidden border border-vocl-accent/50">
+                  <img
+                    src={selectedGifUrl}
+                    alt="Selected GIF"
+                    className="w-full max-h-80 object-contain bg-black/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedGifUrl(null);
+                      setGifPickerOpen(true);
+                    }}
+                    className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  >
+                    <IconX size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <GifPicker
+                    isOpen={gifPickerOpen}
+                    onClose={() => setGifPickerOpen(false)}
+                    onSelect={(gifUrl) => {
+                      setSelectedGifUrl(gifUrl);
+                      setGifPickerOpen(false);
+                    }}
+                    inline
+                  />
+                  {!gifPickerOpen && (
+                    <button
+                      type="button"
+                      onClick={() => setGifPickerOpen(true)}
+                      className="w-full py-8 rounded-xl border border-dashed border-white/20 hover:border-vocl-accent/50 bg-background/30 flex flex-col items-center gap-2 text-foreground/50 hover:text-vocl-accent transition-colors"
+                    >
+                      <IconGif size={32} />
+                      <span className="text-sm font-medium">Click to browse GIFs</span>
+                    </button>
                   )}
                 </div>
               )}

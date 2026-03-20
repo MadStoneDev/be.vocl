@@ -499,6 +499,12 @@ interface PostWithDetails {
     avatarUrl: string | null;
     role: number;
   } | null;
+  rebloggedFromAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
 }
 
 
@@ -924,11 +930,12 @@ export async function getFeedPosts(options?: {
     // Get user first
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Get followed IDs and muted IDs (only if logged in)
+    // Get followed IDs, muted user IDs, and muted tag IDs (only if logged in)
     let followedIds: string[] = [];
     let mutedIds: string[] = [];
+    let mutedTagIds: Set<string> = new Set();
     if (user) {
-      const [{ data: follows }, { data: mutes }] = await Promise.all([
+      const [{ data: follows }, { data: mutes }, { data: mutedTags }] = await Promise.all([
         (supabase as any)
           .from("follows")
           .select("following_id")
@@ -937,8 +944,13 @@ export async function getFeedPosts(options?: {
           .from("mutes")
           .select("muted_id")
           .eq("muter_id", user.id),
+        (supabase as any)
+          .from("muted_tags")
+          .select("tag_id")
+          .eq("profile_id", user.id),
       ]);
       mutedIds = (mutes || []).map((m: any) => m.muted_id);
+      mutedTagIds = new Set((mutedTags || []).map((mt: any) => mt.tag_id));
       const mutedSet = new Set(mutedIds);
       followedIds = [
         ...(follows || []).map((f: any) => f.following_id).filter((id: string) => !mutedSet.has(id)),
@@ -1006,13 +1018,22 @@ export async function getFeedPosts(options?: {
       posts.filter((p: any) => p.original_post_id).map((p: any) => p.original_post_id)
     )];
 
-    const [stats, followData, originalPostsData] = await Promise.all([
+    // Fetch intermediate (reblogged_from) post authors for echo chains
+    const reblogChainIds = [...new Set(
+      posts.filter((p: any) => p.reblogged_from_id && p.reblogged_from_id !== p.original_post_id)
+        .map((p: any) => p.reblogged_from_id)
+    )];
+
+    const [stats, followData, originalPostsData, chainPostsData] = await Promise.all([
       batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true, includeBookmarks: true }),
       user && uniqueAuthorIds.length > 0
         ? (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", uniqueAuthorIds)
         : Promise.resolve({ data: [] }),
       reblogOriginalIds.length > 0
         ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogOriginalIds).then((res: any) => res).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] }),
+      reblogChainIds.length > 0
+        ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogChainIds).then((res: any) => res).catch(() => ({ data: [] }))
         : Promise.resolve({ data: [] }),
     ]);
 
@@ -1024,7 +1045,13 @@ export async function getFeedPosts(options?: {
       originalAuthorMap.set(op.id, op.author);
     }
 
-    const formattedPosts: PostWithDetails[] = posts.map((post: any) => {
+    // Map reblogged_from post ID → intermediate author (for echo chains)
+    const chainAuthorMap = new Map<string, any>();
+    for (const cp of chainPostsData.data || []) {
+      chainAuthorMap.set(cp.id, cp.author);
+    }
+
+    let formattedPosts: PostWithDetails[] = posts.map((post: any) => {
       const isReblog = !!post.original_post_id;
       const origAuthor = isReblog ? originalAuthorMap.get(post.original_post_id) : null;
 
@@ -1060,8 +1087,20 @@ export async function getFeedPosts(options?: {
           avatarUrl: origAuthor.avatar_url,
           role: origAuthor.role || 0,
         } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 }) : null,
+        rebloggedFromAuthor: isReblog && post.reblogged_from_id && post.reblogged_from_id !== post.original_post_id ? (() => {
+          const ca = chainAuthorMap.get(post.reblogged_from_id);
+          return ca ? { username: ca.username || "unknown", displayName: ca.display_name, avatarUrl: ca.avatar_url, role: ca.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
+        })() : null,
       };
     });
+
+    // Filter out posts with muted tags
+    if (mutedTagIds.size > 0) {
+      formattedPosts = formattedPosts.filter((post) => {
+        const postTags = post.tags || [];
+        return !postTags.some((t) => mutedTagIds.has(t.id));
+      });
+    }
 
     return {
       success: true,

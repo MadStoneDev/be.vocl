@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12"
   }
@@ -182,6 +180,54 @@ export type Database = {
         }
         Relationships: []
       }
+      bookmark_collections: {
+        Row: {
+          id: string
+          user_id: string
+          name: string | null
+          description: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name?: string | null
+          description?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string | null
+          description?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      bookmarks: {
+        Row: {
+          id: string
+          user_id: string
+          post_id: string
+          created_at: string
+          collection_id: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_id: string
+          created_at?: string
+          collection_id?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string
+          collection_id?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           id: string
@@ -314,7 +360,7 @@ export type Database = {
       email_sends: {
         Row: {
           id: string
-          template_type: string
+          template_type: string | null
           subject: string
           recipient_count: number
           sent_by: string | null
@@ -326,7 +372,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          template_type: string
+          template_type?: string | null
           subject: string
           recipient_count?: number
           sent_by?: string | null
@@ -338,7 +384,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          template_type?: string
+          template_type?: string | null
           subject?: string
           recipient_count?: number
           sent_by?: string | null
@@ -353,21 +399,21 @@ export type Database = {
       email_template_customizations: {
         Row: {
           id: string
-          template_type: string
+          template_type: string | null
           customizations: Json
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
           id?: string
-          template_type: string
+          template_type?: string | null
           customizations?: Json
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
           id?: string
-          template_type?: string
+          template_type?: string | null
           customizations?: Json
           updated_at?: string | null
           updated_by?: string | null
@@ -412,7 +458,7 @@ export type Database = {
           id: string
           flagger_id: string | null
           post_id: string
-          subject: string
+          subject: string | null
           comments: string | null
           status: string | null
           assigned_to: string | null
@@ -431,7 +477,7 @@ export type Database = {
           id?: string
           flagger_id?: string | null
           post_id: string
-          subject: string
+          subject?: string | null
           comments?: string | null
           status?: string | null
           assigned_to?: string | null
@@ -450,7 +496,7 @@ export type Database = {
           id?: string
           flagger_id?: string | null
           post_id?: string
-          subject?: string
+          subject?: string | null
           comments?: string | null
           status?: string | null
           assigned_to?: string | null
@@ -659,6 +705,42 @@ export type Database = {
         }
         Relationships: []
       }
+      muted_post_notifications: {
+        Row: {
+          user_id: string
+          post_id: string
+          created_at: string | null
+        }
+        Insert: {
+          user_id: string
+          post_id: string
+          created_at?: string | null
+        }
+        Update: {
+          user_id?: string
+          post_id?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      muted_tags: {
+        Row: {
+          profile_id: string
+          tag_id: string
+          created_at: string | null
+        }
+        Insert: {
+          profile_id: string
+          tag_id: string
+          created_at?: string | null
+        }
+        Update: {
+          profile_id?: string
+          tag_id?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       mutes: {
         Row: {
           muter_id: string
@@ -682,7 +764,7 @@ export type Database = {
           id: string
           recipient_id: string
           actor_id: string | null
-          notification_type: string
+          notification_type: string | null
           post_id: string | null
           comment_id: string | null
           message_id: string | null
@@ -693,7 +775,7 @@ export type Database = {
           id?: string
           recipient_id: string
           actor_id?: string | null
-          notification_type: string
+          notification_type?: string | null
           post_id?: string | null
           comment_id?: string | null
           message_id?: string | null
@@ -704,7 +786,7 @@ export type Database = {
           id?: string
           recipient_id?: string
           actor_id?: string | null
-          notification_type?: string
+          notification_type?: string | null
           post_id?: string | null
           comment_id?: string | null
           message_id?: string | null
@@ -717,7 +799,7 @@ export type Database = {
         Row: {
           id: string
           recipient_id: string
-          notification_type: string
+          notification_type: string | null
           actor_id: string | null
           post_id: string | null
           comment_id: string | null
@@ -728,7 +810,7 @@ export type Database = {
         Insert: {
           id?: string
           recipient_id: string
-          notification_type: string
+          notification_type?: string | null
           actor_id?: string | null
           post_id?: string | null
           comment_id?: string | null
@@ -739,7 +821,7 @@ export type Database = {
         Update: {
           id?: string
           recipient_id?: string
-          notification_type?: string
+          notification_type?: string | null
           actor_id?: string | null
           post_id?: string | null
           comment_id?: string | null
@@ -792,7 +874,7 @@ export type Database = {
         Row: {
           id: string
           author_id: string
-          post_type: string
+          post_type: string | null
           status: string | null
           content: Json
           is_sensitive: boolean | null
@@ -813,7 +895,7 @@ export type Database = {
         Insert: {
           id?: string
           author_id: string
-          post_type: string
+          post_type?: string | null
           status?: string | null
           content: Json
           is_sensitive?: boolean | null
@@ -834,7 +916,7 @@ export type Database = {
         Update: {
           id?: string
           author_id?: string
-          post_type?: string
+          post_type?: string | null
           status?: string | null
           content?: Json
           is_sensitive?: boolean | null
@@ -1025,7 +1107,7 @@ export type Database = {
           reporter_id: string | null
           reported_user_id: string | null
           post_id: string | null
-          subject: string
+          subject: string | null
           comments: string | null
           source: string | null
           status: string | null
@@ -1046,7 +1128,7 @@ export type Database = {
           reporter_id?: string | null
           reported_user_id?: string | null
           post_id?: string | null
-          subject: string
+          subject?: string | null
           comments?: string | null
           source?: string | null
           status?: string | null
@@ -1067,7 +1149,7 @@ export type Database = {
           reporter_id?: string | null
           reported_user_id?: string | null
           post_id?: string | null
-          subject?: string
+          subject?: string | null
           comments?: string | null
           source?: string | null
           status?: string | null
@@ -1239,7 +1321,30 @@ export type Database = {
     Views: {
     }
     Functions: {
-      [_ in never]: never
+      generate_invite_code: {
+        Args: {
+        }
+        Returns: string
+      }
+      get_next_queue_position: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: number
+      }
+      is_conversation_member: {
+        Args: {
+          conv_id: string
+        }
+        Returns: boolean
+      }
+      use_invite_code: {
+        Args: {
+          p_code: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

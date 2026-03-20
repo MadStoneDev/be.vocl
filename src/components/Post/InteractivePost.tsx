@@ -18,6 +18,7 @@ import { deletePost } from "@/actions/posts";
 import { reblogPost } from "@/actions/reblogs";
 import { pinPost, unpinPost } from "@/actions/profile";
 import { muteUser, followUser, unfollowUser } from "@/actions/follows";
+import { muteTag } from "@/actions/tags";
 import { mutePostNotifications, unmutePostNotifications } from "@/actions/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import type { PostTag } from "./Post";
@@ -59,6 +60,12 @@ interface InteractivePostProps {
     avatarUrl: string | null;
     role: number;
   } | null;
+  rebloggedFromAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
   isPinned?: boolean;
   contentPreview?: string;
   imageUrl?: string;
@@ -83,6 +90,7 @@ export function InteractivePost({
   isReblog = false,
   reblogCommentHtml,
   originalAuthor,
+  rebloggedFromAuthor,
   isPinned = false,
   contentPreview = "",
   imageUrl,
@@ -127,6 +135,11 @@ export function InteractivePost({
 
   // Notification mute state
   const [isNotificationMuted, setIsNotificationMuted] = useState(false);
+
+  // Panel loading states
+  const [isCommentsLoading, setIsCommentsLoading] = useState(false);
+  const [isLikesLoading, setIsLikesLoading] = useState(false);
+  const [isReblogsLoading, setIsReblogsLoading] = useState(false);
   // Use likes hook
   const {
     isLiked,
@@ -337,6 +350,17 @@ export function InteractivePost({
     });
   }, [authorId, author.username]);
 
+  const handleMuteTag = useCallback((tagId: string, tagName: string) => {
+    startPinTransition(async () => {
+      const result = await muteTag(tagId);
+      if (result.success) {
+        toast.success(`Muted #${tagName}`);
+      } else {
+        toast.error(result.error || "Failed to mute tag");
+      }
+    });
+  }, []);
+
   const handleFollowToggle = useCallback(() => {
     if (!authorId) {
       toast.error("Unable to update follow status");
@@ -419,6 +443,34 @@ export function InteractivePost({
     toast.success("Post updated");
   }, [isReblog]);
 
+  // Expand handlers with loading state
+  const handleCommentsExpand = useCallback(async () => {
+    setIsCommentsLoading(true);
+    try {
+      await refreshComments();
+    } finally {
+      setIsCommentsLoading(false);
+    }
+  }, [refreshComments]);
+
+  const handleLikesExpand = useCallback(async () => {
+    setIsLikesLoading(true);
+    try {
+      await refreshLikes();
+    } finally {
+      setIsLikesLoading(false);
+    }
+  }, [refreshLikes]);
+
+  const handleReblogsExpand = useCallback(async () => {
+    setIsReblogsLoading(true);
+    try {
+      await refreshRebloggedBy();
+    } finally {
+      setIsReblogsLoading(false);
+    }
+  }, [refreshRebloggedBy]);
+
   // Render content based on content type and current content data
   const renderContent = useCallback(() => {
     const contentData = currentContent;
@@ -498,6 +550,7 @@ export function InteractivePost({
         isReblog={isReblog}
         reblogCommentHtml={currentReblogComment}
         originalAuthor={originalAuthor}
+        rebloggedFromAuthor={rebloggedFromAuthor}
         isSensitive={currentIsSensitive}
         autoRevealSensitive={autoRevealSensitive}
         tags={currentTags}
@@ -508,9 +561,12 @@ export function InteractivePost({
         onComment={handleComment}
         onReblog={handleReblog}
         onMenuClick={handleMenuClick}
-        onCommentsExpand={refreshComments}
-        onLikesExpand={refreshLikes}
-        onReblogsExpand={refreshRebloggedBy}
+        onCommentsExpand={handleCommentsExpand}
+        onLikesExpand={handleLikesExpand}
+        onReblogsExpand={handleReblogsExpand}
+        isCommentsLoading={isCommentsLoading}
+        isLikesLoading={isLikesLoading}
+        isReblogsLoading={isReblogsLoading}
         contentWarning={currentContent?.content_warning}
       >
         {renderContent()}
@@ -536,7 +592,9 @@ export function InteractivePost({
         onBookmark={handleBookmark}
         isNotificationMuted={isNotificationMuted}
         onMuteNotifications={handleMuteNotifications}
-        onShare={handleShare}
+        onShare={currentIsSensitive ? undefined : handleShare}
+        tags={currentTags}
+        onMuteTag={handleMuteTag}
       />
 
       {/* Delete Confirmation */}

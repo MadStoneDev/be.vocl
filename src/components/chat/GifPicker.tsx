@@ -16,9 +16,10 @@ interface GifPickerProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (gifUrl: string) => void;
+  inline?: boolean;
 }
 
-export function GifPicker({ isOpen, onClose, onSelect }: GifPickerProps) {
+export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps) {
   const [query, setQuery] = useState("");
   const [gifs, setGifs] = useState<Gif[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +94,7 @@ export function GifPicker({ isOpen, onClose, onSelect }: GifPickerProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute bottom-full left-0 right-0 mb-2 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+    <div className={inline ? "bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl overflow-hidden" : "absolute bottom-full left-0 right-0 mb-2 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl overflow-hidden z-50"}>
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-white/5">
         <div className="flex items-center gap-2">
@@ -133,7 +134,7 @@ export function GifPicker({ isOpen, onClose, onSelect }: GifPickerProps) {
         className="h-64 overflow-y-auto p-2"
       >
         {gifs.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid gap-1.5 ${inline ? "grid-cols-3" : "grid-cols-2"}`}>
             {gifs.map((gif) => (
               <button
                 key={gif.id}
@@ -170,7 +171,7 @@ export function GifPicker({ isOpen, onClose, onSelect }: GifPickerProps) {
 
       {/* Powered by Tenor */}
       <div className="px-3 py-2 border-t border-white/5 text-center">
-        <span className="text-[10px] text-foreground/30">Powered by Tenor</span>
+        <span className="text-[10px] text-foreground/30">Powered by GIPHY</span>
       </div>
     </div>
   );

@@ -1,6 +1,16 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback, useEffect, memo, createContext, useContext, type ReactNode } from "react";
+import {
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  useEffect,
+  memo,
+  createContext,
+  useContext,
+  type ReactNode,
+} from "react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +27,7 @@ import {
   IconHourglass,
   IconSend,
   IconX,
+  IconLoader2,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
 import { StaffBadge, Avatar } from "@/components/ui";
@@ -27,7 +38,14 @@ type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
 // =============================================================================
 // Types
 // =============================================================================
-export type PostContentType = "image" | "text" | "video" | "audio" | "gallery" | "poll" | "ask";
+export type PostContentType =
+  | "image"
+  | "text"
+  | "video"
+  | "audio"
+  | "gallery"
+  | "poll"
+  | "ask";
 export interface PostAuthor {
   username: string;
   avatarUrl: string;
@@ -82,11 +100,20 @@ export interface PostProps {
   onCommentsExpand?: () => void;
   onLikesExpand?: () => void;
   onReblogsExpand?: () => void;
+  isCommentsLoading?: boolean;
+  isLikesLoading?: boolean;
+  isReblogsLoading?: boolean;
   contentWarning?: string;
   // Reblog metadata
   isReblog?: boolean;
   reblogCommentHtml?: string | null;
   originalAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
+  rebloggedFromAuthor?: {
     username: string;
     displayName: string | null;
     avatarUrl: string | null;
@@ -116,9 +143,16 @@ interface PostHeaderProps {
   timestamp: string;
   onMenuClick?: () => void;
   reblogFrom?: string | null;
+  reblogChainFrom?: string | null;
 }
 
-function PostHeader({ author, timestamp, onMenuClick, reblogFrom }: PostHeaderProps) {
+function PostHeader({
+  author,
+  timestamp,
+  onMenuClick,
+  reblogFrom,
+  reblogChainFrom,
+}: PostHeaderProps) {
   return (
     <div
       className="flex items-center justify-between p-1.5 sm:p-2 border-b border-vocl-surface-dark/20 z-50"
@@ -129,26 +163,32 @@ function PostHeader({ author, timestamp, onMenuClick, reblogFrom }: PostHeaderPr
           href={`/profile/${author.username}`}
           className="hover:opacity-90 transition-opacity"
         >
-          <Avatar
-            src={author.avatarUrl}
-            username={author.username}
-            size="lg"
-          />
+          <Avatar src={author.avatarUrl} username={author.username} size="lg" />
         </Link>
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <Link
               href={`/profile/${author.username}`}
-              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-pink transition-colors"
+              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-accent transition-colors"
             >
               {author.username}
             </Link>
-            {author.role !== undefined && <StaffBadge role={author.role} size={16} />}
+            {author.role !== undefined && (
+              <StaffBadge role={author.role} size={16} />
+            )}
           </div>
           <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">
-            {reblogFrom ? (
+            {reblogFrom && reblogChainFrom ? (
               <>
                 echoed from{" "}
+                <Link
+                  href={`/profile/${reblogChainFrom}`}
+                  className="font-bold hover:underline"
+                  style={{ color: "#F20D5E" }}
+                >
+                  {reblogChainFrom}
+                </Link>
+                {" · originally by "}
                 <Link
                   href={`/profile/${reblogFrom}`}
                   className="font-bold hover:underline"
@@ -156,7 +196,21 @@ function PostHeader({ author, timestamp, onMenuClick, reblogFrom }: PostHeaderPr
                 >
                   {reblogFrom}
                 </Link>
-                {" · "}{timestamp}
+                {" · "}
+                {timestamp}
+              </>
+            ) : reblogFrom ? (
+              <>
+                echoed{" "}
+                <Link
+                  href={`/profile/${reblogFrom}`}
+                  className="font-bold hover:underline"
+                  style={{ color: "#F20D5E" }}
+                >
+                  {reblogFrom}
+                </Link>
+                {" · "}
+                {timestamp}
               </>
             ) : (
               timestamp
@@ -211,9 +265,17 @@ function PostActionBar({
         aria-expanded={false}
       >
         {interactions.hasCommented ? (
-          <IconMessageFilled size={24} className="text-vocl-comment" aria-hidden="true" />
+          <IconMessageFilled
+            size={24}
+            className="text-vocl-comment"
+            aria-hidden="true"
+          />
         ) : (
-          <IconMessage size={24} className="text-neutral-400" aria-hidden="true" />
+          <IconMessage
+            size={24}
+            className="text-neutral-400"
+            aria-hidden="true"
+          />
         )}
         <span
           className={`font-sans text-sm ${
@@ -234,9 +296,17 @@ function PostActionBar({
           aria-pressed={interactions.hasLiked}
         >
           {interactions.hasLiked ? (
-            <IconHeartFilled size={24} className="text-vocl-like" aria-hidden="true" />
+            <IconHeartFilled
+              size={24}
+              className="text-vocl-like"
+              aria-hidden="true"
+            />
           ) : (
-            <IconHeart size={24} className="text-neutral-400" aria-hidden="true" />
+            <IconHeart
+              size={24}
+              className="text-neutral-400"
+              aria-hidden="true"
+            />
           )}
         </button>
         <button
@@ -263,28 +333,30 @@ function PostActionBar({
 
       {/* Reblog button */}
       <button
-          onClick={onReblogClick}
-          className={`group absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-surface-dark/50"} bg-vocl-accent transition-all duration-300 ${
-              isReblogMenuOpen
-                  ? "scale-105"
-                  : "hover:scale-105"
-          } z-50`}
-          aria-label="Echo options"
-          aria-expanded={isReblogMenuOpen}
+        onClick={onReblogClick}
+        className={`group absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-surface-dark/50"} bg-vocl-accent transition-all duration-300 ${
+          isReblogMenuOpen ? "scale-105" : "hover:scale-105"
+        } z-50`}
+        aria-label="Echo options"
+        aria-expanded={isReblogMenuOpen}
       >
         <div className="hidden sm:flex items-center justify-center">
           {isReblogMenuOpen ? (
-              <IconBolt size={55} stroke={1.5} className={`text-neutral-900`} />
+            <IconBolt size={55} stroke={1.5} className={`text-neutral-900`} />
           ) : (
-              <IconRefresh size={55} stroke={1.5} className={`text-neutral-900`} />
+            <IconRefresh
+              size={55}
+              stroke={1.5}
+              className={`text-neutral-900`}
+            />
           )}
         </div>
 
         <div className="flex sm:hidden items-center justify-center">
           {isReblogMenuOpen ? (
-              <IconBolt size={50} stroke={1.5} className="text-neutral-900" />
+            <IconBolt size={50} stroke={1.5} className="text-neutral-900" />
           ) : (
-              <IconRefresh size={50} stroke={1.5} className="text-neutral-900" />
+            <IconRefresh size={50} stroke={1.5} className="text-neutral-900" />
           )}
         </div>
       </button>
@@ -301,7 +373,11 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
   const menuItems = [
     { type: "queue" as const, icon: IconHourglass, label: "Add to queue" },
     { type: "schedule" as const, icon: IconCalendar, label: "Schedule echo" },
-    { type: "with-comment" as const, icon: IconPencil, label: "Echo with comment" },
+    {
+      type: "with-comment" as const,
+      icon: IconPencil,
+      label: "Echo with comment",
+    },
   ];
 
   // Radial menu: items fan out in an arc from the reblog button (bottom-right corner)
@@ -342,7 +418,9 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
               // Position from bottom-right, offset by button center, then by calculated x/y
               bottom: buttonCenterOffset - y - 22, // 22 = half of button size (44px / 2)
               right: buttonCenterOffset - x - 22,
-              transitionDelay: isOpen ? `${index * 60}ms` : `${(menuItems.length - 1 - index) * 30}ms`,
+              transitionDelay: isOpen
+                ? `${index * 60}ms`
+                : `${(menuItems.length - 1 - index) * 30}ms`,
               transform: isOpen ? "scale(1)" : "scale(0)",
               opacity: isOpen ? 1 : 0,
             }}
@@ -381,7 +459,10 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
   return (
     <div className="flex flex-col">
       {/* Comment input */}
-      <form onSubmit={handleSubmit} className="flex gap-2 p-3 border-b border-neutral-200">
+      <form
+        onSubmit={handleSubmit}
+        className="flex gap-2 p-3 border-b border-neutral-200"
+      >
         <input
           ref={inputRef}
           type="text"
@@ -400,7 +481,9 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
         </button>
       </form>
       {newComment.length >= 1800 && (
-        <span className={`text-xs px-3 ${newComment.length >= 2000 ? "text-vocl-like" : "text-foreground/40"}`}>
+        <span
+          className={`text-xs px-3 ${newComment.length >= 2000 ? "text-vocl-like" : "text-foreground/40"}`}
+        >
           {newComment.length}/2000
         </span>
       )}
@@ -408,10 +491,15 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
       {/* Comments list */}
       <div className="max-h-64 overflow-y-auto">
         {comments.length === 0 ? (
-          <p className="text-center text-neutral-400 text-sm py-6">No comments yet. Be the first!</p>
+          <p className="text-center text-neutral-400 text-sm py-6">
+            No comments yet. Be the first!
+          </p>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="flex gap-3 p-3 border-b border-neutral-100 last:border-0">
+            <div
+              key={comment.id}
+              className="flex gap-3 p-3 border-b border-neutral-100 last:border-0"
+            >
               <Link
                 href={`/profile/${comment.author.username}`}
                 className="shrink-0 hover:opacity-90 transition-opacity"
@@ -426,14 +514,20 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/profile/${comment.author.username}`}
-                    className="font-medium text-sm text-neutral-800 hover:text-vocl-pink transition-colors"
+                    className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors"
                   >
                     {comment.author.username}
                   </Link>
-                  {comment.author.role !== undefined && <StaffBadge role={comment.author.role} size={14} />}
-                  <span className="text-xs text-neutral-400">{comment.timestamp}</span>
+                  {comment.author.role !== undefined && (
+                    <StaffBadge role={comment.author.role} size={14} />
+                  )}
+                  <span className="text-xs text-neutral-400">
+                    {comment.timestamp}
+                  </span>
                 </div>
-                <p className="text-sm text-neutral-600 mt-0.5">{comment.content}</p>
+                <p className="text-sm text-neutral-600 mt-0.5">
+                  {comment.content}
+                </p>
               </div>
             </div>
           ))
@@ -453,7 +547,9 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
   return (
     <div className="max-h-64 overflow-y-auto">
       {users.length === 0 ? (
-        <p className="text-center text-neutral-400 text-sm py-6">{emptyMessage}</p>
+        <p className="text-center text-neutral-400 text-sm py-6">
+          {emptyMessage}
+        </p>
       ) : (
         users.map((user) => (
           <Link
@@ -461,15 +557,15 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
             href={`/profile/${user.username}`}
             className="flex items-center gap-3 p-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
           >
-            <Avatar
-              src={user.avatarUrl}
-              username={user.username}
-              size="md"
-            />
+            <Avatar src={user.avatarUrl} username={user.username} size="md" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-pink transition-colors">{user.displayName || user.username}</span>
-                {user.role !== undefined && <StaffBadge role={user.role} size={14} />}
+                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors">
+                  {user.displayName || user.username}
+                </span>
+                {user.role !== undefined && (
+                  <StaffBadge role={user.role} size={14} />
+                )}
               </div>
               <span className="text-xs text-neutral-400">@{user.username}</span>
             </div>
@@ -488,9 +584,18 @@ interface ExpandedPanelProps {
   rebloggedBy: UserData[];
   onCommentSubmit: (content: string) => void;
   onClose: () => void;
+  isLoading?: boolean;
 }
 
-function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, onClose }: ExpandedPanelProps) {
+function ExpandedPanel({
+  type,
+  comments,
+  likedBy,
+  rebloggedBy,
+  onCommentSubmit,
+  onClose,
+  isLoading = false,
+}: ExpandedPanelProps) {
   if (!type) return null;
 
   const titles = {
@@ -517,14 +622,30 @@ function ExpandedPanel({ type, comments, likedBy, rebloggedBy, onCommentSubmit, 
       </div>
 
       {/* Panel content */}
-      {type === "comments" && (
-        <CommentsList comments={comments} onSubmit={onCommentSubmit} />
-      )}
-      {type === "likes" && (
-        <UsersList users={likedBy} emptyMessage="No likes yet" actionColor="bg-vocl-like" />
-      )}
-      {type === "reblogs" && (
-        <UsersList users={rebloggedBy} emptyMessage="No echoes yet" actionColor="bg-vocl-reblog" />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <IconLoader2 size={24} className="animate-spin text-neutral-400" />
+        </div>
+      ) : (
+        <>
+          {type === "comments" && (
+            <CommentsList comments={comments} onSubmit={onCommentSubmit} />
+          )}
+          {type === "likes" && (
+            <UsersList
+              users={likedBy}
+              emptyMessage="No likes yet"
+              actionColor="bg-vocl-like"
+            />
+          )}
+          {type === "reblogs" && (
+            <UsersList
+              users={rebloggedBy}
+              emptyMessage="No echoes yet"
+              actionColor="bg-vocl-reblog"
+            />
+          )}
+        </>
       )}
     </div>
   );
@@ -589,7 +710,13 @@ function MobileTagsStrip({ tags }: { tags: PostTag[] }) {
 }
 
 // Tags for text posts - rendered at Post level after children (including link previews)
-function TextPostTags({ tags, isHovered }: { tags: PostTag[]; isHovered: boolean }) {
+function TextPostTags({
+  tags,
+  isHovered,
+}: {
+  tags: PostTag[];
+  isHovered: boolean;
+}) {
   if (tags.length === 0) return null;
 
   return (
@@ -605,7 +732,9 @@ function TextPostTags({ tags, isHovered }: { tags: PostTag[]; isHovered: boolean
               key={tag.id}
               href={`/tag/${encodeURIComponent(tag.name)}`}
               className={`px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate transition-opacity ${
-                isHovered ? "opacity-80 hover:opacity-100" : "opacity-100 lg:opacity-0"
+                isHovered
+                  ? "opacity-80 hover:opacity-100"
+                  : "opacity-100 lg:opacity-0"
               }`}
               style={{ maxWidth: "150px" }}
             >
@@ -643,14 +772,19 @@ export const Post = memo(function Post({
   onCommentsExpand,
   onLikesExpand,
   onReblogsExpand,
+  isCommentsLoading = false,
+  isLikesLoading = false,
+  isReblogsLoading = false,
   contentWarning,
   isReblog = false,
   reblogCommentHtml,
   originalAuthor,
+  rebloggedFromAuthor,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
-  const [isContentRevealed, setIsContentRevealed] = useState(autoRevealSensitive);
+  const [isContentRevealed, setIsContentRevealed] =
+    useState(autoRevealSensitive);
   const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>(null);
   const [lastPanel, setLastPanel] = useState<ExpandedPanel>(null);
   const [isCWDismissed, setIsCWDismissed] = useState(false);
@@ -663,8 +797,14 @@ export const Post = memo(function Post({
   }, [autoRevealSensitive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Memoized computed values
-  const displayPanel = useMemo(() => expandedPanel || lastPanel, [expandedPanel, lastPanel]);
-  const showNSFWOverlay = useMemo(() => isSensitive && !isContentRevealed, [isSensitive, isContentRevealed]);
+  const displayPanel = useMemo(
+    () => expandedPanel || lastPanel,
+    [expandedPanel, lastPanel],
+  );
+  const showNSFWOverlay = useMemo(
+    () => isSensitive && !isContentRevealed,
+    [isSensitive, isContentRevealed],
+  );
   // On mobile (< 640px), use flat corners for edge-to-edge feel
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -675,20 +815,26 @@ export const Post = memo(function Post({
     return () => mql.removeEventListener("change", handler);
   }, []);
   const contentBorderRadius = "0";
-  const articleBorderRadius = useMemo(() => isMobile ? "0" : expandedPanel ? "30px 0 0 0" : "30px 0 40px 0", [expandedPanel, isMobile]);
+  const articleBorderRadius = useMemo(
+    () => (isMobile ? "0" : expandedPanel ? "30px 0 0 0" : "30px 0 40px 0"),
+    [expandedPanel, isMobile],
+  );
 
   const handleReblogClick = useCallback(() => {
-    setIsReblogMenuOpen(prev => {
+    setIsReblogMenuOpen((prev) => {
       if (!prev) setIsHovered(false); // Clear hover when opening menu
       return !prev;
     });
     setExpandedPanel(null);
   }, []);
 
-  const handleReblogSelect = useCallback((type: "instant" | "with-comment" | "schedule" | "queue") => {
-    setIsReblogMenuOpen(false);
-    onReblog?.(type);
-  }, [onReblog]);
+  const handleReblogSelect = useCallback(
+    (type: "instant" | "with-comment" | "schedule" | "queue") => {
+      setIsReblogMenuOpen(false);
+      onReblog?.(type);
+    },
+    [onReblog],
+  );
 
   const handleOverlayClick = useCallback(() => {
     if (isReblogMenuOpen) {
@@ -732,9 +878,12 @@ export const Post = memo(function Post({
     setIsReblogMenuOpen(false);
   }, [expandedPanel, onReblogsExpand]);
 
-  const handleCommentSubmit = useCallback((content: string) => {
-    onComment?.(content);
-  }, [onComment]);
+  const handleCommentSubmit = useCallback(
+    (content: string) => {
+      onComment?.(content);
+    },
+    [onComment],
+  );
 
   const handleClosePanel = useCallback(() => {
     setExpandedPanel(null);
@@ -748,7 +897,7 @@ export const Post = memo(function Post({
   return (
     <div className="w-full max-w-full sm:max-w-xl">
       <article
-        className="relative shadow-xl overflow-hidden"
+        className="relative shadow-xl overflow-hidden rounded-br-[40px]"
         data-post-id={id}
         data-content-type={contentType}
       >
@@ -757,7 +906,9 @@ export const Post = memo(function Post({
           author={author}
           timestamp={timestamp}
           onMenuClick={onMenuClick}
-          reblogFrom={isReblog && originalAuthor ? originalAuthor.username : null}
+          reblogFrom={
+            isReblog && originalAuthor ? originalAuthor.username : null
+          }
         />
 
         {/* Content area with overlay */}
@@ -768,26 +919,42 @@ export const Post = memo(function Post({
         >
           {/* For reblogs: original author header + green border wrapper */}
           {isReblog && originalAuthor && (
-            <div className="border-b-3 border-vocl-accent bg-white overflow-hidden">
+            <div className="bg-white overflow-hidden">
               {/* Original author mini-header */}
-              <div
-                className="flex items-center gap-2 px-3 py-1.5 bg-vocl-accent"
-              >
-                <Link href={`/profile/${originalAuthor.username}`} className="hover:opacity-90 transition-opacity">
-                  <Avatar src={originalAuthor.avatarUrl || ""} username={originalAuthor.username} size="sm" />
-                </Link>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-vocl-surface-dark">
                 <Link
                   href={`/profile/${originalAuthor.username}`}
-                  className="font-display text-sm font-normal text-neutral-900 hover:text-white transition-colors"
+                  className="hover:opacity-90 transition-opacity"
                 >
-                  {originalAuthor.username}
+                  <Avatar
+                    src={originalAuthor.avatarUrl || ""}
+                    username={originalAuthor.username}
+                    size="sm"
+                  />
                 </Link>
-                {originalAuthor.role !== undefined && <StaffBadge role={originalAuthor.role} size={14} />}
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/profile/${originalAuthor.username}`}
+                      className="font-display text-base font-normal text-white hover:text-vocl-accent transition-colors"
+                    >
+                      {originalAuthor.username}
+                    </Link>
+                    {originalAuthor.role !== undefined && (
+                      <StaffBadge role={originalAuthor.role} size={14} />
+                    )}
+                  </div>
+                  <span className="-mt-1 font-sans text-[0.65rem] text-neutral-400">
+                    {timestamp}
+                  </span>
+                </div>
               </div>
 
               {/* Original post content (no tags here — they go under the caption) */}
               <div className="relative overflow-hidden">
-                <PostTagsContext.Provider value={{ tags: [], isHovered: false }}>
+                <PostTagsContext.Provider
+                  value={{ tags: [], isHovered: false }}
+                >
                   {children}
                 </PostTagsContext.Provider>
               </div>
@@ -796,27 +963,38 @@ export const Post = memo(function Post({
 
           {/* For non-reblogs: normal content */}
           {!isReblog && (
-            <div className="relative overflow-hidden" style={{ borderRadius: contentBorderRadius }}>
+            <div
+              className="relative overflow-hidden"
+              style={{ borderRadius: contentBorderRadius }}
+            >
               <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
                 {children}
               </PostTagsContext.Provider>
 
-              {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-                <TagsOverlay tags={tags} isVisible={isHovered} />
-              )}
-              {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-                <MobileTagsStrip tags={tags} />
-              )}
+              {(contentType === "image" ||
+                contentType === "video" ||
+                contentType === "gallery") &&
+                tags &&
+                tags.length > 0 && (
+                  <TagsOverlay tags={tags} isVisible={isHovered} />
+                )}
+              {(contentType === "image" ||
+                contentType === "video" ||
+                contentType === "gallery") &&
+                tags &&
+                tags.length > 0 && <MobileTagsStrip tags={tags} />}
               {contentType === "text" && tags && tags.length > 0 && (
                 <TextPostTags tags={tags} isHovered={isHovered} />
               )}
             </div>
           )}
 
-
           {/* NSFW overlay - shown when content is sensitive and not revealed */}
           {showNSFWOverlay && (
-            <div style={{ borderRadius: contentBorderRadius }} className="overflow-hidden">
+            <div
+              style={{ borderRadius: contentBorderRadius }}
+              className="overflow-hidden"
+            >
               <NSFWOverlay onReveal={handleRevealContent} />
             </div>
           )}
@@ -828,8 +1006,12 @@ export const Post = memo(function Post({
               style={{ borderRadius: contentBorderRadius }}
             >
               <div className="text-center px-6 max-w-sm">
-                <p className="text-foreground/60 text-xs uppercase tracking-wider mb-2">Content Warning</p>
-                <p className="text-foreground font-medium text-base mb-4">{contentWarning}</p>
+                <p className="text-foreground/60 text-xs uppercase tracking-wider mb-2">
+                  Content Warning
+                </p>
+                <p className="text-foreground font-medium text-base mb-4">
+                  {contentWarning}
+                </p>
                 <button
                   onClick={() => setIsCWDismissed(true)}
                   className="px-5 py-2 rounded-full bg-vocl-accent text-neutral-900 font-medium text-sm hover:brightness-110 transition-all"
@@ -850,35 +1032,54 @@ export const Post = memo(function Post({
             } z-30`}
             aria-hidden="true"
           />
+
+          {/* Reblog caption — shown below original content */}
+          {isReblog && reblogCommentHtml && (
+            <div className="bg-[#EBEBEB] px-2 pt-2.5 pb-2.5 sm:p-2 sm:pb-4">
+              <div
+                className={`bg-vocl-surface-dark p-2 font-display text-sm text-neutral-50`}
+              >
+                {author.username}{" "}
+                <span className={`font-sans text-xs text-neutral-400`}>
+                  commented:
+                </span>
+              </div>
+              <div
+                className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml),
+                }}
+              />
+            </div>
+          )}
+
+          {/* Reblog tags — shown under the caption, not under the original content */}
+          {isReblog && (
+            <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
+              {(contentType === "image" ||
+                contentType === "video" ||
+                contentType === "gallery") &&
+                tags &&
+                tags.length > 0 && (
+                  <TagsOverlay tags={tags} isVisible={isHovered} />
+                )}
+              {(contentType === "image" ||
+                contentType === "video" ||
+                contentType === "gallery") &&
+                tags &&
+                tags.length > 0 && <MobileTagsStrip tags={tags} />}
+              {tags && tags.length > 0 && (
+                <TextPostTags tags={tags} isHovered={isHovered} />
+              )}
+            </PostTagsContext.Provider>
+          )}
         </div>
 
-        {/* Reblog caption — shown below original content */}
-        {isReblog && reblogCommentHtml && (
-          <div className="bg-[#EBEBEB] px-2.5 pt-2.5 pb-2.5 sm:p-4">
-            <div
-              className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml) }}
-            />
-          </div>
-        )}
-
-        {/* Reblog tags — shown under the caption, not under the original content */}
-        {isReblog && (
-          <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
-            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-              <TagsOverlay tags={tags} isVisible={isHovered} />
-            )}
-            {(contentType === "image" || contentType === "video" || contentType === "gallery") && tags && tags.length > 0 && (
-              <MobileTagsStrip tags={tags} />
-            )}
-            {tags && tags.length > 0 && (
-              <TextPostTags tags={tags} isHovered={isHovered} />
-            )}
-          </PostTagsContext.Provider>
-        )}
-
         {/* Radial FAB Menu - positioned relative to article (around reblog button) */}
-        <ReblogFabMenu isOpen={isReblogMenuOpen} onSelect={handleReblogSelect} />
+        <ReblogFabMenu
+          isOpen={isReblogMenuOpen}
+          onSelect={handleReblogSelect}
+        />
 
         {/* Action bar - always visible, never dimmed */}
         <PostActionBar
@@ -894,9 +1095,12 @@ export const Post = memo(function Post({
         />
 
         {/* Fake Border */}
-        <div className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-vocl-surface-muted z-40`} style={{
-          borderRadius: articleBorderRadius,
-        }}></div>
+        <div
+          className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-vocl-surface-muted z-40`}
+          style={{
+            borderRadius: articleBorderRadius,
+          }}
+        ></div>
       </article>
 
       {/* Expanded Panel - OUTSIDE article, below action bar */}
@@ -920,6 +1124,11 @@ export const Post = memo(function Post({
             rebloggedBy={rebloggedBy}
             onCommentSubmit={handleCommentSubmit}
             onClose={handleClosePanel}
+            isLoading={
+              (displayPanel === "comments" && isCommentsLoading) ||
+              (displayPanel === "likes" && isLikesLoading) ||
+              (displayPanel === "reblogs" && isReblogsLoading)
+            }
           />
         )}
       </div>
@@ -956,7 +1165,9 @@ export function ImageContent({ src, alt }: ImageContentProps) {
     <>
       <div
         className="relative w-full cursor-pointer overflow-hidden bg-black/5"
-        style={aspectRatio ? { aspectRatio: `${aspectRatio}` } : { aspectRatio: "1" }}
+        style={
+          aspectRatio ? { aspectRatio: `${aspectRatio}` } : { aspectRatio: "1" }
+        }
         onClick={() => setLightboxOpen(true)}
       >
         <Image
@@ -1028,7 +1239,6 @@ export function TextContent({ children, html }: TextContentProps) {
           {children}
         </div>
       )}
-
     </div>
   );
 }

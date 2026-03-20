@@ -10,6 +10,7 @@ import {
   IconLoader2,
   IconUserX,
   IconVolume3,
+  IconHash,
   IconTrash,
   IconAlertCircle,
   IconMessageQuestion,
@@ -22,6 +23,7 @@ import {
 } from "@/actions/profile";
 import { unblockUser, unmuteUser } from "@/actions/follows";
 import { updateAskSettings } from "@/actions/asks";
+import { getMutedTags, unmuteTag } from "@/actions/tags";
 
 interface BlockedUser {
   id: string;
@@ -35,6 +37,12 @@ interface MutedUser {
   username: string;
   displayName: string | null;
   avatarUrl: string | null;
+}
+
+interface MutedTag {
+  id: string;
+  name: string;
+  postCount: number;
 }
 
 export default function PrivacySettingsPage() {
@@ -58,20 +66,27 @@ export default function PrivacySettingsPage() {
   // Blocked and muted lists
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [mutedUsers, setMutedUsers] = useState<MutedUser[]>([]);
-  const [activeTab, setActiveTab] = useState<"privacy" | "content" | "asks" | "blocked" | "muted">("privacy");
+  const [mutedTags, setMutedTags] = useState<MutedTag[]>([]);
+  const [activeTab, setActiveTab] = useState<"privacy" | "content" | "asks" | "blocked" | "muted" | "muted_tags">("privacy");
 
   useEffect(() => {
     async function loadSettings() {
-      const result = await getCurrentProfile();
-      if (result.success && result.profile) {
-        setShowLikes(result.profile.showLikes);
-        setShowComments(result.profile.showComments);
-        setShowFollowers(result.profile.showFollowers);
-        setShowFollowing(result.profile.showFollowing);
-        setShowSensitivePosts(result.profile.showSensitivePosts);
-        setBlurSensitiveByDefault(result.profile.blurSensitiveByDefault);
-        setAllowAsks(result.profile.allowAsks ?? true);
-        setAllowAnonymousAsks(result.profile.allowAnonymousAsks ?? true);
+      const [profileResult, mutedTagsResult] = await Promise.all([
+        getCurrentProfile(),
+        getMutedTags(),
+      ]);
+      if (profileResult.success && profileResult.profile) {
+        setShowLikes(profileResult.profile.showLikes);
+        setShowComments(profileResult.profile.showComments);
+        setShowFollowers(profileResult.profile.showFollowers);
+        setShowFollowing(profileResult.profile.showFollowing);
+        setShowSensitivePosts(profileResult.profile.showSensitivePosts);
+        setBlurSensitiveByDefault(profileResult.profile.blurSensitiveByDefault);
+        setAllowAsks(profileResult.profile.allowAsks ?? true);
+        setAllowAnonymousAsks(profileResult.profile.allowAnonymousAsks ?? true);
+      }
+      if (mutedTagsResult.success && mutedTagsResult.tags) {
+        setMutedTags(mutedTagsResult.tags);
       }
       setIsLoading(false);
     }
@@ -138,6 +153,16 @@ export default function PrivacySettingsPage() {
     }
   }, []);
 
+  const handleUnmuteTag = useCallback(async (tagId: string) => {
+    const result = await unmuteTag(tagId);
+    if (result.success) {
+      setMutedTags((prev) => prev.filter((t) => t.id !== tagId));
+      toast.success("Tag unmuted");
+    } else {
+      toast.error(result.error || "Failed to unmute tag");
+    }
+  }, []);
+
   if (isLoading) {
     return (
       <div className="py-6 flex justify-center">
@@ -170,6 +195,7 @@ export default function PrivacySettingsPage() {
           { id: "asks" as const, label: "Asks" },
           { id: "blocked" as const, label: "Blocked" },
           { id: "muted" as const, label: "Muted" },
+          { id: "muted_tags" as const, label: "Muted Tags" },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -384,6 +410,51 @@ export default function PrivacySettingsPage() {
           <p className="text-xs text-foreground/40 px-2">
             Muted users&apos; posts won&apos;t appear in your feed, but they can
             still follow you and see your content.
+          </p>
+        </div>
+      )}
+
+      {/* Muted Tags Tab */}
+      {activeTab === "muted_tags" && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+              <IconHash size={20} />
+              Muted Tags
+            </h3>
+            {mutedTags.length === 0 ? (
+              <p className="text-foreground/50 text-sm text-center py-8">
+                You haven&apos;t muted any tags yet
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {mutedTags.map((tag) => (
+                  <div key={tag.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                    <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
+                      <IconHash size={18} className="text-vocl-accent" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-sm truncate">
+                        #{tag.name}
+                      </p>
+                      <p className="text-xs text-foreground/50">
+                        {tag.postCount.toLocaleString()} {tag.postCount === 1 ? "post" : "posts"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleUnmuteTag(tag.id)}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 text-foreground/70 text-sm hover:bg-white/20 hover:text-foreground transition-colors"
+                    >
+                      Unmute
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-foreground/40 px-2">
+            Posts with muted tags won&apos;t appear in your feed. You can mute
+            tags from tag pages or the post menu.
           </p>
         </div>
       )}

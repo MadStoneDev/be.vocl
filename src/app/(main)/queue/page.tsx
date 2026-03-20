@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { IconClock, IconLoader2 } from "@tabler/icons-react";
+import { IconClock, IconLoader2, IconRefresh } from "@tabler/icons-react";
 import { QueueControls, QueueList } from "@/components/queue";
 import {
   getQueue,
@@ -157,8 +157,15 @@ export default function QueuePage() {
 
       {/* Error state */}
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like">
-          {error}
+        <div className="mb-6 p-4 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like flex items-center justify-between gap-3">
+          <span>{error}</span>
+          <button
+            onClick={fetchQueue}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-vocl-like/20 hover:bg-vocl-like/30 text-vocl-like text-sm font-medium transition-colors shrink-0"
+          >
+            <IconRefresh size={16} />
+            Retry
+          </button>
         </div>
       )}
 

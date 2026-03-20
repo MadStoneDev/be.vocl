@@ -153,12 +153,12 @@ export default function MainLayout({
         type="button"
         onClick={toggleChat}
         className={`hidden md:flex fixed top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-vocl-accent text-white shadow-lg items-center justify-center transition-all duration-300 ease-in-out z-30 hover:shadow-xl ${
-          isChatOpen ? "right-[calc(24rem+0.5rem)]" : "-right-[10px]"
+          isChatOpen ? "right-98" : "pr-0.5 -right-2.5"
         }`}
       >
         <IconMessage size={20} />
         {totalUnread > 0 && !isChatOpen && (
-          <span className="absolute -top-1 -left-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold">
+          <span className="absolute -top-1 -left-1 min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold">
             {totalUnread > 99 ? "99+" : totalUnread}
           </span>
         )}

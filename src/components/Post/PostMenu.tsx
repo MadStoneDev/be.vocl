@@ -19,6 +19,7 @@ import {
   IconBell,
   IconBellOff,
   IconShare,
+  IconHash,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -41,6 +42,8 @@ interface PostMenuProps {
   isNotificationMuted?: boolean;
   onMuteNotifications?: () => void;
   onShare?: () => void;
+  tags?: Array<{ id: string; name: string }>;
+  onMuteTag?: (tagId: string, tagName: string) => void;
 }
 
 export function PostMenu({
@@ -63,6 +66,8 @@ export function PostMenu({
   isNotificationMuted = false,
   onMuteNotifications,
   onShare,
+  tags = [],
+  onMuteTag,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -153,17 +158,19 @@ export function PostMenu({
         </button>
 
         {/* Share */}
-        <button
-          onClick={() => {
-            onShare?.();
-            onClose();
-          }}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
-          role="menuitem"
-        >
-          <IconShare size={18} />
-          <span>Share</span>
-        </button>
+        {onShare && (
+          <button
+            onClick={() => {
+              onShare();
+              onClose();
+            }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+            role="menuitem"
+          >
+            <IconShare size={18} />
+            <span>Share</span>
+          </button>
+        )}
 
         {/* Bookmark */}
         <button
@@ -298,6 +305,26 @@ export function PostMenu({
                 </>
               )}
             </button>
+
+            {/* Mute Tags */}
+            {tags.length > 0 && onMuteTag && (
+              <>
+                {tags.slice(0, 3).map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => {
+                      onMuteTag(tag.id, tag.name);
+                      onClose();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+                    role="menuitem"
+                  >
+                    <IconHash size={18} />
+                    <span>Mute #{tag.name}</span>
+                  </button>
+                ))}
+              </>
+            )}
 
             {/* Divider */}
             <div className="h-px bg-white/10 my-1" />

@@ -36,6 +36,12 @@ interface RecommendedPost {
     avatarUrl: string | null;
     role: number;
   } | null;
+  rebloggedFromAuthor?: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  } | null;
   // Recommendation metadata
   score: number;
   reason: "followed_tag" | "similar_interest" | "popular" | "followed_user";
@@ -98,14 +104,16 @@ export async function getPersonalizedFeed(options?: {
     const offset = options?.offset || 0;
 
     // Phase 1: Parallel fetch user preferences (4 queries -> 1 round-trip)
-    const [followedTagsResult, likedPostsResult, followsResult, profileResult, mutesResult] = await Promise.all([
+    const [followedTagsResult, likedPostsResult, followsResult, profileResult, mutesResult, mutedTagsResult] = await Promise.all([
       supabase.from("followed_tags").select("tag_id").eq("profile_id", user.id),
       supabase.from("likes").select("post_id, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
       supabase.from("follows").select("following_id").eq("follower_id", user.id),
       supabase.from("profiles").select("show_sensitive_posts").eq("id", user.id).single(),
       supabase.from("mutes").select("muted_id").eq("muter_id", user.id),
+      supabase.from("muted_tags").select("tag_id").eq("profile_id", user.id),
     ]);
     const mutedUserIds = new Set((mutesResult.data || []).map((m: any) => m.muted_id));
+    const mutedTagIds = new Set((mutedTagsResult.data || []).map((mt: any) => mt.tag_id));
 
     const showSensitive = profileResult.data?.show_sensitive_posts ?? false;
     const followedTagIds = (followedTagsResult.data || []).map((ft: any) => ft.tag_id);
@@ -319,6 +327,22 @@ export async function getPersonalizedFeed(options?: {
       }
     }
 
+    // Fetch intermediate (reblogged_from) post authors for echo chains
+    const reblogChainIds = [...new Set(
+      candidatePosts.filter((p) => p.reblogged_from_id && p.reblogged_from_id !== p.original_post_id)
+        .map((p) => p.reblogged_from_id)
+    )];
+    const chainAuthorMap = new Map<string, any>();
+    if (reblogChainIds.length > 0) {
+      const { data: chainPosts } = await (supabase as any)
+        .from("posts")
+        .select("id, author:author_id(username, display_name, avatar_url, role)")
+        .in("id", reblogChainIds);
+      for (const cp of chainPosts || []) {
+        chainAuthorMap.set(cp.id, cp.author);
+      }
+    }
+
     // Calculate scores and format posts
     const now = Date.now();
     let scoredPosts: RecommendedPost[] = candidatePosts.map((post) => {
@@ -393,10 +417,21 @@ export async function getPersonalizedFeed(options?: {
           const oa = originalAuthorMap.get(post.original_post_id);
           return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
         })() : null,
+        rebloggedFromAuthor: post.original_post_id && post.reblogged_from_id && post.reblogged_from_id !== post.original_post_id ? (() => {
+          const ca = chainAuthorMap.get(post.reblogged_from_id);
+          return ca ? { username: ca.username || "unknown", displayName: ca.display_name, avatarUrl: ca.avatar_url, role: ca.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
+        })() : null,
         score,
         reason: post.reason,
       };
     });
+
+    // Filter out posts with muted tags
+    if (mutedTagIds.size > 0) {
+      scoredPosts = scoredPosts.filter((post) =>
+        !post.tags.some((t) => mutedTagIds.has(t.id))
+      );
+    }
 
     // Deprioritize already-interacted posts
     scoredPosts = scoredPosts.map((post) => {
@@ -471,18 +506,22 @@ export async function getTrendingFeed(options?: {
     let mutedUserIds = new Set<string>();
     let showSensitive = false;
 
+    let mutedTagIds = new Set<string>();
+
     if (user) {
-      const [followedTagsResult, followsResult, mutesResult, profileResult] = await Promise.all([
+      const [followedTagsResult, followsResult, mutesResult, profileResult, mutedTagsResult] = await Promise.all([
         supabase.from("followed_tags").select("tag_id").eq("profile_id", user.id),
         supabase.from("follows").select("following_id").eq("follower_id", user.id),
         supabase.from("mutes").select("muted_id").eq("muter_id", user.id),
         supabase.from("profiles").select("show_sensitive_posts").eq("id", user.id).single(),
+        supabase.from("muted_tags").select("tag_id").eq("profile_id", user.id),
       ]);
 
       followedTagIds = (followedTagsResult.data || []).map((ft: any) => ft.tag_id);
       followedUserIds = (followsResult.data || []).map((f: any) => f.following_id);
       mutedUserIds = new Set((mutesResult.data || []).map((m: any) => m.muted_id));
       showSensitive = profileResult.data?.show_sensitive_posts ?? false;
+      mutedTagIds = new Set((mutedTagsResult.data || []).map((mt: any) => mt.tag_id));
     }
 
     // Phase 2: Fetch candidate posts from last 48 hours
@@ -548,6 +587,14 @@ export async function getTrendingFeed(options?: {
 
     // Build a set of followed tag IDs for interest boost
     const followedTagSet = new Set(followedTagIds);
+
+    // Filter out posts with muted tags
+    if (mutedTagIds.size > 0) {
+      candidatePosts = candidatePosts.filter((post: any) => {
+        const postTags = stats.tagsMap.get(post.id) || [];
+        return !postTags.some((t: { id: string }) => mutedTagIds.has(t.id));
+      });
+    }
 
     // Phase 4: Score each post
     const now = Date.now();
@@ -616,6 +663,22 @@ export async function getTrendingFeed(options?: {
       }
     }
 
+    // Fetch intermediate (reblogged_from) post authors for echo chains in trending
+    const trendingChainIds = [...new Set(
+      paginatedItems.filter((i: any) => i.post.reblogged_from_id && i.post.reblogged_from_id !== i.post.original_post_id)
+        .map((i: any) => i.post.reblogged_from_id)
+    )];
+    const trendingChainAuthorMap = new Map<string, any>();
+    if (trendingChainIds.length > 0) {
+      const { data: chainPosts } = await (supabase as any)
+        .from("posts")
+        .select("id, author:author_id(username, display_name, avatar_url, role)")
+        .in("id", trendingChainIds);
+      for (const cp of chainPosts || []) {
+        trendingChainAuthorMap.set(cp.id, cp.author);
+      }
+    }
+
     // Format posts in the same shape as getPersonalizedFeed
     const formattedPosts: RecommendedPost[] = paginatedItems.map((item: any) => {
       const post = item.post;
@@ -648,6 +711,10 @@ export async function getTrendingFeed(options?: {
         originalAuthor: post.original_post_id ? (() => {
           const oa = trendingOrigAuthorMap.get(post.original_post_id);
           return oa ? { username: oa.username || "unknown", displayName: oa.display_name, avatarUrl: oa.avatar_url, role: oa.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
+        })() : null,
+        rebloggedFromAuthor: post.original_post_id && post.reblogged_from_id && post.reblogged_from_id !== post.original_post_id ? (() => {
+          const ca = trendingChainAuthorMap.get(post.reblogged_from_id);
+          return ca ? { username: ca.username || "unknown", displayName: ca.display_name, avatarUrl: ca.avatar_url, role: ca.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
         })() : null,
         score: item.score,
         reason: "popular" as const,

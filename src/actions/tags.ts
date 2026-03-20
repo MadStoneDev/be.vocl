@@ -280,6 +280,7 @@ export async function getTagByName(tagName: string): Promise<{
     name: string;
     postCount: number;
     isFollowing: boolean;
+    isMuting: boolean;
   };
   error?: string;
 }> {
@@ -302,16 +303,26 @@ export async function getTagByName(tagName: string): Promise<{
       return { success: false, error: "Tag not found" };
     }
 
-    // Check if user is following
+    // Check if user is following and/or muting
     let isFollowing = false;
+    let isMuting = false;
     if (user) {
-      const { data: following } = await supabase
-        .from("followed_tags")
-        .select("profile_id")
-        .eq("profile_id", user.id)
-        .eq("tag_id", tag.id)
-        .single();
+      const [{ data: following }, { data: muting }] = await Promise.all([
+        supabase
+          .from("followed_tags")
+          .select("profile_id")
+          .eq("profile_id", user.id)
+          .eq("tag_id", tag.id)
+          .single(),
+        supabase
+          .from("muted_tags")
+          .select("profile_id")
+          .eq("profile_id", user.id)
+          .eq("tag_id", tag.id)
+          .single(),
+      ]);
       isFollowing = !!following;
+      isMuting = !!muting;
     }
 
     return {
@@ -321,6 +332,7 @@ export async function getTagByName(tagName: string): Promise<{
         name: tag.name,
         postCount: tag.post_count,
         isFollowing,
+        isMuting,
       },
     };
   } catch (error) {
@@ -568,6 +580,177 @@ export async function getPostTagsBatch(postIds: string[]): Promise<{
   } catch (error) {
     console.error("Get post tags batch error:", error);
     return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Mute a tag (auto-unfollows if currently following)
+ */
+export async function muteTag(tagId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Check if already muted
+    const { data: existing } = await supabase
+      .from("muted_tags")
+      .select("profile_id")
+      .eq("profile_id", user.id)
+      .eq("tag_id", tagId)
+      .single();
+
+    if (existing) {
+      return { success: true };
+    }
+
+    // Auto-unfollow if currently following
+    await supabase
+      .from("followed_tags")
+      .delete()
+      .eq("profile_id", user.id)
+      .eq("tag_id", tagId);
+
+    const { error } = await supabase.from("muted_tags").insert({
+      profile_id: user.id,
+      tag_id: tagId,
+    });
+
+    if (error) {
+      console.error("Mute tag error:", error);
+      return { success: false, error: "Failed to mute tag" };
+    }
+
+    revalidatePath("/feed");
+    return { success: true };
+  } catch (error) {
+    console.error("Mute tag error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Unmute a tag
+ */
+export async function unmuteTag(tagId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { error } = await supabase
+      .from("muted_tags")
+      .delete()
+      .eq("profile_id", user.id)
+      .eq("tag_id", tagId);
+
+    if (error) {
+      console.error("Unmute tag error:", error);
+      return { success: false, error: "Failed to unmute tag" };
+    }
+
+    revalidatePath("/feed");
+    return { success: true };
+  } catch (error) {
+    console.error("Unmute tag error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Get tags the current user has muted
+ */
+export async function getMutedTags(): Promise<{
+  success: boolean;
+  tags?: Array<{
+    id: string;
+    name: string;
+    postCount: number;
+  }>;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { data: mutedTags, error } = await supabase
+      .from("muted_tags")
+      .select(`
+        tag_id,
+        tag:tags!tag_id (
+          id,
+          name,
+          post_count
+        )
+      `)
+      .eq("profile_id", user.id);
+
+    if (error) {
+      console.error("Get muted tags error:", error);
+      return { success: false, error: "Failed to get muted tags" };
+    }
+
+    const tags = (mutedTags || [])
+      .filter((mt): mt is typeof mt & { tag: { id: string; name: string; post_count: number } } =>
+        mt.tag !== null && typeof mt.tag === 'object' && !Array.isArray(mt.tag)
+      )
+      .map((mt) => ({
+        id: mt.tag.id,
+        name: mt.tag.name,
+        postCount: mt.tag.post_count,
+      }));
+
+    return { success: true, tags };
+  } catch (error) {
+    console.error("Get muted tags error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Check if current user is muting a tag
+ */
+export async function isMutingTag(tagId: string): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return false;
+
+    const { data } = await supabase
+      .from("muted_tags")
+      .select("profile_id")
+      .eq("profile_id", user.id)
+      .eq("tag_id", tagId)
+      .single();
+
+    return !!data;
+  } catch {
+    return false;
   }
 }
 
