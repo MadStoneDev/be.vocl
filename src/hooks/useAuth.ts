@@ -10,6 +10,7 @@ interface Profile {
   displayName?: string;
   avatarUrl?: string;
   role: number;
+  lockStatus: "unlocked" | "restricted" | "banned";
   showSensitivePosts: boolean;
   blurSensitiveByDefault: boolean;
 }
@@ -35,7 +36,7 @@ export function useAuth(): UseAuthReturn {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, username, display_name, avatar_url, role, show_sensitive_posts, blur_sensitive_by_default")
+          .select("id, username, display_name, avatar_url, role, lock_status, show_sensitive_posts, blur_sensitive_by_default")
           .eq("id", userId)
           .maybeSingle();
 
@@ -51,6 +52,7 @@ export function useAuth(): UseAuthReturn {
             displayName: data.display_name || undefined,
             avatarUrl: data.avatar_url || undefined,
             role: data.role ?? 0,
+            lockStatus: (data.lock_status as Profile["lockStatus"]) ?? "unlocked",
             showSensitivePosts: data.show_sensitive_posts ?? false,
             blurSensitiveByDefault: data.blur_sensitive_by_default ?? true,
           };

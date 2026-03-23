@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getR2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from "@/lib/r2/client";
+import { sendDataExportReadyEmail } from "@/lib/email/send";
 
 // Processes pending data export requests
 // Run every 15 minutes via cron
@@ -81,6 +82,38 @@ export async function GET(request: Request) {
             completed_at: new Date().toISOString(),
           })
           .eq("id", request.id);
+
+        // Send email notification
+        try {
+          const { data: authUser } = await supabase.auth.admin.getUserById(
+            request.user_id
+          );
+          const email = authUser?.user?.email;
+
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", request.user_id)
+            .single();
+
+          if (email && profile?.username) {
+            await sendDataExportReadyEmail({
+              to: email,
+              username: profile.username,
+              downloadUrl: publicUrl,
+              expiresAt: expiresAt.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+            });
+          }
+        } catch (emailError) {
+          console.error(
+            `Failed to send export notification for ${request.id}:`,
+            emailError
+          );
+        }
 
         processed++;
       } catch (err) {

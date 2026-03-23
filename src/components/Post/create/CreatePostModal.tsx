@@ -101,6 +101,9 @@ export function CreatePostModal({
   const [isSearchingUnsplash, setIsSearchingUnsplash] = useState(false);
   const [selectedUnsplash, setSelectedUnsplash] = useState<any | null>(null);
 
+  // Alt text state (synced with image count)
+  const [altTexts, setAltTexts] = useState<string[]>([]);
+
   // GIF-specific state
   const [selectedGifUrl, setSelectedGifUrl] = useState<string | null>(null);
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
@@ -168,6 +171,8 @@ export function CreatePostModal({
       // Reset GIF state
       setSelectedGifUrl(null);
       setGifPickerOpen(false);
+      // Reset alt text state
+      setAltTexts([]);
       // Reset legal acknowledgment
       setHasAcknowledgedRights(false);
     }
@@ -376,7 +381,7 @@ export function CreatePostModal({
 
           postContent = {
             urls: imageUrls,
-            alt_texts: imageUrls.map(() => ""),
+            alt_texts: imageUrls.map((_, i) => altTexts[i] || ""),
             caption_html: content.html || undefined,
           } as ImagePostContent;
 
@@ -399,7 +404,7 @@ export function CreatePostModal({
           actualPostType = "image";
           postContent = {
             urls: [selectedGifUrl!],
-            alt_texts: [""],
+            alt_texts: [altTexts[0] || ""],
             caption_html: content.html || undefined,
           } as ImagePostContent;
           break;
@@ -551,6 +556,7 @@ export function CreatePostModal({
                 onClick={() => {
                   setPostType(type);
                   setMediaUrls([]);
+                  setAltTexts([]);
                   if (type === "gif") {
                     setGifPickerOpen(true);
                   } else {
@@ -922,10 +928,49 @@ export function CreatePostModal({
                 <MediaUploader
                   postId={postId}
                   mediaType="image"
-                  onUploadComplete={setMediaUrls}
+                  onUploadComplete={(urls) => {
+                    setMediaUrls(urls);
+                    setAltTexts((prev) => {
+                      const next = [...prev];
+                      while (next.length < urls.length) next.push("");
+                      return next.slice(0, urls.length);
+                    });
+                  }}
                   maxFiles={10}
                   existingUrls={mediaUrls}
                 />
+              )}
+
+              {/* Alt text inputs for uploaded images */}
+              {imageMode === "upload" && mediaUrls.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-foreground/40">Alt text helps people using screen readers</p>
+                  {mediaUrls.map((url, index) => (
+                    <div key={url} className="flex items-start gap-2">
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden bg-black/20 flex-shrink-0">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={altTexts[index] || ""}
+                          onChange={(e) => {
+                            const next = [...altTexts];
+                            while (next.length <= index) next.push("");
+                            next[index] = e.target.value.slice(0, 500);
+                            setAltTexts(next);
+                          }}
+                          placeholder="Describe this image (alt text)"
+                          maxLength={500}
+                          className="w-full py-1.5 px-3 text-sm bg-white/5 border border-white/10 rounded-lg text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent transition-colors"
+                        />
+                        <span className="text-[10px] text-foreground/30 mt-0.5 block text-right">
+                          {(altTexts[index] || "").length}/500
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
 
               {/* Link Input */}
@@ -978,6 +1023,24 @@ export function CreatePostModal({
                         className="w-full max-h-64 object-contain bg-black/20"
                         onError={() => setImageLinkError("Could not load image from this URL")}
                       />
+                    </div>
+                  )}
+
+                  {/* Alt text for linked image */}
+                  {imageLinkUrl && !imageLinkError && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-foreground/40">Alt text helps people using screen readers</p>
+                      <input
+                        type="text"
+                        value={altTexts[0] || ""}
+                        onChange={(e) => setAltTexts([e.target.value.slice(0, 500)])}
+                        placeholder="Describe this image (alt text)"
+                        maxLength={500}
+                        className="w-full py-1.5 px-3 text-sm bg-white/5 border border-white/10 rounded-lg text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent transition-colors"
+                      />
+                      <span className="text-[10px] text-foreground/30 block text-right">
+                        {(altTexts[0] || "").length}/500
+                      </span>
                     </div>
                   )}
 
@@ -1037,11 +1100,32 @@ export function CreatePostModal({
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSelectedUnsplash(null)}
+                        onClick={() => {
+                          setSelectedUnsplash(null);
+                          setAltTexts([]);
+                        }}
                         className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
                       >
                         <IconX size={14} />
                       </button>
+                    </div>
+                  )}
+
+                  {/* Alt text for Unsplash image */}
+                  {selectedUnsplash && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-foreground/40">Alt text helps people using screen readers</p>
+                      <input
+                        type="text"
+                        value={altTexts[0] || ""}
+                        onChange={(e) => setAltTexts([e.target.value.slice(0, 500)])}
+                        placeholder="Describe this image (alt text)"
+                        maxLength={500}
+                        className="w-full py-1.5 px-3 text-sm bg-white/5 border border-white/10 rounded-lg text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent transition-colors"
+                      />
+                      <span className="text-[10px] text-foreground/30 block text-right">
+                        {(altTexts[0] || "").length}/500
+                      </span>
                     </div>
                   )}
 
@@ -1054,6 +1138,8 @@ export function CreatePostModal({
                           type="button"
                           onClick={async () => {
                             setSelectedUnsplash(photo);
+                            // Pre-fill alt text from Unsplash description
+                            setAltTexts([photo.alt_description || ""]);
                             // Trigger download tracking (Unsplash requirement)
                             try {
                               await fetch("/api/unsplash/download", {
@@ -1090,23 +1176,41 @@ export function CreatePostModal({
           {postType === "gif" && (
             <div className="space-y-4">
               {selectedGifUrl ? (
-                <div className="relative rounded-xl overflow-hidden border border-vocl-accent/50">
-                  <img
-                    src={selectedGifUrl}
-                    alt="Selected GIF"
-                    className="w-full max-h-80 object-contain bg-black/20"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedGifUrl(null);
-                      setGifPickerOpen(true);
-                    }}
-                    className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-                  >
-                    <IconX size={16} />
-                  </button>
-                </div>
+                <>
+                  <div className="relative rounded-xl overflow-hidden border border-vocl-accent/50">
+                    <img
+                      src={selectedGifUrl}
+                      alt="Selected GIF"
+                      className="w-full max-h-80 object-contain bg-black/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedGifUrl(null);
+                        setAltTexts([]);
+                        setGifPickerOpen(true);
+                      }}
+                      className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                    >
+                      <IconX size={16} />
+                    </button>
+                  </div>
+                  {/* Alt text for GIF */}
+                  <div className="space-y-1">
+                    <p className="text-xs text-foreground/40">Alt text helps people using screen readers</p>
+                    <input
+                      type="text"
+                      value={altTexts[0] || ""}
+                      onChange={(e) => setAltTexts([e.target.value.slice(0, 500)])}
+                      placeholder="Describe this GIF (alt text)"
+                      maxLength={500}
+                      className="w-full py-1.5 px-3 text-sm bg-white/5 border border-white/10 rounded-lg text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent transition-colors"
+                    />
+                    <span className="text-[10px] text-foreground/30 block text-right">
+                      {(altTexts[0] || "").length}/500
+                    </span>
+                  </div>
+                </>
               ) : (
                 <div className="relative">
                   <GifPicker

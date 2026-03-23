@@ -15,9 +15,15 @@ import {
   IconUsers,
   IconTrendingUp,
   IconCalendar,
+  IconChevronDown,
+  IconChevronUp,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { getPostAnalytics, getFollowerCount } from "@/actions/analytics";
+import {
+  getPostAnalytics,
+  getFollowerCount,
+  getPostDetailAnalytics,
+} from "@/actions/analytics";
 import { LoadingSpinner } from "@/components/ui";
 
 type TimeRange = "7d" | "30d" | "90d";
@@ -54,6 +60,20 @@ interface PostTypeCount {
   postType: string;
   count: number;
   percentage: number;
+}
+
+interface PostDetailData {
+  post: { id: string; postType: string; content: any; createdAt: string };
+  totalLikes: number;
+  totalComments: number;
+  totalReblogs: number;
+  engagementOverTime: Array<{
+    date: string;
+    likes: number;
+    comments: number;
+    reblogs: number;
+  }>;
+  topCommenters: Array<{ username: string; commentCount: number }>;
 }
 
 const postTypeColors: Record<string, string> = {
@@ -97,6 +117,28 @@ export default function AnalyticsPage() {
   const [topTags, setTopTags] = useState<TagAnalytics[]>([]);
   const [postTypeBreakdown, setPostTypeBreakdown] = useState<PostTypeCount[]>(
     []
+  );
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+  const [postDetail, setPostDetail] = useState<PostDetailData | null>(null);
+  const [postDetailLoading, setPostDetailLoading] = useState(false);
+
+  const togglePostDetail = useCallback(
+    async (postId: string) => {
+      if (expandedPostId === postId) {
+        setExpandedPostId(null);
+        setPostDetail(null);
+        return;
+      }
+      setExpandedPostId(postId);
+      setPostDetail(null);
+      setPostDetailLoading(true);
+      const result = await getPostDetailAnalytics(postId);
+      if (result.success && result.data) {
+        setPostDetail(result.data);
+      }
+      setPostDetailLoading(false);
+    },
+    [expandedPostId]
   );
 
   const fetchData = useCallback(async (range: TimeRange) => {
@@ -265,52 +307,224 @@ export default function AnalyticsPage() {
               </p>
             ) : (
               <div className="space-y-2">
-                {topPosts.map((post, index) => (
-                  <Link
-                    key={post.id}
-                    href={`/post/${post.id}`}
-                    className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors"
-                  >
-                    <span className="text-sm font-bold text-foreground/30 w-6 text-right mt-0.5">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-foreground/50">
-                          {postTypeIcons[post.post_type] || (
-                            <IconFileText className="w-3.5 h-3.5" />
+                {topPosts.map((post, index) => {
+                  const isExpanded = expandedPostId === post.id;
+                  return (
+                    <div key={post.id}>
+                      <button
+                        onClick={() => togglePostDetail(post.id)}
+                        className="w-full flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
+                      >
+                        <span className="text-sm font-bold text-foreground/30 w-6 text-right mt-0.5">
+                          {index + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-foreground/50">
+                              {postTypeIcons[post.post_type] || (
+                                <IconFileText className="w-3.5 h-3.5" />
+                              )}
+                            </span>
+                            <span className="text-xs text-foreground/40">
+                              {formatDate(post.created_at)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground truncate">
+                            {getPostPreview(post)}
+                          </p>
+                          <div className="flex items-center gap-4 mt-1.5">
+                            <span className="flex items-center gap-1 text-xs text-foreground/50">
+                              <IconHeart className="w-3.5 h-3.5" />
+                              {post.like_count}
+                            </span>
+                            <span className="flex items-center gap-1 text-xs text-foreground/50">
+                              <IconMessage className="w-3.5 h-3.5" />
+                              {post.comment_count}
+                            </span>
+                            <span className="flex items-center gap-1 text-xs text-foreground/50">
+                              <IconRepeat className="w-3.5 h-3.5" />
+                              {post.reblog_count}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right flex items-start gap-2">
+                          <div>
+                            <span className="text-sm font-semibold text-vocl-accent">
+                              {post.engagement}
+                            </span>
+                            <p className="text-xs text-foreground/40">
+                              engagement
+                            </p>
+                          </div>
+                          {isExpanded ? (
+                            <IconChevronUp className="w-4 h-4 text-foreground/40 mt-0.5" />
+                          ) : (
+                            <IconChevronDown className="w-4 h-4 text-foreground/40 mt-0.5" />
                           )}
-                        </span>
-                        <span className="text-xs text-foreground/40">
-                          {formatDate(post.created_at)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground truncate">
-                        {getPostPreview(post)}
-                      </p>
-                      <div className="flex items-center gap-4 mt-1.5">
-                        <span className="flex items-center gap-1 text-xs text-foreground/50">
-                          <IconHeart className="w-3.5 h-3.5" />
-                          {post.like_count}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-foreground/50">
-                          <IconMessage className="w-3.5 h-3.5" />
-                          {post.comment_count}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-foreground/50">
-                          <IconRepeat className="w-3.5 h-3.5" />
-                          {post.reblog_count}
-                        </span>
-                      </div>
+                        </div>
+                      </button>
+
+                      {/* Expanded Detail Panel */}
+                      {isExpanded && (
+                        <div className="mx-3 mb-2 p-4 rounded-xl bg-white/5 border border-white/5 space-y-4">
+                          {postDetailLoading ? (
+                            <div className="flex justify-center py-4">
+                              <LoadingSpinner size="sm" />
+                            </div>
+                          ) : postDetail ? (
+                            <>
+                              {/* Engagement Breakdown */}
+                              <div>
+                                <h3 className="text-sm font-semibold text-foreground mb-2">
+                                  Engagement Breakdown
+                                </h3>
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-white/5 text-center">
+                                    <IconHeart className="w-4 h-4 text-red-400 mx-auto mb-1" />
+                                    <p className="text-lg font-bold text-foreground">
+                                      {postDetail.totalLikes}
+                                    </p>
+                                    <p className="text-xs text-foreground/40">
+                                      Likes
+                                    </p>
+                                  </div>
+                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-white/5 text-center">
+                                    <IconMessage className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+                                    <p className="text-lg font-bold text-foreground">
+                                      {postDetail.totalComments}
+                                    </p>
+                                    <p className="text-xs text-foreground/40">
+                                      Comments
+                                    </p>
+                                  </div>
+                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-white/5 text-center">
+                                    <IconRepeat className="w-4 h-4 text-green-400 mx-auto mb-1" />
+                                    <p className="text-lg font-bold text-foreground">
+                                      {postDetail.totalReblogs}
+                                    </p>
+                                    <p className="text-xs text-foreground/40">
+                                      Echoes
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Day-by-Day Engagement */}
+                              {postDetail.engagementOverTime.length > 0 && (
+                                <div>
+                                  <h3 className="text-sm font-semibold text-foreground mb-2">
+                                    Day-by-Day Engagement
+                                  </h3>
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                      <thead>
+                                        <tr className="border-b border-white/5">
+                                          <th className="text-left py-2 pr-4 text-foreground/50 font-medium">
+                                            Date
+                                          </th>
+                                          <th className="text-right py-2 px-4 text-foreground/50 font-medium">
+                                            Likes
+                                          </th>
+                                          <th className="text-right py-2 px-4 text-foreground/50 font-medium">
+                                            Comments
+                                          </th>
+                                          <th className="text-right py-2 px-4 text-foreground/50 font-medium">
+                                            Echoes
+                                          </th>
+                                          <th className="text-right py-2 pl-4 text-foreground/50 font-medium">
+                                            Total
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {postDetail.engagementOverTime.map(
+                                          (day) => {
+                                            const total =
+                                              day.likes +
+                                              day.comments +
+                                              day.reblogs;
+                                            return (
+                                              <tr
+                                                key={day.date}
+                                                className="border-b border-white/5 last:border-0"
+                                              >
+                                                <td className="py-2 pr-4 text-foreground/70">
+                                                  {formatDate(day.date)}
+                                                </td>
+                                                <td className="py-2 px-4 text-right text-foreground">
+                                                  {day.likes}
+                                                </td>
+                                                <td className="py-2 px-4 text-right text-foreground">
+                                                  {day.comments}
+                                                </td>
+                                                <td className="py-2 px-4 text-right text-foreground">
+                                                  {day.reblogs}
+                                                </td>
+                                                <td className="py-2 pl-4 text-right font-medium text-vocl-accent">
+                                                  {total}
+                                                </td>
+                                              </tr>
+                                            );
+                                          }
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Top Commenters */}
+                              {postDetail.topCommenters.length > 0 && (
+                                <div>
+                                  <h3 className="text-sm font-semibold text-foreground mb-2">
+                                    Top Commenters
+                                  </h3>
+                                  <div className="space-y-1.5">
+                                    {postDetail.topCommenters.map(
+                                      (commenter) => (
+                                        <div
+                                          key={commenter.username}
+                                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-vocl-surface-dark border border-white/5"
+                                        >
+                                          <Link
+                                            href={`/u/${commenter.username}`}
+                                            className="text-sm text-foreground hover:text-vocl-accent transition-colors"
+                                          >
+                                            @{commenter.username}
+                                          </Link>
+                                          <span className="text-xs text-foreground/50">
+                                            {commenter.commentCount} comment
+                                            {commenter.commentCount !== 1
+                                              ? "s"
+                                              : ""}
+                                          </span>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Link to full post */}
+                              <div className="pt-1">
+                                <Link
+                                  href={`/post/${post.id}`}
+                                  className="text-xs text-vocl-accent hover:underline"
+                                >
+                                  View full post
+                                </Link>
+                              </div>
+                            </>
+                          ) : (
+                            <p className="text-sm text-foreground/50">
+                              Failed to load post details.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <span className="text-sm font-semibold text-vocl-accent">
-                        {post.engagement}
-                      </span>
-                      <p className="text-xs text-foreground/40">engagement</p>
-                    </div>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

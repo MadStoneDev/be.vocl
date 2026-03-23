@@ -197,6 +197,135 @@ export async function getPostAnalytics(
   }
 }
 
+interface PostDetailAnalyticsResult {
+  success: boolean;
+  data?: {
+    post: { id: string; postType: string; content: any; createdAt: string };
+    totalLikes: number;
+    totalComments: number;
+    totalReblogs: number;
+    engagementOverTime: Array<{
+      date: string;
+      likes: number;
+      comments: number;
+      reblogs: number;
+    }>;
+    topCommenters: Array<{ username: string; commentCount: number }>;
+  };
+  error?: string;
+}
+
+export async function getPostDetailAnalytics(
+  postId: string
+): Promise<PostDetailAnalyticsResult> {
+  try {
+    const { user, supabase } = await requireAuth();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Fetch the post and verify ownership
+    const { data: post, error: postError } = await (supabase as any)
+      .from("posts")
+      .select("id, post_type, content, created_at, author_id, like_count, comment_count, reblog_count")
+      .eq("id", postId)
+      .single();
+
+    if (postError || !post) {
+      return { success: false, error: "Post not found" };
+    }
+
+    if (post.author_id !== user.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Fetch likes grouped by day
+    const { data: likes } = await (supabase as any)
+      .from("likes")
+      .select("created_at")
+      .eq("post_id", postId);
+
+    // Fetch comments with user info grouped by day
+    const { data: comments } = await (supabase as any)
+      .from("comments")
+      .select("created_at, user_id, profiles:user_id(username)")
+      .eq("post_id", postId);
+
+    // Fetch reblogs (posts where original_post_id = this post)
+    const { data: reblogs } = await (supabase as any)
+      .from("posts")
+      .select("created_at")
+      .eq("original_post_id", postId);
+
+    // Build engagement over time
+    const dayMap = new Map<
+      string,
+      { likes: number; comments: number; reblogs: number }
+    >();
+
+    for (const l of likes || []) {
+      if (!l.created_at) continue;
+      const day = l.created_at.split("T")[0];
+      const entry = dayMap.get(day) || { likes: 0, comments: 0, reblogs: 0 };
+      entry.likes += 1;
+      dayMap.set(day, entry);
+    }
+
+    for (const c of comments || []) {
+      if (!c.created_at) continue;
+      const day = c.created_at.split("T")[0];
+      const entry = dayMap.get(day) || { likes: 0, comments: 0, reblogs: 0 };
+      entry.comments += 1;
+      dayMap.set(day, entry);
+    }
+
+    for (const r of reblogs || []) {
+      if (!r.created_at) continue;
+      const day = r.created_at.split("T")[0];
+      const entry = dayMap.get(day) || { likes: 0, comments: 0, reblogs: 0 };
+      entry.reblogs += 1;
+      dayMap.set(day, entry);
+    }
+
+    const engagementOverTime = Array.from(dayMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, stats]) => ({ date, ...stats }));
+
+    // Top 5 commenters
+    const commenterMap = new Map<string, number>();
+    for (const c of comments || []) {
+      const username =
+        c.profiles?.username || "unknown";
+      commenterMap.set(username, (commenterMap.get(username) || 0) + 1);
+    }
+
+    const topCommenters = Array.from(commenterMap.entries())
+      .map(([username, commentCount]) => ({ username, commentCount }))
+      .sort((a, b) => b.commentCount - a.commentCount)
+      .slice(0, 5);
+
+    return {
+      success: true,
+      data: {
+        post: {
+          id: post.id,
+          postType: post.post_type,
+          content: post.content,
+          createdAt: post.created_at,
+        },
+        totalLikes: post.like_count || 0,
+        totalComments: post.comment_count || 0,
+        totalReblogs: post.reblog_count || 0,
+        engagementOverTime,
+        topCommenters,
+      },
+    };
+  } catch (err) {
+    console.error("getPostDetailAnalytics error:", err);
+    return { success: false, error: "Failed to fetch post analytics" };
+  }
+}
+
 export async function getFollowerCount(): Promise<FollowerCountResult> {
   try {
     const { user, supabase } = await requireAuth();

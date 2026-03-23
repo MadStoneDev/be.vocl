@@ -10,6 +10,9 @@ import {
   MessageNotificationEmail,
   MentionNotificationEmail,
   DailyDigestEmail,
+  AccountBannedEmail,
+  AccountRestrictedEmail,
+  DataExportReadyEmail,
 } from "@/emails";
 
 // Types
@@ -412,6 +415,112 @@ export async function sendDailyDigestEmail(
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error("Daily digest email error:", error);
+    return { success: false, error: "Failed to send email" };
+  }
+}
+
+// ============================================================================
+// Account Action Emails
+// ============================================================================
+
+export async function sendAccountBannedEmail(
+  options: BaseEmailOptions & {
+    username: string;
+    reason: string;
+  }
+): Promise<SendEmailResult> {
+  if (!isEmailConfigured() || !resend) {
+    console.log("Email not configured. Would send ban notification to:", options.to);
+    return { success: true, messageId: "mock" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.default,
+      to: options.to,
+      subject: "Your be.vocl account has been banned",
+      react: AccountBannedEmail({
+        username: options.username,
+        reason: options.reason,
+      }),
+    });
+
+    if (error) {
+      console.error("Failed to send ban notification:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error("Ban notification email error:", error);
+    return { success: false, error: "Failed to send email" };
+  }
+}
+
+export async function sendAccountRestrictedEmail(
+  options: BaseEmailOptions & {
+    username: string;
+  }
+): Promise<SendEmailResult> {
+  if (!isEmailConfigured() || !resend) {
+    console.log("Email not configured. Would send restriction notification to:", options.to);
+    return { success: true, messageId: "mock" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.default,
+      to: options.to,
+      subject: "Your be.vocl account has been restricted",
+      react: AccountRestrictedEmail({
+        username: options.username,
+      }),
+    });
+
+    if (error) {
+      console.error("Failed to send restriction notification:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error("Restriction notification email error:", error);
+    return { success: false, error: "Failed to send email" };
+  }
+}
+
+export async function sendDataExportReadyEmail(
+  options: BaseEmailOptions & {
+    username: string;
+    downloadUrl: string;
+    expiresAt: string;
+  }
+): Promise<SendEmailResult> {
+  if (!isEmailConfigured() || !resend) {
+    console.log("Email not configured. Would send data export notification to:", options.to);
+    return { success: true, messageId: "mock" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.default,
+      to: options.to,
+      subject: "Your be.vocl data export is ready",
+      react: DataExportReadyEmail({
+        username: options.username,
+        downloadUrl: options.downloadUrl,
+        expiresAt: options.expiresAt,
+      }),
+    });
+
+    if (error) {
+      console.error("Failed to send data export notification:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error("Data export notification email error:", error);
     return { success: false, error: "Failed to send email" };
   }
 }

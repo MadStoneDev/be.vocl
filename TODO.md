@@ -1,12 +1,20 @@
 # Remaining Tasks
 
-## Features (Priority Order)
-- [x] Echo chains in feed — show chain context when echo-of-echo appears
-- [x] SFW-only sharing — only allow sharing for non-sensitive posts
-- [x] GIF picker in post creation — reuse existing Tenor integration from chat
-- [x] "Who to follow" widget — added to feed on Latest/For You tabs
-
-## Minor Issues
-- [x] CSRF utility — already correctly scoped (3 upload/moderation routes), no changes needed
-- [x] Loading spinner when expanding comments/likes/reblogs panels
+## Completed This Session
+- [x] Muted tags (database, server actions, feed filtering, tag page UI, settings UI, post menu)
+- [x] Echo chains in feed — chain context for echo-of-echo
+- [x] SFW-only sharing — share hidden for sensitive posts
+- [x] GIF picker in post creation (Giphy integration)
+- [x] "Who to follow" widget on feed
+- [x] Loading spinners on comments/likes/reblogs panels
 - [x] Queue page retry button on error
+- [x] Visual queue calendar — 7-day week view with publish date calculation
+- [x] Alt text input UI in post creation
+- [x] Lock system enforcement — banned users redirected to /account-status
+- [x] Ban/restrict/export email templates + wiring
+- [x] Per-post analytics drill-down
+
+## Still Open (from FEATURE-PLAN.md)
+- [ ] Post threads (compose series) — thread_id/thread_position, "Continue Thread" UX
+- [ ] Apple OAuth
+- [ ] Semantic tag matching for "For You" algorithm

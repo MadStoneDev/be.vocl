@@ -73,6 +73,15 @@ export default function MainLayout({
     document.title = total > 0 ? `(${total}) be.vocl` : "be.vocl";
   }, [notificationCount, totalUnread]);
 
+  // Redirect banned users to account-status page
+  useEffect(() => {
+    if (authLoading || !profile) return;
+
+    if (profile.lockStatus === "banned") {
+      router.replace("/account-status");
+    }
+  }, [profile, authLoading, router]);
+
   // Check onboarding status - runs when auth state is known
   useEffect(() => {
     if (authLoading || !user) return;

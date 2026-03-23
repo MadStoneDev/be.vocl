@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { IconClock, IconLoader2, IconRefresh } from "@tabler/icons-react";
-import { QueueControls, QueueList } from "@/components/queue";
+import {
+  IconClock,
+  IconLoader2,
+  IconRefresh,
+  IconList,
+  IconCalendar,
+} from "@tabler/icons-react";
+import { QueueControls, QueueList, QueueCalendar } from "@/components/queue";
 import {
   getQueue,
   getQueueSettings,
@@ -11,6 +17,7 @@ import {
   publishNow,
   updateQueueSettings,
 } from "@/actions/reblogs";
+import { getScheduledPosts } from "@/actions/drafts";
 
 interface QueueSettings {
   enabled: boolean;
@@ -34,9 +41,13 @@ interface QueuePost {
   };
 }
 
+type ViewMode = "list" | "calendar";
+
 export default function QueuePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState<QueuePost[]>([]);
+  const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [settings, setSettings] = useState<QueueSettings>({
     enabled: true,
     paused: false,
@@ -51,10 +62,11 @@ export default function QueuePage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch both queue posts and settings in parallel
-      const [queueResult, settingsResult] = await Promise.all([
+      // Fetch queue posts, scheduled posts, and settings in parallel
+      const [queueResult, settingsResult, scheduledResult] = await Promise.all([
         getQueue(),
         getQueueSettings(),
+        getScheduledPosts(),
       ]);
 
       if (queueResult.success && queueResult.posts) {
@@ -81,6 +93,10 @@ export default function QueuePage() {
 
       if (settingsResult.success && settingsResult.settings) {
         setSettings(settingsResult.settings);
+      }
+
+      if (scheduledResult.success && scheduledResult.posts) {
+        setScheduledPosts(scheduledResult.posts);
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -132,17 +148,47 @@ export default function QueuePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className={`mx-auto px-4 py-6 ${viewMode === "calendar" ? "max-w-5xl" : "max-w-2xl"}`}>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-          <IconClock size={24} className="text-vocl-accent" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
+            <IconClock size={24} className="text-vocl-accent" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Queue</h1>
+            <p className="text-sm text-foreground/50">
+              Manage your scheduled posts
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Queue</h1>
-          <p className="text-sm text-foreground/50">
-            Manage your scheduled posts
-          </p>
+
+        {/* View toggle */}
+        <div className="flex items-center rounded-xl bg-vocl-surface-dark border border-white/5 p-1">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "list"
+                ? "bg-vocl-accent text-white"
+                : "text-foreground/50 hover:text-foreground"
+            }`}
+          >
+            <IconList size={16} />
+            List
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("calendar")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "calendar"
+                ? "bg-vocl-accent text-white"
+                : "text-foreground/50 hover:text-foreground"
+            }`}
+          >
+            <IconCalendar size={16} />
+            Calendar
+          </button>
         </div>
       </div>
 
@@ -174,6 +220,12 @@ export default function QueuePage() {
         <div className="flex items-center justify-center py-16">
           <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
         </div>
+      ) : viewMode === "calendar" ? (
+        <QueueCalendar
+          posts={posts}
+          scheduledPosts={scheduledPosts}
+          settings={settings}
+        />
       ) : (
         /* Queue list */
         <QueueList

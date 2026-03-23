@@ -10,6 +10,11 @@ import {
   getAssignableRoles,
 } from "@/constants/roles";
 import { logAuditEvent, getActorInfo, getTargetUserInfo } from "@/lib/audit";
+import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  sendAccountBannedEmail,
+  sendAccountRestrictedEmail,
+} from "@/lib/email/send";
 
 /**
  * Check if current user has required role level
@@ -494,6 +499,22 @@ export async function banUser(
       details: { reason },
     });
 
+    // Send ban notification email
+    try {
+      const adminSupabase = createAdminClient();
+      const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId);
+      const email = authUser?.user?.email;
+      if (email && targetInfo?.username) {
+        await sendAccountBannedEmail({
+          to: email,
+          username: targetInfo.username,
+          reason,
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send ban notification email:", emailError);
+    }
+
     revalidatePath("/admin/users");
     return { success: true };
   } catch (error) {
@@ -535,6 +556,21 @@ export async function restrictUser(
       targetUserId: userId,
       targetUserUsername: targetInfo?.username,
     });
+
+    // Send restriction notification email
+    try {
+      const adminSupabase = createAdminClient();
+      const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId);
+      const email = authUser?.user?.email;
+      if (email && targetInfo?.username) {
+        await sendAccountRestrictedEmail({
+          to: email,
+          username: targetInfo.username,
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send restriction notification email:", emailError);
+    }
 
     revalidatePath("/admin/users");
     return { success: true };

@@ -12,6 +12,11 @@ export { MessageNotificationEmail } from "./MessageNotificationEmail";
 export { MentionNotificationEmail } from "./MentionNotificationEmail";
 export { DailyDigestEmail } from "./DailyDigestEmail";
 
+// Account action emails
+export { AccountBannedEmail } from "./AccountBannedEmail";
+export { AccountRestrictedEmail } from "./AccountRestrictedEmail";
+export { DataExportReadyEmail } from "./DataExportReadyEmail";
+
 // Admin/bulk emails
 export { AnnouncementEmail } from "./AnnouncementEmail";
 export { FounderMessageEmail } from "./FounderMessageEmail";
