@@ -46,6 +46,9 @@ interface PostWithDetails {
     avatarUrl: string | null;
     role: number;
   } | null;
+  threadId?: string | null;
+  threadPosition?: number | null;
+  threadLength?: number;
 }
 
 interface FeedClientProps {
@@ -142,6 +145,9 @@ function transformPost(post: PostWithDetails) {
     reblogCommentHtml: post.reblogCommentHtml || null,
     originalAuthor: post.originalAuthor || null,
     rebloggedFromAuthor: post.rebloggedFromAuthor || null,
+    threadId: post.threadId || null,
+    threadPosition: post.threadPosition || null,
+    threadLength: post.threadLength,
   };
 }
 

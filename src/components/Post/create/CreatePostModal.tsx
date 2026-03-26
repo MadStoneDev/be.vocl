@@ -23,6 +23,7 @@ import {
   IconSearch,
   IconCamera,
   IconGif,
+  IconMessagePlus,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
@@ -49,12 +50,14 @@ interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (postId: string) => void;
+  threadId?: string;
 }
 
 export function CreatePostModal({
   isOpen,
   onClose,
   onSuccess,
+  threadId,
 }: CreatePostModalProps) {
   const [isPending, startTransition] = useTransition();
   const [postType, setPostType] = useState<PostType>("text");
@@ -481,6 +484,7 @@ export function CreatePostModal({
           publishMode === "schedule"
             ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
             : undefined,
+        threadId: threadId || undefined,
       });
 
       if (result.success && result.postId) {
@@ -547,6 +551,14 @@ export function CreatePostModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+          {/* Thread continuation banner */}
+          {threadId && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-vocl-accent/10 border border-vocl-accent/20 text-vocl-accent text-sm">
+              <IconMessagePlus size={16} />
+              <span>Continuing thread...</span>
+            </div>
+          )}
+
           {/* Post Type Selector */}
           <div className="flex rounded-2xl bg-background/50 p-1">
             {postTypes.map(({ type, icon: Icon, label }) => (

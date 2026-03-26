@@ -119,6 +119,10 @@ export interface PostProps {
     avatarUrl: string | null;
     role: number;
   } | null;
+  // Thread metadata
+  threadId?: string;
+  threadPosition?: number;
+  threadLength?: number;
 }
 
 // =============================================================================
@@ -144,6 +148,9 @@ interface PostHeaderProps {
   onMenuClick?: () => void;
   reblogFrom?: string | null;
   reblogChainFrom?: string | null;
+  threadId?: string;
+  threadPosition?: number;
+  threadLength?: number;
 }
 
 function PostHeader({
@@ -152,6 +159,9 @@ function PostHeader({
   onMenuClick,
   reblogFrom,
   reblogChainFrom,
+  threadId,
+  threadPosition,
+  threadLength,
 }: PostHeaderProps) {
   return (
     <div
@@ -214,6 +224,17 @@ function PostHeader({
               </>
             ) : (
               timestamp
+            )}
+            {threadId && threadPosition != null && threadLength != null && threadLength > 1 && (
+              <>
+                {" · "}
+                <Link
+                  href={`/thread/${threadId}`}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/60 text-xs hover:bg-white/20 transition-colors"
+                >
+                  Thread {threadPosition}/{threadLength}
+                </Link>
+              </>
             )}
           </span>
         </div>
@@ -780,6 +801,9 @@ export const Post = memo(function Post({
   reblogCommentHtml,
   originalAuthor,
   rebloggedFromAuthor,
+  threadId,
+  threadPosition,
+  threadLength,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
@@ -909,6 +933,9 @@ export const Post = memo(function Post({
           reblogFrom={
             isReblog && originalAuthor ? originalAuthor.username : null
           }
+          threadId={threadId}
+          threadPosition={threadPosition}
+          threadLength={threadLength}
         />
 
         {/* Content area with overlay */}

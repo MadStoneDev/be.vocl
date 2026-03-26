@@ -39,6 +39,9 @@ const UserReportDialog = dynamic(() => import("./UserReportDialog").then(mod => 
 const EditPostModal = dynamic(() => import("./create/EditPostModal").then(mod => ({ default: mod.EditPostModal })), {
   ssr: false,
 });
+const CreatePostModal = dynamic(() => import("./create/CreatePostModal").then(mod => ({ default: mod.CreatePostModal })), {
+  ssr: false,
+});
 
 interface InteractivePostProps {
   id: string;
@@ -73,6 +76,10 @@ interface InteractivePostProps {
   content?: any; // Raw post content for editing
   initialBookmarked?: boolean;
   onDeleted?: () => void;
+  // Thread metadata
+  threadId?: string;
+  threadPosition?: number;
+  threadLength?: number;
 }
 
 export function InteractivePost({
@@ -98,6 +105,9 @@ export function InteractivePost({
   content,
   initialBookmarked = false,
   onDeleted,
+  threadId,
+  threadPosition,
+  threadLength,
 }: InteractivePostProps) {
   // User content settings - own posts always auto-reveal, otherwise check user preferences
   const { profile } = useAuth();
@@ -124,6 +134,9 @@ export function InteractivePost({
   // Flag/Report dialog state
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showReportUserDialog, setShowReportUserDialog] = useState(false);
+
+  // Thread continuation state
+  const [showCreateForThread, setShowCreateForThread] = useState(false);
 
   // Pin state (can be toggled)
   const [currentlyPinned, setCurrentlyPinned] = useState(isPinned);
@@ -419,6 +432,10 @@ export function InteractivePost({
     }
   }, [id, isNotificationMuted]);
 
+  const handleContinueThread = useCallback(() => {
+    setShowCreateForThread(true);
+  }, []);
+
   const handleEdit = useCallback(() => {
     if (isReblog || currentContent) {
       setShowEditDialog(true);
@@ -568,6 +585,9 @@ export function InteractivePost({
         isLikesLoading={isLikesLoading}
         isReblogsLoading={isReblogsLoading}
         contentWarning={currentContent?.content_warning}
+        threadId={threadId}
+        threadPosition={threadPosition}
+        threadLength={threadLength}
       >
         {renderContent()}
       </Post>
@@ -595,6 +615,7 @@ export function InteractivePost({
         onShare={currentIsSensitive ? undefined : handleShare}
         tags={currentTags}
         onMuteTag={handleMuteTag}
+        onContinueThread={isOwn ? handleContinueThread : undefined}
       />
 
       {/* Delete Confirmation */}
@@ -664,6 +685,13 @@ export function InteractivePost({
           }}
         />
       )}
+
+      {/* Continue Thread Dialog */}
+      <CreatePostModal
+        isOpen={showCreateForThread}
+        onClose={() => setShowCreateForThread(false)}
+        threadId={threadId || id}
+      />
     </div>
   );
 }

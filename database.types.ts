@@ -891,6 +891,8 @@ export type Database = {
           moderation_reason: string | null
           moderated_at: string | null
           moderated_by: string | null
+          thread_id: string | null
+          thread_position: number | null
         }
         Insert: {
           id?: string
@@ -912,6 +914,8 @@ export type Database = {
           moderation_reason?: string | null
           moderated_at?: string | null
           moderated_by?: string | null
+          thread_id?: string | null
+          thread_position?: number | null
         }
         Update: {
           id?: string
@@ -933,6 +937,8 @@ export type Database = {
           moderation_reason?: string | null
           moderated_at?: string | null
           moderated_by?: string | null
+          thread_id?: string | null
+          thread_position?: number | null
         }
         Relationships: []
       }

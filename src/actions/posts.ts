@@ -21,6 +21,8 @@ interface CreatePostInput {
   tags?: string[];
   publishMode?: "now" | "queue" | "schedule";
   scheduledFor?: string;
+  threadId?: string;
+  startThread?: boolean;
 }
 
 interface CreatePostResult {
@@ -51,7 +53,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       return { success: false, error: "Your account is restricted from posting" };
     }
 
-    const { postType, content, isSensitive, tags, publishMode, scheduledFor } = input;
+    const { postType, content, isSensitive, tags, publishMode, scheduledFor, threadId, startThread } = input;
 
     // Extract media URLs for moderation
     const mediaUrls = extractMediaUrls(postType, content);
@@ -102,6 +104,19 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     // Auto-tag as sensitive if moderation detected nudity/gore (even if user didn't mark it)
     const finalIsSensitive = isSensitive || autoSensitive;
 
+    // Determine thread_position if appending to an existing thread
+    let threadPosition: number | null = null;
+    if (threadId) {
+      const { data: maxPosRow } = await (supabase as any)
+        .from("posts")
+        .select("thread_position")
+        .eq("thread_id", threadId)
+        .order("thread_position", { ascending: false })
+        .limit(1)
+        .single();
+      threadPosition = (maxPosRow?.thread_position || 0) + 1;
+    }
+
     const { data: post, error: postError } = await (supabase as any)
       .from("posts")
       .insert({
@@ -117,6 +132,8 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         moderation_status: moderationStatus,
         moderation_reason: moderationReason,
         moderated_at: moderationStatus === "flagged" ? new Date().toISOString() : null,
+        thread_id: threadId || null,
+        thread_position: threadPosition,
       })
       .select("id")
       .single();
@@ -124,6 +141,14 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     if (postError) {
       console.error("Create post error:", postError);
       return { success: false, error: "Failed to create post" };
+    }
+
+    // If starting a new thread, set thread_id to the post's own id and thread_position to 1
+    if (startThread && !threadId) {
+      await (supabase as any)
+        .from("posts")
+        .update({ thread_id: post.id, thread_position: 1 })
+        .eq("id", post.id);
     }
 
     // If content was flagged, create a report for staff review
@@ -505,6 +530,10 @@ interface PostWithDetails {
     avatarUrl: string | null;
     role: number;
   } | null;
+  // Thread metadata
+  threadId?: string | null;
+  threadPosition?: number | null;
+  threadLength?: number;
 }
 
 
@@ -973,6 +1002,8 @@ export async function getFeedPosts(options?: {
         original_post_id,
         reblogged_from_id,
         reblog_comment_html,
+        thread_id,
+        thread_position,
         author:author_id (
           username,
           display_name,
@@ -1051,6 +1082,20 @@ export async function getFeedPosts(options?: {
       chainAuthorMap.set(cp.id, cp.author);
     }
 
+    // Fetch thread lengths for posts that are part of threads
+    const threadIds = Array.from(new Set<string>(posts.filter((p: any) => p.thread_id).map((p: any) => p.thread_id)));
+    const threadLengthMap = new Map<string, number>();
+    if (threadIds.length > 0) {
+      const threadCountResults = await Promise.all(
+        threadIds.map((tid: string) =>
+          (supabase as any).from("posts").select("*", { count: "exact", head: true }).eq("thread_id", tid).eq("status", "published")
+        )
+      );
+      threadIds.forEach((tid: string, i: number) => {
+        threadLengthMap.set(tid, threadCountResults[i].count || 0);
+      });
+    }
+
     let formattedPosts: PostWithDetails[] = posts.map((post: any) => {
       const isReblog = !!post.original_post_id;
       const origAuthor = isReblog ? originalAuthorMap.get(post.original_post_id) : null;
@@ -1091,6 +1136,9 @@ export async function getFeedPosts(options?: {
           const ca = chainAuthorMap.get(post.reblogged_from_id);
           return ca ? { username: ca.username || "unknown", displayName: ca.display_name, avatarUrl: ca.avatar_url, role: ca.role || 0 } : { username: "deleted", displayName: "Deleted User", avatarUrl: null, role: 0 };
         })() : null,
+        threadId: post.thread_id || null,
+        threadPosition: post.thread_position || null,
+        threadLength: post.thread_id ? (threadLengthMap.get(post.thread_id) || 0) : undefined,
       };
     });
 

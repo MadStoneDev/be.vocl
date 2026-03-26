@@ -20,6 +20,7 @@ import {
   IconBellOff,
   IconShare,
   IconHash,
+  IconMessagePlus,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -44,6 +45,7 @@ interface PostMenuProps {
   onShare?: () => void;
   tags?: Array<{ id: string; name: string }>;
   onMuteTag?: (tagId: string, tagName: string) => void;
+  onContinueThread?: () => void;
 }
 
 export function PostMenu({
@@ -68,6 +70,7 @@ export function PostMenu({
   onShare,
   tags = [],
   onMuteTag,
+  onContinueThread,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -239,6 +242,21 @@ export function PostMenu({
                 </>
               )}
             </button>
+
+            {/* Continue Thread */}
+            {onContinueThread && (
+              <button
+                onClick={() => {
+                  onContinueThread();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+                role="menuitem"
+              >
+                <IconMessagePlus size={18} />
+                <span>Continue thread</span>
+              </button>
+            )}
 
             {/* Edit Post */}
             <button

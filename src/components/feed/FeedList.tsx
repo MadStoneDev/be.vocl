@@ -74,6 +74,9 @@ interface FeedPost {
     avatarUrl: string | null;
     role: number;
   } | null;
+  threadId?: string | null;
+  threadPosition?: number | null;
+  threadLength?: number;
 }
 
 interface FeedListProps {
@@ -124,6 +127,9 @@ export function FeedList({
           reblogCommentHtml={post.reblogCommentHtml}
           originalAuthor={post.originalAuthor}
           rebloggedFromAuthor={post.rebloggedFromAuthor}
+          threadId={post.threadId || undefined}
+          threadPosition={post.threadPosition || undefined}
+          threadLength={post.threadLength}
           contentPreview={post.content.text || ""}
           imageUrl={post.content.imageUrl}
           tags={post.tags}
