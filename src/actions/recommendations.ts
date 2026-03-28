@@ -47,6 +47,81 @@ interface RecommendedPost {
   reason: "followed_tag" | "similar_interest" | "popular" | "followed_user";
 }
 
+// Stop words excluded from semantic tag keyword extraction
+const STOP_WORDS = new Set([
+  "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of",
+  "with", "by", "from", "is", "it", "this", "that", "my", "your", "i", "me",
+  "we", "you", "he", "she", "they", "am", "are", "was", "be", "do", "not",
+  "no", "so", "if", "as", "up", "about", "just", "out", "all",
+]);
+
+/**
+ * Expand a set of tag IDs into semantically related tags by keyword matching.
+ * Extracts keywords from known tag names, then finds other tags containing
+ * those keywords via ilike queries.
+ *
+ * Returns a Map of discovered tag_id → relevance weight (0.3–0.5 range).
+ */
+async function expandTagsSemantically(
+  supabase: any,
+  tagIds: string[],
+  excludeTagIds: Set<string>,
+): Promise<Map<string, number>> {
+  const result = new Map<string, number>();
+
+  if (tagIds.length === 0) return result;
+
+  // Fetch tag names for the known IDs
+  const { data: tagRows } = await supabase
+    .from("tags")
+    .select("id, name")
+    .in("id", tagIds);
+
+  if (!tagRows || tagRows.length === 0) return result;
+
+  // Extract meaningful keywords from tag names
+  const keywordSet = new Set<string>();
+  for (const tag of tagRows) {
+    const words = (tag.name as string)
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w: string) => w.replace(/[^a-z0-9]/g, ""))
+      .filter((w: string) => w.length >= 3 && !STOP_WORDS.has(w));
+    for (const w of words) {
+      keywordSet.add(w);
+    }
+  }
+
+  // Limit to top 15 keywords (shortest first — more specific)
+  const keywords = [...keywordSet]
+    .sort((a, b) => a.length - b.length)
+    .slice(0, 15);
+
+  if (keywords.length === 0) return result;
+
+  // Query for related tags in parallel (one query per keyword, limit 50 each)
+  const keywordQueries = keywords.map((kw) =>
+    supabase
+      .from("tags")
+      .select("id, name")
+      .ilike("name", `%${kw}%`)
+      .limit(50),
+  );
+
+  const keywordResults = await Promise.all(keywordQueries);
+
+  for (const { data: matchedTags } of keywordResults) {
+    for (const tag of matchedTags || []) {
+      if (excludeTagIds.has(tag.id)) continue;
+      // Weight: 0.3 base, up to 0.5 if the tag matches multiple keywords
+      const existing = result.get(tag.id) || 0;
+      result.set(tag.id, Math.min(0.5, existing + 0.3));
+    }
+  }
+
+  return result;
+}
+
 // Shared post select fields to avoid repetition
 const POST_SELECT_FIELDS = `
   id,
@@ -164,6 +239,17 @@ export async function getPersonalizedFeed(options?: {
     const interestTagIds = [...interestTagWeights.keys()];
     const combinedRelevantTagIds = [...new Set([...followedTagIds, ...interestTagIds])];
 
+    // Semantic tag expansion: find related tags by keyword matching
+    // Only expand if the user has fewer than 100 combined relevant tags
+    const semanticTagWeights = new Map<string, number>();
+    if (combinedRelevantTagIds.length > 0 && combinedRelevantTagIds.length < 100) {
+      const excludeSet = new Set(combinedRelevantTagIds);
+      const expanded = await expandTagsSemantically(supabase, combinedRelevantTagIds, excludeSet);
+      for (const [tagId, weight] of expanded) {
+        semanticTagWeights.set(tagId, weight);
+      }
+    }
+
     // Build post-tag mapping from followed tags
     for (const tp of followedTagPostsResult.data || []) {
       const existing = taggedPostMapping.get(tp.post_id) || [];
@@ -180,6 +266,21 @@ export async function getPersonalizedFeed(options?: {
         .in("tag_id", extraInterestTagIds);
 
       for (const tp of extraTagPosts || []) {
+        const existing = taggedPostMapping.get(tp.post_id) || [];
+        existing.push(tp.tag_id);
+        taggedPostMapping.set(tp.post_id, existing);
+      }
+    }
+
+    // Fetch posts for semantically expanded tags
+    const semanticTagIds = [...semanticTagWeights.keys()];
+    if (semanticTagIds.length > 0) {
+      const { data: semanticTagPosts } = await (supabase as any)
+        .from("post_tags")
+        .select("post_id, tag_id")
+        .in("tag_id", semanticTagIds.slice(0, 200));
+
+      for (const tp of semanticTagPosts || []) {
         const existing = taggedPostMapping.get(tp.post_id) || [];
         existing.push(tp.tag_id);
         taggedPostMapping.set(tp.post_id, existing);
@@ -250,11 +351,20 @@ export async function getPersonalizedFeed(options?: {
       const postTags = taggedPostMapping.get(post.id) || [];
       const hasFollowedTag = postTags.some((tid) => followedTagIds.includes(tid));
       const interestScore = postTags.reduce((acc, tid) => acc + (interestTagWeights.get(tid) || 0), 0);
+      const semanticScore = postTags.reduce((acc, tid) => acc + (semanticTagWeights.get(tid) || 0), 0);
+
+      // Determine reason: followed_tag > interest tag > semantic match
+      let reason: "followed_tag" | "similar_interest" = hasFollowedTag
+        ? "followed_tag"
+        : interestScore > 0
+          ? "similar_interest"
+          : "similar_interest";
+      let tagRelevanceScore = hasFollowedTag ? 10 : interestScore > 0 ? interestScore : semanticScore * 4;
 
       candidatePosts.push({
         ...post,
-        reason: hasFollowedTag ? "followed_tag" : "similar_interest",
-        tagRelevanceScore: hasFollowedTag ? 10 : interestScore,
+        reason,
+        tagRelevanceScore,
         isFromFollowedUser: followedUserIds.includes(post.author_id),
       });
     }

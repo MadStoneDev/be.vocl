@@ -1,4 +1,6 @@
-# Remaining Tasks
+# Tasks
+
+All planned features from FEATURE-PLAN.md and MODERATION_PLAN.md are complete.
 
 ## Completed
 - [x] Muted tags (database, server actions, feed filtering, tag page UI, settings UI, post menu)
@@ -13,8 +15,5 @@
 - [x] Lock system enforcement — banned users redirected to /account-status
 - [x] Ban/restrict/export email templates + wiring
 - [x] Per-post analytics drill-down
-- [x] Post threads — compose series with thread_id/thread_position, "Continue Thread" in post menu, thread view page, feed badge
-
-## Still Open (from FEATURE-PLAN.md)
-- [ ] Apple OAuth
-- [ ] Semantic tag matching for "For You" algorithm
+- [x] Post threads — compose series, thread view, feed badges
+- [x] Semantic tag matching for "For You" algorithm
