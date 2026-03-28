@@ -1,9 +1,12 @@
 "use client";
 
+import React from "react";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
+import { useMemo } from "react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { FeedSkeleton } from "@/components/ui";
+import { WhoToFollow } from "./WhoToFollow";
 import type { VideoEmbedPlatform, LinkPreviewData } from "@/types/database";
 
 interface FeedPost {
@@ -85,13 +88,20 @@ interface FeedListProps {
   isLoadingMore?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
+  showWhoToFollow?: boolean;
 }
 
 export function FeedList({
   posts,
   isLoading = false,
   isLoadingMore = false,
+  showWhoToFollow = false,
 }: FeedListProps) {
+  // Randomize WhoToFollow position: after at least 4 posts, random offset 4-8
+  const whoToFollowIndex = useMemo(() => {
+    if (!showWhoToFollow || posts.length < 5) return -1;
+    return Math.floor(Math.random() * 5) + 4; // index 4-8
+  }, [showWhoToFollow, posts.length > 4]); // eslint-disable-line react-hooks/exhaustive-deps
   // Show skeleton on initial load
   if (isLoading && posts.length === 0) {
     return <FeedSkeleton count={3} />;
@@ -110,9 +120,10 @@ export function FeedList({
 
   return (
     <div className="flex flex-col gap-2 sm:gap-5">
-      {posts.map((post) => (
-        <InteractivePost
-          key={post.id}
+      {posts.map((post, index) => (
+        <React.Fragment key={post.id}>
+          {index === whoToFollowIndex && <WhoToFollow />}
+          <InteractivePost
           id={post.id}
           author={post.author}
           authorId={post.authorId}
@@ -182,6 +193,7 @@ export function FeedList({
             />
           )}
         </InteractivePost>
+        </React.Fragment>
       ))}
 
       {isLoadingMore && (

@@ -808,7 +808,23 @@ export async function suggestTags(
 
     if (error) throw error;
 
-    const matchingTags = (allMatching || []) as TagRow[];
+    // Get live post counts from post_tags for accuracy (post_count column may be stale)
+    const tagIds = (allMatching || []).map((t: any) => t.id);
+    const liveCountMap = new Map<string, number>();
+    if (tagIds.length > 0) {
+      const { data: postTagCounts } = await supabase
+        .from("post_tags")
+        .select("tag_id")
+        .in("tag_id", tagIds);
+      for (const pt of postTagCounts || []) {
+        liveCountMap.set(pt.tag_id, (liveCountMap.get(pt.tag_id) || 0) + 1);
+      }
+    }
+
+    const matchingTags = (allMatching || []).map((t: any) => ({
+      ...t,
+      post_count: liveCountMap.get(t.id) ?? t.post_count ?? 0,
+    })) as TagRow[];
 
     // 3. Split into own tags and others, then combine
     const ownTags = matchingTags.filter((t) => ownTagIds.has(t.id));

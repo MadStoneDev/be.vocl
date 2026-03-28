@@ -233,9 +233,7 @@ export default function FeedClient({
 
       <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {(activeTab === "chronological" || activeTab === "engagement") && (
-        <WhoToFollow />
-      )}
+      {/* WhoToFollow is rendered inside FeedList for "For You" tab */}
 
       {isError && !isLoading && (
         <div className="text-center py-8">
@@ -255,6 +253,7 @@ export default function FeedClient({
         posts={feedListPosts}
         isLoading={isLoading}
         isLoadingMore={isFetchingNextPage}
+        showWhoToFollow={activeTab === "engagement"}
       />
 
       {/* Load more button */}

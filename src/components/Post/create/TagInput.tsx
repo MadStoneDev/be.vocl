@@ -142,6 +142,7 @@ export function TagInput({
       }
     } else if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
+      e.stopPropagation();
       if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
         addTag(suggestions[highlightedIndex].name);
       } else {
@@ -204,6 +205,7 @@ export function TagInput({
           <input
             ref={inputRef}
             type="text"
+            enterKeyHint="done"
             value={inputValue}
             onChange={(e) => {
               const value = e.target.value;
