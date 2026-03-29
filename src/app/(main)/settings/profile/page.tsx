@@ -9,7 +9,8 @@ import {
   IconLoader2,
   IconPlus,
   IconTrash,
-  IconGripVertical,
+  IconChevronUp,
+  IconChevronDown,
   IconCheck,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import {
   getProfileLinks,
   addProfileLink,
   removeProfileLink,
+  reorderProfileLinks,
 } from "@/actions/profile";
 
 interface ProfileLink {
@@ -436,15 +438,49 @@ export default function ProfileSettingsPage() {
           {/* Existing Links */}
           {links.length > 0 && (
             <div className="space-y-2 mb-4">
-              {links.map((link) => (
+              {links.map((link, index) => (
                 <div
                   key={link.id}
                   className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark"
                 >
-                  <IconGripVertical
-                    size={18}
-                    className="text-foreground/30 cursor-grab"
-                  />
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      onClick={async () => {
+                        const result = await reorderProfileLinks(link.id, "up");
+                        if (result.success) {
+                          setLinks((prev) => {
+                            const arr = [...prev];
+                            if (index > 0) {
+                              [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+                            }
+                            return arr;
+                          });
+                        }
+                      }}
+                      disabled={index === 0}
+                      className="p-0.5 rounded text-foreground/30 hover:text-foreground/60 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <IconChevronUp size={16} />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const result = await reorderProfileLinks(link.id, "down");
+                        if (result.success) {
+                          setLinks((prev) => {
+                            const arr = [...prev];
+                            if (index < arr.length - 1) {
+                              [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+                            }
+                            return arr;
+                          });
+                        }
+                      }}
+                      disabled={index === links.length - 1}
+                      className="p-0.5 rounded text-foreground/30 hover:text-foreground/60 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <IconChevronDown size={16} />
+                    </button>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
                       {link.title}

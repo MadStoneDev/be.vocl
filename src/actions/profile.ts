@@ -404,6 +404,67 @@ export async function removeProfileLink(linkId: string): Promise<ProfileResult> 
 }
 
 /**
+ * Reorder profile links by swapping sort_order of two links
+ */
+export async function reorderProfileLinks(
+  linkId: string,
+  direction: "up" | "down"
+): Promise<ProfileResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Get all links sorted
+    const { data: allLinks, error: fetchError } = await (supabase as any)
+      .from("profile_links")
+      .select("id, sort_order")
+      .eq("profile_id", user.id)
+      .order("sort_order", { ascending: true });
+
+    if (fetchError || !allLinks || allLinks.length < 2) {
+      return { success: false, error: "Cannot reorder" };
+    }
+
+    const currentIndex = allLinks.findIndex((l: any) => l.id === linkId);
+    if (currentIndex === -1) return { success: false, error: "Link not found" };
+
+    const swapIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (swapIndex < 0 || swapIndex >= allLinks.length) {
+      return { success: true }; // Already at edge
+    }
+
+    const current = allLinks[currentIndex];
+    const swap = allLinks[swapIndex];
+
+    // Swap sort_order values
+    await Promise.all([
+      (supabase as any)
+        .from("profile_links")
+        .update({ sort_order: swap.sort_order })
+        .eq("id", current.id)
+        .eq("profile_id", user.id),
+      (supabase as any)
+        .from("profile_links")
+        .update({ sort_order: current.sort_order })
+        .eq("id", swap.id)
+        .eq("profile_id", user.id),
+    ]);
+
+    revalidatePath("/profile/[username]", "page");
+    return { success: true };
+  } catch (error) {
+    console.error("Reorder profile links error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Get profile stats (posts, followers, following counts)
  * Optimized: Uses Promise.all to parallelize queries
  */

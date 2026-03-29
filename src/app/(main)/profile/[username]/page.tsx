@@ -431,7 +431,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-4 sm:mt-6 px-0 sm:px-6">
+      <div className="mt-4 sm:mt-6 px-2 sm:px-6">
         <div className="max-w-xl mx-auto space-y-2 sm:space-y-6">
           {activeTab === "posts" && (
             <>
