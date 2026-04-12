@@ -536,7 +536,7 @@ export function CreatePostModal({
       <div className="fixed inset-0 bg-black/70 z-[60]" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl bg-vocl-surface-dark rounded-none md:rounded-3xl z-[60] flex flex-col h-full md:h-auto md:max-h-[90vh] overflow-hidden pb-14 md:pb-0">
+      <div className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl bg-vocl-surface-dark rounded-none md:rounded-3xl z-[60] flex flex-col h-full md:h-auto md:max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
           <h2 className="font-semibold text-foreground text-lg">Create Post</h2>

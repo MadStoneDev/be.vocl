@@ -175,7 +175,7 @@ export function EditPostModal({
   const title = isReblogEdit ? "Edit Echo" : isTextPost ? "Edit Post" : "Edit Caption & Tags";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 md:p-4 bg-black/70">
       <div
         className="relative w-full h-full md:h-auto max-w-none md:max-w-lg bg-vocl-surface-dark rounded-none md:rounded-2xl shadow-xl overflow-hidden flex flex-col"
         role="dialog"
