@@ -16,6 +16,7 @@ interface SuggestedUser {
   bio: string | null;
   followerCount: number;
   isFollowing: boolean;
+  followsYou?: boolean;
 }
 
 export function WhoToFollow() {
@@ -108,9 +109,16 @@ export function WhoToFollow() {
               <p className="text-sm font-medium text-foreground truncate">
                 {user.displayName || user.username}
               </p>
-              <p className="text-xs text-foreground/50 truncate">
-                @{user.username}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-foreground/50 truncate">
+                  @{user.username}
+                </p>
+                {user.followsYou && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-vocl-accent/15 text-vocl-accent flex-shrink-0">
+                    Follows you
+                  </span>
+                )}
+              </div>
             </Link>
 
             <button

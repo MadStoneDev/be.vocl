@@ -29,6 +29,7 @@ export interface SearchResult {
     bio: string | null;
     followerCount: number;
     isFollowing: boolean;
+    followsYou?: boolean;
   }>;
   posts: Array<{
     id: string;
@@ -693,7 +694,7 @@ export async function getSuggestedUsers(
             });
 
           if (smartSuggestions.length >= limit) {
-            return { success: true, users: smartSuggestions.slice(0, limit) };
+            return { success: true, users: await annotateFollowsYou(supabase, user.id, smartSuggestions.slice(0, limit)) };
           }
 
           // If we don't have enough smart suggestions, we'll fill with popular users below
@@ -702,13 +703,13 @@ export async function getSuggestedUsers(
           const needed = limit - smartSuggestions.length;
 
           const fallback = await getFallbackSuggestions(supabase, user.id, myFollowingIds, smartIds, needed);
-          return { success: true, users: [...smartSuggestions, ...fallback] };
+          return { success: true, users: await annotateFollowsYou(supabase, user.id, [...smartSuggestions, ...fallback]) };
         }
       }
 
       // 4. Fallback: popular users not already followed
       const fallback = await getFallbackSuggestions(supabase, user.id, myFollowingIds, new Set(), limit);
-      return { success: true, users: fallback };
+      return { success: true, users: await annotateFollowsYou(supabase, user.id, fallback) };
     }
 
     // Not logged in: just show popular users
@@ -718,6 +719,22 @@ export async function getSuggestedUsers(
     console.error("Get suggested users error:", error);
     return { success: false, error: "Failed to get suggested users" };
   }
+}
+
+async function annotateFollowsYou(
+  supabase: any,
+  currentUserId: string,
+  users: NonNullable<SearchResult["users"]>
+): Promise<SearchResult["users"]> {
+  if (users.length === 0) return users;
+  const ids = users.map((u) => u.id);
+  const { data } = await supabase
+    .from("follows")
+    .select("follower_id")
+    .eq("following_id", currentUserId)
+    .in("follower_id", ids);
+  const followsYouSet = new Set(((data || []) as any[]).map((f) => f.follower_id));
+  return users.map((u) => ({ ...u, followsYou: followsYouSet.has(u.id) }));
 }
 
 async function getFallbackSuggestions(
