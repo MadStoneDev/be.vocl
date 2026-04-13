@@ -15,6 +15,7 @@ import {
   IconMessageFilled,
   IconSettings,
   IconStack2,
+  IconUsersGroup,
   IconLogout,
   IconShield,
   IconMaximize,
@@ -92,6 +93,7 @@ export function LeftSidebar({
       badge: messageCount,
     },
     { href: "/queue", icon: IconStack2, iconActive: IconStack2, label: "Queue" },
+    { href: "/communities", icon: IconUsersGroup, iconActive: IconUsersGroup, label: "Communities" },
   ];
 
   return (

@@ -35,6 +35,7 @@ import { GifPicker } from "@/components/chat/GifPicker";
 import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { createPost, generatePostId } from "@/actions/posts";
+import { getMyCommunities, crossPostToCommunities, type CommunitySummary } from "@/actions/communities";
 import type {
   TextPostContent,
   ImagePostContent,
@@ -65,6 +66,8 @@ export function CreatePostModal({
   const [content, setContent] = useState({ html: "", plain: "" });
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [myCommunities, setMyCommunities] = useState<CommunitySummary[]>([]);
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([]);
   const [isSensitive, setIsSensitive] = useState(false);
   const [contentWarning, setContentWarning] = useState("");
   const [publishMode, setPublishMode] = useState<PublishMode>("now");
@@ -131,6 +134,14 @@ export function CreatePostModal({
     }
   }, [isOpen, postId]);
 
+  useEffect(() => {
+    if (isOpen && myCommunities.length === 0) {
+      getMyCommunities().then((r) => {
+        if (r.success) setMyCommunities(r.communities || []);
+      });
+    }
+  }, [isOpen, myCommunities.length]);
+
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -139,6 +150,7 @@ export function CreatePostModal({
       setContent({ html: "", plain: "" });
       setMediaUrls([]);
       setTags([]);
+      setSelectedCommunityIds([]);
       setIsSensitive(false);
       setContentWarning("");
       setPublishMode("now");
@@ -488,6 +500,9 @@ export function CreatePostModal({
       });
 
       if (result.success && result.postId) {
+        if (selectedCommunityIds.length > 0 && publishMode === "now") {
+          await crossPostToCommunities(result.postId, selectedCommunityIds);
+        }
         onSuccess?.(result.postId);
         onClose();
       } else {
@@ -1450,6 +1465,43 @@ export function CreatePostModal({
 
           {/* Tags */}
           <TagInput tags={tags} onChange={setTags} />
+
+          {/* Cross-post to communities */}
+          {myCommunities.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-foreground/60 mb-1.5">
+                Also post to communities
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {myCommunities.map((c) => {
+                  const selected = selectedCommunityIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() =>
+                        setSelectedCommunityIds((prev) =>
+                          selected ? prev.filter((id) => id !== c.id) : [...prev, c.id]
+                        )
+                      }
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                        selected
+                          ? "bg-vocl-accent text-white"
+                          : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                      }`}
+                    >
+                      /c/{c.slug}
+                    </button>
+                  );
+                })}
+              </div>
+              {publishMode !== "now" && selectedCommunityIds.length > 0 && (
+                <p className="text-xs text-amber-400/80 mt-1.5">
+                  Cross-posting only applies when publishing now.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Publish Options */}
           <div className="space-y-3">
