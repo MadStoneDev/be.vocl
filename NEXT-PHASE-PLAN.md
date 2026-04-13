@@ -11,7 +11,7 @@
 
 Be.Vocl is already past the "Tumblr clone" stage on several axes (semantic For You, polls, post threads, Spotify, bookmark collections, analytics, calendar queue, Paddle tips, escalation-aware moderation). The remaining work is in two buckets:
 
-1. **Parity** — table-stakes Tumblr features users *expect* (OAuth, RSS, embeds, mutuals, search filters, trending posts, theme expression).
+1. **Parity** — table-stakes Tumblr features users *expect* (RSS, embeds, mutuals, search filters, trending posts, theme expression).
 2. **Differentiation** — features that give Be.Vocl an identity Tumblr can't easily copy.
 
 The brand name suggests an angle nobody else owns: **vocal / voice / spoken-word-first social blogging**. The plan below leans into that.
@@ -140,7 +140,6 @@ Prioritized by effort vs. user impact. "Effort" is rough engineering days.
 
 | # | Feature | Effort | Notes |
 |---|---|---|---|
-| 1 | **OAuth login** (Google, Apple) | 1d | Supabase has the providers wired; just enable + add buttons + handle profile creation collision. |
 | 2 | **Mutuals indicator** | 1d | Add `is_mutual` boolean to follow queries; show a small badge on profile + in WhoToFollow. |
 | 3 | **Trending posts feed** | 2d | Velocity formula: `likes + comments*2.5 + reblogs*4` over 24h, decay over 48h. New tab in `/browse`. |
 | 4 | **Advanced search filters** | 2d | Type (text/image/video/audio/poll), date range, has-media, in-community. Already have full-text. |
@@ -162,6 +161,7 @@ Prioritized by effort vs. user impact. "Effort" is rough engineering days.
 
 ### Tier C — Defer (low ROI or high cost for current stage)
 
+- **OAuth login** (Google/Apple) — privacy-conscious users on Tumblr-style platforms typically avoid social sign-in. Without other social OAuth, Apple's mandate doesn't apply (no obligation even on a future iOS app). Magic-link email covers the friction case.
 - **Custom domains** — needs DNS provisioning + cert orchestration; revisit at scale.
 - **Theme / blog customization** — the cultural moment for Tumblr-style theming has passed; modern users expect a consistent, polished UI more than per-blog HTML. Skipping entirely.
 - **Quote / Link / Chat post types** — modeled fine inside text + link previews; don't add post-type sprawl unless data shows demand.
@@ -218,7 +218,7 @@ These are the features I'd push hardest on to give Be.Vocl an identity that does
 ### Phase 1 — Browse + Parity Tier A (≈3 weeks)
 1. Build `/browse` shell with tabs.
 2. Founder's Blog hero + admin UI.
-3. OAuth, mutuals, trending posts, advanced search, mute-feed wiring, content warning overlay, queue pause toggle.
+3. Mutuals, trending posts, advanced search, mute-feed wiring, content warning overlay, queue pause toggle.
 4. Redirect old `/explore` and `/search` routes.
 
 **Outcome:** Discovery surface modernized, all "expected Tumblr features" present.
