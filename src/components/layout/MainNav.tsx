@@ -12,6 +12,7 @@ import {
   IconDots,
   IconMaximize,
   IconMinimize,
+  IconStack2,
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
@@ -131,6 +132,16 @@ export function MainNav({
                     {isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
                     {isFullscreen ? "Show Browser UI" : "Hide Browser UI"}
                   </button>
+
+                  {/* Queue & Schedule */}
+                  <Link
+                    href="/queue"
+                    onClick={() => setShowMenu(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                  >
+                    <IconStack2 size={18} />
+                    Queue & Schedule
+                  </Link>
 
                   {/* Settings */}
                   <Link
