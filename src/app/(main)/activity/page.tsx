@@ -78,10 +78,22 @@ function getActivityDescription(item: ActivityItem): string {
   }
 }
 
+type ActivityFilter = "all" | ActivityItem["type"];
+
+const filterTabs: { key: ActivityFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "like", label: "Likes" },
+  { key: "comment", label: "Comments" },
+  { key: "reblog", label: "Echoes" },
+  { key: "follow", label: "Follows" },
+  { key: "mention", label: "Mentions" },
+];
+
 export default function ActivityPage() {
   const [stats, setStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<ActivityFilter>("all");
 
   useEffect(() => {
     async function fetchStats() {
@@ -149,13 +161,56 @@ export default function ActivityPage() {
         Recent Activity
       </h2>
 
-      {stats.recentActivity.length === 0 ? (
-        <div className="p-6 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
-          <p className="text-foreground/50">No recent activity yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {stats.recentActivity.map((item) => {
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+        {filterTabs.map((tab) => {
+          const count =
+            tab.key === "all"
+              ? stats.recentActivity.length
+              : stats.recentActivity.filter((i) => i.type === tab.key).length;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+                filter === tab.key
+                  ? "bg-vocl-accent text-white"
+                  : "bg-white/5 text-foreground/70 hover:bg-white/10"
+              }`}
+            >
+              <span>{tab.label}</span>
+              {count > 0 && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-xs ${
+                    filter === tab.key ? "bg-white/20" : "bg-white/10"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {(() => {
+        const filtered =
+          filter === "all"
+            ? stats.recentActivity
+            : stats.recentActivity.filter((i) => i.type === filter);
+        if (filtered.length === 0) {
+          return (
+            <div className="p-6 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
+              <p className="text-foreground/50">
+                {filter === "all"
+                  ? "No recent activity yet."
+                  : `No ${filterTabs.find((t) => t.key === filter)?.label.toLowerCase()} yet.`}
+              </p>
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-2">
+            {filtered.map((item) => {
             const { icon: ActivityIcon, color, bg } = getActivityIcon(item.type);
             return (
               <div
@@ -183,8 +238,9 @@ export default function ActivityPage() {
               </div>
             );
           })}
-        </div>
-      )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
