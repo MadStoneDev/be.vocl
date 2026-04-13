@@ -11,6 +11,10 @@ import {
   IconLoader2,
   IconUsers,
   IconNotes,
+  IconHeart,
+  IconMessage,
+  IconRefresh,
+  IconPhoto,
 } from "@tabler/icons-react";
 import { getExploreData } from "@/actions/explore";
 import { followUser, unfollowUser } from "@/actions/follows";
@@ -28,6 +32,22 @@ interface PopularTag {
   totalPosts: number;
 }
 
+interface TrendingPost {
+  id: string;
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  postType: string;
+  snippet: string;
+  hasMedia: boolean;
+  likeCount: number;
+  commentCount: number;
+  reblogCount: number;
+  createdAt: string;
+}
+
 interface RisingCreator {
   id: string;
   username: string;
@@ -43,6 +63,7 @@ export default function ExplorePage() {
   const [trendingTags, setTrendingTags] = useState<TrendingTag[]>([]);
   const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
   const [risingCreators, setRisingCreators] = useState<RisingCreator[]>([]);
+  const [trendingPosts, setTrendingPosts] = useState<TrendingPost[]>([]);
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
   const [followLoadingMap, setFollowLoadingMap] = useState<Record<string, boolean>>({});
 
@@ -54,6 +75,7 @@ export default function ExplorePage() {
         setTrendingTags(result.trendingTags || []);
         setPopularTags(result.popularTags || []);
         setRisingCreators(result.risingCreators || []);
+        setTrendingPosts(result.trendingPosts || []);
       } else {
         toast.error(result.error || "Failed to load explore data");
       }
@@ -100,7 +122,7 @@ export default function ExplorePage() {
           <div className="flex items-center gap-2 mb-4">
             <IconFlame size={22} className="text-orange-400" />
             <h2 className="text-lg font-semibold text-foreground">
-              Trending Now
+              Trending Tags
             </h2>
           </div>
           {trendingTags.length > 0 ? (
@@ -136,6 +158,81 @@ export default function ExplorePage() {
             </div>
           )}
         </section>
+
+        {/* Trending Posts */}
+        {trendingPosts.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <IconFlame size={22} className="text-rose-400" />
+              <h2 className="text-lg font-semibold text-foreground">
+                Trending Posts
+              </h2>
+            </div>
+            <div className="space-y-3">
+              {trendingPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/post/${post.id}`}
+                  className="block rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.07] hover:border-white/10 transition-colors p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
+                      {post.author.avatarUrl ? (
+                        <Image
+                          src={post.author.avatarUrl}
+                          alt={post.author.username}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                          <span className="text-sm font-bold text-white">
+                            {post.author.username.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium text-foreground truncate">
+                          {post.author.displayName || post.author.username}
+                        </span>
+                        <span className="text-foreground/40 text-xs">
+                          @{post.author.username}
+                        </span>
+                      </div>
+                      {post.snippet && (
+                        <p className="text-sm text-foreground/70 mt-1 line-clamp-2">
+                          {post.snippet}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 mt-2 text-xs text-foreground/40">
+                        {post.hasMedia && (
+                          <span className="flex items-center gap-1">
+                            <IconPhoto size={12} />
+                            {post.postType}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <IconHeart size={12} />
+                          {post.likeCount}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <IconMessage size={12} />
+                          {post.commentCount}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <IconRefresh size={12} />
+                          {post.reblogCount}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Popular Topics */}
         <section>

@@ -1,9 +1,47 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getTrendingFeed } from "@/actions/recommendations";
+
+export interface TrendingPostPreview {
+  id: string;
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  postType: string;
+  snippet: string;
+  hasMedia: boolean;
+  likeCount: number;
+  commentCount: number;
+  reblogCount: number;
+  createdAt: string;
+}
+
+function buildSnippet(postType: string, content: any): { snippet: string; hasMedia: boolean } {
+  const stripHtml = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  switch (postType) {
+    case "text": {
+      const raw = content?.plain || content?.html || "";
+      return { snippet: stripHtml(raw).slice(0, 160), hasMedia: false };
+    }
+    case "image":
+    case "gallery":
+      return { snippet: stripHtml(content?.caption_html || "") || "Image post", hasMedia: true };
+    case "video":
+      return { snippet: stripHtml(content?.caption_html || "") || "Video post", hasMedia: true };
+    case "audio":
+      return { snippet: stripHtml(content?.caption_html || "") || "Audio post", hasMedia: true };
+    case "poll":
+      return { snippet: stripHtml(content?.question || "") || "Poll", hasMedia: false };
+    default:
+      return { snippet: "", hasMedia: false };
+  }
+}
 
 /**
- * Get explore page data: trending tags, popular tags, rising creators
+ * Get explore page data: trending tags, popular tags, rising creators, trending posts
  */
 export async function getExploreData(): Promise<{
   success: boolean;
@@ -18,6 +56,7 @@ export async function getExploreData(): Promise<{
     followerCount: number;
     postCount: number;
   }>;
+  trendingPosts?: TrendingPostPreview[];
   error?: string;
 }> {
   try {
@@ -30,7 +69,7 @@ export async function getExploreData(): Promise<{
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
     // Parallel fetch all explore data
-    const [trendingResult, popularResult, creatorsResult] = await Promise.all([
+    const [trendingResult, popularResult, creatorsResult, trendingFeedResult] = await Promise.all([
       // Trending tags: most used in last 24h
       (supabase as any)
         .from("post_tags")
@@ -51,6 +90,9 @@ export async function getExploreData(): Promise<{
         .select("id, username, display_name, avatar_url, bio")
         .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
         .limit(50),
+
+      // Trending posts: top engagement velocity in last 48h
+      getTrendingFeed({ limit: 6, offset: 0 }),
     ]);
 
     // Process trending tags - count occurrences
@@ -120,7 +162,27 @@ export async function getExploreData(): Promise<{
         .slice(0, 10);
     }
 
-    return { success: true, trendingTags, popularTags, risingCreators };
+    // Slim trending posts for explore preview
+    const trendingPosts: TrendingPostPreview[] = (trendingFeedResult?.posts || []).map((p: any) => {
+      const { snippet, hasMedia } = buildSnippet(p.postType, p.content);
+      return {
+        id: p.id,
+        author: {
+          username: p.author?.username || "unknown",
+          displayName: p.author?.displayName || null,
+          avatarUrl: p.author?.avatarUrl || null,
+        },
+        postType: p.postType,
+        snippet,
+        hasMedia,
+        likeCount: p.likeCount || 0,
+        commentCount: p.commentCount || 0,
+        reblogCount: p.reblogCount || 0,
+        createdAt: p.createdAt,
+      };
+    });
+
+    return { success: true, trendingTags, popularTags, risingCreators, trendingPosts };
   } catch (error) {
     console.error("Get explore data error:", error);
     return { success: false, error: "Failed to load explore data" };
