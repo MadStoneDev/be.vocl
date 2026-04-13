@@ -497,6 +497,10 @@ export function CreatePostModal({
             ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
             : undefined,
         threadId: threadId || undefined,
+        pendingCommunityIds:
+          selectedCommunityIds.length > 0 && publishMode !== "now"
+            ? selectedCommunityIds
+            : undefined,
       });
 
       if (result.success && result.postId) {
@@ -1496,8 +1500,8 @@ export function CreatePostModal({
                 })}
               </div>
               {publishMode !== "now" && selectedCommunityIds.length > 0 && (
-                <p className="text-xs text-amber-400/80 mt-1.5">
-                  Cross-posting only applies when publishing now.
+                <p className="text-xs text-foreground/50 mt-1.5">
+                  Will be cross-posted when this post publishes.
                 </p>
               )}
             </div>

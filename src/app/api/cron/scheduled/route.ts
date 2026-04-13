@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     // Get all scheduled posts that are due
     const { data: scheduledPosts, error: scheduledError } = await supabase
       .from("posts")
-      .select("id, author_id, original_post_id")
+      .select("id, author_id, original_post_id, pending_community_ids")
       .eq("status", "scheduled")
       .lte("scheduled_for", now.toISOString());
 
@@ -51,6 +51,7 @@ export async function GET(request: Request) {
           status: "published",
           scheduled_for: null,
           published_at: new Date().toISOString(),
+          pending_community_ids: null,
         })
         .eq("id", post.id);
 
@@ -58,6 +59,18 @@ export async function GET(request: Request) {
         errors.push(`Post ${post.id}: ${publishError.message}`);
       } else {
         publishedCount++;
+        const pendingCommunityIds = (post as any).pending_community_ids as string[] | null;
+        if (pendingCommunityIds && pendingCommunityIds.length > 0) {
+          const rows = pendingCommunityIds.map((cid) => ({
+            community_id: cid,
+            post_id: post.id,
+            added_by: post.author_id,
+          }));
+          const { error: cpError } = await supabase
+            .from("community_posts")
+            .insert(rows);
+          if (cpError) errors.push(`Cross-post ${post.id}: ${cpError.message}`);
+        }
       }
     }
 

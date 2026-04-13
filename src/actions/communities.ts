@@ -185,18 +185,40 @@ export async function listCommunities(opts?: {
   }
 }
 
-export async function joinCommunity(communityId: string): Promise<{ success: boolean; error?: string }> {
+export async function joinCommunity(
+  communityId: string,
+  message?: string
+): Promise<{ success: boolean; pending?: boolean; error?: string }> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await (supabase as any)
-      .from("community_members")
-      .insert({ community_id: communityId, user_id: user.id, role: "member" });
+    const { data: community } = await (supabase as any)
+      .from("communities")
+      .select("join_policy")
+      .eq("id", communityId)
+      .single();
+    if (!community) return { success: false, error: "Community not found" };
 
+    if (community.join_policy === "open") {
+      const { error } = await (supabase as any)
+        .from("community_members")
+        .insert({ community_id: communityId, user_id: user.id, role: "member" });
+      if (error && error.code !== "23505") return { success: false, error: error.message };
+      return { success: true, pending: false };
+    }
+
+    // request or invite_only -> create a join request
+    const { error } = await (supabase as any)
+      .from("community_join_requests")
+      .insert({
+        community_id: communityId,
+        user_id: user.id,
+        message: message?.trim() || null,
+      });
     if (error && error.code !== "23505") return { success: false, error: error.message };
-    return { success: true };
+    return { success: true, pending: true };
   } catch (e: any) {
     return { success: false, error: e.message };
   }
@@ -262,6 +284,343 @@ export async function removeFromCommunity(communityId: string, postId: string): 
       .delete()
       .eq("community_id", communityId)
       .eq("post_id", postId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ---------- Phase 2 ----------
+
+export interface CommunityRule {
+  id: string;
+  position: number;
+  title: string;
+  body: string | null;
+}
+
+export interface JoinRequest {
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  message: string | null;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+export interface CommunityMember {
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  role: "member" | "moderator" | "owner";
+  joinedAt: string;
+}
+
+export async function updateCommunity(
+  communityId: string,
+  updates: {
+    name?: string;
+    description?: string | null;
+    bannerUrl?: string | null;
+    iconUrl?: string | null;
+    nsfw?: boolean;
+    visibility?: "public" | "restricted" | "private";
+    joinPolicy?: "open" | "request" | "invite_only";
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    const patch: any = {};
+    if (updates.name !== undefined) patch.name = updates.name.trim();
+    if (updates.description !== undefined) patch.description = updates.description?.trim() || null;
+    if (updates.bannerUrl !== undefined) patch.banner_url = updates.bannerUrl;
+    if (updates.iconUrl !== undefined) patch.icon_url = updates.iconUrl;
+    if (updates.nsfw !== undefined) patch.nsfw = updates.nsfw;
+    if (updates.visibility !== undefined) patch.visibility = updates.visibility;
+    if (updates.joinPolicy !== undefined) patch.join_policy = updates.joinPolicy;
+
+    const { error } = await (supabase as any)
+      .from("communities")
+      .update(patch)
+      .eq("id", communityId);
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath(`/communities`);
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function deleteCommunity(communityId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    const { error } = await (supabase as any)
+      .from("communities")
+      .delete()
+      .eq("id", communityId);
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath("/communities");
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function requestJoinCommunity(
+  communityId: string,
+  message?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    const { error } = await (supabase as any)
+      .from("community_join_requests")
+      .insert({
+        community_id: communityId,
+        user_id: user.id,
+        message: message?.trim() || null,
+      });
+
+    if (error && error.code !== "23505") return { success: false, error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function listJoinRequests(
+  communityId: string,
+  status: "pending" | "approved" | "rejected" = "pending"
+): Promise<{ success: boolean; requests?: JoinRequest[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await (supabase as any)
+      .from("community_join_requests")
+      .select(`
+        id, message, status, created_at, user_id,
+        user:profiles!community_join_requests_user_id_fkey(id, username, display_name, avatar_url)
+      `)
+      .eq("community_id", communityId)
+      .eq("status", status)
+      .order("created_at", { ascending: false });
+
+    if (error) return { success: false, error: error.message };
+
+    const requests = ((data as any[]) || []).map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      username: r.user?.username || "unknown",
+      displayName: r.user?.display_name || null,
+      avatarUrl: r.user?.avatar_url || null,
+      message: r.message,
+      status: r.status,
+      createdAt: r.created_at,
+    }));
+
+    return { success: true, requests };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function reviewJoinRequest(
+  requestId: string,
+  decision: "approved" | "rejected"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    const { error } = await (supabase as any)
+      .from("community_join_requests")
+      .update({
+        status: decision,
+        reviewed_by: user.id,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", requestId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function listCommunityMembers(
+  communityId: string,
+  opts?: { limit?: number; offset?: number }
+): Promise<{ success: boolean; members?: CommunityMember[]; hasMore?: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const limit = opts?.limit ?? 50;
+    const offset = opts?.offset ?? 0;
+
+    const { data, error } = await (supabase as any)
+      .from("community_members")
+      .select(`
+        role, joined_at, user_id,
+        user:profiles!community_members_user_id_fkey(id, username, display_name, avatar_url)
+      `)
+      .eq("community_id", communityId)
+      .order("role", { ascending: true })
+      .order("joined_at", { ascending: true })
+      .range(offset, offset + limit);
+
+    if (error) return { success: false, error: error.message };
+
+    const rows = (data as any[]) || [];
+    const hasMore = rows.length > limit;
+    const sliced = hasMore ? rows.slice(0, limit) : rows;
+
+    const members = sliced.map((m) => ({
+      userId: m.user_id,
+      username: m.user?.username || "unknown",
+      displayName: m.user?.display_name || null,
+      avatarUrl: m.user?.avatar_url || null,
+      role: m.role,
+      joinedAt: m.joined_at,
+    }));
+
+    return { success: true, members, hasMore };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function changeMemberRole(
+  communityId: string,
+  userId: string,
+  role: "member" | "moderator" | "owner"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await (supabase as any)
+      .from("community_members")
+      .update({ role })
+      .eq("community_id", communityId)
+      .eq("user_id", userId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function removeMember(
+  communityId: string,
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await (supabase as any)
+      .from("community_members")
+      .delete()
+      .eq("community_id", communityId)
+      .eq("user_id", userId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function setCommunityPostPinned(
+  communityId: string,
+  postId: string,
+  pinned: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await (supabase as any)
+      .from("community_posts")
+      .update({ pinned })
+      .eq("community_id", communityId)
+      .eq("post_id", postId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function listCommunityRules(
+  communityId: string
+): Promise<{ success: boolean; rules?: CommunityRule[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await (supabase as any)
+      .from("community_rules")
+      .select("id, position, title, body")
+      .eq("community_id", communityId)
+      .order("position", { ascending: true });
+    if (error) return { success: false, error: error.message };
+    return { success: true, rules: ((data as any[]) || []) as CommunityRule[] };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function upsertCommunityRule(
+  communityId: string,
+  rule: { id?: string; position: number; title: string; body?: string | null }
+): Promise<{ success: boolean; error?: string; id?: string }> {
+  try {
+    const supabase = await createClient();
+    if (rule.id) {
+      const { error } = await (supabase as any)
+        .from("community_rules")
+        .update({
+          position: rule.position,
+          title: rule.title.trim(),
+          body: rule.body?.trim() || null,
+        })
+        .eq("id", rule.id);
+      if (error) return { success: false, error: error.message };
+      return { success: true, id: rule.id };
+    } else {
+      const { data, error } = await (supabase as any)
+        .from("community_rules")
+        .insert({
+          community_id: communityId,
+          position: rule.position,
+          title: rule.title.trim(),
+          body: rule.body?.trim() || null,
+        })
+        .select("id")
+        .single();
+      if (error) return { success: false, error: error.message };
+      return { success: true, id: (data as any).id };
+    }
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function deleteCommunityRule(
+  ruleId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await (supabase as any)
+      .from("community_rules")
+      .delete()
+      .eq("id", ruleId);
     if (error) return { success: false, error: error.message };
     return { success: true };
   } catch (e: any) {

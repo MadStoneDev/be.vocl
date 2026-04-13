@@ -23,6 +23,7 @@ interface CreatePostInput {
   scheduledFor?: string;
   threadId?: string;
   startThread?: boolean;
+  pendingCommunityIds?: string[];
 }
 
 interface CreatePostResult {
@@ -53,7 +54,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       return { success: false, error: "Your account is restricted from posting" };
     }
 
-    const { postType, content, isSensitive, tags, publishMode, scheduledFor, threadId, startThread } = input;
+    const { postType, content, isSensitive, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
 
     // Extract media URLs for moderation
     const mediaUrls = extractMediaUrls(postType, content);
@@ -127,6 +128,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         status,
         queue_position: queuePosition,
         scheduled_for: scheduledFor || null,
+        pending_community_ids: pendingCommunityIds && pendingCommunityIds.length > 0 ? pendingCommunityIds : null,
         // Only set published_at if actually publishing (not flagged)
         published_at: status === "published" ? new Date().toISOString() : null,
         moderation_status: moderationStatus,

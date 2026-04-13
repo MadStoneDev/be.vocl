@@ -95,7 +95,7 @@ export async function GET(request: Request) {
         // Get next posts from queue
         const { data: queuedPosts, error: queueError } = await supabase
           .from("posts")
-          .select("id, original_post_id, author_id")
+          .select("id, original_post_id, author_id, pending_community_ids")
           .eq("author_id", user.id)
           .eq("status", "queued")
           .order("queue_position", { ascending: true })
@@ -114,6 +114,7 @@ export async function GET(request: Request) {
               status: "published",
               queue_position: null,
               published_at: new Date().toISOString(),
+              pending_community_ids: null,
             })
             .eq("id", post.id);
 
@@ -121,6 +122,19 @@ export async function GET(request: Request) {
             errors.push(`Post ${post.id}: ${publishError.message}`);
           } else {
             publishedCount++;
+            // Apply deferred cross-posts
+            const pendingCommunityIds = (post as any).pending_community_ids as string[] | null;
+            if (pendingCommunityIds && pendingCommunityIds.length > 0) {
+              const rows = pendingCommunityIds.map((cid) => ({
+                community_id: cid,
+                post_id: post.id,
+                added_by: post.author_id,
+              }));
+              const { error: cpError } = await supabase
+                .from("community_posts")
+                .insert(rows);
+              if (cpError) errors.push(`Cross-post ${post.id}: ${cpError.message}`);
+            }
           }
         }
       } catch (userError) {

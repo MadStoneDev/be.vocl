@@ -12,11 +12,18 @@ import {
   IconNotes,
   IconAlertTriangle,
   IconPin,
+  IconPinFilled,
+  IconSettings,
+  IconInfoCircle,
+  IconClock,
+  IconTrash,
 } from "@tabler/icons-react";
 import {
   getCommunityFeed,
   joinCommunity,
   leaveCommunity,
+  setCommunityPostPinned,
+  removeFromCommunity,
   type CommunitySummary,
 } from "@/actions/communities";
 import {
@@ -107,6 +114,8 @@ export default function CommunityPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [busyJoin, setBusyJoin] = useState(false);
+  const [pendingRequest, setPendingRequest] = useState(false);
+  const [busyPostAction, setBusyPostAction] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async (offset = 0, append = false) => {
     if (offset === 0) setLoading(true);
@@ -132,19 +141,62 @@ export default function CommunityPage() {
   const handleJoinToggle = async () => {
     if (!community || busyJoin) return;
     setBusyJoin(true);
-    const result = community.isMember
-      ? await leaveCommunity(community.id)
-      : await joinCommunity(community.id);
-    if (result.success) {
-      setCommunity({
-        ...community,
-        isMember: !community.isMember,
-        memberCount: community.memberCount + (community.isMember ? -1 : 1),
-      });
+    if (community.isMember) {
+      const result = await leaveCommunity(community.id);
+      if (result.success) {
+        setCommunity({
+          ...community,
+          isMember: false,
+          memberCount: Math.max(0, community.memberCount - 1),
+        });
+      } else {
+        toast.error(result.error || "Action failed");
+      }
     } else {
-      toast.error(result.error || "Action failed");
+      const result = await joinCommunity(community.id);
+      if (result.success) {
+        if (result.pending) {
+          setPendingRequest(true);
+          toast.success("Request sent — awaiting approval");
+        } else {
+          setCommunity({
+            ...community,
+            isMember: true,
+            memberCount: community.memberCount + 1,
+          });
+        }
+      } else {
+        toast.error(result.error || "Action failed");
+      }
     }
     setBusyJoin(false);
+  };
+
+  const handleTogglePin = async (postId: string, currentlyPinned: boolean) => {
+    if (!community) return;
+    setBusyPostAction((b) => ({ ...b, [`pin-${postId}`]: true }));
+    const result = await setCommunityPostPinned(community.id, postId, !currentlyPinned);
+    if (result.success) {
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, isPinned: !currentlyPinned } : p)));
+      toast.success(currentlyPinned ? "Unpinned" : "Pinned");
+    } else {
+      toast.error(result.error || "Failed");
+    }
+    setBusyPostAction((b) => ({ ...b, [`pin-${postId}`]: false }));
+  };
+
+  const handleRemovePost = async (postId: string) => {
+    if (!community) return;
+    if (!confirm("Remove this post from the community?")) return;
+    setBusyPostAction((b) => ({ ...b, [`remove-${postId}`]: true }));
+    const result = await removeFromCommunity(community.id, postId);
+    if (result.success) {
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      toast.success("Removed");
+    } else {
+      toast.error(result.error || "Failed");
+    }
+    setBusyPostAction((b) => ({ ...b, [`remove-${postId}`]: false }));
   };
 
   if (notFound) {
@@ -206,11 +258,13 @@ export default function CommunityPage() {
           </div>
           <button
             onClick={handleJoinToggle}
-            disabled={busyJoin}
+            disabled={busyJoin || pendingRequest}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex-shrink-0 ${
               community.isMember
                 ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                : pendingRequest
+                  ? "bg-amber-500/20 text-amber-300"
+                  : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
             }`}
           >
             {busyJoin ? (
@@ -219,10 +273,34 @@ export default function CommunityPage() {
               <span className="inline-flex items-center gap-1">
                 <IconCheck size={14} /> Joined
               </span>
-            ) : (
+            ) : pendingRequest ? (
+              <span className="inline-flex items-center gap-1">
+                <IconClock size={14} /> Pending
+              </span>
+            ) : community.joinPolicy === "open" ? (
               "Join"
+            ) : (
+              "Request to join"
             )}
           </button>
+        </div>
+
+        {/* Sub-nav */}
+        <div className="flex gap-1 mt-4">
+          <Link
+            href={`/c/${community.slug}/about`}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 text-foreground/70 hover:bg-white/10 text-xs font-medium"
+          >
+            <IconInfoCircle size={14} /> About
+          </Link>
+          {(community.myRole === "moderator" || community.myRole === "owner") && (
+            <Link
+              href={`/c/${community.slug}/settings`}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-vocl-accent/15 text-vocl-accent hover:bg-vocl-accent/25 text-xs font-medium"
+            >
+              <IconSettings size={14} /> Settings
+            </Link>
+          )}
         </div>
 
         {community.description && (
@@ -266,12 +344,32 @@ export default function CommunityPage() {
           <div className="space-y-6">
             {posts.map((post) => (
               <div key={post.id}>
-                {post.isPinned && (
-                  <div className="flex items-center gap-1 mb-1.5 text-xs text-vocl-accent">
-                    <IconPin size={12} />
-                    <span>Pinned</span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between mb-1.5">
+                  {post.isPinned ? (
+                    <div className="flex items-center gap-1 text-xs text-vocl-accent">
+                      <IconPinFilled size={12} />
+                      <span>Pinned</span>
+                    </div>
+                  ) : <span />}
+                  {(community.myRole === "moderator" || community.myRole === "owner") && (
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handleTogglePin(post.id, post.isPinned)}
+                        disabled={busyPostAction[`pin-${post.id}`]}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-xs text-foreground/70"
+                      >
+                        <IconPin size={12} /> {post.isPinned ? "Unpin" : "Pin"}
+                      </button>
+                      <button
+                        onClick={() => handleRemovePost(post.id)}
+                        disabled={busyPostAction[`remove-${post.id}`]}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-400"
+                      >
+                        <IconTrash size={12} /> Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <InteractivePost
                   id={post.id}
                   author={{
@@ -290,7 +388,6 @@ export default function CommunityPage() {
                     hasCommented: false,
                     hasLiked: post.hasLiked,
                     hasReblogged: false,
-                    hasBookmarked: post.hasBookmarked,
                   }}
                   isSensitive={post.isSensitive}
                   tags={post.tags}

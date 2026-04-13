@@ -7,9 +7,14 @@ import { QueueItem } from "./QueueItem";
 interface QueuePost {
   id: string;
   queuePosition: number;
+  postType: string;
+  content: any;
+  isSensitive: boolean;
+  createdAt: string;
   reblogCommentHtml?: string;
   originalPost?: {
     id: string;
+    postType: string;
     content: any;
     author: {
       username: string;

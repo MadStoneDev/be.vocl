@@ -30,9 +30,14 @@ interface QueueSettings {
 interface QueuePost {
   id: string;
   queuePosition: number;
+  postType: string;
+  content: any;
+  isSensitive: boolean;
+  createdAt: string;
   reblogCommentHtml?: string;
   originalPost?: {
     id: string;
+    postType: string;
     content: any;
     author: {
       username: string;
@@ -70,14 +75,18 @@ export default function QueuePage() {
       ]);
 
       if (queueResult.success && queueResult.posts) {
-        // Transform posts to match QueuePost interface
         const transformedPosts: QueuePost[] = queueResult.posts.map((post: any) => ({
           id: post.id,
           queuePosition: post.queue_position || 0,
+          postType: post.post_type,
+          content: post.content,
+          isSensitive: post.is_sensitive,
+          createdAt: post.created_at,
           reblogCommentHtml: post.reblog_comment_html,
           originalPost: post.original_post
             ? {
                 id: post.original_post.id,
+                postType: post.original_post.post_type,
                 content: post.original_post.content,
                 author: {
                   username: post.original_post.profiles?.username || "unknown",
