@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
+import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
 import { CreatePostFAB } from "@/components/Post/create";
 import { SecurityWarningModal } from "@/components/auth/SecurityWarningModal";
@@ -200,6 +201,9 @@ export default function MainLayout({
 
       {/* Security Warning Modal - shown once after first login */}
       <SecurityWarningModal isAuthenticated={!!user && !authLoading} />
+
+      {/* Global keyboard shortcuts */}
+      <KeyboardShortcuts />
     </div>
   );
 }

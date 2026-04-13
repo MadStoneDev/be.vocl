@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -67,6 +67,17 @@ function SearchContent() {
   const tagParam = searchParams.get("tag");
 
   const [query, setQuery] = useState(initialQuery);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function focusInput() {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }
+    focusInput();
+    window.addEventListener("vocl:focus-search", focusInput);
+    return () => window.removeEventListener("vocl:focus-search", focusInput);
+  }, []);
   const [activeTab, setActiveTab] = useState<SearchTab>(initialTab);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -323,6 +334,7 @@ function SearchContent() {
           className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
         />
         <input
+          ref={searchInputRef}
           type="text"
           value={query}
           onChange={(e) => {

@@ -235,9 +235,19 @@ export default async function PublicProfilePage({ params }: Props) {
 
       {/* Recent Posts */}
       <div className="mt-10 px-4 sm:px-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Recent Posts
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            Recent Posts
+          </h2>
+          {postCount > 0 && (
+            <Link
+              href={`/u/${profile.username}/archive`}
+              className="text-sm text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+            >
+              View archive ({postCount.toLocaleString()})
+            </Link>
+          )}
+        </div>
 
         {posts.length > 0 ? (
           <div className="space-y-4">
