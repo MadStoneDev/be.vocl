@@ -200,6 +200,96 @@ export async function getTipsReceived(
 }
 
 /**
+ * Get tips sent by the current user
+ */
+export async function getTipsSent(
+  limit = 20,
+  offset = 0
+): Promise<{
+  success: boolean;
+  tips?: Array<{
+    id: string;
+    recipientId: string;
+    recipientUsername: string;
+    recipientAvatarUrl?: string;
+    amount: number;
+    message?: string;
+    createdAt: string;
+    status: string;
+  }>;
+  total?: number;
+  totalAmount?: number;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { data: tips, error, count } = await (supabase as any)
+      .from("tips")
+      .select(
+        `
+        id,
+        recipient_id,
+        amount,
+        message,
+        status,
+        created_at,
+        recipient:recipient_id (
+          username,
+          avatar_url
+        )
+      `,
+        { count: "exact" }
+      )
+      .eq("sender_id", user.id)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      return { success: false, error: "Failed to fetch sent tips" };
+    }
+
+    const { data: totalData } = await (supabase as any)
+      .from("tips")
+      .select("amount")
+      .eq("sender_id", user.id)
+      .eq("status", "completed");
+
+    const totalAmount = (totalData || []).reduce(
+      (sum: number, t: { amount: number }) => sum + t.amount,
+      0
+    );
+
+    return {
+      success: true,
+      tips: (tips || []).map((tip: any) => ({
+        id: tip.id,
+        recipientId: tip.recipient_id,
+        recipientUsername: tip.recipient?.username || "Unknown",
+        recipientAvatarUrl: tip.recipient?.avatar_url,
+        amount: tip.amount,
+        message: tip.message,
+        status: tip.status,
+        createdAt: formatTimeAgo(tip.created_at),
+      })),
+      total: count || 0,
+      totalAmount,
+    };
+  } catch (error) {
+    console.error("Get tips sent error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Initiate verification purchase
  */
 export async function initiateVerification(): Promise<PaymentResult> {

@@ -21,6 +21,7 @@ import {
   IconShare,
   IconHash,
   IconMessagePlus,
+  IconCode,
 } from "@tabler/icons-react";
 
 interface PostMenuProps {
@@ -109,6 +110,8 @@ export function PostMenu({
     };
   }, [isOpen, onClose]);
 
+  const [embedCopied, setEmbedCopied] = useState(false);
+
   const handleCopyLink = async () => {
     try {
       const url = `${window.location.origin}/post/${postId}`;
@@ -120,6 +123,21 @@ export function PostMenu({
       }, 1500);
     } catch (err) {
       console.error("Failed to copy link:", err);
+    }
+  };
+
+  const handleCopyEmbed = async () => {
+    try {
+      const src = `${window.location.origin}/embed/${postId}`;
+      const snippet = `<iframe src="${src}" width="600" height="500" frameborder="0" scrolling="no" allowtransparency="true" style="max-width:100%;border:0"></iframe>`;
+      await navigator.clipboard.writeText(snippet);
+      setEmbedCopied(true);
+      setTimeout(() => {
+        setEmbedCopied(false);
+        onClose();
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to copy embed:", err);
     }
   };
 
@@ -156,6 +174,25 @@ export function PostMenu({
             <>
               <IconLink size={18} />
               <span>Copy link</span>
+            </>
+          )}
+        </button>
+
+        {/* Embed */}
+        <button
+          onClick={handleCopyEmbed}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+          role="menuitem"
+        >
+          {embedCopied ? (
+            <>
+              <IconCheck size={18} className="text-vocl-accent" />
+              <span className="text-vocl-accent">Embed code copied!</span>
+            </>
+          ) : (
+            <>
+              <IconCode size={18} />
+              <span>Copy embed code</span>
             </>
           )}
         </button>

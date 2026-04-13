@@ -14,6 +14,7 @@ import {
   IconCheck,
   IconLogout,
   IconTicket,
+  IconAlertOctagon,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { toast, LoadingSpinner } from "@/components/ui";
@@ -60,6 +61,12 @@ const settingsLinks = [
     icon: IconTicket,
     title: "Invite Codes",
     description: "Generate codes to invite friends",
+  },
+  {
+    href: "/settings/account",
+    icon: IconAlertOctagon,
+    title: "Account & Data",
+    description: "Export your data, delete your account",
   },
 ];
 

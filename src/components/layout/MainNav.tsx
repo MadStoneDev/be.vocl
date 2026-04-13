@@ -15,6 +15,7 @@ import {
   IconStack2,
   IconCompass,
   IconUsersGroup,
+  IconCoin,
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
@@ -163,6 +164,16 @@ export function MainNav({
                   >
                     <IconStack2 size={18} />
                     Queue & Schedule
+                  </Link>
+
+                  {/* Tips */}
+                  <Link
+                    href="/tips"
+                    onClick={() => setShowMenu(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                  >
+                    <IconCoin size={18} />
+                    Tips
                   </Link>
 
                   {/* Settings */}
