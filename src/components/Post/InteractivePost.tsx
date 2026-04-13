@@ -513,6 +513,7 @@ export function InteractivePost({
           <ImageContent
             src={contentData.urls?.[0] || contentData.url || contentData.imageUrl || contentData.imageUrls?.[0]}
             alt="Post image"
+            caption={contentData.caption_html || contentData.captionHtml}
           />
         );
 

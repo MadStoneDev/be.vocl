@@ -149,7 +149,7 @@ export function FeedList({
         >
           {/* Image content */}
           {post.contentType === "image" && post.content.imageUrl && (
-            <ImageContent src={post.content.imageUrl} alt="Post image" />
+            <ImageContent src={post.content.imageUrl} alt="Post image" caption={post.content.captionHtml} />
           )}
 
           {/* Text content */}
