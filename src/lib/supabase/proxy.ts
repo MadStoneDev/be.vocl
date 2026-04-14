@@ -46,9 +46,26 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/email-templates", "/signup", "/auth/callback", "/terms", "/privacy"];
-  const isPublicRoute = publicRoutes.some((route) =>
+  // Routes that run outside the user-auth flow:
+  //  - API routes authenticate per-route (CRON_SECRET, webhook signatures, or
+  //    their own createServerClient), so skipping user-session redirects here
+  //    avoids turning a 401 JSON response into an HTML redirect to /login.
+  //  - RSS feeds must be reachable by external readers (no cookie jar).
+  //  - /embed/* renders a public iframe view.
+  //  - /u/[username] is the public profile route.
+  const machineOrPublicPrefixes = [
+    "/api",
+    "/rss",
+    "/embed",
+    "/u/",
+    "/login",
+    "/email-templates",
+    "/signup",
+    "/auth/callback",
+    "/terms",
+    "/privacy",
+  ];
+  const isPublicRoute = machineOrPublicPrefixes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
 

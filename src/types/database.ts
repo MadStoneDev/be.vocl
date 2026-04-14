@@ -711,6 +711,9 @@ export interface TextPostContent {
   html: string;
   plain: string;
   link_previews?: LinkPreviewData[];
+  is_essay?: boolean;
+  essay_title?: string;
+  reading_time_minutes?: number;
 }
 
 export interface ImagePostContent {

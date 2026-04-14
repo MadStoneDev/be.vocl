@@ -499,7 +499,12 @@ export function InteractivePost({
       case "text":
         return (
           <>
-            <TextContent html={contentData.html}>
+            <TextContent
+              html={contentData.html}
+              isEssay={contentData.is_essay}
+              essayTitle={contentData.essay_title}
+              readingTimeMinutes={contentData.reading_time_minutes}
+            >
               {contentData.plain || contentData.text}
             </TextContent>
             {contentData.link_previews && contentData.link_previews.length > 0 && (

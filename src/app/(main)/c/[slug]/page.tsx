@@ -67,7 +67,12 @@ function renderPostContent(post: CommunityPost) {
     case "text":
       return (
         <>
-          <TextContent html={c.html}>{c.plain || c.text}</TextContent>
+          <TextContent
+            html={c.html}
+            isEssay={c.is_essay}
+            essayTitle={c.essay_title}
+            readingTimeMinutes={c.reading_time_minutes}
+          >{c.plain || c.text}</TextContent>
           {c.link_previews?.length > 0 && (
             <div className="bg-[#EBEBEB] -mt-16 pb-16">
               <LinkPreviewCarousel previews={c.link_previews} />

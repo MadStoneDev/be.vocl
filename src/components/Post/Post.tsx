@@ -1380,12 +1380,45 @@ export function ImageContent({ src, alt, caption }: ImageContentProps) {
 interface TextContentProps {
   children?: ReactNode;
   html?: string;
+  isEssay?: boolean;
+  essayTitle?: string;
+  readingTimeMinutes?: number;
 }
 
-export function TextContent({ children, html }: TextContentProps) {
+export function TextContent({ children, html, isEssay, essayTitle, readingTimeMinutes }: TextContentProps) {
   const postTags = usePostTags();
   const tags = postTags?.tags || [];
   const isHovered = postTags?.isHovered || false;
+
+  if (isEssay) {
+    return (
+      <div className="px-3 pt-4 pb-4 sm:px-6 sm:py-6 bg-[#F5F1EB]">
+        {(essayTitle || readingTimeMinutes) && (
+          <div className="mb-4 pb-3 border-b border-neutral-300/60">
+            {essayTitle && (
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-neutral-800 mb-1 leading-tight">
+                {essayTitle}
+              </h2>
+            )}
+            <p className="text-xs text-neutral-500 inline-flex items-center gap-1.5">
+              <span className="font-medium text-vocl-accent">Essay</span>
+              {readingTimeMinutes ? <span>· {readingTimeMinutes} min read</span> : null}
+            </p>
+          </div>
+        )}
+        {html ? (
+          <div
+            className="font-serif text-base sm:text-lg leading-relaxed text-neutral-800 prose prose-sm sm:prose-base max-w-none prose-p:my-3 prose-headings:font-serif [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-accent [&_blockquote]:pl-4 [&_blockquote]:italic [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
+          />
+        ) : (
+          <div className="font-serif text-base sm:text-lg leading-relaxed text-neutral-800 whitespace-pre-wrap">
+            {children}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB]">

@@ -76,6 +76,9 @@ function transformPost(post: PostWithDetails) {
   let captionHtml: string | undefined;
   let transcript: string | undefined;
   let isVoiceNote: boolean | undefined;
+  let isEssay: boolean | undefined;
+  let essayTitle: string | undefined;
+  let readingTimeMinutes: number | undefined;
 
   let linkPreviews: any[] | undefined;
 
@@ -83,6 +86,9 @@ function transformPost(post: PostWithDetails) {
     text = postContent?.plain || postContent?.html?.replace(/<[^>]*>/g, "") || "";
     html = postContent?.html;
     linkPreviews = postContent?.link_previews;
+    isEssay = !!postContent?.is_essay;
+    essayTitle = postContent?.essay_title;
+    readingTimeMinutes = postContent?.reading_time_minutes;
   } else if (post.postType === "image") {
     imageUrl = postContent?.urls?.[0] || postContent?.url;
     captionHtml = postContent?.caption_html;
@@ -130,6 +136,9 @@ function transformPost(post: PostWithDetails) {
       captionHtml,
       transcript,
       isVoiceNote,
+      isEssay,
+      essayTitle,
+      readingTimeMinutes,
       linkPreviews,
     },
     rawContent: post.content,

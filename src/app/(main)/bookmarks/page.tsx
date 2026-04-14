@@ -525,7 +525,12 @@ export default function BookmarksPage() {
                   )}
                   {post.postType === "text" &&
                     (postContent?.html || postContent?.plain) && (
-                      <TextContent html={postContent.html}>
+                      <TextContent
+                        html={postContent.html}
+                        isEssay={postContent.is_essay}
+                        essayTitle={postContent.essay_title}
+                        readingTimeMinutes={postContent.reading_time_minutes}
+                      >
                         {postContent.plain}
                       </TextContent>
                     )}

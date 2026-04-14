@@ -39,6 +39,7 @@ import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { createPost, generatePostId } from "@/actions/posts";
 import { getMyCommunities, crossPostToCommunities, type CommunitySummary } from "@/actions/communities";
 import { transcribePostAudio } from "@/actions/transcribe";
+import { readingTimeMinutes, countWords, isEssayLength } from "@/lib/essay";
 import type {
   TextPostContent,
   ImagePostContent,
@@ -99,6 +100,8 @@ export function CreatePostModal({
 
   // Audio-specific state
   const [audioMode, setAudioMode] = useState<"spotify" | "upload" | "record">("spotify");
+  const [isEssay, setIsEssay] = useState(false);
+  const [essayTitle, setEssayTitle] = useState("");
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [recordedDuration, setRecordedDuration] = useState<number>(0);
   const [spotifyQuery, setSpotifyQuery] = useState("");
@@ -159,6 +162,8 @@ export function CreatePostModal({
       setRecordedAudioUrl(null);
       setRecordedDuration(0);
       setAudioMode("spotify");
+      setIsEssay(false);
+      setEssayTitle("");
       setIsSensitive(false);
       setContentWarning("");
       setPublishMode("now");
@@ -374,6 +379,11 @@ export function CreatePostModal({
             html: content.html,
             plain: content.plain,
             ...(savedPreviews.length > 0 && { link_previews: savedPreviews }),
+            ...(isEssay && {
+              is_essay: true,
+              essay_title: essayTitle.trim() || undefined,
+              reading_time_minutes: readingTimeMinutes(content.plain),
+            }),
           } as TextPostContent;
           break;
         }
@@ -1511,15 +1521,50 @@ export function CreatePostModal({
                   Caption (optional)
                 </label>
               )}
+              {postType === "text" && isEssay && (
+                <input
+                  type="text"
+                  value={essayTitle}
+                  onChange={(e) => setEssayTitle(e.target.value)}
+                  placeholder="Essay title (optional)"
+                  maxLength={140}
+                  className="w-full mb-3 px-3 py-2.5 rounded-xl bg-background/50 border border-white/10 text-foreground text-lg font-semibold placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                />
+              )}
               <RichTextEditor
                 placeholder={
                   postType === "text"
-                    ? "What's on your mind?"
+                    ? isEssay
+                      ? "Start writing your essay…"
+                      : "What's on your mind?"
                     : "Add a caption..."
                 }
                 onChange={(html, plain) => setContent({ html, plain })}
-                minHeight={postType === "text" ? "200px" : "80px"}
+                minHeight={postType === "text" ? (isEssay ? "400px" : "200px") : "80px"}
               />
+              {postType === "text" && (
+                <div className="mt-2 flex items-center justify-between text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setIsEssay((v) => !v)}
+                    className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                      isEssay
+                        ? "bg-vocl-accent/15 text-vocl-accent"
+                        : "bg-white/5 text-foreground/60 hover:bg-white/10"
+                    }`}
+                  >
+                    {isEssay ? "📜 Essay mode on" : "📜 Write as essay"}
+                  </button>
+                  {content.plain && (
+                    <span className="text-foreground/40">
+                      {countWords(content.plain).toLocaleString()} words
+                      {isEssayLength(content.plain) && (
+                        <> · {readingTimeMinutes(content.plain)} min read</>
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

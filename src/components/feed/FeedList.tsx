@@ -52,6 +52,13 @@ interface FeedPost {
     }>;
     // Caption (for media posts)
     captionHtml?: string;
+    // Audio-only
+    transcript?: string;
+    isVoiceNote?: boolean;
+    // Essay metadata (text posts)
+    isEssay?: boolean;
+    essayTitle?: string;
+    readingTimeMinutes?: number;
     // Link previews (for text posts)
     linkPreviews?: LinkPreviewData[];
   };
@@ -155,7 +162,12 @@ export function FeedList({
           {/* Text content */}
           {post.contentType === "text" && (post.content.html || post.content.text) && (
             <>
-              <TextContent html={post.content.html}>{post.content.text}</TextContent>
+              <TextContent
+                html={post.content.html}
+                isEssay={post.content.isEssay}
+                essayTitle={post.content.essayTitle}
+                readingTimeMinutes={post.content.readingTimeMinutes}
+              >{post.content.text}</TextContent>
               {post.content.linkPreviews && post.content.linkPreviews.length > 0 && (
                 <div className="bg-vocl-surface-muted">
                   <LinkPreviewCarousel previews={post.content.linkPreviews} />

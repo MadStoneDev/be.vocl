@@ -38,7 +38,12 @@ function renderPostContent(postType: string, content: any) {
     case "text":
       return (
         <>
-          <TextContent html={content.html}>
+          <TextContent
+            html={content.html}
+            isEssay={content.is_essay}
+            essayTitle={content.essay_title}
+            readingTimeMinutes={content.reading_time_minutes}
+          >
             {content.plain || content.text}
           </TextContent>
           {content.link_previews && content.link_previews.length > 0 && (
