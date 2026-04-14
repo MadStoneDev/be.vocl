@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -18,7 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { getExploreData } from "@/actions/explore";
 import { followUser, unfollowUser } from "@/actions/follows";
-import { toast } from "@/components/ui";
+import { toast, PullToRefresh } from "@/components/ui";
 
 interface TrendingTag {
   id: string;
@@ -67,22 +67,23 @@ export default function ExplorePage() {
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
   const [followLoadingMap, setFollowLoadingMap] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      const result = await getExploreData();
-      if (result.success) {
-        setTrendingTags(result.trendingTags || []);
-        setPopularTags(result.popularTags || []);
-        setRisingCreators(result.risingCreators || []);
-        setTrendingPosts(result.trendingPosts || []);
-      } else {
-        toast.error(result.error || "Failed to load explore data");
-      }
-      setIsLoading(false);
-    };
-    loadData();
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    const result = await getExploreData();
+    if (result.success) {
+      setTrendingTags(result.trendingTags || []);
+      setPopularTags(result.popularTags || []);
+      setRisingCreators(result.risingCreators || []);
+      setTrendingPosts(result.trendingPosts || []);
+    } else {
+      toast.error(result.error || "Failed to load explore data");
+    }
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleFollowToggle = async (userId: string) => {
     const isCurrentlyFollowing = followingMap[userId] || false;
@@ -107,6 +108,7 @@ export default function ExplorePage() {
   }
 
   return (
+    <PullToRefresh onRefresh={loadData}>
     <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4">
       {/* Page Header */}
       <div className="mb-8">
@@ -384,6 +386,7 @@ export default function ExplorePage() {
         </section>
       </div>
     </div>
+    </PullToRefresh>
   );
 }
 

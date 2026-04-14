@@ -22,7 +22,7 @@ import {
   AudioContent,
   GalleryContent,
 } from "@/components/Post";
-import { FeedSkeleton, ConfirmDialog } from "@/components/ui";
+import { FeedSkeleton, ConfirmDialog, PullToRefresh } from "@/components/ui";
 import {
   getBookmarksByCollection,
   getBookmarkCollections,
@@ -88,6 +88,7 @@ export default function BookmarksPage() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["bookmarks", activeCollection],
     queryFn: async ({ pageParam = 0 }) => {
@@ -200,6 +201,7 @@ export default function BookmarksPage() {
   );
 
   return (
+    <PullToRefresh onRefresh={refetch}>
     <div className="max-w-xl mx-auto py-2 sm:py-3 px-2 sm:px-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
@@ -597,5 +599,6 @@ export default function BookmarksPage() {
         isLoading={isDeleting}
       />
     </div>
+    </PullToRefresh>
   );
 }

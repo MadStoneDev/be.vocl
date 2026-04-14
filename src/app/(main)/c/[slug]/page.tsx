@@ -35,7 +35,7 @@ import {
   GalleryContent,
   LinkPreviewCarousel,
 } from "@/components/Post";
-import { toast } from "@/components/ui";
+import { toast, PullToRefresh } from "@/components/ui";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import type { VideoEmbedPlatform } from "@/types/database";
 
@@ -225,6 +225,7 @@ export default function CommunityPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={() => load(0, false)}>
     <div className="pb-6">
       {/* Banner */}
       <div className="relative h-32 sm:h-44 bg-gradient-to-br from-vocl-accent/30 to-vocl-accent-hover/20">
@@ -415,5 +416,6 @@ export default function CommunityPage() {
         )}
       </div>
     </div>
+    </PullToRefresh>
   );
 }

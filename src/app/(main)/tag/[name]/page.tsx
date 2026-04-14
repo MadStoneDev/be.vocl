@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import { getTagByName, getPostsByTag, followTag, unfollowTag, muteTag, unmuteTag } from "@/actions/tags";
+import { PullToRefresh } from "@/components/ui";
 import { IconLoader2, IconHash, IconPlus, IconCheck, IconVolume, IconVolumeOff } from "@tabler/icons-react";
 import type { VideoEmbedPlatform } from "@/types/database";
 
@@ -189,6 +190,7 @@ export default function TagPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={() => fetchPosts(0, false)}>
     <div className="max-w-xl mx-auto py-3 sm:py-6">
       {/* Tag Header */}
       <div className="px-2 sm:px-4 mb-4 sm:mb-6">
@@ -335,5 +337,6 @@ export default function TagPage() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

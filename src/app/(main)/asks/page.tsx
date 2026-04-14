@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { RichTextEditor } from "@/components/Post/create/RichTextEditor";
 import { getMyAsks, answerAsk, deleteAsk } from "@/actions/asks";
+import { PullToRefresh } from "@/components/ui";
 
 function formatTimeAgo(dateStr: string): string {
   const date = new Date(dateStr);
@@ -104,6 +105,7 @@ export default function AsksPage() {
   };
 
   return (
+    <PullToRefresh onRefresh={fetchAsks}>
     <div className="max-w-2xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -257,5 +259,6 @@ export default function AsksPage() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

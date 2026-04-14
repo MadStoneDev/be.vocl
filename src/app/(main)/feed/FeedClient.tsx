@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
+import { PullToRefresh } from "@/components/ui";
 import { getFeedPosts } from "@/actions/posts";
 import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations";
 import type { VideoEmbedPlatform, PostType } from "@/types/database";
@@ -228,6 +229,7 @@ export default function FeedClient({
   }, [data]);
 
   return (
+    <PullToRefresh onRefresh={refetch}>
     <div className="py-1 sm:py-3 mx-auto max-w-xl">
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
@@ -275,5 +277,6 @@ export default function FeedClient({
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }
