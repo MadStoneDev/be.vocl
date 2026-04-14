@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   IconPlus,
   IconSettings,
@@ -16,6 +16,7 @@ import {
   IconCompass,
   IconUsersGroup,
   IconCoin,
+  IconArrowLeft,
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
@@ -33,8 +34,21 @@ export function MainNav({
   role = 0,
 }: MainNavProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [showMenu, setShowMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Top-level routes (no back button); everything else gets one.
+  const rootRoutes = ["/feed", "/search", "/notifications", "/create"];
+  const showBack = !!pathname && !rootRoutes.includes(pathname);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/feed");
+    }
+  };
 
   // Track fullscreen state changes
   useEffect(() => {
@@ -66,10 +80,22 @@ export function MainNav({
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 md:hidden">
       <div className="px-3 h-12 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors">
-          <Logo className={`min-h-12.5`} />
-        </Link>
+        {/* Left: Back button on sub-pages, Logo on root routes */}
+        <div className="flex items-center gap-1">
+          {showBack && (
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label="Go back"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+            >
+              <IconArrowLeft size={20} />
+            </button>
+          )}
+          <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors">
+            <Logo className={`min-h-12.5`} />
+          </Link>
+        </div>
 
         {/* Right side actions */}
         <div className="flex items-center gap-1">

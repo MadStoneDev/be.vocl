@@ -15,6 +15,11 @@ import {
   IconMessage,
   IconRefresh,
   IconPhoto,
+  IconPlayerPlayFilled,
+  IconBrandSpotify,
+  IconMicrophone,
+  IconVideo,
+  IconMusic,
 } from "@tabler/icons-react";
 import { getExploreData } from "@/actions/explore";
 import { followUser, unfollowUser } from "@/actions/follows";
@@ -42,6 +47,11 @@ interface TrendingPost {
   postType: string;
   snippet: string;
   hasMedia: boolean;
+  thumbnailUrl: string | null;
+  imageUrls?: string[];
+  spotifyTrackId?: string;
+  mediaUrl?: string;
+  videoEmbedUrl?: string;
   likeCount: number;
   commentCount: number;
   reblogCount: number;
@@ -175,59 +185,56 @@ export default function ExplorePage() {
                 <Link
                   key={post.id}
                   href={`/post/${post.id}`}
-                  className="block rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.07] hover:border-white/10 transition-colors p-4"
+                  className="block rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.07] hover:border-white/10 transition-colors overflow-hidden"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
-                      {post.author.avatarUrl ? (
-                        <Image
-                          src={post.author.avatarUrl}
-                          alt={post.author.username}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
-                          <span className="text-sm font-bold text-white">
-                            {post.author.username.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium text-foreground truncate">
-                          {post.author.displayName || post.author.username}
-                        </span>
-                        <span className="text-foreground/40 text-xs">
-                          @{post.author.username}
-                        </span>
-                      </div>
-                      {post.snippet && (
-                        <p className="text-sm text-foreground/70 mt-1 line-clamp-2">
-                          {post.snippet}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-foreground/40">
-                        {post.hasMedia && (
-                          <span className="flex items-center gap-1">
-                            <IconPhoto size={12} />
-                            {post.postType}
-                          </span>
+                  {/* Media preview */}
+                  <TrendingPostMedia post={post} />
+
+                  {/* Body */}
+                  <div className="p-3">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                        {post.author.avatarUrl ? (
+                          <Image
+                            src={post.author.avatarUrl}
+                            alt={post.author.username}
+                            fill
+                            className="object-cover"
+                            sizes="24px"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-white">
+                              {post.author.username.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
                         )}
-                        <span className="flex items-center gap-1">
-                          <IconHeart size={12} />
-                          {post.likeCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <IconMessage size={12} />
-                          {post.commentCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <IconRefresh size={12} />
-                          {post.reblogCount}
-                        </span>
                       </div>
+                      <span className="text-sm font-medium text-foreground truncate">
+                        {post.author.displayName || post.author.username}
+                      </span>
+                      <span className="text-foreground/40 text-xs truncate">
+                        @{post.author.username}
+                      </span>
+                    </div>
+                    {post.snippet && (
+                      <p className="text-sm text-foreground/70 line-clamp-2">
+                        {post.snippet}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-xs text-foreground/40">
+                      <span className="flex items-center gap-1">
+                        <IconHeart size={12} className="text-rose-400" />
+                        {post.likeCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <IconMessage size={12} className="text-sky-400" />
+                        {post.commentCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <IconRefresh size={12} className="text-emerald-400" />
+                        {post.reblogCount}
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -388,6 +395,123 @@ export default function ExplorePage() {
     </div>
     </PullToRefresh>
   );
+}
+
+function TrendingPostMedia({ post }: { post: TrendingPost }) {
+  const { postType, thumbnailUrl, imageUrls, spotifyTrackId, videoEmbedUrl } = post;
+
+  if (postType === "text" || postType === "poll") return null;
+
+  // Gallery with 2+ images → collage
+  if (postType === "gallery" && imageUrls && imageUrls.length >= 2) {
+    return (
+      <div className="grid grid-cols-2 gap-0.5 bg-black/20 aspect-[16/10]">
+        {imageUrls.slice(0, 4).map((url, i) => (
+          <div key={i} className="relative overflow-hidden">
+            <Image src={url} alt="" fill className="object-cover" sizes="(max-width:640px) 50vw, 300px" />
+            {i === 3 && imageUrls.length > 4 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold">
+                +{imageUrls.length - 4}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (postType === "image" || postType === "gallery") {
+    if (!thumbnailUrl) {
+      return (
+        <div className="aspect-[16/10] bg-gradient-to-br from-vocl-accent/10 to-vocl-accent/5 flex items-center justify-center">
+          <IconPhoto size={36} className="text-vocl-accent/40" />
+        </div>
+      );
+    }
+    return (
+      <div className="relative aspect-[16/10] bg-black/20">
+        <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="(max-width:640px) 100vw, 600px" />
+      </div>
+    );
+  }
+
+  if (postType === "video") {
+    return (
+      <div className="relative aspect-video bg-black flex items-center justify-center">
+        {thumbnailUrl ? (
+          <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="(max-width:640px) 100vw, 600px" />
+        ) : (
+          <IconVideo size={40} className="text-white/30" />
+        )}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            <IconPlayerPlayFilled size={20} className="text-white ml-0.5" />
+          </div>
+        </div>
+        {videoEmbedUrl && (
+          <span className="absolute top-2 right-2 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-medium">
+            Embed
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (postType === "audio") {
+    // Spotify embed-style preview
+    if (spotifyTrackId && thumbnailUrl) {
+      return (
+        <div className="relative aspect-[16/6] bg-gradient-to-br from-[#1DB954]/20 to-black/40 flex items-center gap-3 p-3">
+          <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/20">
+            <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="64px" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="inline-flex items-center gap-1 text-xs text-[#1DB954] font-medium mb-1">
+              <IconBrandSpotify size={14} />
+              Spotify
+            </div>
+            <p className="text-xs text-foreground/60 truncate">
+              Track preview on Spotify
+            </p>
+          </div>
+        </div>
+      );
+    }
+    // Voice note or file
+    const isVoice = (post as any).content?.is_voice_note;
+    return (
+      <div className="relative aspect-[16/6] bg-gradient-to-br from-vocl-accent/20 to-vocl-accent/5 flex items-center gap-3 p-3">
+        {thumbnailUrl ? (
+          <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/20">
+            <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="64px" />
+          </div>
+        ) : (
+          <div className="w-16 h-16 rounded-md bg-vocl-accent/20 flex items-center justify-center flex-shrink-0">
+            {isVoice ? (
+              <IconMicrophone size={24} className="text-vocl-accent" />
+            ) : (
+              <IconMusic size={24} className="text-vocl-accent" />
+            )}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="inline-flex items-center gap-1 text-xs text-vocl-accent font-medium">
+            {isVoice ? (
+              <>
+                <IconMicrophone size={14} /> Voice note
+              </>
+            ) : (
+              <>
+                <IconMusic size={14} /> Audio
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function ExploreSkeleton() {

@@ -13,30 +13,76 @@ export interface TrendingPostPreview {
   postType: string;
   snippet: string;
   hasMedia: boolean;
+  /** First thumbnail for image/gallery/video/audio posts. */
+  thumbnailUrl: string | null;
+  /** Full image URL list (for gallery previews). */
+  imageUrls?: string[];
+  /** Spotify embed ID if this is a spotify audio post. */
+  spotifyTrackId?: string;
+  /** Direct media URLs for inline rendering (video/audio players). */
+  mediaUrl?: string;
+  videoEmbedUrl?: string;
   likeCount: number;
   commentCount: number;
   reblogCount: number;
   createdAt: string;
 }
 
-function buildSnippet(postType: string, content: any): { snippet: string; hasMedia: boolean } {
+function buildPreviewBits(postType: string, content: any): {
+  snippet: string;
+  hasMedia: boolean;
+  thumbnailUrl: string | null;
+  imageUrls?: string[];
+  spotifyTrackId?: string;
+  mediaUrl?: string;
+  videoEmbedUrl?: string;
+} {
   const stripHtml = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const c = content || {};
+
   switch (postType) {
     case "text": {
-      const raw = content?.plain || content?.html || "";
-      return { snippet: stripHtml(raw).slice(0, 160), hasMedia: false };
+      const raw = c.plain || c.html || "";
+      return {
+        snippet: stripHtml(raw).slice(0, 160),
+        hasMedia: false,
+        thumbnailUrl: null,
+      };
     }
     case "image":
-    case "gallery":
-      return { snippet: stripHtml(content?.caption_html || "") || "Image post", hasMedia: true };
+    case "gallery": {
+      const urls: string[] = c.urls || (c.url ? [c.url] : []);
+      return {
+        snippet: stripHtml(c.caption_html || ""),
+        hasMedia: true,
+        thumbnailUrl: urls[0] || null,
+        imageUrls: urls.slice(0, 4),
+      };
+    }
     case "video":
-      return { snippet: stripHtml(content?.caption_html || "") || "Video post", hasMedia: true };
+      return {
+        snippet: stripHtml(c.caption_html || ""),
+        hasMedia: true,
+        thumbnailUrl: c.thumbnail_url || null,
+        mediaUrl: c.url || undefined,
+        videoEmbedUrl: c.embed_url || undefined,
+      };
     case "audio":
-      return { snippet: stripHtml(content?.caption_html || "") || "Audio post", hasMedia: true };
+      return {
+        snippet: stripHtml(c.caption_html || ""),
+        hasMedia: true,
+        thumbnailUrl: c.album_art_url || c.spotify_data?.album_art || null,
+        mediaUrl: c.url || undefined,
+        spotifyTrackId: c.spotify_data?.track_id || undefined,
+      };
     case "poll":
-      return { snippet: stripHtml(content?.question || "") || "Poll", hasMedia: false };
+      return {
+        snippet: stripHtml(c.question || "") || "Poll",
+        hasMedia: false,
+        thumbnailUrl: null,
+      };
     default:
-      return { snippet: "", hasMedia: false };
+      return { snippet: "", hasMedia: false, thumbnailUrl: null };
   }
 }
 
@@ -164,7 +210,7 @@ export async function getExploreData(): Promise<{
 
     // Slim trending posts for explore preview
     const trendingPosts: TrendingPostPreview[] = (trendingFeedResult?.posts || []).map((p: any) => {
-      const { snippet, hasMedia } = buildSnippet(p.postType, p.content);
+      const bits = buildPreviewBits(p.postType, p.content);
       return {
         id: p.id,
         author: {
@@ -173,8 +219,13 @@ export async function getExploreData(): Promise<{
           avatarUrl: p.author?.avatarUrl || null,
         },
         postType: p.postType,
-        snippet,
-        hasMedia,
+        snippet: bits.snippet,
+        hasMedia: bits.hasMedia,
+        thumbnailUrl: bits.thumbnailUrl,
+        imageUrls: bits.imageUrls,
+        spotifyTrackId: bits.spotifyTrackId,
+        mediaUrl: bits.mediaUrl,
+        videoEmbedUrl: bits.videoEmbedUrl,
         likeCount: p.likeCount || 0,
         commentCount: p.commentCount || 0,
         reblogCount: p.reblogCount || 0,
