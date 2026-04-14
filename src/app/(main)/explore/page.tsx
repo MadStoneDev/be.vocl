@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   IconFlame,
+  IconSearch,
+  IconX,
   IconTrendingUp,
   IconUserPlus,
   IconHash,
@@ -20,6 +23,7 @@ import {
   IconMicrophone,
   IconVideo,
   IconMusic,
+  IconCompass,
 } from "@tabler/icons-react";
 import { getExploreData } from "@/actions/explore";
 import { followUser, unfollowUser } from "@/actions/follows";
@@ -69,6 +73,8 @@ interface RisingCreator {
 }
 
 export default function ExplorePage() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [trendingTags, setTrendingTags] = useState<TrendingTag[]>([]);
   const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
@@ -76,6 +82,12 @@ export default function ExplorePage() {
   const [trendingPosts, setTrendingPosts] = useState<TrendingPost[]>([]);
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
   const [followLoadingMap, setFollowLoadingMap] = useState<Record<string, boolean>>({});
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) router.push(`/search?q=${encodeURIComponent(q)}`);
+  };
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -121,12 +133,40 @@ export default function ExplorePage() {
     <PullToRefresh onRefresh={loadData}>
     <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Explore</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <IconCompass size={26} className="text-orange-400" />
+          Explore
+        </h1>
         <p className="text-foreground/50 mt-1">
-          Discover trending topics and rising creators
+          Search, discover trending topics, and find new creators
         </p>
       </div>
+
+      {/* Search bar — submits to /search */}
+      <form onSubmit={handleSearchSubmit} className="relative mb-8">
+        <IconSearch
+          size={18}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none"
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search @users, #tags, or posts..."
+          className="w-full pl-10 pr-10 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground"
+            aria-label="Clear search"
+          >
+            <IconX size={18} />
+          </button>
+        )}
+      </form>
 
       <div className="space-y-10">
         {/* Trending Now */}

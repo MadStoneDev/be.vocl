@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import {
   IconHome,
   IconHomeFilled,
-  IconSearch,
+  IconCompass,
+  IconCompassFilled,
   IconBell,
   IconBellFilled,
   IconMessage,
@@ -35,10 +36,10 @@ export function BottomNav({
       color: "text-vocl-accent",
     },
     {
-      href: "/search",
-      icon: IconSearch,
-      iconActive: IconSearch,
-      label: "Search",
+      href: "/explore",
+      icon: IconCompass,
+      iconActive: IconCompassFilled,
+      label: "Explore",
       color: "text-orange-400",
     },
     {

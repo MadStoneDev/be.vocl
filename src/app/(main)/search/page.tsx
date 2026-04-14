@@ -69,6 +69,13 @@ function SearchContent() {
   const [query, setQuery] = useState(initialQuery);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // /search with no query lives at /explore now — bounce there.
+  useEffect(() => {
+    if (!initialQuery && !tagParam) {
+      router.replace("/explore");
+    }
+  }, [initialQuery, tagParam, router]);
+
   useEffect(() => {
     function focusInput() {
       searchInputRef.current?.focus();

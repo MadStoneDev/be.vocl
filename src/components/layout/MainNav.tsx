@@ -39,7 +39,7 @@ export function MainNav({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Top-level routes (no back button); everything else gets one.
-  const rootRoutes = ["/feed", "/search", "/notifications", "/create"];
+  const rootRoutes = ["/feed", "/explore", "/notifications", "/create"];
   const showBack = !!pathname && !rootRoutes.includes(pathname);
 
   const handleBack = () => {
@@ -165,16 +165,6 @@ export function MainNav({
                     )}
                     {isFullscreen ? "Show Browser UI" : "Hide Browser UI"}
                   </button>
-
-                  {/* Explore */}
-                  <Link
-                    href="/explore"
-                    onClick={() => setShowMenu(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
-                  >
-                    <IconCompass size={18} className="text-orange-400" />
-                    Explore
-                  </Link>
 
                   {/* Communities */}
                   <Link
