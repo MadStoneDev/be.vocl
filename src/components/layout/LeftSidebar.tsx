@@ -76,14 +76,15 @@ export function LeftSidebar({
   };
 
   const navItems = [
-    { href: "/feed", icon: IconHome, iconActive: IconHomeFilled, label: "Home" },
-    { href: "/search", icon: IconSearch, iconActive: IconSearch, label: "Search" },
+    { href: "/feed", icon: IconHome, iconActive: IconHomeFilled, label: "Home", color: "text-vocl-accent" },
+    { href: "/search", icon: IconSearch, iconActive: IconSearch, label: "Search", color: "text-orange-400" },
     {
       href: "/notifications",
       icon: IconBell,
       iconActive: IconBellFilled,
       label: "Notifications",
       badge: notificationCount,
+      color: "text-amber-400",
     },
     {
       action: onChatToggle,
@@ -91,9 +92,10 @@ export function LeftSidebar({
       iconActive: IconMessageFilled,
       label: "Messages",
       badge: messageCount,
+      color: "text-sky-400",
     },
-    { href: "/queue", icon: IconStack2, iconActive: IconStack2, label: "Queue" },
-    { href: "/communities", icon: IconUsersGroup, iconActive: IconUsersGroup, label: "Communities" },
+    { href: "/queue", icon: IconStack2, iconActive: IconStack2, label: "Queue", color: "text-indigo-400" },
+    { href: "/communities", icon: IconUsersGroup, iconActive: IconUsersGroup, label: "Communities", color: "text-emerald-400" },
   ];
 
   return (
@@ -145,11 +147,11 @@ export function LeftSidebar({
                         ? `${item.label}, ${badgeCount} unread`
                         : item.label
                     }
-                    className={`relative w-full flex items-center rounded-xl text-foreground/70 hover:text-foreground hover:bg-white/5 transition-all duration-300 ${
+                    className={`relative w-full flex items-center rounded-xl hover:bg-white/5 transition-all duration-300 ${
                       collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
                     }`}
                   >
-                    <span className="relative inline-flex flex-shrink-0">
+                    <span className={`relative inline-flex flex-shrink-0 ${(item as any).color || "text-foreground/70"}`}>
                       <Icon size={22} aria-hidden="true" />
                       {showBadge && (
                         <span
@@ -178,11 +180,11 @@ export function LeftSidebar({
                     collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
                   } ${
                     isActive
-                      ? "bg-vocl-accent/10 text-vocl-accent font-semibold"
-                      : "text-foreground/70 hover:text-foreground hover:bg-white/5"
+                      ? "bg-white/10 font-semibold"
+                      : "hover:bg-white/5"
                   }`}
                 >
-                  <span className="relative inline-flex flex-shrink-0">
+                  <span className={`relative inline-flex flex-shrink-0 ${(item as any).color || "text-foreground/70"}`}>
                     <Icon size={22} aria-hidden="true" />
                     {showBadge && (
                       <span

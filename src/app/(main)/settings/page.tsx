@@ -25,48 +25,56 @@ const settingsLinks = [
     icon: IconUser,
     title: "Profile",
     description: "Edit your profile, bio, and links",
+    color: "text-rose-400",
   },
   {
     href: "/settings/password",
     icon: IconLock,
     title: "Password & Security",
     description: "Update password and security settings",
+    color: "text-sky-400",
   },
   {
     href: "/settings/security",
     icon: IconShieldLock,
     title: "Two-Factor Auth",
     description: "Add an extra layer of security with 2FA",
+    color: "text-emerald-400",
   },
   {
     href: "/settings/notifications",
     icon: IconBell,
     title: "Notifications",
     description: "Configure email and push notifications",
+    color: "text-amber-400",
   },
   {
     href: "/settings/privacy",
     icon: IconEye,
     title: "Privacy",
     description: "Control who can see your content",
+    color: "text-violet-400",
   },
   {
     href: "/settings/appearance",
     icon: IconPalette,
     title: "Appearance",
     description: "Theme and display preferences",
+    color: "text-pink-400",
   },
   {
     href: "/settings/invites",
     icon: IconTicket,
     title: "Invite Codes",
     description: "Generate codes to invite friends",
+    color: "text-indigo-400",
   },
   {
     href: "/settings/account",
     icon: IconAlertOctagon,
     title: "Account & Data",
     description: "Export your data, delete your account",
+    color: "text-orange-400",
   },
 ];
 
@@ -116,7 +124,7 @@ function SettingsContent() {
             className="flex items-center gap-4 p-4 rounded-xl bg-vocl-surface-dark hover:bg-white/5 transition-colors"
           >
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-              <link.icon className="w-5 h-5 text-foreground/70" />
+              <link.icon className={`w-5 h-5 ${link.color}`} />
             </div>
             <div className="flex-1">
               <h3 className="font-medium text-foreground">{link.title}</h3>

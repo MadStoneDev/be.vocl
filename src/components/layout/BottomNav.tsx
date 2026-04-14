@@ -32,12 +32,14 @@ export function BottomNav({
       icon: IconHome,
       iconActive: IconHomeFilled,
       label: "Home",
+      color: "text-vocl-accent",
     },
     {
       href: "/search",
       icon: IconSearch,
       iconActive: IconSearch,
       label: "Search",
+      color: "text-orange-400",
     },
     {
       href: "/create",
@@ -52,6 +54,7 @@ export function BottomNav({
       iconActive: IconBellFilled,
       label: "Notifications",
       badge: notificationCount,
+      color: "text-amber-400",
     },
     {
       action: onChatToggle,
@@ -59,6 +62,7 @@ export function BottomNav({
       iconActive: IconMessageFilled,
       label: "Messages",
       badge: messageCount,
+      color: "text-sky-400",
     },
   ];
 
@@ -80,7 +84,7 @@ export function BottomNav({
                 type="button"
                 onClick={item.action}
                 aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
-                className="relative flex items-center justify-center w-12 h-12 text-foreground/60 hover:text-foreground transition-colors"
+                className={`relative flex items-center justify-center w-12 h-12 transition-colors hover:opacity-80 ${item.color || "text-foreground/60"}`}
               >
                 <span className="relative inline-flex">
                   <Icon size={26} aria-hidden="true" />
@@ -116,8 +120,10 @@ export function BottomNav({
               href={item.href!}
               aria-current={isActive ? "page" : undefined}
               aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
-              className={`relative flex items-center justify-center w-12 h-12 transition-colors ${
-                isActive ? "text-vocl-accent" : "text-foreground/60 hover:text-foreground"
+              className={`relative flex items-center justify-center w-12 h-12 transition-all ${
+                isActive
+                  ? `${item.color || "text-vocl-accent"} scale-110`
+                  : `${item.color || "text-foreground/60"} opacity-70 hover:opacity-100`
               }`}
             >
               <span className="relative inline-flex">
