@@ -1761,6 +1761,30 @@ export function CreatePostModal({
                 {/* Schedule Date/Time Picker */}
                 {publishMode === "schedule" && (
                   <div className="p-3 border-t border-white/10 bg-background/30 space-y-3">
+                    <div>
+                      <p className="text-xs text-foreground/40 mb-1.5">Time capsule presets</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: "+1 week", days: 7 },
+                          { label: "+1 month", days: 30 },
+                          { label: "+6 months", days: 182 },
+                          { label: "+1 year", days: 365 },
+                        ].map((preset) => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => {
+                              const d = new Date();
+                              d.setDate(d.getDate() + preset.days);
+                              setScheduledDate(d.toISOString().split("T")[0]);
+                            }}
+                            className="px-2.5 py-1 rounded-lg text-xs bg-white/5 text-foreground/70 hover:bg-vocl-accent/20 hover:text-vocl-accent transition-colors"
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs text-foreground/40 mb-1">
