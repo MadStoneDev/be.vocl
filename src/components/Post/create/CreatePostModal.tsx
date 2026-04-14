@@ -24,18 +24,21 @@ import {
   IconCamera,
   IconGif,
   IconMessagePlus,
+  IconMicrophone,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { parseVideoUrl, SUPPORTED_VIDEO_PLATFORMS } from "@/lib/video-embeds";
 import type { SpotifyTrack } from "@/lib/spotify";
 import { RichTextEditor } from "./RichTextEditor";
 import { MediaUploader } from "./MediaUploader";
+import { VoiceRecorder } from "./VoiceRecorder";
 import { TagInput } from "./TagInput";
 import { GifPicker } from "@/components/chat/GifPicker";
 import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { createPost, generatePostId } from "@/actions/posts";
 import { getMyCommunities, crossPostToCommunities, type CommunitySummary } from "@/actions/communities";
+import { transcribePostAudio } from "@/actions/transcribe";
 import type {
   TextPostContent,
   ImagePostContent,
@@ -95,7 +98,9 @@ export function CreatePostModal({
   const [videoEmbedError, setVideoEmbedError] = useState<string | null>(null);
 
   // Audio-specific state
-  const [audioMode, setAudioMode] = useState<"spotify" | "upload">("spotify");
+  const [audioMode, setAudioMode] = useState<"spotify" | "upload" | "record">("spotify");
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  const [recordedDuration, setRecordedDuration] = useState<number>(0);
   const [spotifyQuery, setSpotifyQuery] = useState("");
   const [spotifyResults, setSpotifyResults] = useState<SpotifyTrack[]>([]);
   const [selectedTrack, setSelectedTrack] = useState<SpotifyTrack | null>(null);
@@ -151,6 +156,9 @@ export function CreatePostModal({
       setMediaUrls([]);
       setTags([]);
       setSelectedCommunityIds([]);
+      setRecordedAudioUrl(null);
+      setRecordedDuration(0);
+      setAudioMode("spotify");
       setIsSensitive(false);
       setContentWarning("");
       setPublishMode("now");
@@ -283,6 +291,11 @@ export function CreatePostModal({
       if (audioMode === "spotify") {
         if (!selectedTrack) {
           setError("Please search and select a track");
+          return;
+        }
+      } else if (audioMode === "record") {
+        if (!recordedAudioUrl) {
+          setError("Record a voice note first");
           return;
         }
       } else {
@@ -462,6 +475,13 @@ export function CreatePostModal({
               album_art_url: selectedTrack.albumArt || undefined,
               caption_html: content.html || undefined,
             } as AudioPostContent;
+          } else if (audioMode === "record" && recordedAudioUrl) {
+            postContent = {
+              url: recordedAudioUrl,
+              duration: recordedDuration,
+              is_voice_note: true,
+              caption_html: content.html || undefined,
+            } as AudioPostContent;
           } else {
             postContent = {
               url: mediaUrls[0],
@@ -507,6 +527,15 @@ export function CreatePostModal({
         if (selectedCommunityIds.length > 0 && publishMode === "now") {
           await crossPostToCommunities(result.postId, selectedCommunityIds);
         }
+        // Voice-note transcription — fire-and-forget
+        if (
+          actualPostType === "audio" &&
+          audioMode === "record" &&
+          recordedAudioUrl &&
+          publishMode === "now"
+        ) {
+          void transcribePostAudio(result.postId);
+        }
         onSuccess?.(result.postId);
         onClose();
       } else {
@@ -521,6 +550,7 @@ export function CreatePostModal({
     if (mediaUrls.length > 0) return true;
     if (imageLinkUrl.trim()) return true;
     if (selectedTrack) return true;
+    if (recordedAudioUrl) return true;
     if (selectedUnsplash) return true;
     if (selectedGifUrl) return true;
     if (tags.length > 0) return true;
@@ -757,6 +787,8 @@ export function CreatePostModal({
                     setSelectedTrack(null);
                     setSpotifyQuery("");
                     setSpotifyResults([]);
+                    setRecordedAudioUrl(null);
+                    setRecordedDuration(0);
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                     audioMode === "upload"
@@ -765,7 +797,25 @@ export function CreatePostModal({
                   }`}
                 >
                   <IconUpload size={16} />
-                  Upload File
+                  Upload
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAudioMode("record");
+                    setSelectedTrack(null);
+                    setSpotifyQuery("");
+                    setSpotifyResults([]);
+                    setMediaUrls([]);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    audioMode === "record"
+                      ? "bg-vocl-accent text-white"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
+                >
+                  <IconMicrophone size={16} />
+                  Record
                 </button>
               </div>
 
@@ -896,6 +946,22 @@ export function CreatePostModal({
                     </div>
                   </label>
                 </div>
+              )}
+
+              {/* Voice Recorder */}
+              {audioMode === "record" && postId && (
+                <VoiceRecorder
+                  postId={postId}
+                  uploadedUrl={recordedAudioUrl}
+                  onComplete={(url, duration) => {
+                    setRecordedAudioUrl(url);
+                    setRecordedDuration(duration);
+                  }}
+                  onClear={() => {
+                    setRecordedAudioUrl(null);
+                    setRecordedDuration(0);
+                  }}
+                />
               )}
             </div>
           )}

@@ -212,6 +212,8 @@ export function InteractivePost({
     },
     content: c.content,
     timestamp: c.createdAt,
+    audioUrl: (c as any).audioUrl,
+    audioDuration: (c as any).audioDuration,
   })), [commentsRaw]);
 
   const likedBy: UserData[] = useMemo(() => likedByRaw.map((u) => ({
@@ -261,8 +263,8 @@ export function InteractivePost({
   }, [id]);
 
   // Handle comment submission
-  const handleComment = useCallback(async (content: string) => {
-    await addComment(content);
+  const handleComment = useCallback(async (content: string, options?: { audioUrl?: string; audioDuration?: number }) => {
+    await addComment(content, options);
   }, [addComment]);
 
   // Handle reblog action from radial menu
@@ -543,6 +545,8 @@ export function InteractivePost({
             albumArtUrl={contentData.album_art_url || contentData.albumArtUrl}
             spotifyData={contentData.spotify_data || contentData.spotifyData}
             caption={contentData.caption_html || contentData.captionHtml}
+            transcript={contentData.transcript}
+            isVoiceNote={contentData.is_voice_note ?? contentData.isVoiceNote}
           />
         );
 

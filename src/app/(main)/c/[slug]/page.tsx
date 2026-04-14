@@ -96,6 +96,8 @@ function renderPostContent(post: CommunityPost) {
           albumArtUrl={c.album_art_url}
           spotifyData={c.spotify_data}
           caption={c.caption_html}
+          transcript={c.transcript}
+          isVoiceNote={c.is_voice_note}
         />
       );
     default:

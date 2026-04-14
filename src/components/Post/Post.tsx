@@ -28,9 +28,13 @@ import {
   IconSend,
   IconX,
   IconLoader2,
+  IconMicrophone,
+  IconPlayerPlay,
+  IconPlayerPause,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
 import { StaffBadge, Avatar } from "@/components/ui";
+import { CommentVoiceRecorder } from "./create/CommentVoiceRecorder";
 
 // Panel types for expanded view
 type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
@@ -66,6 +70,8 @@ export interface CommentData {
   author: PostAuthor;
   content: string;
   timestamp: string;
+  audioUrl?: string;
+  audioDuration?: number;
 }
 export interface PostTag {
   id: string;
@@ -462,15 +468,26 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
 
 interface CommentsListProps {
   comments: CommentData[];
-  onSubmit: (content: string) => void;
+  onSubmit: (content: string, options?: { audioUrl?: string; audioDuration?: number }) => void;
+  postId?: string;
 }
 
-function CommentsList({ comments, onSubmit }: CommentsListProps) {
+function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
   const [newComment, setNewComment] = useState("");
+  const [recordingMode, setRecordingMode] = useState(false);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  const [recordedDuration, setRecordedDuration] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (recordedAudioUrl) {
+      onSubmit("", { audioUrl: recordedAudioUrl, audioDuration: recordedDuration });
+      setRecordedAudioUrl(null);
+      setRecordedDuration(0);
+      setRecordingMode(false);
+      return;
+    }
     if (newComment.trim()) {
       onSubmit(newComment.trim());
       setNewComment("");
@@ -482,24 +499,75 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
       {/* Comment input */}
       <form
         onSubmit={handleSubmit}
-        className="flex gap-2 p-3 border-b border-neutral-200"
+        className="flex gap-2 p-3 border-b border-neutral-200 items-center"
       >
-        <input
-          ref={inputRef}
-          type="text"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
-          maxLength={2000}
-          className={`flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-accent"}`}
-        />
-        <button
-          type="submit"
-          disabled={!newComment.trim() || newComment.length > 2000}
-          className="p-2 rounded-full bg-vocl-accent text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-        >
-          <IconSend size={18} />
-        </button>
+        {!recordingMode && !recordedAudioUrl && (
+          <>
+            <input
+              ref={inputRef}
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              maxLength={2000}
+              className={`flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-accent"}`}
+            />
+            {postId && (
+              <button
+                type="button"
+                onClick={() => setRecordingMode(true)}
+                className="p-2 rounded-full bg-neutral-100 text-neutral-600 hover:bg-vocl-accent/10 hover:text-vocl-accent transition-colors"
+                aria-label="Record voice reply"
+              >
+                <IconMicrophone size={18} />
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={!newComment.trim() || newComment.length > 2000}
+              className="p-2 rounded-full bg-vocl-accent text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            >
+              <IconSend size={18} />
+            </button>
+          </>
+        )}
+        {recordingMode && postId && !recordedAudioUrl && (
+          <div className="flex-1">
+            <CommentVoiceRecorder
+              postId={postId}
+              onComplete={(url, duration) => {
+                setRecordedAudioUrl(url);
+                setRecordedDuration(duration);
+                setRecordingMode(false);
+              }}
+              onCancel={() => setRecordingMode(false)}
+            />
+          </div>
+        )}
+        {recordedAudioUrl && (
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-vocl-accent/10 rounded-full">
+            <IconMicrophone size={16} className="text-vocl-accent" />
+            <span className="text-xs text-neutral-700">
+              Voice reply ({recordedDuration}s)
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setRecordedAudioUrl(null);
+                setRecordedDuration(0);
+              }}
+              className="ml-auto text-xs text-vocl-like hover:underline"
+            >
+              Remove
+            </button>
+            <button
+              type="submit"
+              className="p-1.5 rounded-full bg-vocl-accent text-white"
+            >
+              <IconSend size={14} />
+            </button>
+          </div>
+        )}
       </form>
       {newComment.length >= 1800 && (
         <span
@@ -546,14 +614,68 @@ function CommentsList({ comments, onSubmit }: CommentsListProps) {
                     {comment.timestamp}
                   </span>
                 </div>
-                <p className="text-sm text-neutral-600 mt-0.5">
-                  {comment.content}
-                </p>
+                {comment.content && (
+                  <p className="text-sm text-neutral-600 mt-0.5">
+                    {comment.content}
+                  </p>
+                )}
+                {comment.audioUrl && (
+                  <CommentAudioPlayer
+                    src={comment.audioUrl}
+                    duration={comment.audioDuration}
+                  />
+                )}
               </div>
             </div>
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+function CommentAudioPlayer({ src, duration }: { src: string; duration?: number }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  return (
+    <div className="mt-1.5 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-neutral-100">
+      <button
+        type="button"
+        onClick={() => {
+          if (!audioRef.current) return;
+          if (playing) {
+            audioRef.current.pause();
+            setPlaying(false);
+          } else {
+            audioRef.current.play();
+            setPlaying(true);
+          }
+        }}
+        className="w-7 h-7 rounded-full bg-vocl-accent text-white flex items-center justify-center"
+      >
+        {playing ? <IconPlayerPause size={14} /> : <IconPlayerPlay size={14} />}
+      </button>
+      <span className="text-xs text-neutral-600 font-mono">
+        {duration ? `${duration}s` : "Voice"}
+      </span>
+      <div className="w-24 h-1 rounded-full bg-neutral-300 overflow-hidden">
+        <div className="h-full bg-vocl-accent" style={{ width: `${progress}%` }} />
+      </div>
+      <audio
+        ref={audioRef}
+        src={src}
+        onTimeUpdate={(e) => {
+          const a = e.currentTarget;
+          if (a.duration) setProgress((a.currentTime / a.duration) * 100);
+        }}
+        onEnded={() => {
+          setPlaying(false);
+          setProgress(0);
+        }}
+        className="hidden"
+      />
     </div>
   );
 }
@@ -600,16 +722,18 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
 
 interface ExpandedPanelProps {
   type: ExpandedPanel;
+  postId: string;
   comments: CommentData[];
   likedBy: UserData[];
   rebloggedBy: UserData[];
-  onCommentSubmit: (content: string) => void;
+  onCommentSubmit: (content: string, options?: { audioUrl?: string; audioDuration?: number }) => void;
   onClose: () => void;
   isLoading?: boolean;
 }
 
 function ExpandedPanel({
   type,
+  postId,
   comments,
   likedBy,
   rebloggedBy,
@@ -650,7 +774,7 @@ function ExpandedPanel({
       ) : (
         <>
           {type === "comments" && (
-            <CommentsList comments={comments} onSubmit={onCommentSubmit} />
+            <CommentsList comments={comments} onSubmit={onCommentSubmit} postId={postId} />
           )}
           {type === "likes" && (
             <UsersList
@@ -1146,6 +1270,7 @@ export const Post = memo(function Post({
         {displayPanel && (
           <ExpandedPanel
             type={displayPanel}
+            postId={id}
             comments={comments}
             likedBy={likedBy}
             rebloggedBy={rebloggedBy}

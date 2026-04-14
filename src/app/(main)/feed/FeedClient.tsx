@@ -73,6 +73,8 @@ function transformPost(post: PostWithDetails) {
   let albumArtUrl: string | undefined;
   let spotifyData: any;
   let captionHtml: string | undefined;
+  let transcript: string | undefined;
+  let isVoiceNote: boolean | undefined;
 
   let linkPreviews: any[] | undefined;
 
@@ -98,6 +100,8 @@ function transformPost(post: PostWithDetails) {
     albumArtUrl = postContent?.album_art_url;
     captionHtml = postContent?.caption_html;
     spotifyData = postContent?.spotify_data;
+    transcript = postContent?.transcript;
+    isVoiceNote = !!postContent?.is_voice_note;
   }
 
   return {
@@ -123,6 +127,8 @@ function transformPost(post: PostWithDetails) {
       albumArtUrl,
       spotifyData,
       captionHtml,
+      transcript,
+      isVoiceNote,
       linkPreviews,
     },
     rawContent: post.content,

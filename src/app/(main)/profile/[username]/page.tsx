@@ -329,6 +329,8 @@ export default function ProfilePage() {
             albumArtUrl={post.content?.album_art_url}
             spotifyData={post.content?.spotify_data}
             caption={post.content?.caption_html}
+            transcript={post.content?.transcript}
+            isVoiceNote={post.content?.is_voice_note}
           />
         )}
         {contentType === "gallery" && post.content?.urls && (

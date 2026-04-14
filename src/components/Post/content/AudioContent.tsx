@@ -27,6 +27,8 @@ interface AudioContentProps {
   albumArtUrl?: string;
   spotifyData?: SpotifyData;
   caption?: string;
+  transcript?: string;
+  isVoiceNote?: boolean;
 }
 
 export function AudioContent({
@@ -34,7 +36,10 @@ export function AudioContent({
   albumArtUrl,
   spotifyData,
   caption,
+  transcript,
+  isVoiceNote,
 }: AudioContentProps) {
+  const [showTranscript, setShowTranscript] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -139,6 +144,24 @@ export function AudioContent({
             className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />
+        )}
+
+        {/* Transcript */}
+        {transcript && (
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => setShowTranscript((v) => !v)}
+              className="text-xs font-medium text-vocl-accent hover:underline"
+            >
+              {showTranscript ? "Hide transcript" : isVoiceNote ? "Show transcript" : "Show captions"}
+            </button>
+            {showTranscript && (
+              <p className="mt-2 text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+                {transcript}
+              </p>
+            )}
+          </div>
         )}
 
         {/* Tags - collapsible on hover */}

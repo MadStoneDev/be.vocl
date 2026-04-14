@@ -19,6 +19,8 @@ interface CommentData {
   avatarUrl: string | null;
   role: number;
   content: string;
+  audioUrl?: string;
+  audioDuration?: number;
   createdAt: string;
   isOwn: boolean;
 }
@@ -36,7 +38,8 @@ interface CommentsData {
  */
 export async function createComment(
   postId: string,
-  content: string
+  content: string,
+  options?: { audioUrl?: string; audioDuration?: number }
 ): Promise<CommentResult> {
   try {
     const { user, supabase } = await requireAuth();
@@ -45,7 +48,9 @@ export async function createComment(
     }
 
     const trimmedContent = content.trim();
-    if (!trimmedContent) {
+    const hasAudio = !!options?.audioUrl;
+
+    if (!trimmedContent && !hasAudio) {
       return { success: false, error: "Comment cannot be empty" };
     }
 
@@ -53,17 +58,16 @@ export async function createComment(
       return { success: false, error: "Comment is too long (max 2000 characters)" };
     }
 
-    // Sanitize content to prevent XSS (even though we're storing as plain text,
-    // sanitize in case HTML support is added later)
-    const sanitizedContent = sanitizeHtml(trimmedContent);
+    const sanitizedContent = trimmedContent ? sanitizeHtml(trimmedContent) : null;
 
-    // Create the comment
     const { data: comment, error: insertError } = await (supabase as any)
       .from("comments")
       .insert({
         user_id: user.id,
         post_id: postId,
         content_html: sanitizedContent,
+        audio_url: options?.audioUrl || null,
+        audio_duration: options?.audioDuration || null,
       })
       .select("id")
       .single();
@@ -171,6 +175,8 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
         id,
         user_id,
         content_html,
+        audio_url,
+        audio_duration,
         created_at,
         profile:user_id (
           id,
@@ -197,7 +203,9 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
       displayName: comment.profile?.display_name,
       avatarUrl: comment.profile?.avatar_url,
       role: comment.profile?.role || 0,
-      content: sanitizeHtml(comment.content_html || ""), // Sanitize on output for safety
+      content: sanitizeHtml(comment.content_html || ""),
+      audioUrl: comment.audio_url || undefined,
+      audioDuration: comment.audio_duration || undefined,
       createdAt: formatTimeAgo(comment.created_at),
       isOwn: user ? comment.user_id === user.id : false,
     }));

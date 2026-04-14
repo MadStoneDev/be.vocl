@@ -83,6 +83,8 @@ function renderPostContent(postType: string, content: any) {
           albumArtUrl={content.album_art_url || content.albumArtUrl}
           spotifyData={content.spotify_data || content.spotifyData}
           caption={content.caption_html || content.captionHtml}
+          transcript={content.transcript}
+          isVoiceNote={content.is_voice_note ?? content.isVoiceNote}
         />
       );
 
@@ -160,9 +162,22 @@ export default function ThreadPage() {
       </div>
 
       <h1 className="text-xl font-bold text-foreground mb-1">Thread</h1>
-      <p className="text-sm text-foreground/50 mb-6">
+      <p className="text-sm text-foreground/50 mb-3">
         {posts.length} {posts.length === 1 ? "post" : "posts"} in this thread
       </p>
+
+      {posts.length > 0 &&
+        posts.every((p) => p.postType === "audio") &&
+        posts[0].author?.username && (
+          <a
+            href={`/rss/podcast/${posts[0].author.username}/${threadId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mb-6 px-3 py-1.5 rounded-xl bg-vocl-accent/15 text-vocl-accent text-xs font-medium hover:bg-vocl-accent/25 transition-colors"
+          >
+            🎙 Podcast feed (RSS)
+          </a>
+        )}
 
       {/* Thread posts */}
       {posts.length === 0 ? (

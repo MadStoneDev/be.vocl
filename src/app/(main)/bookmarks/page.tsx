@@ -545,6 +545,8 @@ export default function BookmarksPage() {
                         albumArtUrl={postContent?.album_art_url}
                         spotifyData={postContent?.spotify_data}
                         caption={postContent?.caption_html}
+                        transcript={postContent?.transcript}
+                        isVoiceNote={postContent?.is_voice_note}
                       />
                     )}
                   {post.postType === "gallery" && postContent?.urls && (

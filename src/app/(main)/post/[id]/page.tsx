@@ -141,6 +141,8 @@ export default function PostPage() {
             albumArtUrl={content.album_art_url}
             spotifyData={content.spotify_data}
             caption={content.caption_html}
+            transcript={content.transcript}
+            isVoiceNote={content.is_voice_note}
           />
         );
 

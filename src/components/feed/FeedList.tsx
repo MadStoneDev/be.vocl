@@ -182,6 +182,8 @@ export function FeedList({
               albumArtUrl={post.content.albumArtUrl}
               spotifyData={post.content.spotifyData}
               caption={post.content.captionHtml}
+              transcript={post.content.transcript}
+              isVoiceNote={post.content.isVoiceNote}
             />
           )}
 

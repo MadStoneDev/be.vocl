@@ -12,6 +12,8 @@ interface CommentData {
   avatarUrl: string | null;
   role?: number;
   content: string;
+  audioUrl?: string;
+  audioDuration?: number;
   createdAt: string;
   isOwn: boolean;
 }
@@ -28,7 +30,7 @@ interface UseCommentsReturn {
   commentCount: number;
   hasCommented: boolean;
   isPending: boolean;
-  addComment: (content: string) => Promise<boolean>;
+  addComment: (content: string, options?: { audioUrl?: string; audioDuration?: number }) => Promise<boolean>;
   removeComment: (commentId: string) => Promise<boolean>;
   refreshComments: () => Promise<void>;
 }
@@ -46,10 +48,10 @@ export function useComments({
   const [isPending, startTransition] = useTransition();
 
   const addComment = useCallback(
-    async (content: string): Promise<boolean> => {
+    async (content: string, options?: { audioUrl?: string; audioDuration?: number }): Promise<boolean> => {
       return new Promise((resolve) => {
         startTransition(async () => {
-          const result = await createComment(postId, content);
+          const result = await createComment(postId, content, options);
 
           if (result.success) {
             // Refresh comments to get the new one with proper data
