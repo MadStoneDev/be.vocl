@@ -15,9 +15,10 @@ interface GalleryContentProps {
   images: string[];
   caption?: string;
   alt?: string;
+  priority?: boolean;
 }
 
-export function GalleryContent({ images, caption, alt = "Gallery image" }: GalleryContentProps) {
+export function GalleryContent({ images, caption, alt = "Gallery image", priority }: GalleryContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -92,13 +93,17 @@ export function GalleryContent({ images, caption, alt = "Gallery image" }: Galle
               onClick={() => openLightbox(index)}
             >
               <div
-                className="relative w-full overflow-hidden"
+                className="relative w-full overflow-hidden bg-vocl-surface-dark/40"
                 style={{ aspectRatio: `${aspectRatios[index] ?? DEFAULT_ASPECT}` }}
               >
                 <Image
                   src={src}
                   alt={`${alt} ${index + 1}`}
                   fill
+                  sizes={images.length === 1 ? "(max-width: 640px) 100vw, 600px" : "(max-width: 640px) 85vw, 400px"}
+                  priority={!!priority && index === 0}
+                  loading={priority && index === 0 ? "eager" : "lazy"}
+                  fetchPriority={priority && index === 0 ? "high" : "auto"}
                   className="object-cover hover:brightness-95 transition-all"
                   onLoad={(e) => handleImageLoad(index, e)}
                 />

@@ -1296,13 +1296,14 @@ interface ImageContentProps {
   src: string;
   alt: string;
   caption?: string;
+  priority?: boolean;
 }
 
 // Clamp aspect ratio between 4:5 (portrait) and 2:1 (landscape)
 const MIN_ASPECT = 4 / 5; // 0.8
 const MAX_ASPECT = 2 / 1; // 2.0
 
-export function ImageContent({ src, alt, caption }: ImageContentProps) {
+export function ImageContent({ src, alt, caption, priority }: ImageContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
 
@@ -1317,7 +1318,7 @@ export function ImageContent({ src, alt, caption }: ImageContentProps) {
   return (
     <>
       <div
-        className="relative w-full cursor-pointer overflow-hidden bg-black/5"
+        className="relative w-full cursor-pointer overflow-hidden bg-vocl-surface-dark/40"
         style={
           aspectRatio ? { aspectRatio: `${aspectRatio}` } : { aspectRatio: "1" }
         }
@@ -1327,6 +1328,10 @@ export function ImageContent({ src, alt, caption }: ImageContentProps) {
           src={src}
           alt={alt}
           fill
+          sizes="(max-width: 640px) 100vw, 600px"
+          priority={!!priority}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           className="object-cover hover:brightness-75 transition-all"
           onLoad={handleImageLoad}
         />

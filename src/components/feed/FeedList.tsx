@@ -127,7 +127,9 @@ export function FeedList({
 
   return (
     <div className="flex flex-col gap-2 sm:gap-5">
-      {posts.map((post, index) => (
+      {posts.map((post, index) => {
+        const isAboveFold = index < 3;
+        return (
         <React.Fragment key={post.id}>
           {index === whoToFollowIndex && <WhoToFollow />}
           <InteractivePost
@@ -156,7 +158,7 @@ export function FeedList({
         >
           {/* Image content */}
           {post.contentType === "image" && post.content.imageUrl && (
-            <ImageContent src={post.content.imageUrl} alt="Post image" caption={post.content.captionHtml} />
+            <ImageContent src={post.content.imageUrl} alt="Post image" caption={post.content.captionHtml} priority={isAboveFold} />
           )}
 
           {/* Text content */}
@@ -204,11 +206,13 @@ export function FeedList({
             <GalleryContent
               images={post.content.imageUrls}
               caption={post.content.captionHtml}
+              priority={isAboveFold}
             />
           )}
         </InteractivePost>
         </React.Fragment>
-      ))}
+        );
+      })}
 
       {isLoadingMore && (
         <div className="flex items-center justify-center py-8">
