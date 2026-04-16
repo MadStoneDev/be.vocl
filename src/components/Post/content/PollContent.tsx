@@ -164,6 +164,18 @@ export function PollContent({ postId, content }: PollContentProps) {
 
       {/* Vote button / Results */}
       <div className="mt-4 flex items-center justify-between">
+        {!hasVoted && !isExpired ? (
+          <button
+            onClick={handleVote}
+            disabled={selectedOption === null || isLoading}
+            className="px-4 py-2 bg-vocl-accent text-white rounded-full font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-accent/90 transition-colors"
+          >
+            {isLoading ? "Voting..." : "Vote"}
+          </button>
+        ) : (
+          <span />
+        )}
+
         <div className="flex items-center gap-2 text-sm text-neutral-500">
           {results && (
             <span>
@@ -180,16 +192,6 @@ export function PollContent({ postId, content }: PollContentProps) {
             </>
           )}
         </div>
-
-        {!hasVoted && !isExpired && (
-          <button
-            onClick={handleVote}
-            disabled={selectedOption === null || isLoading}
-            className="px-4 py-2 bg-vocl-accent text-white rounded-full font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-accent/90 transition-colors"
-          >
-            {isLoading ? "Voting..." : "Vote"}
-          </button>
-        )}
       </div>
     </div>
   );

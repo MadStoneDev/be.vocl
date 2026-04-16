@@ -1135,9 +1135,13 @@ export const Post = memo(function Post({
                 contentType === "gallery") &&
                 tags &&
                 tags.length > 0 && <MobileTagsStrip tags={tags} />}
-              {contentType === "text" && tags && tags.length > 0 && (
-                <TextPostTags tags={tags} isHovered={isHovered} />
-              )}
+              {(contentType === "text" ||
+                contentType === "poll" ||
+                contentType === "ask") &&
+                tags &&
+                tags.length > 0 && (
+                  <TextPostTags tags={tags} isHovered={isHovered} />
+                )}
             </div>
           )}
 
