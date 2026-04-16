@@ -13,6 +13,7 @@ import {
 import { RichTextEditor } from "@/components/Post/create/RichTextEditor";
 import { SchedulePicker } from "./SchedulePicker";
 import { reblogPost } from "@/actions/reblogs";
+import { Portal } from "@/components/ui";
 
 interface OriginalPost {
   id: string;
@@ -91,7 +92,7 @@ export function ReblogDialog({
   ];
 
   return (
-    <>
+    <Portal>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/70 z-50" onClick={onClose} />
 
@@ -247,6 +248,6 @@ export function ReblogDialog({
           </div>
         </div>
       </div>
-    </>
+    </Portal>
   );
 }

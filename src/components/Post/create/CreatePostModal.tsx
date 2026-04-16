@@ -34,6 +34,7 @@ import { MediaUploader } from "./MediaUploader";
 import { VoiceRecorder } from "./VoiceRecorder";
 import { TagInput } from "./TagInput";
 import { GifPicker } from "@/components/chat/GifPicker";
+import { Portal } from "@/components/ui";
 import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { createPost, generatePostId } from "@/actions/posts";
@@ -590,7 +591,7 @@ export function CreatePostModal({
   ];
 
   return (
-    <>
+    <Portal>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/70 z-[60]" onClick={handleClose} />
 
@@ -1935,6 +1936,6 @@ export function CreatePostModal({
           </div>
         </div>
       </div>
-    </>
+    </Portal>
   );
 }

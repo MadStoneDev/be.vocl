@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { searchUsers } from "@/actions/search";
 import { startConversation } from "@/actions/messages";
+import { Portal } from "@/components/ui";
 
 interface User {
   id: string;
@@ -98,6 +99,7 @@ export function NewChatModal({
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -215,5 +217,6 @@ export function NewChatModal({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { IconX, IconLoader2 } from "@tabler/icons-react";
 import { FollowButton } from "./FollowButton";
+import { Portal } from "@/components/ui";
 import { getFollowers, getFollowing, followUser, unfollowUser, getFollowStatusBatch } from "@/actions/follows";
 
 type ModalType = "followers" | "following";
@@ -106,7 +107,7 @@ export function FollowersModal({
   if (!isOpen) return null;
 
   return (
-    <>
+    <Portal>
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/70 z-50"
@@ -216,6 +217,6 @@ export function FollowersModal({
           </div>
         )}
       </div>
-    </>
+    </Portal>
   );
 }

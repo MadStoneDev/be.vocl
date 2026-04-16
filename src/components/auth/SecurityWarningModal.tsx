@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { IconShieldCheckFilled, IconX } from "@tabler/icons-react";
+import { Portal } from "@/components/ui";
 
 const STORAGE_KEY = "bevocl_security_warning_seen";
 
@@ -34,6 +35,7 @@ export function SecurityWarningModal({ isAuthenticated }: SecurityWarningModalPr
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/60"
@@ -76,5 +78,6 @@ export function SecurityWarningModal({ isAuthenticated }: SecurityWarningModalPr
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

@@ -33,6 +33,7 @@ import {
   IconPlayerPause,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
+import { ImageLightbox } from "./content/ImageLightbox";
 import { StaffBadge, Avatar } from "@/components/ui";
 import { CommentVoiceRecorder } from "./create/CommentVoiceRecorder";
 
@@ -1344,40 +1345,14 @@ export function ImageContent({ src, alt, caption, priority }: ImageContentProps)
         />
       )}
 
-      {/* Lightbox */}
-      {lightboxOpen && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
-          onClick={() => setLightboxOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Image lightbox"
-        >
-          {/* Close button */}
-          <button
-            onClick={() => setLightboxOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
-            aria-label="Close lightbox"
-          >
-            <IconX size={24} />
-          </button>
-
-          {/* Image */}
-          <div
-            className="relative max-w-[90vw] max-h-[85vh]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={src}
-              alt={alt}
-              width={1200}
-              height={800}
-              className="max-w-full max-h-[85vh] object-contain"
-              priority
-            />
-          </div>
-        </div>
-      )}
+      <ImageLightbox
+        images={[src]}
+        currentIndex={0}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onNavigate={() => {}}
+        alt={alt}
+      />
     </>
   );
 }

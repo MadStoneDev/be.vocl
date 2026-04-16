@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from "react";
 import Image from "next/image";
 import { IconX } from "@tabler/icons-react";
+import { Portal } from "@/components/ui";
 
 interface AvatarModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModa
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center"
       role="dialog"
@@ -83,5 +85,6 @@ export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModa
         )}
       </div>
     </div>
+    </Portal>
   );
 }

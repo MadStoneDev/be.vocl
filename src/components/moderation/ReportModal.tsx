@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IconX, IconFlag, IconCheck } from "@tabler/icons-react";
 import { reportUser } from "@/actions/reports";
 import { flagPost } from "@/actions/flags";
+import { Portal } from "@/components/ui";
 import type { ReportSubject, FlagSubject } from "@/types/database";
 
 interface ReportModalProps {
@@ -133,6 +134,7 @@ export function ReportModal({
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
@@ -257,5 +259,6 @@ export function ReportModal({
         )}
       </div>
     </div>
+    </Portal>
   );
 }

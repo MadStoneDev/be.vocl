@@ -7,6 +7,7 @@ import {
   IconAlertTriangle,
 } from "@tabler/icons-react";
 import { reportUser } from "@/actions/reports";
+import { Portal } from "@/components/ui";
 import type { ReportSubject } from "@/types/database";
 
 interface UserReportDialogProps {
@@ -93,7 +94,7 @@ export function UserReportDialog({
   if (!isOpen) return null;
 
   return (
-    <>
+    <Portal>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/70 z-50" onClick={handleClose} />
 
@@ -226,6 +227,6 @@ export function UserReportDialog({
           </div>
         )}
       </div>
-    </>
+    </Portal>
   );
 }

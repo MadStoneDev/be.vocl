@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { IconAlertTriangle, IconX, IconLoader2 } from "@tabler/icons-react";
+import { Portal } from "./Portal";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ export function ConfirmDialog({
   const styles = variantStyles[variant];
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
@@ -153,5 +155,6 @@ export function ConfirmDialog({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type ReactNode, type KeyboardEvent } from 'react';
 import { IconX } from '@tabler/icons-react';
+import { Portal } from './Portal';
 
 interface DialogProps {
   isOpen: boolean;
@@ -69,10 +70,11 @@ export function Dialog({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="presentation"
-    >
+    <Portal>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center"
+        role="presentation"
+      >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
@@ -126,7 +128,8 @@ export function Dialog({
           </button>
         )}
       </div>
-    </div>
+      </div>
+    </Portal>
   );
 }
 

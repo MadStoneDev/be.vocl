@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { initiateTip, completeTip } from "@/actions/payments";
 import { openPaddleCheckout, TIP_PRODUCTS } from "@/lib/paddle/client";
-import { toast } from "@/components/ui";
+import { Portal, toast } from "@/components/ui";
 
 interface TipModalProps {
   isOpen: boolean;
@@ -129,6 +129,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -270,5 +271,6 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
         )}
       </div>
     </div>
+    </Portal>
   );
 }

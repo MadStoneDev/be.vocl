@@ -9,7 +9,7 @@ import {
   IconEyeOff,
 } from "@tabler/icons-react";
 import { sendAsk, canSendAskTo } from "@/actions/asks";
-import { toast } from "@/components/ui";
+import { Portal, toast } from "@/components/ui";
 
 interface AskModalProps {
   isOpen: boolean;
@@ -71,7 +71,7 @@ export function AskModal({
   if (!isOpen) return null;
 
   return (
-    <>
+    <Portal>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/70 z-50" onClick={onClose} />
 
@@ -197,6 +197,6 @@ export function AskModal({
           </div>
         )}
       </div>
-    </>
+    </Portal>
   );
 }

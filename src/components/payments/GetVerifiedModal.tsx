@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { initiateVerification, completeVerification } from "@/actions/payments";
 import { openPaddleCheckout, VERIFICATION_PRODUCT } from "@/lib/paddle/client";
-import { toast } from "@/components/ui";
+import { Portal, toast } from "@/components/ui";
 
 interface GetVerifiedModalProps {
   isOpen: boolean;
@@ -111,6 +111,7 @@ export function GetVerifiedModal({
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -218,5 +219,6 @@ export function GetVerifiedModal({
         )}
       </div>
     </div>
+    </Portal>
   );
 }

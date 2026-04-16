@@ -12,6 +12,7 @@ import {
 import { RichTextEditor } from "./RichTextEditor";
 import { TagInput } from "./TagInput";
 import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarousel";
+import { Portal } from "@/components/ui";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { updatePost } from "@/actions/posts";
 import type { TextPostContent, ImagePostContent, VideoPostContent, AudioPostContent, LinkPreviewData } from "@/types/database";
@@ -175,7 +176,8 @@ export function EditPostModal({
   const title = isReblogEdit ? "Edit Echo" : isTextPost ? "Edit Post" : "Edit Caption & Tags";
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 md:p-4 bg-black/70">
+    <Portal>
+    <div className="fixed top-0 bottom-0 left-0 right-0 inset-0 z-60 flex items-center justify-center p-0 md:p-4 bg-black/70">
       <div
         className="relative w-full h-full md:h-auto max-w-none md:max-w-lg bg-vocl-surface-dark rounded-none md:rounded-2xl shadow-xl overflow-hidden flex flex-col"
         role="dialog"
@@ -202,7 +204,7 @@ export function EditPostModal({
           {/* Error message */}
           {error && (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-              <IconAlertTriangle size={18} className="text-red-500 flex-shrink-0" />
+              <IconAlertTriangle size={18} className="text-red-500 shrink-0" />
               <p className="text-sm text-red-500">{error}</p>
             </div>
           )}
@@ -306,5 +308,6 @@ export function EditPostModal({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
