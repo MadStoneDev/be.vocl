@@ -96,6 +96,7 @@ export default function AppearanceSettingsPage() {
 
   return (
     <div className="py-6">
+      <title>Settings — Appearance | be.vocl</title>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link

@@ -179,6 +179,7 @@ export default function AdminFlagsPage() {
 
   return (
     <div>
+      <title>Admin — Flags | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Flags</h1>

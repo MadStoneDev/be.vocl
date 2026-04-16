@@ -119,6 +119,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
+      <title>Admin | be.vocl</title>
       <h1 className="text-2xl font-bold text-foreground mb-6">Dashboard</h1>
 
       {/* Stats Grid */}

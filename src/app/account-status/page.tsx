@@ -107,6 +107,7 @@ export default function AccountStatusPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <title>Account status | be.vocl</title>
       <div className="w-full max-w-lg">
         {/* Status Card */}
         <div className="bg-vocl-surface-dark rounded-2xl border border-white/10 overflow-hidden">

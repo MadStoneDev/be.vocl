@@ -155,6 +155,7 @@ export default function ThreadPage() {
 
   return (
     <div className="max-w-xl mx-auto py-6 px-4">
+      <title>Thread | be.vocl</title>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button

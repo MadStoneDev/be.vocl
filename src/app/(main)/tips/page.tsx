@@ -54,6 +54,7 @@ export default function TipsPage() {
 
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
+      <title>Tips | be.vocl</title>
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <IconCoin size={26} className="text-amber-400" />

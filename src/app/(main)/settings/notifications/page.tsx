@@ -152,6 +152,7 @@ export default function NotificationsSettingsPage() {
 
   return (
     <div className="py-6">
+      <title>Settings — Notifications | be.vocl</title>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link

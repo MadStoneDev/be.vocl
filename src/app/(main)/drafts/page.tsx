@@ -182,6 +182,7 @@ export default function DraftsPage() {
 
   return (
     <div className="py-6">
+      <title>Drafts | be.vocl</title>
       <h1 className="text-2xl font-bold text-foreground mb-6">Drafts & Scheduled</h1>
 
       {/* Tabs */}

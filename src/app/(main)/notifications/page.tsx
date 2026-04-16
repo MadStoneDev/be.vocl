@@ -75,6 +75,7 @@ export default function NotificationsPage() {
 
   return (
     <PullToRefresh onRefresh={fetchNotifications}>
+      <title>Notifications | be.vocl</title>
     <div className="max-w-2xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

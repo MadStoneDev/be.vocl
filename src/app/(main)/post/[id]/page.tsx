@@ -156,8 +156,20 @@ export default function PostPage() {
     }
   };
 
+  const postTitleText = (() => {
+    if (!post) return null;
+    const c = post.content || {};
+    const raw: string =
+      c.plain || c.text || c.essay_title || c.caption || c.title || "";
+    const trimmed = raw.replace(/\s+/g, " ").trim();
+    if (!trimmed) return `Post — @${post.author.username}`;
+    const snippet = trimmed.length > 50 ? `${trimmed.slice(0, 50)}…` : trimmed;
+    return `${snippet} — @${post.author.username}`;
+  })();
+
   return (
     <div className="max-w-xl mx-auto py-6 px-4">
+      {post && postTitleText && <title>{`${postTitleText} | be.vocl`}</title>}
       {/* Back button */}
       <button
         onClick={() => router.back()}

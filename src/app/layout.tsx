@@ -17,7 +17,10 @@ const lexend = Lexend({
 });
 
 export const metadata: Metadata = {
-  title: "be.vocl",
+  title: {
+    default: "be.vocl",
+    template: "%s | be.vocl",
+  },
   description: "Share your voice freely",
 };
 

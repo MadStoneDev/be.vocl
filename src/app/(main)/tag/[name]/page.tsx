@@ -196,6 +196,7 @@ export default function TagPage() {
 
   return (
     <PullToRefresh onRefresh={() => fetchPosts(0, false)}>
+      {tag && <title>{`#${tag.name} | be.vocl`}</title>}
     <div className="max-w-xl mx-auto py-3 sm:py-6">
       {/* Tag Header */}
       <div className="px-2 sm:px-4 mb-4 sm:mb-6">

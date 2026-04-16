@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { getFeedPosts } from "@/actions/posts";
 import { hasAcceptedPromise } from "@/actions/account";
 import { getUserPendingReports } from "@/actions/moderation";
 import FeedClient from "./FeedClient";
+
+export const metadata: Metadata = {
+  title: "Feed",
+  description: "Your personalised feed of posts from the people you follow.",
+};
 
 export default async function FeedPage() {
   // Fetch initial data server-side in parallel - no client waterfall

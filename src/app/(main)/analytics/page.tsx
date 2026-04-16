@@ -182,6 +182,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="py-6">
+      <title>Analytics | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-vocl-accent/20 flex items-center justify-center">

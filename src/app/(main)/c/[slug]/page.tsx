@@ -231,6 +231,7 @@ export default function CommunityPage() {
 
   return (
     <PullToRefresh onRefresh={() => load(0, false)}>
+      {community && <title>{`${community.name} | be.vocl`}</title>}
     <div className="pb-6">
       {/* Banner */}
       <div className="relative h-32 sm:h-44 bg-gradient-to-br from-vocl-accent/30 to-vocl-accent-hover/20">

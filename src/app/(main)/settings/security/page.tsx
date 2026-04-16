@@ -159,6 +159,7 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="py-6">
+      <title>Settings — Security | be.vocl</title>
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

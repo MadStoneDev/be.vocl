@@ -173,6 +173,7 @@ export default function PrivacySettingsPage() {
 
   return (
     <div className="py-6 max-w-2xl mx-auto">
+      <title>Settings — Privacy | be.vocl</title>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link

@@ -131,6 +131,7 @@ export default function ExplorePage() {
 
   return (
     <PullToRefresh onRefresh={loadData}>
+      <title>Explore | be.vocl</title>
     <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4">
       {/* Page Header */}
       <div className="mb-6">

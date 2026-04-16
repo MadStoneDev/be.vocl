@@ -50,6 +50,7 @@ export default function NewCommunityPage() {
 
   return (
     <div className="py-6 px-4 max-w-xl mx-auto">
+      <title>New community | be.vocl</title>
       <Link
         href="/communities"
         className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"

@@ -57,9 +57,12 @@ export default function OnboardingPage() {
   }
 
   return (
-    <OnboardingWizard
-      username={profile.username}
-      onComplete={handleComplete}
-    />
+    <>
+      <title>Welcome | be.vocl</title>
+      <OnboardingWizard
+        username={profile.username}
+        onComplete={handleComplete}
+      />
+    </>
   );
 }

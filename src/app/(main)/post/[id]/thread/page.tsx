@@ -205,8 +205,13 @@ export default function ReblogThreadPage() {
     );
   }
 
+  const originalAuthor = thread.length > 0 ? thread[0].authorUsername : null;
+
   return (
     <div className="max-w-xl mx-auto py-6 px-4">
+      {originalAuthor && (
+        <title>{`Thread — @${originalAuthor} | be.vocl`}</title>
+      )}
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link

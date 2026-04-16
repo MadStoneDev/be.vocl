@@ -334,6 +334,7 @@ function SearchContent() {
 
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
+      <title>Search | be.vocl</title>
       {/* Search Input */}
       <div className="relative mb-6">
         <IconSearch

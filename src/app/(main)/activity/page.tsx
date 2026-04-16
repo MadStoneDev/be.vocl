@@ -129,6 +129,7 @@ export default function ActivityPage() {
 
   return (
     <div className="py-6">
+      <title>Activity | be.vocl</title>
       <h1 className="text-2xl font-bold text-foreground mb-6">Activity</h1>
 
       {/* Overview Cards */}

@@ -79,6 +79,7 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="py-6">
+      <title>Settings — Account | be.vocl</title>
       <Link
         href="/settings"
         className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"

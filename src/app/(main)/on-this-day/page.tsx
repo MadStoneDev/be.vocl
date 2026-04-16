@@ -70,6 +70,7 @@ export default function OnThisDayPage() {
 
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
+      <title>On this day | be.vocl</title>
       <Link
         href="/feed"
         className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"

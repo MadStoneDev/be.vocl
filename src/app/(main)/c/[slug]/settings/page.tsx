@@ -240,6 +240,7 @@ export default function CommunitySettingsPage() {
 
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
+      {community && <title>{`Settings — ${community.name} | be.vocl`}</title>}
       <Link
         href={`/c/${community.slug}`}
         className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"

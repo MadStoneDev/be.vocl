@@ -36,6 +36,7 @@ export default function AdminEmailPage() {
 
   return (
     <div className="py-6">
+      <title>Admin — Email | be.vocl</title>
       <div className="flex items-center gap-3 mb-6">
         <IconMail size={28} className="text-vocl-accent" />
         <h1 className="text-2xl font-bold text-foreground">Email Management</h1>

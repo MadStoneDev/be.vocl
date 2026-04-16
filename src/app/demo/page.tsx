@@ -74,6 +74,7 @@ export default function DemoPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center gap-8 bg-background px-4 py-12">
+      <title>Demo | be.vocl</title>
       <header className="mb-8 text-center">
         <h1 className="font-display text-4xl text-foreground">be.vocl</h1>
         <p className="mt-2 font-sans text-sm text-gray-500">Post Component Demo</p>

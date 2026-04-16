@@ -23,10 +23,13 @@ export default function CreatePage() {
   };
 
   return (
-    <CreatePostModal
-      isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
-      onSuccess={handleSuccess}
-    />
+    <>
+      <title>New post | be.vocl</title>
+      <CreatePostModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSuccess={handleSuccess}
+      />
+    </>
   );
 }

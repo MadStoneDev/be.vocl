@@ -202,6 +202,7 @@ export default function BookmarksPage() {
 
   return (
     <PullToRefresh onRefresh={refetch}>
+      <title>Bookmarks | be.vocl</title>
     <div className="max-w-xl mx-auto py-2 sm:py-3 px-2 sm:px-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
