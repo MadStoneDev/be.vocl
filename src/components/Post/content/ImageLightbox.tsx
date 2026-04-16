@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { IconX, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 
@@ -21,6 +22,12 @@ export function ImageLightbox({
   onNavigate,
   alt = "Image",
 }: ImageLightboxProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const goToPrevious = useCallback(() => {
     onNavigate(currentIndex > 0 ? currentIndex - 1 : images.length - 1);
   }, [currentIndex, images.length, onNavigate]);
@@ -49,9 +56,9 @@ export function ImageLightbox({
     };
   }, [isOpen, onClose, goToPrevious, goToNext]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
       onClick={onClose}
@@ -142,6 +149,7 @@ export function ImageLightbox({
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
