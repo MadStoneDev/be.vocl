@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
@@ -57,6 +57,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
 
@@ -108,8 +109,7 @@ export default function MainLayout({
 
   // Auto-open chat sidebar when ?conversation= is in the URL
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const conversationId = params.get("conversation");
+    const conversationId = searchParams.get("conversation");
     if (conversationId) {
       setInitialConversationId(conversationId);
       setIsChatOpen(true);
@@ -118,7 +118,7 @@ export default function MainLayout({
       url.searchParams.delete("conversation");
       router.replace(url.pathname + url.search, { scroll: false });
     }
-  }, [router]);
+  }, [router, searchParams]);
 
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 

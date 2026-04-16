@@ -64,6 +64,7 @@ interface PostData {
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
+  tags?: Array<{ id: string; name: string }>;
 }
 
 export default function ProfilePage() {
@@ -288,6 +289,7 @@ export default function ProfilePage() {
         isPinned={post.isPinned}
         contentPreview={contentPreview}
         imageUrl={imageUrl}
+        tags={post.tags}
       >
         {contentType === "image" && post.content?.urls?.[0] && (
           <ImageContent src={post.content.urls[0]} alt="" />
@@ -377,6 +379,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen pb-24">
+      {profile && <title>{`@${profile.username} | be.vocl`}</title>}
       {/* Profile Header */}
       <ProfileHeader
         username={profile.username}

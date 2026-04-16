@@ -972,7 +972,7 @@ export async function getFullProfile(
     let pinnedPost: PostWithDetails | null = null;
 
     if (postIds.length > 0) {
-      const postStats = await batchFetchPostStats(supabase, postIds, currentUser?.id);
+      const postStats = await batchFetchPostStats(supabase, postIds, currentUser?.id, { includeTags: true });
 
       formattedPosts = rawPosts.map((post: any) => {
         const formatted: PostWithDetails = {

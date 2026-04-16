@@ -3,6 +3,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  InteractivePost,
+  ImageContent,
+  TextContent,
+  VideoContent,
+  AudioContent,
+  GalleryContent,
+} from "@/components/Post";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import type { VideoEmbedPlatform } from "@/types/database";
 
 interface Props {
   params: Promise<{ username: string }>;
@@ -26,13 +36,16 @@ interface ProfileLink {
 
 interface PostData {
   id: string;
+  author_id: string;
   post_type: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any;
+  is_sensitive: boolean;
   created_at: string;
   like_count: number;
   comment_count: number;
   reblog_count: number;
+  tags: Array<{ id: string; name: string }>;
 }
 
 async function getProfile(username: string) {
@@ -57,7 +70,7 @@ async function getProfile(username: string) {
     supabase
       .from("posts")
       .select(
-        "id, post_type, content, created_at, like_count, comment_count, reblog_count"
+        "id, author_id, post_type, content, is_sensitive, created_at, like_count, comment_count, reblog_count"
       )
       .eq("author_id", profile.id)
       .eq("is_deleted", false)
@@ -70,10 +83,37 @@ async function getProfile(username: string) {
       .eq("is_deleted", false),
   ]);
 
+  const rawPosts = (postsResult.data ?? []) as Array<Omit<PostData, "tags">>;
+  const postIds = rawPosts.map((p) => p.id);
+
+  // Fetch tags joined to these posts
+  let tagsByPost: Record<string, Array<{ id: string; name: string }>> = {};
+  if (postIds.length > 0) {
+    const { data: postTagRows } = await supabase
+      .from("post_tags")
+      .select("post_id, tag:tags!tag_id(id, name)")
+      .in("post_id", postIds);
+
+    tagsByPost = (postTagRows ?? []).reduce<Record<string, Array<{ id: string; name: string }>>>(
+      (acc, row: any) => {
+        if (!row.tag) return acc;
+        if (!acc[row.post_id]) acc[row.post_id] = [];
+        acc[row.post_id].push({ id: row.tag.id, name: row.tag.name });
+        return acc;
+      },
+      {},
+    );
+  }
+
+  const posts: PostData[] = rawPosts.map((p) => ({
+    ...p,
+    tags: tagsByPost[p.id] ?? [],
+  }));
+
   return {
     profile,
     links: (linksResult.data ?? []) as ProfileLink[],
-    posts: (postsResult.data ?? []) as PostData[],
+    posts,
     postCount: statsResult.count || 0,
   };
 }
@@ -250,10 +290,8 @@ export default async function PublicProfilePage({ params }: Props) {
         </div>
 
         {posts.length > 0 ? (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <PublicPostCard key={post.id} post={post} author={profile} />
-            ))}
+          <div className="flex flex-col gap-2 sm:gap-5">
+            {posts.map((post) => renderPublicPost(post, profile))}
           </div>
         ) : (
           <div className="text-center py-12 rounded-2xl bg-white/5 border border-white/5">
@@ -292,109 +330,98 @@ export default async function PublicProfilePage({ params }: Props) {
 
 /* ---------- Static sub-components ---------- */
 
-function PublicPostCard({
-  post,
-  author,
-}: {
-  post: PostData;
-  author: ProfileData;
-}) {
-  const displayName = author.display_name || author.username;
-  const timeAgo = formatRelativeTime(post.created_at);
+function renderPublicPost(post: PostData, author: ProfileData) {
+  const contentType = post.post_type as
+    | "text"
+    | "image"
+    | "video"
+    | "audio"
+    | "gallery"
+    | "poll"
+    | "ask";
 
-  // Extract text content for preview
-  const textContent =
+  const contentPreview =
     post.content?.plain ||
-    post.content?.html?.replace(/<[^>]*>/g, "") ||
     post.content?.caption_html?.replace(/<[^>]*>/g, "") ||
-    null;
-
-  // Extract image for preview
+    "";
   const imageUrl =
-    post.content?.urls?.[0] ||
-    post.content?.thumbnail_url ||
-    post.content?.album_art_url ||
-    null;
+    post.content?.urls?.[0] || post.content?.thumbnail_url || undefined;
 
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/5 overflow-hidden">
-      {/* Post Header */}
-      <div className="flex items-center gap-3 p-4 pb-0">
-        <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white/10">
-          {author.avatar_url ? (
-            <Image
-              src={author.avatar_url}
-              alt={displayName}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
-              <span className="text-sm font-bold text-white">
-                {author.username.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="min-w-0">
-          <p className="font-medium text-foreground text-sm truncate">
-            {displayName}
-          </p>
-          <p className="text-xs text-foreground/40">{timeAgo}</p>
-        </div>
-      </div>
-
-      {/* Post Content */}
-      <div className="p-4">
-        {textContent && (
-          <p className="text-foreground/80 text-sm line-clamp-4 whitespace-pre-wrap">
-            {textContent}
-          </p>
+    <InteractivePost
+      key={post.id}
+      id={post.id}
+      author={{
+        username: author.username,
+        avatarUrl: author.avatar_url || "https://via.placeholder.com/100",
+        role: author.role,
+      }}
+      authorId={post.author_id}
+      timestamp={formatRelativeTime(post.created_at)}
+      contentType={contentType}
+      initialStats={{
+        comments: post.comment_count,
+        likes: post.like_count,
+        reblogs: post.reblog_count,
+      }}
+      initialInteractions={{
+        hasCommented: false,
+        hasLiked: false,
+        hasReblogged: false,
+      }}
+      isSensitive={post.is_sensitive}
+      isOwn={false}
+      contentPreview={contentPreview}
+      imageUrl={imageUrl}
+      tags={post.tags}
+      content={post.content}
+    >
+      {contentType === "image" && post.content?.urls?.[0] && (
+        <ImageContent
+          src={post.content.urls[0]}
+          alt=""
+          caption={post.content?.caption_html}
+        />
+      )}
+      {contentType === "text" && post.content?.html && (
+        <TextContent>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtmlWithSafeLinks(post.content.html),
+            }}
+          />
+        </TextContent>
+      )}
+      {contentType === "text" && post.content?.plain && !post.content?.html && (
+        <TextContent>{post.content.plain}</TextContent>
+      )}
+      {contentType === "video" && (
+        <VideoContent
+          src={post.content?.url}
+          thumbnailUrl={post.content?.thumbnail_url}
+          embedUrl={post.content?.embed_url}
+          embedPlatform={post.content?.embed_platform as VideoEmbedPlatform}
+          caption={post.content?.caption_html}
+        />
+      )}
+      {contentType === "audio" &&
+        (post.content?.url || post.content?.spotify_data) && (
+          <AudioContent
+            src={post.content?.url}
+            albumArtUrl={post.content?.album_art_url}
+            spotifyData={post.content?.spotify_data}
+            caption={post.content?.caption_html}
+            transcript={post.content?.transcript}
+            isVoiceNote={post.content?.is_voice_note}
+          />
         )}
-
-        {imageUrl && (
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden mt-3 bg-white/5">
-            <Image
-              src={imageUrl}
-              alt="Post image"
-              fill
-              className="object-cover"
-            />
-          </div>
-        )}
-
-        {!textContent && !imageUrl && (
-          <p className="text-foreground/40 text-sm italic">
-            {post.post_type === "audio"
-              ? "Audio post"
-              : post.post_type === "video"
-                ? "Video post"
-                : "Post"}
-          </p>
-        )}
-      </div>
-
-      {/* Post Stats */}
-      <div className="flex items-center gap-4 px-4 pb-4 text-xs text-foreground/40">
-        {post.like_count > 0 && (
-          <span>
-            {post.like_count} {post.like_count === 1 ? "like" : "likes"}
-          </span>
-        )}
-        {post.comment_count > 0 && (
-          <span>
-            {post.comment_count}{" "}
-            {post.comment_count === 1 ? "comment" : "comments"}
-          </span>
-        )}
-        {post.reblog_count > 0 && (
-          <span>
-            {post.reblog_count}{" "}
-            {post.reblog_count === 1 ? "echo" : "echoes"}
-          </span>
-        )}
-      </div>
-    </div>
+      {contentType === "gallery" && post.content?.urls && (
+        <GalleryContent
+          images={post.content.urls}
+          caption={post.content?.caption_html}
+        />
+      )}
+    </InteractivePost>
   );
 }
 
