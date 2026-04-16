@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
 import { useMemo } from "react";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -208,6 +208,11 @@ export function FeedList({
               caption={post.content.captionHtml}
               priority={isAboveFold}
             />
+          )}
+
+          {/* Poll content */}
+          {post.contentType === "poll" && post.rawContent && (
+            <PollContent postId={post.id} content={post.rawContent} />
           )}
         </InteractivePost>
         </React.Fragment>

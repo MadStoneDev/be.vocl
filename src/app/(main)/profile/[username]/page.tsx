@@ -16,7 +16,7 @@ import {
   type TabId,
 } from "@/components/profile";
 import { ReportModal } from "@/components/moderation";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent } from "@/components/Post";
 import type { VideoEmbedPlatform } from "@/types/database";
 import { getFullProfile } from "@/actions/profile";
 import { getLikedPosts, getCommentedPosts } from "@/actions/posts";
@@ -257,7 +257,7 @@ export default function ProfilePage() {
 
   // Render a post
   const renderPost = (post: PostData) => {
-    const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery";
+    const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
 
     // Get content preview for reblog dialog
     const contentPreview = post.content?.plain || post.content?.caption_html?.replace(/<[^>]*>/g, "") || "";
@@ -340,6 +340,9 @@ export default function ProfilePage() {
             images={post.content.urls}
             caption={post.content?.caption_html}
           />
+        )}
+        {contentType === "poll" && post.content?.options && (
+          <PollContent postId={post.id} content={post.content} />
         )}
       </InteractivePost>
     );

@@ -10,6 +10,7 @@ import {
   VideoContent,
   AudioContent,
   GalleryContent,
+  PollContent,
 } from "@/components/Post";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import type { VideoEmbedPlatform } from "@/types/database";
@@ -420,6 +421,9 @@ function renderPublicPost(post: PostData, author: ProfileData) {
           images={post.content.urls}
           caption={post.content?.caption_html}
         />
+      )}
+      {contentType === "poll" && post.content?.options && (
+        <PollContent postId={post.id} content={post.content} />
       )}
     </InteractivePost>
   );
