@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
+import { ConversationUrlOpener } from "@/components/chat/ConversationUrlOpener";
 import { CreatePostFAB } from "@/components/Post/create";
 import { SecurityWarningModal } from "@/components/auth/SecurityWarningModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,7 +58,6 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
 
@@ -107,18 +107,18 @@ export default function MainLayout({
     checkOnboarding();
   }, [user, authLoading, router]);
 
-  // Auto-open chat sidebar when ?conversation= is in the URL
+  // Open chat sidebar in response to an openConversation event
+  // (dispatched e.g. from a profile's Message action)
   useEffect(() => {
-    const conversationId = searchParams.get("conversation");
-    if (conversationId) {
-      setInitialConversationId(conversationId);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ conversationId: string }>).detail;
+      if (!detail?.conversationId) return;
+      setInitialConversationId(detail.conversationId);
       setIsChatOpen(true);
-      // Clean up the URL param
-      const url = new URL(window.location.href);
-      url.searchParams.delete("conversation");
-      router.replace(url.pathname + url.search, { scroll: false });
-    }
-  }, [router, searchParams]);
+    };
+    window.addEventListener("vocl:open-conversation", handler);
+    return () => window.removeEventListener("vocl:open-conversation", handler);
+  }, []);
 
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 
@@ -126,6 +126,9 @@ export default function MainLayout({
   // No blocking on auth - children render right away with their skeletons
   return (
     <div className="min-h-screen bg-background">
+      <Suspense fallback={null}>
+        <ConversationUrlOpener />
+      </Suspense>
       {/* Left Sidebar (Desktop) - shows skeleton for profile while loading */}
       <LeftSidebar
         username={profile?.username}
