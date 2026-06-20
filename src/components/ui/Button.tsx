@@ -13,9 +13,9 @@ const variantClasses = {
   primary:
     'bg-vocl-accent hover:bg-vocl-accent-hover text-white focus-visible:ring-vocl-accent',
   secondary:
-    'bg-white/10 hover:bg-white/15 text-foreground focus-visible:ring-white/30',
+    'bg-vocl-hover-strong hover:bg-vocl-hover-strong text-foreground focus-visible:ring-vocl-border',
   ghost:
-    'bg-transparent hover:bg-white/5 text-foreground focus-visible:ring-white/20',
+    'bg-transparent hover:bg-vocl-hover text-foreground focus-visible:ring-vocl-border',
   danger:
     'bg-vocl-like/10 hover:bg-vocl-like/20 text-vocl-like focus-visible:ring-vocl-like',
 };

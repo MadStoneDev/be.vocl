@@ -88,7 +88,7 @@ export function ConfirmDialog({
       {/* Dialog */}
       <div
         ref={dialogRef}
-        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface-dark rounded-2xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface rounded-2xl shadow-2xl overflow-hidden"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
@@ -99,7 +99,7 @@ export function ConfirmDialog({
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="absolute top-3 right-3 p-1.5 rounded-full text-foreground/40 hover:text-foreground/60 hover:bg-white/10 transition-colors disabled:opacity-50"
+          className="absolute top-3 right-3 p-1.5 rounded-full text-foreground/40 hover:text-foreground/60 hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
           aria-label="Close"
         >
           <IconX size={18} />
@@ -133,7 +133,7 @@ export function ConfirmDialog({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-white/10 text-foreground/80 font-medium hover:bg-white/10 transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-vocl-border text-foreground/80 font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
             >
               {cancelText}
             </button>

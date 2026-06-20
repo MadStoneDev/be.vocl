@@ -112,7 +112,7 @@ export function SchedulePicker({
             key={option.label}
             type="button"
             onClick={() => handleQuickOption(option)}
-            className="px-3 py-1.5 rounded-lg bg-white/5 text-foreground/70 text-sm hover:bg-white/10 hover:text-foreground transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-vocl-hover text-foreground/70 text-sm hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
           >
             {option.label}
           </button>
@@ -131,7 +131,7 @@ export function SchedulePicker({
             value={date}
             onChange={(e) => handleDateChange(e.target.value)}
             min={minDateStr}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm"
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm"
           />
         </div>
         <div className="relative">
@@ -142,7 +142,7 @@ export function SchedulePicker({
           <select
             value={time}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm appearance-none cursor-pointer"
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm appearance-none cursor-pointer"
           >
             {TIME_OPTIONS.map((t) => (
               <option key={t} value={t}>

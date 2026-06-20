@@ -110,7 +110,7 @@ export default function AccountStatusPage() {
       <title>Account status | be.vocl</title>
       <div className="w-full max-w-lg">
         {/* Status Card */}
-        <div className="bg-vocl-surface-dark rounded-2xl border border-white/10 overflow-hidden">
+        <div className="bg-vocl-surface-dark rounded-2xl border border-vocl-border overflow-hidden">
           {/* Header */}
           <div className={`p-6 ${isBanned ? "bg-vocl-like/10" : "bg-amber-500/10"}`}>
             <div className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export default function AccountStatusPage() {
             {banReason && (
               <div>
                 <h2 className="text-sm font-medium text-foreground/50 mb-2">Reason</h2>
-                <p className="text-foreground bg-white/5 rounded-xl p-4">
+                <p className="text-foreground bg-vocl-hover rounded-xl p-4">
                   {banReason}
                 </p>
               </div>
@@ -189,7 +189,7 @@ export default function AccountStatusPage() {
             </div>
 
             {/* Appeal Section */}
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-vocl-border pt-6">
               <div className="flex items-center gap-2 mb-4">
                 <IconMessageReport size={20} className="text-vocl-accent" />
                 <h2 className="font-medium text-foreground">Appeal</h2>
@@ -263,7 +263,7 @@ export default function AccountStatusPage() {
                     onChange={(e) => setAppealReason(e.target.value)}
                     placeholder="Explain why you believe this action was made in error..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
                   />
                   {submitError && (
                     <p className="text-sm text-vocl-like">{submitError}</p>
@@ -289,10 +289,10 @@ export default function AccountStatusPage() {
             </div>
 
             {/* Logout */}
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-vocl-border pt-6">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-white/10 text-foreground/70 hover:bg-white/5 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-vocl-border text-foreground/70 hover:bg-vocl-hover transition-colors"
               >
                 <IconLogout size={18} />
                 <span>Sign Out</span>

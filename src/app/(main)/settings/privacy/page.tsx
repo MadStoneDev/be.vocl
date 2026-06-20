@@ -14,12 +14,14 @@ import {
   IconTrash,
   IconAlertCircle,
   IconMessageQuestion,
+  IconWorld,
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import {
   getCurrentProfile,
   updatePrivacySettings,
   updateContentSettings,
+  updateWebVisibilitySettings,
 } from "@/actions/profile";
 import { unblockUser, unmuteUser } from "@/actions/follows";
 import { updateAskSettings } from "@/actions/asks";
@@ -55,6 +57,10 @@ export default function PrivacySettingsPage() {
   const [showFollowers, setShowFollowers] = useState(true);
   const [showFollowing, setShowFollowing] = useState(true);
 
+  // Public web settings
+  const [isDiscoverable, setIsDiscoverable] = useState(true);
+  const [allowSearchIndexing, setAllowSearchIndexing] = useState(true);
+
   // Content settings
   const [showSensitivePosts, setShowSensitivePosts] = useState(false);
   const [blurSensitiveByDefault, setBlurSensitiveByDefault] = useState(true);
@@ -80,6 +86,8 @@ export default function PrivacySettingsPage() {
         setShowComments(profileResult.profile.showComments);
         setShowFollowers(profileResult.profile.showFollowers);
         setShowFollowing(profileResult.profile.showFollowing);
+        setIsDiscoverable(profileResult.profile.isDiscoverable ?? true);
+        setAllowSearchIndexing(profileResult.profile.allowSearchIndexing ?? true);
         setShowSensitivePosts(profileResult.profile.showSensitivePosts);
         setBlurSensitiveByDefault(profileResult.profile.blurSensitiveByDefault);
         setAllowAsks(profileResult.profile.allowAsks ?? true);
@@ -103,6 +111,20 @@ export default function PrivacySettingsPage() {
       }
     });
   }, []);
+
+  const handleWebVisibilityChange = useCallback(
+    (key: "isDiscoverable" | "allowSearchIndexing", value: boolean) => {
+      startTransition(async () => {
+        const result = await updateWebVisibilitySettings({ [key]: value });
+        if (result.success) {
+          toast.success("Web settings updated");
+        } else {
+          toast.error(result.error || "Failed to update settings");
+        }
+      });
+    },
+    []
+  );
 
   const handleContentChange = useCallback((key: string, value: boolean) => {
     startTransition(async () => {
@@ -175,16 +197,19 @@ export default function PrivacySettingsPage() {
     <div className="py-6 max-w-2xl mx-auto">
       <title>Settings — Privacy | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-6 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+          className="w-10 h-10 rounded-full bg-vocl-hover flex items-center justify-center hover:bg-vocl-hover-strong transition-colors shrink-0"
         >
           <IconArrowLeft size={20} className="text-foreground" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Privacy & Content</h1>
-          <p className="text-sm text-foreground/50">Control your privacy and content preferences</p>
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            Settings
+          </span>
+          <h1 className="type-display font-display text-foreground">Privacy &amp; Content</h1>
+          <p className="type-body text-foreground/55 mt-1">Control your privacy and content preferences</p>
         </div>
       </div>
 
@@ -204,7 +229,7 @@ export default function PrivacySettingsPage() {
             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? "bg-vocl-accent text-white"
-                : "bg-white/5 text-foreground/60 hover:bg-white/10"
+                : "bg-vocl-hover text-foreground/60 hover:bg-vocl-hover-strong"
             }`}
           >
             {tab.label}
@@ -215,8 +240,8 @@ export default function PrivacySettingsPage() {
       {/* Privacy Tab */}
       {activeTab === "privacy" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
-            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconEye size={20} />
               Profile Visibility
             </h3>
@@ -263,14 +288,43 @@ export default function PrivacySettingsPage() {
               />
             </div>
           </div>
+
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+              <IconWorld size={20} />
+              Public web
+            </h3>
+            <div className="space-y-4">
+              <ToggleSetting
+                label="Show my posts on the public be.vocl front page"
+                description="Let logged-out visitors discover your public posts on the be.vocl landing page"
+                checked={isDiscoverable}
+                onChange={(checked) => {
+                  setIsDiscoverable(checked);
+                  handleWebVisibilityChange("isDiscoverable", checked);
+                }}
+                disabled={isPending}
+              />
+              <ToggleSetting
+                label="Allow search engines to index my blog"
+                description="Let search engines like Google index your public profile and posts"
+                checked={allowSearchIndexing}
+                onChange={(checked) => {
+                  setAllowSearchIndexing(checked);
+                  handleWebVisibilityChange("allowSearchIndexing", checked);
+                }}
+                disabled={isPending}
+              />
+            </div>
+          </div>
         </div>
       )}
 
       {/* Content Tab */}
       {activeTab === "content" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
-            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconEyeOff size={20} />
               Sensitive Content
             </h3>
@@ -316,8 +370,8 @@ export default function PrivacySettingsPage() {
       {/* Asks Tab */}
       {activeTab === "asks" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
-            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconMessageQuestion size={20} />
               Ask Box Settings
             </h3>
@@ -354,8 +408,8 @@ export default function PrivacySettingsPage() {
       {/* Blocked Tab */}
       {activeTab === "blocked" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
-            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconUserX size={20} />
               Blocked Users
             </h3>
@@ -386,8 +440,8 @@ export default function PrivacySettingsPage() {
       {/* Muted Tab */}
       {activeTab === "muted" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
-            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconVolume3 size={20} />
               Muted Users
             </h3>
@@ -418,8 +472,8 @@ export default function PrivacySettingsPage() {
       {/* Muted Tags Tab */}
       {activeTab === "muted_tags" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
-            <h3 className="font-medium text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconHash size={20} />
               Muted Tags
             </h3>
@@ -430,7 +484,7 @@ export default function PrivacySettingsPage() {
             ) : (
               <div className="space-y-2">
                 {mutedTags.map((tag) => (
-                  <div key={tag.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                  <div key={tag.id} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-hover">
                     <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
                       <IconHash size={18} className="text-vocl-accent" />
                     </div>
@@ -444,7 +498,7 @@ export default function PrivacySettingsPage() {
                     </div>
                     <button
                       onClick={() => handleUnmuteTag(tag.id)}
-                      className="px-3 py-1.5 rounded-lg bg-white/10 text-foreground/70 text-sm hover:bg-white/20 hover:text-foreground transition-colors"
+                      className="px-3 py-1.5 rounded-lg bg-vocl-hover-strong text-foreground/70 text-sm hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
                     >
                       Unmute
                     </button>
@@ -490,7 +544,7 @@ function ToggleSetting({
         onClick={() => onChange(!checked)}
         disabled={disabled}
         className={`relative w-11 h-6 rounded-full transition-colors ${
-          checked ? "bg-vocl-accent" : "bg-white/20"
+          checked ? "bg-vocl-accent" : "bg-vocl-hover-strong"
         } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         <span
@@ -514,7 +568,7 @@ function UserListItem({
   onAction: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-vocl-hover">
       <div className="relative w-10 h-10 rounded-full overflow-hidden">
         {user.avatarUrl ? (
           <Image
@@ -539,7 +593,7 @@ function UserListItem({
       </div>
       <button
         onClick={onAction}
-        className="px-3 py-1.5 rounded-lg bg-white/10 text-foreground/70 text-sm hover:bg-white/20 hover:text-foreground transition-colors"
+        className="px-3 py-1.5 rounded-lg bg-vocl-hover-strong text-foreground/70 text-sm hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
       >
         {action}
       </button>

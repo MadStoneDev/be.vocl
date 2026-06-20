@@ -36,7 +36,7 @@ function Toggle({ enabled, onChange, disabled }: ToggleProps) {
       onClick={() => onChange(!enabled)}
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-      } ${enabled ? "bg-vocl-accent" : "bg-white/20"}`}
+      } ${enabled ? "bg-vocl-accent" : "bg-vocl-hover-strong"}`}
     >
       <span
         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -65,8 +65,8 @@ function NotificationRow({
   disabled,
 }: NotificationRowProps) {
   return (
-    <div className="flex items-start gap-4 py-4 border-b border-white/5 last:border-0">
-      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
+    <div className="flex items-start gap-4 py-4 border-b border-vocl-border last:border-0">
+      <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center shrink-0">
         <Icon size={20} className="text-foreground/70" />
       </div>
       <div className="flex-1 min-w-0">
@@ -154,29 +154,30 @@ export default function NotificationsSettingsPage() {
     <div className="py-6">
       <title>Settings — Notifications | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl hover:bg-white/5 transition-colors"
+          className="p-2 -ml-2 rounded-xl hover:bg-vocl-hover transition-colors"
         >
-          <IconArrowLeft size={24} className="text-foreground/70" />
+          <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-foreground">Email Notifications</h1>
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            Settings
+          </span>
+          <h1 className="type-display font-display text-foreground">Email Notifications</h1>
+          <p className="type-body text-foreground/55 mt-1">
+            Choose which email notifications you want to receive.
+          </p>
         </div>
         {isSaving && (
-          <IconLoader2 size={20} className="animate-spin text-foreground/50" />
+          <IconLoader2 size={20} className="animate-spin text-foreground/50 shrink-0" />
         )}
       </div>
 
-      {/* Description */}
-      <p className="text-foreground/60 mb-6">
-        Choose which email notifications you want to receive.
-      </p>
-
       {/* Email Frequency */}
-      <div className="rounded-xl bg-vocl-surface-dark p-4 mb-6">
-        <h2 className="font-semibold text-foreground mb-1">Email Frequency</h2>
+      <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-4 mb-6">
+        <h2 className="type-heading font-display text-foreground mb-1">Email Frequency</h2>
         <p className="text-sm text-foreground/50 mb-4">
           How often do you want to receive notification emails?
         </p>
@@ -187,7 +188,7 @@ export default function NotificationsSettingsPage() {
               className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
                 settings.emailFrequency === option.value
                   ? "bg-vocl-accent/20 border border-vocl-accent/40"
-                  : "bg-white/5 border border-transparent hover:bg-white/10"
+                  : "bg-vocl-hover border border-transparent hover:bg-vocl-hover-strong"
               }`}
             >
               <input
@@ -202,7 +203,7 @@ export default function NotificationsSettingsPage() {
                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                   settings.emailFrequency === option.value
                     ? "border-vocl-accent"
-                    : "border-white/30"
+                    : "border-vocl-border"
                 }`}
               >
                 {settings.emailFrequency === option.value && (
@@ -219,9 +220,9 @@ export default function NotificationsSettingsPage() {
       </div>
 
       {/* Notification Types */}
-      <div className={`rounded-xl bg-vocl-surface-dark p-4 ${isEmailDisabled ? "opacity-50" : ""}`}>
+      <div className={`rounded-xl bg-vocl-surface-dark border border-vocl-border p-4 ${isEmailDisabled ? "opacity-50" : ""}`}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-foreground">Notification Types</h2>
+          <h2 className="type-heading font-display text-foreground">Notification Types</h2>
           <div className="flex items-center gap-1 text-sm text-foreground/50">
             <IconMail size={16} />
             <span>Email</span>

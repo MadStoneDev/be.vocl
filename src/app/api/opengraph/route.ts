@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isPrivateOrReservedHost, safeFetch } from "@/app/api/_lib/ssrf";
 
 interface OpenGraphData {
   url: string;
@@ -12,85 +13,6 @@ interface OpenGraphData {
 // Simple in-memory cache (in production, use Redis or similar)
 const cache = new Map<string, { data: OpenGraphData; timestamp: number }>();
 const CACHE_TTL = 1000 * 60 * 60; // 1 hour
-
-/**
- * SSRF Protection: Check if a hostname resolves to a private/internal IP.
- * Blocks requests to:
- * - Private IP ranges (10.x.x.x, 172.16-31.x.x, 192.168.x.x)
- * - Localhost (127.x.x.x, localhost, ::1)
- * - Link-local addresses (169.254.x.x, fe80::)
- * - Cloud metadata endpoints (169.254.169.254)
- */
-function isPrivateOrReservedHost(hostname: string): boolean {
-  // Block obvious localhost variations
-  const blockedHosts = [
-    "localhost",
-    "127.0.0.1",
-    "0.0.0.0",
-    "::1",
-    "[::1]",
-    "169.254.169.254", // AWS/cloud metadata
-    "metadata.google.internal", // GCP metadata
-    "metadata.azure.com", // Azure metadata
-  ];
-
-  const lowerHostname = hostname.toLowerCase();
-  if (blockedHosts.includes(lowerHostname)) {
-    return true;
-  }
-
-  // Check for IP address patterns
-  const ipv4Pattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const ipv4Match = hostname.match(ipv4Pattern);
-
-  if (ipv4Match) {
-    const [, a, b, c, d] = ipv4Match.map(Number);
-
-    // Validate IP octets
-    if ([a, b, c, d].some((octet) => octet > 255)) {
-      return true; // Invalid IP
-    }
-
-    // Private ranges
-    if (a === 10) return true; // 10.0.0.0/8
-    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
-    if (a === 192 && b === 168) return true; // 192.168.0.0/16
-
-    // Loopback
-    if (a === 127) return true; // 127.0.0.0/8
-
-    // Link-local
-    if (a === 169 && b === 254) return true; // 169.254.0.0/16
-
-    // Reserved
-    if (a === 0) return true; // 0.0.0.0/8
-    if (a >= 224) return true; // Multicast and reserved (224.0.0.0+)
-  }
-
-  // Block IPv6 private/local patterns
-  if (
-    hostname.startsWith("fe80:") ||
-    hostname.startsWith("[fe80:") || // Link-local
-    hostname.startsWith("fc") ||
-    hostname.startsWith("[fc") || // Unique local
-    hostname.startsWith("fd") ||
-    hostname.startsWith("[fd") // Unique local
-  ) {
-    return true;
-  }
-
-  // Block internal domain patterns
-  if (
-    lowerHostname.endsWith(".local") ||
-    lowerHostname.endsWith(".internal") ||
-    lowerHostname.endsWith(".localhost") ||
-    lowerHostname.includes(".svc.cluster") // Kubernetes
-  ) {
-    return true;
-  }
-
-  return false;
-}
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get("url");
@@ -129,7 +51,9 @@ export async function GET(request: NextRequest) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(url, {
+    // safeFetch re-validates each redirect target's host (redirect: "manual")
+    // so a public URL cannot redirect into a private/metadata endpoint.
+    const response = await safeFetch(url, {
       signal: controller.signal,
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; be.vocl/1.0; +https://be.vocl)",

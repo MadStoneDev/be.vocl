@@ -16,12 +16,28 @@ import {
   clearAllNotifications,
 } from "@/actions/notifications";
 
+type FilterTab = "all" | "mentions" | "follows";
+
+const FILTER_TABS: { id: FilterTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "mentions", label: "Mentions" },
+  { id: "follows", label: "Follows" },
+];
+
 export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isClearing, setIsClearing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+
+  const filteredNotifications = notifications.filter((n) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "mentions") return n.type === "mention";
+    if (activeFilter === "follows") return n.type === "follow";
+    return true;
+  });
 
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
@@ -99,7 +115,7 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
               >
                 <IconCheck size={16} />
                 <span className="hidden sm:inline">Mark all read</span>
@@ -121,17 +137,27 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Filter tabs - optional future enhancement */}
-      {/* <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {["All", "Follows", "Likes", "Comments", "Echoes"].map((filter) => (
-          <button
-            key={filter}
-            className="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap bg-white/5 text-foreground/70 hover:bg-white/10 hover:text-foreground transition-colors"
-          >
-            {filter}
-          </button>
-        ))}
-      </div> */}
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2" role="tablist" aria-label="Filter notifications">
+        {FILTER_TABS.map((tab) => {
+          const isActive = activeFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveFilter(tab.id)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+                isActive
+                  ? "bg-vocl-accent text-white"
+                  : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Loading state */}
       {isLoading ? (
@@ -140,7 +166,7 @@ export default function NotificationsPage() {
         </div>
       ) : (
         <NotificationList
-          notifications={notifications}
+          notifications={filteredNotifications}
           onMarkAsRead={handleMarkAsRead}
         />
       )}

@@ -14,7 +14,7 @@ export default function NotificationsError({
       <h2 className="text-xl font-semibold text-foreground mb-2">
         Couldn&apos;t load notifications
       </h2>
-      <p className="text-neutral-400 mb-6">
+      <p className="text-foreground/60 mb-6">
         We had trouble fetching your notifications. Please try again.
       </p>
       <button

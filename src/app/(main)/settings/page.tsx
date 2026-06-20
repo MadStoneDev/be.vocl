@@ -104,9 +104,19 @@ function SettingsContent() {
   };
 
   return (
-    <div className="py-6">
+    <div className="py-8 max-w-2xl mx-auto">
       <title>Settings | be.vocl</title>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Settings</h1>
+
+      {/* Editorial masthead */}
+      <header className="mb-8 border-b border-vocl-border pb-6">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          Your account
+        </span>
+        <h1 className="type-display-lg font-display text-foreground mt-1">Settings</h1>
+        <p className="type-body text-foreground/55 mt-1">
+          Manage your profile, privacy, and how be.vocl works for you.
+        </p>
+      </header>
 
       {showSuccess && (
         <div className="mb-6 p-4 rounded-xl bg-vocl-accent/10 border border-vocl-accent/20 flex items-center gap-3">
@@ -117,27 +127,29 @@ function SettingsContent() {
         </div>
       )}
 
-      <div className="space-y-2">
+      <nav className="rounded-2xl border border-vocl-border bg-vocl-surface-dark overflow-hidden divide-y divide-vocl-border">
         {settingsLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
-            className="flex items-center gap-4 p-4 rounded-xl bg-vocl-surface-dark hover:bg-white/5 transition-colors"
+            className="group flex items-center gap-4 px-4 py-4 hover:bg-vocl-hover transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center">
               <link.icon className={`w-5 h-5 ${link.color}`} />
             </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-foreground">{link.title}</h3>
-              <p className="text-sm text-foreground/50">{link.description}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="type-heading text-foreground group-hover:text-vocl-primary transition-colors">
+                {link.title}
+              </h3>
+              <p className="type-meta text-foreground/50 mt-0.5">{link.description}</p>
             </div>
-            <IconChevronRight className="w-5 h-5 text-foreground/30" />
+            <IconChevronRight className="w-5 h-5 text-foreground/30 group-hover:text-foreground/50 group-hover:translate-x-0.5 transition-all" />
           </Link>
         ))}
-      </div>
+      </nav>
 
       {/* Logout Button */}
-      <div className="mt-8 pt-6 border-t border-white/5">
+      <div className="mt-8 pt-6 border-t border-vocl-border">
         <button
           type="button"
           onClick={handleLogout}
@@ -148,10 +160,10 @@ function SettingsContent() {
             <IconLogout className="w-5 h-5 text-vocl-like" />
           </div>
           <div className="flex-1 text-left">
-            <h3 className="font-medium text-vocl-like">
+            <h3 className="type-heading text-vocl-like">
               {isLoggingOut ? "Logging out..." : "Log out"}
             </h3>
-            <p className="text-sm text-vocl-like/70">Sign out of your account</p>
+            <p className="type-meta text-vocl-like/70 mt-0.5">Sign out of your account</p>
           </div>
         </button>
       </div>

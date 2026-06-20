@@ -22,6 +22,53 @@ interface NotificationListProps {
   onMarkAsRead: (id: string) => void;
 }
 
+/**
+ * Collapse multiple same-type notifications on the same target into one row.
+ * Grouping key = type + target (postId, or "follow" which has no post).
+ * Single notifications and types without an obvious shared target
+ * (comment/message) are left ungrouped so their content stays visible.
+ */
+function groupNotifications(items: Notification[]): Array<
+  Notification & { otherActors?: { username: string; avatarUrl?: string }[]; groupedIds?: string[] }
+> {
+  const groupableTypes: ReadonlySet<NotificationType> = new Set([
+    "like",
+    "reblog",
+    "follow",
+  ]);
+
+  const buckets = new Map<string, Notification[]>();
+  const order: string[] = [];
+
+  for (const n of items) {
+    // Only group when we have a stable target (post-based) or follows.
+    const canGroup =
+      groupableTypes.has(n.type) &&
+      (n.type === "follow" || !!n.postId);
+    const key = canGroup
+      ? `${n.type}::${n.postId ?? "follow"}`
+      : `single::${n.id}`;
+    if (!buckets.has(key)) {
+      buckets.set(key, []);
+      order.push(key);
+    }
+    buckets.get(key)!.push(n);
+  }
+
+  return order.map((key) => {
+    const group = buckets.get(key)!;
+    const [primary, ...rest] = group;
+    if (rest.length === 0) return primary;
+    return {
+      ...primary,
+      // A group is unread if any member is unread.
+      isRead: group.every((g) => g.isRead),
+      otherActors: rest.map((r) => r.actor),
+      groupedIds: group.map((g) => g.id),
+    };
+  });
+}
+
 export function NotificationList({
   notifications,
   onMarkAsRead,
@@ -29,7 +76,7 @@ export function NotificationList({
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+        <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4">
           <IconBellOff size={32} className="text-foreground/30" />
         </div>
         <h3 className="text-lg font-medium text-foreground/70 mb-2">
@@ -62,9 +109,9 @@ export function NotificationList({
             {date}
           </h3>
 
-          {/* Notifications for this date */}
+          {/* Notifications for this date (grouped by type + target) */}
           <div className="space-y-1">
-            {items.map((notification) => (
+            {groupNotifications(items).map((notification) => (
               <NotificationItem
                 key={notification.id}
                 {...notification}

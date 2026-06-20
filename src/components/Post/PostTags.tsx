@@ -30,7 +30,7 @@ export function PostTags({ tags, maxVisible = 5 }: PostTagsProps) {
         </Link>
       ))}
       {hiddenCount > 0 && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/5 text-foreground/50 text-xs">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-vocl-hover text-foreground/50 text-xs">
           +{hiddenCount} more
         </span>
       )}

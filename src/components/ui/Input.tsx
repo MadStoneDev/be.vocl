@@ -23,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/60">
               {leftIcon}
             </div>
           )}
@@ -31,9 +31,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={`
-              w-full bg-white/5 border border-white/10 rounded-lg
+              w-full bg-vocl-hover border border-vocl-border rounded-lg
               px-4 py-2.5
-              text-foreground placeholder:text-neutral-500
+              text-foreground placeholder:text-foreground/50
               transition-all duration-150
               focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent
               disabled:opacity-50 disabled:cursor-not-allowed
@@ -45,7 +45,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60">
               {rightIcon}
             </div>
           )}

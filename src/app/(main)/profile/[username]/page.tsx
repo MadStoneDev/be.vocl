@@ -13,6 +13,7 @@ import {
   FollowersModal,
   AvatarModal,
   AskModal,
+  ProfileAccentScope,
   type TabId,
 } from "@/components/profile";
 import { ReportModal } from "@/components/moderation";
@@ -36,6 +37,7 @@ interface ProfileData {
   showComments: boolean;
   showFollowers: boolean;
   showFollowing: boolean;
+  accentColor?: string | null;
   role: number;
 }
 
@@ -131,6 +133,7 @@ export default function ProfilePage() {
         showComments: result.profile.showComments,
         showFollowers: result.profile.showFollowers,
         showFollowing: result.profile.showFollowing,
+        accentColor: result.profile.accentColor ?? null,
         role: result.profile.role,
       });
 
@@ -269,7 +272,7 @@ export default function ProfilePage() {
         id={post.id}
         author={{
           username: post.author.username,
-          avatarUrl: post.author.avatarUrl || "https://via.placeholder.com/100",
+          avatarUrl: post.author.avatarUrl || "",
         }}
         authorId={post.authorId}
         timestamp={post.createdAt}
@@ -381,6 +384,7 @@ export default function ProfilePage() {
   }
 
   return (
+    <ProfileAccentScope accent={profile.accentColor}>
     <div className="min-h-screen pb-24">
       {profile && <title>{`@${profile.username} | be.vocl`}</title>}
       {/* Profile Header */}
@@ -395,6 +399,14 @@ export default function ProfilePage() {
         isMutual={mutual}
         role={profile.role}
         allowsAsks={allowsAsks}
+        stats={stats}
+        onStatClick={(stat) => {
+          if (stat === "posts") {
+            setActiveTab("posts");
+          } else {
+            openFollowersModal(stat);
+          }
+        }}
         onFollow={handleFollow}
         onUnfollow={handleUnfollow}
         onSettings={() => router.push("/settings")}
@@ -561,6 +573,7 @@ export default function ProfilePage() {
         />
       )}
     </div>
+    </ProfileAccentScope>
   );
 }
 

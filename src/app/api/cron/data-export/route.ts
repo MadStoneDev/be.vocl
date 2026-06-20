@@ -3,18 +3,15 @@ import { createClient } from "@supabase/supabase-js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getR2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from "@/lib/r2/client";
 import { sendDataExportReadyEmail } from "@/lib/email/send";
+import { verifyCronAuth } from "../_auth";
 
 // Processes pending data export requests
 // Run every 15 minutes via cron
 
 export async function GET(request: Request) {
-  // Verify cron secret
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Verify cron secret (fails closed if CRON_SECRET is unset)
+  const authError = verifyCronAuth(request);
+  if (authError) return authError;
 
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

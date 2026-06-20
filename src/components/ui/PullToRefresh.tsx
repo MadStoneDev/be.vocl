@@ -21,6 +21,15 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
 
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  // Mirrors pullDistance for reads inside touch listeners, so onTouchEnd sees the
+  // live value without pullDistance being an effect dependency (which would
+  // rebind all listeners on every touchmove).
+  const pullDistanceRef = useRef(0);
+
+  const setPull = (d: number) => {
+    pullDistanceRef.current = d;
+    setPullDistance(d);
+  };
 
   useEffect(() => {
     if (disabled) return;
@@ -42,7 +51,7 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
       if (refreshing || startYRef.current === null) return;
       const delta = e.touches[0].clientY - startYRef.current;
       if (delta <= 0) {
-        setPullDistance(0);
+        setPull(0);
         return;
       }
       // Once we know it's a downward pull at top of page, take over and
@@ -51,7 +60,7 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
       if (isPullingRef.current) {
         e.preventDefault();
         const eased = Math.min(MAX_PULL, delta * RUBBER_FACTOR);
-        setPullDistance(eased);
+        setPull(eased);
       }
     }
 
@@ -61,21 +70,21 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
         isPullingRef.current = false;
         return;
       }
-      const distance = pullDistance;
+      const distance = pullDistanceRef.current;
       startYRef.current = null;
       isPullingRef.current = false;
 
       if (distance >= TRIGGER_DISTANCE) {
         setRefreshing(true);
-        setPullDistance(TRIGGER_DISTANCE);
+        setPull(TRIGGER_DISTANCE);
         try {
           await onRefresh();
         } finally {
           setRefreshing(false);
-          setPullDistance(0);
+          setPull(0);
         }
       } else {
-        setPullDistance(0);
+        setPull(0);
       }
     }
 
@@ -90,7 +99,7 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
       el.removeEventListener("touchend", onTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [onRefresh, pullDistance, refreshing, disabled]);
+  }, [onRefresh, refreshing, disabled]);
 
   const triggered = pullDistance >= TRIGGER_DISTANCE;
   const progress = Math.min(1, pullDistance / TRIGGER_DISTANCE);
@@ -106,7 +115,7 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
           opacity: refreshing ? 1 : progress,
         }}
       >
-        <div className="mt-2 w-9 h-9 rounded-full bg-vocl-surface-dark border border-white/10 shadow-lg flex items-center justify-center">
+        <div className="mt-2 w-9 h-9 rounded-full bg-vocl-surface border border-vocl-border shadow-lg flex items-center justify-center">
           {refreshing ? (
             <IconLoader2 size={18} className="animate-spin text-vocl-accent" />
           ) : (

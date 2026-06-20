@@ -34,7 +34,7 @@ import {
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
 import { ImageLightbox } from "./content/ImageLightbox";
-import { StaffBadge, Avatar } from "@/components/ui";
+import { StaffBadge, Avatar, TimeAgo } from "@/components/ui";
 import { CommentVoiceRecorder } from "./create/CommentVoiceRecorder";
 
 // Panel types for expanded view
@@ -172,7 +172,7 @@ function PostHeader({
 }: PostHeaderProps) {
   return (
     <div
-      className="flex items-center justify-between p-1.5 sm:p-2 border-b border-vocl-surface-dark/20 z-50"
+      className="flex items-center justify-between p-1.5 sm:p-2 border-b border-vocl-overlay/20 z-50"
       style={{ backgroundColor: "var(--vocl-surface-muted)" }}
     >
       <div className="flex items-center gap-3">
@@ -214,7 +214,7 @@ function PostHeader({
                   {reblogFrom}
                 </Link>
                 {" · "}
-                {timestamp}
+                <TimeAgo iso={timestamp} />
               </>
             ) : reblogFrom ? (
               <>
@@ -227,10 +227,10 @@ function PostHeader({
                   {reblogFrom}
                 </Link>
                 {" · "}
-                {timestamp}
+                <TimeAgo iso={timestamp} />
               </>
             ) : (
-              timestamp
+              <TimeAgo iso={timestamp} />
             )}
             {threadId && threadPosition != null && threadLength != null && threadLength > 1 && (
               <>
@@ -280,10 +280,17 @@ function PostActionBar({
   onReblogsClick,
   onReblogClick,
 }: PostActionBarProps) {
+  const [likeBurst, setLikeBurst] = useState(false);
+  const handleLikeClick = () => {
+    if (!interactions.hasLiked) {
+      setLikeBurst(true);
+      setTimeout(() => setLikeBurst(false), 600);
+    }
+    onLike?.();
+  };
   return (
     <div
-      className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5`}
-      style={{ backgroundColor: "var(--vocl-action-bar)" }}
+      className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5 bg-white border-t border-neutral-200`}
     >
       {/* Comment button - icon AND count open panel */}
       <button
@@ -301,13 +308,13 @@ function PostActionBar({
         ) : (
           <IconMessage
             size={24}
-            className="text-neutral-400"
+            className="text-neutral-500"
             aria-hidden="true"
           />
         )}
         <span
           className={`font-sans text-sm ${
-            interactions.hasCommented ? "text-vocl-comment" : "text-neutral-400"
+            interactions.hasCommented ? "text-vocl-comment" : "text-neutral-500"
           }`}
           aria-hidden="true"
         >
@@ -318,21 +325,27 @@ function PostActionBar({
       {/* Like button - icon triggers like, count shows likes list */}
       <div className="flex items-center gap-1 sm:gap-2">
         <button
-          onClick={onLike}
-          className="cursor-pointer transition-colors"
+          onClick={handleLikeClick}
+          className="relative cursor-pointer transition-colors"
           aria-label={interactions.hasLiked ? "Unlike post" : "Like post"}
           aria-pressed={interactions.hasLiked}
         >
+          {likeBurst && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-full border-2 border-vocl-like animate-like-burst"
+            />
+          )}
           {interactions.hasLiked ? (
             <IconHeartFilled
               size={24}
-              className="text-vocl-like"
+              className={`text-vocl-like ${likeBurst ? "animate-like-pop" : ""}`}
               aria-hidden="true"
             />
           ) : (
             <IconHeart
               size={24}
-              className="text-neutral-400"
+              className="text-neutral-500"
               aria-hidden="true"
             />
           )}
@@ -340,7 +353,7 @@ function PostActionBar({
         <button
           onClick={onLikesClick}
           className={`cursor-pointer font-sans text-sm transition-colors ${
-            interactions.hasLiked ? "text-vocl-like" : "text-neutral-400"
+            interactions.hasLiked ? "text-vocl-like" : "text-neutral-500"
           }`}
           aria-label="View likes"
         >
@@ -352,7 +365,7 @@ function PostActionBar({
       <button
         onClick={onReblogsClick}
         className={`font-sans text-sm font-medium cursor-pointer transition-colors ${
-          interactions.hasReblogged ? "text-vocl-reblog" : "text-neutral-400"
+          interactions.hasReblogged ? "text-vocl-reblog" : "text-neutral-500"
         }`}
         aria-label="View echoes"
       >
@@ -362,7 +375,7 @@ function PostActionBar({
       {/* Reblog button */}
       <button
         onClick={onReblogClick}
-        className={`group absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-surface-dark/50"} bg-vocl-accent transition-all duration-300 ${
+        className={`group absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-primary/40"} bg-vocl-primary transition-all duration-300 ${
           isReblogMenuOpen ? "scale-105" : "hover:scale-105"
         } z-50`}
         aria-label="Echo options"
@@ -370,21 +383,21 @@ function PostActionBar({
       >
         <div className="hidden sm:flex items-center justify-center">
           {isReblogMenuOpen ? (
-            <IconBolt size={55} stroke={1.5} className={`text-neutral-900`} />
+            <IconBolt size={55} stroke={1.5} className="text-white" />
           ) : (
             <IconRefresh
               size={55}
               stroke={1.5}
-              className={`text-neutral-900`}
+              className="text-white"
             />
           )}
         </div>
 
         <div className="flex sm:hidden items-center justify-center">
           {isReblogMenuOpen ? (
-            <IconBolt size={50} stroke={1.5} className="text-neutral-900" />
+            <IconBolt size={50} stroke={1.5} className="text-white" />
           ) : (
-            <IconRefresh size={50} stroke={1.5} className="text-neutral-900" />
+            <IconRefresh size={50} stroke={1.5} className="text-white" />
           )}
         </div>
       </button>
@@ -526,7 +539,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
             <button
               type="submit"
               disabled={!newComment.trim() || newComment.length > 2000}
-              className="p-2 rounded-full bg-vocl-accent text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="p-2 rounded-full bg-vocl-primary text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
             >
               <IconSend size={18} />
             </button>
@@ -563,7 +576,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
             </button>
             <button
               type="submit"
-              className="p-1.5 rounded-full bg-vocl-accent text-white"
+              className="p-1.5 rounded-full bg-vocl-primary text-white"
             >
               <IconSend size={14} />
             </button>
@@ -611,9 +624,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
                   {comment.author.role !== undefined && (
                     <StaffBadge role={comment.author.role} size={14} />
                   )}
-                  <span className="text-xs text-neutral-400">
-                    {comment.timestamp}
-                  </span>
+                  <TimeAgo iso={comment.timestamp} className="text-xs text-neutral-400" />
                 </div>
                 {comment.content && (
                   <p className="text-sm text-neutral-600 mt-0.5">
@@ -1073,7 +1084,7 @@ export const Post = memo(function Post({
           {isReblog && originalAuthor && (
             <div className="bg-white overflow-hidden">
               {/* Original author mini-header */}
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-vocl-surface-dark">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-vocl-overlay">
                 <Link
                   href={`/profile/${originalAuthor.username}`}
                   className="hover:opacity-90 transition-opacity"
@@ -1096,9 +1107,7 @@ export const Post = memo(function Post({
                       <StaffBadge role={originalAuthor.role} size={14} />
                     )}
                   </div>
-                  <span className="-mt-1 font-sans text-[0.65rem] text-neutral-400">
-                    {timestamp}
-                  </span>
+                  <TimeAgo iso={timestamp} className="-mt-1 font-sans text-[0.65rem] text-neutral-400" />
                 </div>
               </div>
 
@@ -1158,7 +1167,7 @@ export const Post = memo(function Post({
           {/* Content Warning overlay */}
           {contentWarning && !isCWDismissed && !showNSFWOverlay && (
             <div
-              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-surface-dark/95 backdrop-blur-sm"
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay/95 backdrop-blur-sm"
               style={{ borderRadius: contentBorderRadius }}
             >
               <div className="text-center px-6 max-w-sm">
@@ -1193,7 +1202,7 @@ export const Post = memo(function Post({
           {isReblog && reblogCommentHtml && (
             <div className="bg-[#EBEBEB] px-2 pt-2.5 pb-2.5 sm:p-2 sm:pb-4">
               <div
-                className={`bg-vocl-surface-dark p-2 font-display text-sm text-neutral-50`}
+                className={`bg-vocl-overlay p-2 font-display text-sm text-neutral-50`}
               >
                 {author.username}{" "}
                 <span className={`font-sans text-xs text-neutral-400`}>
@@ -1201,7 +1210,7 @@ export const Post = memo(function Post({
                 </span>
               </div>
               <div
-                className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+                className="font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml),
                 }}
@@ -1305,7 +1314,7 @@ interface ImageContentProps {
 }
 
 // Clamp aspect ratio between 4:5 (portrait) and 2:1 (landscape)
-const MIN_ASPECT = 4 / 5; // 0.8
+const MIN_ASPECT = 2 / 3; // 0.667 — allow taller portraits to breathe
 const MAX_ASPECT = 2 / 1; // 2.0
 
 export function ImageContent({ src, alt, caption, priority }: ImageContentProps) {
@@ -1323,7 +1332,7 @@ export function ImageContent({ src, alt, caption, priority }: ImageContentProps)
   return (
     <>
       <div
-        className="relative w-full cursor-pointer overflow-hidden bg-vocl-surface-dark/40"
+        className="relative w-full cursor-pointer overflow-hidden bg-vocl-hover"
         style={
           aspectRatio ? { aspectRatio: `${aspectRatio}` } : { aspectRatio: "1" }
         }
@@ -1380,7 +1389,7 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
         {(essayTitle || readingTimeMinutes) && (
           <div className="mb-4 pb-3 border-b border-neutral-300/60">
             {essayTitle && (
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-neutral-800 mb-1 leading-tight">
+              <h2 className="font-display text-2xl sm:text-3xl text-neutral-900 mb-1.5 leading-tight">
                 {essayTitle}
               </h2>
             )}
@@ -1408,11 +1417,11 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
     <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB]">
       {html ? (
         <div
-          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+          className="font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
         />
       ) : (
-        <div className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 whitespace-pre-wrap">
+        <div className="font-sans text-base leading-relaxed text-neutral-800 whitespace-pre-wrap">
           {children}
         </div>
       )}

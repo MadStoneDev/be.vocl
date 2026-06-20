@@ -143,10 +143,15 @@ export function useIsOnline(userIds: string[]): Map<string, boolean> {
     new Map()
   );
 
+  // Callers typically pass a fresh array each render; depend on a stable string
+  // key so the effect doesn't resubscribe the listener on every render.
+  const userIdsKey = userIds.join(",");
+
   useEffect(() => {
+    const ids = userIdsKey ? userIdsKey.split(",") : [];
     const handleUpdate = () => {
       const newStatus = new Map<string, boolean>();
-      userIds.forEach((id) => {
+      ids.forEach((id) => {
         newStatus.set(id, globalOnlineUsers.has(id));
       });
       setOnlineStatus(newStatus);
@@ -159,7 +164,7 @@ export function useIsOnline(userIds: string[]): Map<string, boolean> {
     return () => {
       window.removeEventListener("online-users-updated", handleUpdate);
     };
-  }, [userIds]);
+  }, [userIdsKey]);
 
   return onlineStatus;
 }

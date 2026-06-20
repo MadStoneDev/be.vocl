@@ -117,7 +117,7 @@ export function FollowersModal({
       {/* Modal */}
       <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-vocl-surface-dark rounded-3xl z-50 flex flex-col max-h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div>
             <h2 className="font-semibold text-foreground text-lg">
               {type === "followers" ? "Followers" : "Following"}
@@ -127,7 +127,7 @@ export function FollowersModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all"
           >
             <IconX size={20} />
           </button>
@@ -148,11 +148,11 @@ export function FollowersModal({
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-vocl-border">
               {users.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center gap-3 p-4 hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-3 p-4 hover:bg-vocl-hover transition-colors"
                 >
                   {/* Avatar */}
                   <Link href={`/profile/${user.username}`} onClick={onClose}>
@@ -210,7 +210,7 @@ export function FollowersModal({
 
         {/* Footer with count */}
         {!isLoading && users.length > 0 && (
-          <div className="p-3 border-t border-white/5 text-center">
+          <div className="p-3 border-t border-vocl-border text-center">
             <p className="text-foreground/40 text-sm">
               {total} {type === "followers" ? "followers" : "following"}
             </p>

@@ -143,9 +143,9 @@ export function ReportModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-2xl shadow-2xl">
+      <div className="relative w-full max-w-md mx-4 bg-background border border-vocl-border rounded-2xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconFlag size={20} className="text-vocl-like" />
             <h2 className="text-lg font-semibold text-foreground">
@@ -160,7 +160,7 @@ export function ReportModal({
           </div>
           <button
             onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
           >
             <IconX size={20} />
           </button>
@@ -205,7 +205,7 @@ export function ReportModal({
                     className={`w-full text-left p-3 rounded-xl border transition-colors ${
                       selectedSubject === subject.value
                         ? "border-vocl-accent bg-vocl-accent/10"
-                        : "border-white/10 hover:border-white/20"
+                        : "border-vocl-border hover:border-vocl-hover-strong"
                     }`}
                   >
                     <div className="font-medium text-sm text-foreground">
@@ -228,7 +228,7 @@ export function ReportModal({
                   onChange={(e) => setComments(e.target.value)}
                   placeholder="Provide any additional context..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
                 />
               </div>
 
@@ -241,10 +241,10 @@ export function ReportModal({
 
         {/* Footer */}
         {!submitted && (
-          <div className="flex gap-3 p-4 border-t border-white/5">
+          <div className="flex gap-3 p-4 border-t border-vocl-border">
             <button
               onClick={handleClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-white/10 text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-vocl-border text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               Cancel
             </button>

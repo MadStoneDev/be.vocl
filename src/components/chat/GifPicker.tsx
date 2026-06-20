@@ -94,23 +94,23 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
   if (!isOpen) return null;
 
   return (
-    <div className={inline ? "bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl overflow-hidden" : "absolute bottom-full left-0 right-0 mb-2 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl overflow-hidden z-50"}>
+    <div className={inline ? "bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl overflow-hidden text-foreground" : "absolute bottom-full left-0 right-0 mb-2 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl overflow-hidden z-50 text-foreground"}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-white/5">
+      <div className="flex items-center justify-between p-3 border-b border-vocl-border">
         <div className="flex items-center gap-2">
           <IconGif size={20} className="text-vocl-accent" />
           <span className="font-medium text-foreground text-sm">GIFs</span>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+          className="p-1 rounded-lg hover:bg-vocl-hover-strong transition-colors"
         >
           <IconX size={18} className="text-foreground/60" />
         </button>
       </div>
 
       {/* Search */}
-      <div className="p-2 border-b border-white/5">
+      <div className="p-2 border-b border-vocl-border">
         <div className="relative">
           <IconSearch
             size={16}
@@ -121,7 +121,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search GIFs..."
-            className="w-full py-2 pl-9 pr-3 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-vocl-accent text-sm"
+            className="w-full py-2 pl-9 pr-3 rounded-lg bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-vocl-accent text-sm"
             autoFocus
           />
         </div>
@@ -139,7 +139,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
               <button
                 key={gif.id}
                 onClick={() => handleSelect(gif)}
-                className="relative aspect-square rounded-lg overflow-hidden bg-white/5 hover:ring-2 hover:ring-vocl-accent transition-all"
+                className="relative aspect-square rounded-lg overflow-hidden bg-vocl-hover hover:ring-2 hover:ring-vocl-accent transition-all"
               >
                 <Image
                   src={gif.previewUrl}
@@ -170,7 +170,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
       </div>
 
       {/* Powered by Tenor */}
-      <div className="px-3 py-2 border-t border-white/5 text-center">
+      <div className="px-3 py-2 border-t border-vocl-border text-center">
         <span className="text-[10px] text-foreground/30">Powered by GIPHY</span>
       </div>
     </div>

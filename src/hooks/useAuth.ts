@@ -13,6 +13,7 @@ interface Profile {
   lockStatus: "unlocked" | "restricted" | "banned";
   showSensitivePosts: boolean;
   blurSensitiveByDefault: boolean;
+  feedLayout: "reader" | "frontpage";
 }
 
 interface UseAuthReturn {
@@ -36,7 +37,7 @@ export function useAuth(): UseAuthReturn {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, username, display_name, avatar_url, role, lock_status, show_sensitive_posts, blur_sensitive_by_default")
+          .select("id, username, display_name, avatar_url, role, lock_status, show_sensitive_posts, blur_sensitive_by_default, feed_layout")
           .eq("id", userId)
           .maybeSingle();
 
@@ -55,6 +56,10 @@ export function useAuth(): UseAuthReturn {
             lockStatus: (data.lock_status as Profile["lockStatus"]) ?? "unlocked",
             showSensitivePosts: data.show_sensitive_posts ?? false,
             blurSensitiveByDefault: data.blur_sensitive_by_default ?? true,
+            feedLayout:
+              (data as { feed_layout?: string }).feed_layout === "frontpage"
+                ? "frontpage"
+                : "reader",
           };
         }
         return null;

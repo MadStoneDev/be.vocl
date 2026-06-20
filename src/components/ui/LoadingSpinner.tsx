@@ -26,7 +26,7 @@ export function FullPageLoader() {
     <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50">
       <div className="flex flex-col items-center gap-4">
         <LoadingSpinner size="lg" />
-        <p className="text-sm text-neutral-400">Loading...</p>
+        <p className="text-sm text-foreground/60">Loading...</p>
       </div>
     </div>
   );
@@ -34,7 +34,7 @@ export function FullPageLoader() {
 
 export function InlineLoader({ text = 'Loading' }: { text?: string }) {
   return (
-    <div className="flex items-center gap-2 text-neutral-400">
+    <div className="flex items-center gap-2 text-foreground/60">
       <LoadingSpinner size="sm" />
       <span className="text-sm">{text}</span>
     </div>

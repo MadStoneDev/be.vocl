@@ -138,7 +138,7 @@ export function MediaUploader({
           className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${
             dragOver
               ? "border-vocl-accent bg-vocl-accent/10"
-              : "border-white/10 hover:border-white/20"
+              : "border-vocl-border hover:border-vocl-border"
           }`}
         >
           <input
@@ -156,7 +156,7 @@ export function MediaUploader({
               <p className="text-foreground/60">
                 Uploading... {progress?.percent || 0}%
               </p>
-              <div className="w-48 h-1.5 mx-auto bg-white/10 rounded-full overflow-hidden">
+              <div className="w-48 h-1.5 mx-auto bg-vocl-hover-strong rounded-full overflow-hidden">
                 <div
                   className="h-full bg-vocl-accent transition-all"
                   style={{ width: `${progress?.percent || 0}%` }}

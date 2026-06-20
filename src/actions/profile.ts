@@ -27,6 +27,9 @@ interface Profile {
   blurSensitiveByDefault: boolean;
   allowAsks: boolean;
   allowAnonymousAsks: boolean;
+  isDiscoverable: boolean;
+  allowSearchIndexing: boolean;
+  accentColor?: string | null;
   createdAt: string;
   role: number;
 }
@@ -49,7 +52,7 @@ export async function getProfileByUsername(
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, accent_color, created_at, role")
       .eq("username", username)
       .single();
 
@@ -75,6 +78,9 @@ export async function getProfileByUsername(
         blurSensitiveByDefault: data.blur_sensitive_by_default,
         allowAsks: data.allow_asks ?? true,
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
+        isDiscoverable: data.is_discoverable ?? true,
+        allowSearchIndexing: data.allow_search_indexing ?? true,
+        accentColor: data.accent_color ?? null,
         createdAt: data.created_at,
         role: data.role ?? 0,
       },
@@ -105,7 +111,7 @@ export async function getCurrentProfile(): Promise<{
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, accent_color, created_at, role")
       .eq("id", user.id)
       .single();
 
@@ -131,6 +137,9 @@ export async function getCurrentProfile(): Promise<{
         blurSensitiveByDefault: data.blur_sensitive_by_default,
         allowAsks: data.allow_asks ?? true,
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
+        isDiscoverable: data.is_discoverable ?? true,
+        allowSearchIndexing: data.allow_search_indexing ?? true,
+        accentColor: data.accent_color ?? null,
         createdAt: data.created_at,
         role: data.role ?? 0,
       },
@@ -236,6 +245,49 @@ export async function updatePrivacySettings(settings: {
 }
 
 /**
+ * Update public web visibility settings (front-page discoverability +
+ * search-engine indexing of the user's public blog).
+ */
+export async function updateWebVisibilitySettings(settings: {
+  isDiscoverable?: boolean;
+  allowSearchIndexing?: boolean;
+}): Promise<ProfileResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const updateData: any = { updated_at: new Date().toISOString() };
+    if (settings.isDiscoverable !== undefined)
+      updateData.is_discoverable = settings.isDiscoverable;
+    if (settings.allowSearchIndexing !== undefined)
+      updateData.allow_search_indexing = settings.allowSearchIndexing;
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update(updateData)
+      .eq("id", user.id);
+
+    if (error) {
+      return { success: false, error: "Failed to update settings" };
+    }
+
+    revalidatePath("/");
+    revalidatePath("/settings/privacy");
+    revalidatePath("/u/[username]", "page");
+    return { success: true };
+  } catch (error) {
+    console.error("Update web visibility settings error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
  * Update content settings (NSFW)
  */
 export async function updateContentSettings(settings: {
@@ -272,6 +324,92 @@ export async function updateContentSettings(settings: {
     return { success: true };
   } catch (error) {
     console.error("Update content settings error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Update the current user's profile accent color (Tumblr-style blog theming).
+ * Accepts a #rgb / #rrggbb hex string, or null to clear.
+ */
+export async function updateAccentColor(
+  accentColor: string | null
+): Promise<ProfileResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate hex if provided
+    if (accentColor !== null && accentColor !== "") {
+      if (!/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(accentColor.trim())) {
+        return { success: false, error: "Invalid color" };
+      }
+    }
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({
+        accent_color: accentColor === "" ? null : accentColor,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Update accent color error:", error);
+      return { success: false, error: "Failed to update accent color" };
+    }
+
+    revalidatePath("/profile/[username]", "page");
+    revalidatePath("/settings/appearance");
+    return { success: true };
+  } catch (error) {
+    console.error("Update accent color error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Update the current user's preferred feed layout.
+ */
+export async function updateFeedLayout(
+  layout: "reader" | "frontpage"
+): Promise<ProfileResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (layout !== "reader" && layout !== "frontpage") {
+      return { success: false, error: "Invalid layout" };
+    }
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({
+        feed_layout: layout,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Update feed layout error:", error);
+      return { success: false, error: "Failed to update feed layout" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update feed layout error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
@@ -831,7 +969,7 @@ export async function getFullProfile(
     const [profileResult, authResult] = await Promise.all([
       (supabase as any)
         .from("profiles")
-        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, created_at, role")
+        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, accent_color, created_at, role")
         .eq("username", username)
         .single(),
       supabase.auth.getUser(),
@@ -861,6 +999,9 @@ export async function getFullProfile(
       blurSensitiveByDefault: data.blur_sensitive_by_default,
       allowAsks: data.allow_asks ?? true,
       allowAnonymousAsks: data.allow_anonymous_asks ?? true,
+      isDiscoverable: data.is_discoverable ?? true,
+      allowSearchIndexing: data.allow_search_indexing ?? true,
+      accentColor: data.accent_color ?? null,
       createdAt: data.created_at,
       role: data.role ?? 0,
     };

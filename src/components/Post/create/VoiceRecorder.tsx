@@ -62,6 +62,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
   const blobRef = useRef<Blob | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const startedAtRef = useRef<number>(0);
+  const previewUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -81,8 +82,9 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
     }
   }
 
@@ -132,6 +134,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
         blobRef.current = blob;
         const url = URL.createObjectURL(blob);
+        previewUrlRef.current = url;
         setPreviewUrl(url);
         setState("preview");
         if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -139,6 +142,10 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((t) => t.stop());
           streamRef.current = null;
+        }
+        if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+          audioContextRef.current.close();
+          audioContextRef.current = null;
         }
       };
 
@@ -155,6 +162,10 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
         }
       }, 250);
     } catch (e: any) {
+      // If getUserMedia succeeded but MediaRecorder construction (or anything
+      // after) threw, we may have a live stream / AudioContext / rAF loop open.
+      // Tear them down so we don't leak the mic or hit Chrome's AudioContext cap.
+      cleanup();
       setError(
         e.name === "NotAllowedError"
           ? "Microphone access denied. Allow mic access in your browser settings."
@@ -171,7 +182,10 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
   }
 
   function discard() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
     setPreviewUrl(null);
     blobRef.current = null;
     setSeconds(0);
@@ -233,7 +247,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
   return (
     <div className="space-y-3">
       {state === "idle" && (
-        <div className="rounded-xl bg-background/50 border border-white/10 p-6 text-center">
+        <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
           <button
             type="button"
             onClick={startRecording}
@@ -265,7 +279,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
             </span>
           </div>
 
-          <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-4">
+          <div className="h-2 rounded-full bg-vocl-hover overflow-hidden mb-4">
             <div
               className="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-400 transition-[width]"
               style={{ width: `${Math.round(level * 100)}%` }}
@@ -283,7 +297,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "preview" && previewUrl && (
-        <div className="rounded-xl bg-background/50 border border-white/10 p-4 space-y-3">
+        <div className="rounded-xl bg-background/50 border border-vocl-border p-4 space-y-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -320,7 +334,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "uploading" && (
-        <div className="rounded-xl bg-background/50 border border-white/10 p-6 text-center">
+        <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
           <IconLoader2 size={24} className="animate-spin text-vocl-accent mx-auto mb-2" />
           <p className="text-sm text-foreground/70">Uploading…</p>
         </div>

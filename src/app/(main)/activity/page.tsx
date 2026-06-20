@@ -57,7 +57,7 @@ function getActivityIcon(type: ActivityItem["type"]) {
     case "mention":
       return { icon: IconAt, color: "text-amber-400", bg: "bg-amber-400/20" };
     default:
-      return { icon: IconHeart, color: "text-foreground/50", bg: "bg-white/10" };
+      return { icon: IconHeart, color: "text-foreground/50", bg: "bg-vocl-hover-strong" };
   }
 }
 
@@ -120,7 +120,7 @@ export default function ActivityPage() {
     return (
       <div className="py-6">
         <h1 className="text-2xl font-bold text-foreground mb-6">Activity</h1>
-        <div className="p-6 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
+        <div className="p-6 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-foreground/50">{error || "Unable to load activity data."}</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function ActivityPage() {
           return (
             <div
               key={card.key}
-              className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5"
+              className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border"
             >
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -175,14 +175,14 @@ export default function ActivityPage() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === tab.key
                   ? "bg-vocl-accent text-white"
-                  : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                  : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
               }`}
             >
               <span>{tab.label}</span>
               {count > 0 && (
                 <span
                   className={`px-1.5 py-0.5 rounded-full text-xs ${
-                    filter === tab.key ? "bg-white/20" : "bg-white/10"
+                    filter === tab.key ? "bg-white/20" : "bg-vocl-hover-strong"
                   }`}
                 >
                   {count}
@@ -200,7 +200,7 @@ export default function ActivityPage() {
             : stats.recentActivity.filter((i) => i.type === filter);
         if (filtered.length === 0) {
           return (
-            <div className="p-6 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
+            <div className="p-6 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
               <p className="text-foreground/50">
                 {filter === "all"
                   ? "No recent activity yet."
@@ -216,7 +216,7 @@ export default function ActivityPage() {
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-white/5 hover:bg-white/5 transition-colors"
+                className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border hover:bg-vocl-hover transition-colors"
               >
                 <div
                   className={`w-9 h-9 rounded-lg ${bg} flex-shrink-0 flex items-center justify-center`}

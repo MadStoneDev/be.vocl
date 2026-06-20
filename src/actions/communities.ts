@@ -510,6 +510,23 @@ export async function changeMemberRole(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    // SECURITY (SEC-11): only an owner may change member roles or transfer
+    // ownership. Previously any caller could promote themselves (or anyone) to
+    // owner. Verify the caller is an owner of this community first.
+    const { data: caller } = await (supabase as any)
+      .from("community_members")
+      .select("role")
+      .eq("community_id", communityId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!caller || caller.role !== "owner") {
+      return { success: false, error: "Only the community owner can change member roles" };
+    }
+
     const { error } = await (supabase as any)
       .from("community_members")
       .update({ role })
@@ -528,6 +545,33 @@ export async function removeMember(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    // SECURITY (SEC-11): only an owner or moderator may remove members, and a
+    // moderator may not remove an owner. Members can leave via a separate action.
+    const { data: caller } = await (supabase as any)
+      .from("community_members")
+      .select("role")
+      .eq("community_id", communityId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!caller || (caller.role !== "owner" && caller.role !== "moderator")) {
+      return { success: false, error: "Only owners or moderators can remove members" };
+    }
+
+    const { data: target } = await (supabase as any)
+      .from("community_members")
+      .select("role")
+      .eq("community_id", communityId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (target?.role === "owner" && caller.role !== "owner") {
+      return { success: false, error: "Only the owner can remove an owner" };
+    }
+
     const { error } = await (supabase as any)
       .from("community_members")
       .delete()

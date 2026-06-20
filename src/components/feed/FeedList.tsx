@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent, AskContent } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
 import { useMemo } from "react";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -9,7 +9,7 @@ import { FeedSkeleton } from "@/components/ui";
 import { WhoToFollow } from "./WhoToFollow";
 import type { VideoEmbedPlatform, LinkPreviewData } from "@/types/database";
 
-interface FeedPost {
+export interface FeedPost {
   id: string;
   author: {
     username: string;
@@ -132,6 +132,7 @@ export function FeedList({
         return (
         <React.Fragment key={post.id}>
           {index === whoToFollowIndex && <WhoToFollow />}
+          <div className="cv-feed-item">
           <InteractivePost
           id={post.id}
           author={post.author}
@@ -214,7 +215,13 @@ export function FeedList({
           {post.contentType === "poll" && post.rawContent && (
             <PollContent postId={post.id} content={post.rawContent} />
           )}
+
+          {/* Ask content */}
+          {post.contentType === "ask" && post.rawContent && (
+            <AskContent content={post.rawContent} />
+          )}
         </InteractivePost>
+          </div>
         </React.Fragment>
         );
       })}

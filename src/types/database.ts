@@ -776,6 +776,13 @@ export interface AskPostContent {
   asker_id?: string; // null if anonymous
   asker_username?: string; // For display (can be "Anonymous")
   is_anonymous: boolean;
+  // Voice (VOCL) audio for the question and/or the answer
+  question_audio_url?: string | null;
+  question_audio_duration?: number | null;
+  question_audio_transcript?: string | null;
+  answer_audio_url?: string | null;
+  answer_audio_duration?: number | null;
+  answer_audio_transcript?: string | null;
 }
 
 export type PostContent =

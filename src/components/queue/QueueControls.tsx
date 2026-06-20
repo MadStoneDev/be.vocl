@@ -61,7 +61,7 @@ export function QueueControls({
   return (
     <div className="space-y-4">
       {/* Main controls */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
         <div className="flex items-center gap-4">
           {/* Pause/Resume button */}
           <button
@@ -99,7 +99,7 @@ export function QueueControls({
         <button
           type="button"
           onClick={() => setShowSettings(!showSettings)}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconSettings size={20} />
         </button>
@@ -107,17 +107,17 @@ export function QueueControls({
 
       {/* Queue info */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
+        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">{queueCount}</p>
           <p className="text-sm text-foreground/50">Posts in queue</p>
         </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
+        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">
             {settings.postsPerDay}
           </p>
           <p className="text-sm text-foreground/50">Posts per day</p>
         </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
+        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">
             {daysToEmpty === 0 ? "-" : `~${daysToEmpty}d`}
           </p>
@@ -127,7 +127,7 @@ export function QueueControls({
 
       {/* Settings panel */}
       {showSettings && (
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5 space-y-4">
+        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-4">
           <h3 className="font-medium text-foreground flex items-center gap-2">
             <IconClock size={18} />
             Queue Settings
@@ -149,7 +149,7 @@ export function QueueControls({
                   postsPerDay: parseInt(e.target.value) || 1,
                 }))
               }
-              className="w-full px-4 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+              className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent"
             />
           </div>
 
@@ -168,7 +168,7 @@ export function QueueControls({
                     windowStart: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent"
               />
             </div>
             <div>
@@ -184,7 +184,7 @@ export function QueueControls({
                     windowEnd: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent"
               />
             </div>
           </div>

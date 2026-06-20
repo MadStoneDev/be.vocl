@@ -141,14 +141,19 @@ export default function InviteSettingsPage() {
     <div className="py-6">
       <title>Settings — Invites | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+          className="p-2 -ml-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
-          <IconArrowLeft size={20} />
+          <IconArrowLeft size={22} />
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">Invite Codes</h1>
+        <div>
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            Settings
+          </span>
+          <h1 className="type-display font-display text-foreground">Invite Codes</h1>
+        </div>
       </div>
 
       {/* Info Card */}
@@ -191,7 +196,7 @@ export default function InviteSettingsPage() {
           </div>
 
           {/* Generate Section */}
-          <div className="bg-vocl-surface-dark rounded-2xl border border-white/5 p-4 mb-6">
+          <div className="bg-vocl-surface-dark rounded-2xl border border-vocl-border p-4 mb-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-foreground">
@@ -212,7 +217,7 @@ export default function InviteSettingsPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generating || !canGenerate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
               >
                 {generating ? (
                   <>
@@ -246,7 +251,7 @@ export default function InviteSettingsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground">Your Codes</h2>
+          <h2 className="type-heading font-display text-foreground">Your Codes</h2>
 
           {codes.map((code) => {
             const isExpired = code.expiresAt && new Date(code.expiresAt) < new Date();
@@ -258,7 +263,7 @@ export default function InviteSettingsPage() {
             return (
               <div
                 key={code.id}
-                className="bg-vocl-surface-dark rounded-2xl border border-white/5 overflow-hidden"
+                className="bg-vocl-surface-dark rounded-2xl border border-vocl-border overflow-hidden"
               >
                 {/* Code Header */}
                 <div className="p-4">
@@ -269,7 +274,7 @@ export default function InviteSettingsPage() {
                       </code>
                       <button
                         onClick={() => copyToClipboard(code.code)}
-                        className="p-2 rounded-lg hover:bg-white/5 text-foreground/40 hover:text-foreground transition-colors"
+                        className="p-2 rounded-lg hover:bg-vocl-hover text-foreground/40 hover:text-foreground transition-colors"
                         title="Copy code"
                       >
                         {copiedCode === code.code ? (
@@ -345,7 +350,7 @@ export default function InviteSettingsPage() {
 
                 {/* Expanded Uses List */}
                 {isExpanded && (
-                  <div className="border-t border-white/5 p-4 bg-background/30">
+                  <div className="border-t border-vocl-border p-4 bg-background/30">
                     {loadingUses === code.id ? (
                       <div className="flex items-center justify-center py-4">
                         <IconLoader2 size={20} className="animate-spin text-foreground/40" />
@@ -363,7 +368,7 @@ export default function InviteSettingsPage() {
                           <Link
                             key={use.id}
                             href={`/@${use.username}`}
-                            className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors"
+                            className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-vocl-hover transition-colors"
                           >
                             <Avatar
                               src={use.avatarUrl}

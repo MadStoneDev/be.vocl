@@ -96,17 +96,16 @@ export function ImageLightbox({
         </>
       )}
 
-      {/* Main Image */}
-      <div
-        className="relative max-w-[90vw] max-h-[85vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Main Image — only the image itself blocks the close-on-backdrop click;
+          clicking anywhere around it (including letterbox space) closes. */}
+      <div className="relative flex items-center justify-center max-w-[90vw] max-h-[85vh]">
         <Image
           src={images[currentIndex]}
           alt={`${alt} ${currentIndex + 1}`}
           width={1200}
           height={800}
-          className="max-w-full max-h-[85vh] object-contain"
+          onClick={(e) => e.stopPropagation()}
+          className="w-auto h-auto max-w-[90vw] max-h-[85vh] object-contain"
           priority
         />
       </div>

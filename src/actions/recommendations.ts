@@ -408,19 +408,17 @@ export async function getPersonalizedFeed(options?: {
     // Phase 4: Batch fetch engagement data + author follower counts in parallel
     const uniqueAuthorIds = [...new Set(candidatePosts.map((p) => p.author_id))];
 
-    // Use individual count queries per author (bounded by unique authors, not all followers)
-    const [stats, ...authorCountResults] = await Promise.all([
+    // Read denormalized follower counts in ONE query (replaces per-author counts).
+    const [stats, followerCountResult] = await Promise.all([
       batchFetchPostStats(supabase, allPostIds, user.id, { includeTags: true }),
-      ...uniqueAuthorIds.map((authorId) =>
-        (supabase as any).from("follows").select("*", { count: "exact", head: true }).eq("following_id", authorId)
-      ),
+      (supabase as any).from("profiles").select("id, follower_count").in("id", uniqueAuthorIds),
     ]);
 
     // Build author follower count map
     const authorFollowerCountMap = new Map<string, number>();
-    uniqueAuthorIds.forEach((authorId, i) => {
-      authorFollowerCountMap.set(authorId, authorCountResults[i].count || 0);
-    });
+    for (const row of followerCountResult?.data || []) {
+      authorFollowerCountMap.set(row.id, row.follower_count || 0);
+    }
 
     // Fetch original post authors for reblogs
     const reblogOriginalIds = [...new Set(

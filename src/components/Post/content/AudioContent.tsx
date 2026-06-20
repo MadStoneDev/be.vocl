@@ -141,14 +141,14 @@ export function AudioContent({
         {/* Caption */}
         {caption && (
           <div
-            className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+            className="mt-4 pt-4 border-t border-vocl-border text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />
         )}
 
         {/* Transcript */}
         {transcript && (
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-vocl-border">
             <button
               type="button"
               onClick={() => setShowTranscript((v) => !v)}
@@ -171,12 +171,12 @@ export function AudioContent({
               isHovered ? "max-h-50 mt-4" : "max-h-50 mt-4 sm:max-h-0 sm:mt-0"
             }`}
           >
-            <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-white/10">
+            <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-vocl-border">
               {tags.map((tag) => (
                 <Link
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className={`px-2 py-1 text-xs font-medium rounded bg-white/10 text-foreground/70 truncate transition-opacity ${
+                  className={`px-2 py-1 text-xs font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
                     isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-100 sm:opacity-0"
                   }`}
                   style={{ maxWidth: "150px" }}
@@ -247,7 +247,7 @@ export function AudioContent({
           {src && (
             <div className="mt-3 space-y-1">
               <div
-                className="h-1.5 bg-white/10 rounded-full cursor-pointer overflow-hidden"
+                className="h-1.5 bg-vocl-hover-strong rounded-full cursor-pointer overflow-hidden"
                 onClick={handleSeek}
               >
                 <div
@@ -267,7 +267,7 @@ export function AudioContent({
             <button
               type="button"
               onClick={toggleMute}
-              className="mt-2 self-start p-1.5 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+              className="mt-2 self-start p-1.5 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               {isMuted ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
             </button>
@@ -278,7 +278,7 @@ export function AudioContent({
       {/* Caption */}
       {caption && (
         <div
-          className="mt-4 pt-4 border-t border-white/10 text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+          className="mt-4 pt-4 border-t border-vocl-border text-foreground/80 prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}
@@ -290,12 +290,12 @@ export function AudioContent({
             isHovered ? "max-h-50 mt-4" : "max-h-0"
           }`}
         >
-          <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-white/10">
+          <div className="flex flex-row flex-wrap gap-1.5 pt-4 border-t border-vocl-border">
             {tags.map((tag) => (
               <Link
                 key={tag.id}
                 href={`/tag/${encodeURIComponent(tag.name)}`}
-                className={`px-2 py-1 text-xs font-medium rounded bg-white/10 text-foreground/70 truncate transition-opacity ${
+                className={`px-2 py-1 text-xs font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
                   isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
                 }`}
                 style={{ maxWidth: "150px" }}

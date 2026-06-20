@@ -13,6 +13,7 @@ import {
   PollContent,
 } from "@/components/Post";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import { ProfileAccentScope } from "@/components/profile";
 import type { VideoEmbedPlatform } from "@/types/database";
 
 interface Props {
@@ -26,7 +27,9 @@ interface ProfileData {
   avatar_url: string | null;
   header_url: string | null;
   bio: string | null;
+  accent_color: string | null;
   role: number;
+  allow_search_indexing: boolean | null;
 }
 
 interface ProfileLink {
@@ -54,7 +57,7 @@ async function getProfile(username: string) {
 
   const { data: profileData, error } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, header_url, bio, role")
+    .select("id, username, display_name, avatar_url, header_url, bio, accent_color, role, allow_search_indexing")
     .eq("username", username)
     .single();
 
@@ -74,14 +77,14 @@ async function getProfile(username: string) {
         "id, author_id, post_type, content, is_sensitive, created_at, like_count, comment_count, reblog_count"
       )
       .eq("author_id", profile.id)
-      .eq("is_deleted", false)
+      .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(10),
     supabase
       .from("posts")
       .select("id", { count: "exact", head: true })
       .eq("author_id", profile.id)
-      .eq("is_deleted", false),
+      .eq("status", "published"),
   ]);
 
   const rawPosts = (postsResult.data ?? []) as Array<Omit<PostData, "tags">>;
@@ -136,6 +139,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    ...(profile.allow_search_indexing === false && {
+      robots: { index: false, follow: false },
+    }),
     openGraph: {
       title,
       description,
@@ -165,6 +171,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const displayName = profile.display_name || profile.username;
 
   return (
+    <ProfileAccentScope accent={profile.accent_color}>
     <div className="pb-16">
       {/* Header Image */}
       <div className="relative w-full h-48 sm:h-64 bg-white/5">
@@ -326,6 +333,7 @@ export default async function PublicProfilePage({ params }: Props) {
         </div>
       </div>
     </div>
+    </ProfileAccentScope>
   );
 }
 

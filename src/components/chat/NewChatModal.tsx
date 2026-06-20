@@ -108,16 +108,16 @@ export function NewChatModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-background border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconMessagePlus size={20} className="text-vocl-accent" />
             <h2 className="font-semibold text-foreground">New Message</h2>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 rounded-full hover:bg-white/5 transition-colors"
+            className="p-2 rounded-full hover:bg-vocl-hover transition-colors"
           >
             <IconX size={20} className="text-foreground/60" />
           </button>
@@ -135,7 +135,7 @@ export function NewChatModal({
               placeholder="Search for a user..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-3 pl-10 pr-4 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+              className="w-full py-3 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
               autoFocus
             />
           </div>
@@ -161,7 +161,7 @@ export function NewChatModal({
                   key={user.id}
                   onClick={() => handleStartConversation(user.id)}
                   disabled={isCreating === user.id}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                     {user.avatarUrl ? (

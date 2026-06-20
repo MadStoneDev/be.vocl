@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyCronAuth } from "../../cron/_auth";
 
 // DEPRECATED: Use /api/cron/scheduled (every 5 min) and /api/cron/queue (every 15 min) instead
 // This endpoint processes both for backwards compatibility
 
 export async function GET(request: Request) {
-  // Verify cron secret
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Verify cron secret (fails closed if CRON_SECRET is unset)
+  const authError = verifyCronAuth(request);
+  if (authError) return authError;
 
   try {
     // Use service role key for admin operations

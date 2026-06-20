@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  IconUsersGroup,
   IconPlus,
   IconSearch,
   IconLoader2,
@@ -12,8 +11,10 @@ import {
   IconUser,
   IconNotes,
 } from "@tabler/icons-react";
+import { motion, MotionConfig } from "framer-motion";
 import { listCommunities, joinCommunity, leaveCommunity, type CommunitySummary } from "@/actions/communities";
 import { toast } from "@/components/ui";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 type Tab = "discover" | "joined";
 
@@ -69,125 +70,150 @@ export default function CommunitiesPage() {
   };
 
   return (
-    <div className="py-6 px-4 max-w-3xl mx-auto">
-      <title>Communities | be.vocl</title>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <IconUsersGroup size={26} className="text-vocl-accent" />
-            Communities
-          </h1>
-          <p className="text-sm text-foreground/60 mt-1">
-            Spaces around shared interests
-          </p>
-        </div>
-        <Link
-          href="/communities/new"
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-accent text-white text-sm font-medium hover:bg-vocl-accent-hover transition-colors"
+    <MotionConfig reducedMotion="user">
+      <div className="py-3 sm:py-6 px-2 sm:px-4 max-w-3xl mx-auto">
+        <title>Communities | be.vocl</title>
+
+        {/* Editorial masthead */}
+        <motion.header
+          className="mb-6 border-b border-vocl-border pb-5"
+          initial="hidden"
+          animate="show"
+          variants={fadeUp}
         >
-          <IconPlus size={16} />
-          New
-        </Link>
-      </div>
-
-      <div className="flex gap-2 mb-4">
-        {(["discover", "joined"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${
-              tab === t
-                ? "bg-vocl-accent text-white"
-                : "bg-white/5 text-foreground/70 hover:bg-white/10"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="relative mb-6">
-        <IconSearch size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search communities..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
-        />
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <IconLoader2 size={28} className="animate-spin text-vocl-accent" />
-        </div>
-      ) : communities.length === 0 ? (
-        <div className="rounded-xl bg-white/5 border border-white/5 p-10 text-center">
-          <p className="text-foreground/50">
-            {tab === "joined"
-              ? "You haven't joined any communities yet."
-              : search
-                ? "No communities match your search."
-                : "No communities yet — be the first to create one."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {communities.map((c) => (
-            <div
-              key={c.id}
-              className="rounded-xl bg-vocl-surface-dark border border-white/5 hover:border-white/10 transition-colors overflow-hidden"
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+                The Desks
+              </span>
+              <h1 className="type-display-lg text-foreground mt-1">Communities</h1>
+              <p className="type-body text-foreground/55 mt-1">
+                Sections of the publication, gathered around a shared subject.
+              </p>
+            </div>
+            <Link
+              href="/communities/new"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover transition-colors flex-shrink-0"
             >
-              <Link href={`/c/${c.slug}`} className="block">
-                <div className="h-16 bg-gradient-to-br from-vocl-accent/30 to-vocl-accent-hover/20 relative">
-                  {c.bannerUrl && (
-                    <Image src={c.bannerUrl} alt="" fill className="object-cover" />
+              <IconPlus size={16} />
+              New desk
+            </Link>
+          </div>
+        </motion.header>
+
+        {/* Text tabs with thin underline */}
+        <div className="flex items-center gap-6 mb-5 border-b border-vocl-border">
+          {(["discover", "joined"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`relative -mb-px pb-2.5 type-meta uppercase tracking-widest font-semibold transition-colors ${
+                tab === t
+                  ? "text-foreground"
+                  : "text-foreground/45 hover:text-foreground/70"
+              }`}
+            >
+              {t}
+              {tab === t && (
+                <motion.span
+                  layoutId="communities-tab-underline"
+                  className="absolute left-0 right-0 -bottom-px h-0.5 bg-vocl-primary"
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-8">
+          <IconSearch size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search the desks..."
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+          />
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <IconLoader2 size={28} className="animate-spin text-vocl-accent" />
+          </div>
+        ) : communities.length === 0 ? (
+          <div className="border-t border-vocl-border py-16 text-center">
+            <p className="type-body text-foreground/50">
+              {tab === "joined"
+                ? "You haven't joined any desks yet."
+                : search
+                  ? "No desks match your search."
+                  : "No desks yet — be the first to open one."}
+            </p>
+          </div>
+        ) : (
+          <motion.div
+            className="divide-y divide-vocl-border border-t border-vocl-border"
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer(0.04)}
+          >
+            {communities.map((c) => (
+              <motion.article
+                key={c.id}
+                variants={fadeUp}
+                className="flex items-center gap-4 py-5"
+              >
+                <Link
+                  href={`/c/${c.slug}`}
+                  className="w-14 h-14 rounded-xl bg-vocl-surface-dark border border-vocl-border overflow-hidden flex items-center justify-center text-white font-bold flex-shrink-0"
+                >
+                  {c.iconUrl ? (
+                    <Image src={c.iconUrl} alt="" width={56} height={56} className="object-cover" />
+                  ) : (
+                    <span className="text-xl bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center font-display">
+                      {c.name.charAt(0).toUpperCase()}
+                    </span>
                   )}
-                </div>
-                <div className="px-4 pt-3 pb-2 -mt-6 relative">
-                  <div className="w-12 h-12 rounded-xl bg-vocl-surface-dark border-2 border-vocl-surface-dark overflow-hidden flex items-center justify-center text-white font-bold">
-                    {c.iconUrl ? (
-                      <Image src={c.iconUrl} alt="" width={48} height={48} className="object-cover" />
-                    ) : (
-                      <span className="text-lg bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center">
-                        {c.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 flex items-baseline justify-between gap-2">
-                    <p className="font-semibold text-foreground truncate">{c.name}</p>
+                </Link>
+
+                <Link href={`/c/${c.slug}`} className="flex-1 min-w-0 group">
+                  <div className="flex items-center gap-2">
+                    <span className="type-meta uppercase tracking-widest text-foreground/40">
+                      /c/{c.slug}
+                    </span>
                     {c.nsfw && (
-                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">
+                      <span className="type-meta uppercase tracking-wide px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400">
                         NSFW
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-foreground/50">/c/{c.slug}</p>
+                  <p className="type-heading text-foreground truncate group-hover:text-vocl-primary transition-colors">
+                    {c.name}
+                  </p>
                   {c.description && (
-                    <p className="text-sm text-foreground/70 mt-2 line-clamp-2">
+                    <p className="type-body text-foreground/60 mt-0.5 line-clamp-1">
                       {c.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-3 mt-3 text-xs text-foreground/50">
+                  <div className="flex items-center gap-4 mt-1.5 type-meta text-foreground/40">
                     <span className="flex items-center gap-1">
                       <IconUser size={12} />
-                      {c.memberCount.toLocaleString()}
+                      {c.memberCount.toLocaleString()} {c.memberCount === 1 ? "member" : "members"}
                     </span>
                     <span className="flex items-center gap-1">
                       <IconNotes size={12} />
-                      {c.postCount.toLocaleString()}
+                      {c.postCount.toLocaleString()} {c.postCount === 1 ? "post" : "posts"}
                     </span>
                   </div>
-                </div>
-              </Link>
-              <div className="px-4 pb-3">
+                </Link>
+
                 <button
                   onClick={() => handleToggleJoin(c)}
                   disabled={busy[c.id]}
-                  className={`w-full py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
                     c.isMember
-                      ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                      : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                      ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+                      : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
                   }`}
                 >
                   {busy[c.id] ? (
@@ -200,11 +226,11 @@ export default function CommunitiesPage() {
                     "Join"
                   )}
                 </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+              </motion.article>
+            ))}
+          </motion.div>
+        )}
+      </div>
+    </MotionConfig>
   );
 }

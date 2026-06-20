@@ -7,9 +7,21 @@ import {
   IconSend,
   IconLoader2,
   IconEyeOff,
+  IconMicrophone,
 } from "@tabler/icons-react";
 import { sendAsk, canSendAskTo } from "@/actions/asks";
+import { VoiceRecorder } from "@/components/Post/create/VoiceRecorder";
 import { Portal, toast } from "@/components/ui";
+
+// VoiceRecorder uploads via the post-audio presign flow which needs an id to
+// namespace the R2 key. Asks have no post yet, so we mint a throwaway id that
+// only affects the upload path under the user's own folder.
+function makeAskAudioId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `ask-${crypto.randomUUID()}`;
+  }
+  return `ask-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 interface AskModalProps {
   isOpen: boolean;
@@ -31,6 +43,10 @@ export function AskModal({
   const [canAsk, setCanAsk] = useState(false);
   const [allowsAnonymous, setAllowsAnonymous] = useState(false);
   const [errorReason, setErrorReason] = useState<string | undefined>();
+  const [showRecorder, setShowRecorder] = useState(false);
+  const [audioId] = useState(makeAskAudioId);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,17 +62,25 @@ export function AskModal({
       setQuestion("");
       setIsAnonymous(false);
       setIsSubmitting(false);
+      setShowRecorder(false);
+      setAudioUrl(null);
+      setAudioDuration(0);
     }
   }, [isOpen, recipientUsername]);
 
   const handleSubmit = async () => {
-    if (!question.trim()) {
-      toast.error("Please enter a question");
+    if (!question.trim() && !audioUrl) {
+      toast.error("Please enter or record a question");
       return;
     }
 
     setIsSubmitting(true);
-    const result = await sendAsk(recipientUsername, question.trim(), isAnonymous);
+    const result = await sendAsk(
+      recipientUsername,
+      question.trim(),
+      isAnonymous,
+      audioUrl ? { url: audioUrl, duration: audioDuration } : null
+    );
 
     if (result.success) {
       toast.success("Ask sent!");
@@ -78,7 +102,7 @@ export function AskModal({
       {/* Modal */}
       <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-vocl-surface-dark rounded-2xl z-50 flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-vocl-accent/20 flex items-center justify-center">
               <IconMessageQuestion size={20} className="text-vocl-accent" />
@@ -93,7 +117,7 @@ export function AskModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all"
           >
             <IconX size={20} />
           </button>
@@ -107,7 +131,7 @@ export function AskModal({
             </div>
           ) : !canAsk ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 rounded-full bg-vocl-hover flex items-center justify-center mx-auto mb-4">
                 <IconMessageQuestion size={24} className="text-foreground/30" />
               </div>
               <p className="text-foreground/60">{errorReason || "Unable to send asks"}</p>
@@ -121,19 +145,53 @@ export function AskModal({
                   placeholder="What would you like to ask?"
                   rows={4}
                   maxLength={500}
-                  className="w-full py-3 px-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent resize-none"
+                  className="w-full py-3 px-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent resize-none"
                 />
                 <div className="mt-1 text-xs text-foreground/40 text-right">
                   {question.length}/500
                 </div>
               </div>
 
+              {/* Voice question (VOCL) */}
+              {!showRecorder && !audioUrl && (
+                <button
+                  type="button"
+                  onClick={() => setShowRecorder(true)}
+                  className="flex items-center gap-2 text-sm font-medium text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+                >
+                  <IconMicrophone size={18} />
+                  Add a voice question
+                </button>
+              )}
+
+              {(showRecorder || audioUrl) && (
+                <div>
+                  <p className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground/70">
+                    <IconMicrophone size={16} className="text-vocl-accent" />
+                    Voice question
+                  </p>
+                  <VoiceRecorder
+                    postId={audioId}
+                    uploadedUrl={audioUrl}
+                    onComplete={(url, duration) => {
+                      setAudioUrl(url);
+                      setAudioDuration(duration);
+                    }}
+                    onClear={() => {
+                      setAudioUrl(null);
+                      setAudioDuration(0);
+                      setShowRecorder(false);
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Anonymous toggle */}
               {allowsAnonymous && (
                 <label className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer">
                   <div
                     className={`relative w-11 h-6 rounded-full transition-colors ${
-                      isAnonymous ? "bg-vocl-accent" : "bg-white/10"
+                      isAnonymous ? "bg-vocl-accent" : "bg-vocl-hover-strong"
                     }`}
                   >
                     <div
@@ -165,20 +223,20 @@ export function AskModal({
 
         {/* Footer */}
         {canAsk && !isLoading && (
-          <div className="p-4 border-t border-white/5">
+          <div className="p-4 border-t border-vocl-border">
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+                className="px-4 py-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !question.trim()}
+                disabled={isSubmitting || (!question.trim() && !audioUrl)}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (

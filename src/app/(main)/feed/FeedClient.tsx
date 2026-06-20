@@ -1,13 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
+
+const FrontPageGrid = dynamic(
+  () => import("@/components/feed/frontpage").then((m) => m.FrontPageGrid),
+  { ssr: false, loading: () => null },
+);
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
 import { PullToRefresh } from "@/components/ui";
 import { OnThisDayCard } from "@/components/feed/OnThisDayCard";
 import { getFeedPosts } from "@/actions/posts";
 import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations";
+import { updateFeedLayout } from "@/actions/profile";
+import { useAuth } from "@/hooks/useAuth";
 import type { VideoEmbedPlatform, PostType } from "@/types/database";
 
 interface PostWithDetails {
@@ -180,6 +188,53 @@ export default function FeedClient({
   const [showPromiseBanner, setShowPromiseBanner] = useState(initialShowPromise);
   const [showFlaggedBanner] = useState(initialShowFlagged);
 
+  // Feed layout: Reader (single column) vs Front Page (broadsheet, wide screens only)
+  const [layout, setLayout] = useState<"reader" | "frontpage">("reader");
+  const [isWide, setIsWide] = useState(false);
+  const { profile } = useAuth();
+  // Whether localStorage already provided an explicit layout (instant-read source).
+  const hasLocalLayoutRef = useRef(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const apply = () => {
+      setIsWide(mql.matches);
+      const stored = localStorage.getItem("feedLayout");
+      if (stored === "frontpage" || stored === "reader") {
+        hasLocalLayoutRef.current = true;
+        setLayout(stored);
+      }
+    };
+    apply();
+    mql.addEventListener("change", apply);
+    return () => mql.removeEventListener("change", apply);
+  }, []);
+
+  // Reconcile with the user's saved profile preference once auth loads, but only
+  // when localStorage didn't already provide an explicit choice.
+  useEffect(() => {
+    const seedFromProfile = (next: "reader" | "frontpage") => {
+      setLayout(next);
+    };
+    if (!hasLocalLayoutRef.current && profile?.feedLayout) {
+      seedFromProfile(profile.feedLayout);
+    }
+  }, [profile?.feedLayout]);
+
+  const changeLayout = (next: "reader" | "frontpage") => {
+    setLayout(next);
+    hasLocalLayoutRef.current = true;
+    try {
+      localStorage.setItem("feedLayout", next);
+    } catch {
+      // ignore storage failures (private mode, etc.)
+    }
+    // Persist to profile (fire-and-forget)
+    void updateFeedLayout(next);
+  };
+
+  const useFrontPage = layout === "frontpage" && isWide;
+
   const {
     data,
     fetchNextPage,
@@ -249,7 +304,13 @@ export default function FeedClient({
       {/* Flagged Content Banner - show if user has pending reports */}
       {showFlaggedBanner && <FlaggedContentBanner />}
 
-      <FeedTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <FeedTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        layout={layout}
+        onLayoutChange={changeLayout}
+        showLayoutToggle={isWide}
+      />
 
       <OnThisDayCard />
 
@@ -269,12 +330,20 @@ export default function FeedClient({
         </div>
       )}
 
-      <FeedList
-        posts={feedListPosts}
-        isLoading={isLoading}
-        isLoadingMore={isFetchingNextPage}
-        showWhoToFollow={activeTab === "engagement"}
-      />
+      {useFrontPage ? (
+        <FrontPageGrid
+          posts={feedListPosts}
+          isLoading={isLoading}
+          isLoadingMore={isFetchingNextPage}
+        />
+      ) : (
+        <FeedList
+          posts={feedListPosts}
+          isLoading={isLoading}
+          isLoadingMore={isFetchingNextPage}
+          showWhoToFollow={activeTab === "engagement"}
+        />
+      )}
 
       {/* Load more button */}
       {!isLoading && !isError && hasNextPage && feedListPosts.length > 0 && (

@@ -232,9 +232,16 @@ async function getUserEmail(userId: string): Promise<string | null> {
 export async function sendWelcomeNotification(
   userId: string,
   username: string,
-  email: string
+  _email?: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): never trust a client-supplied destination address.
+    // This action is invoked by the (webhook-secret-protected) signup route,
+    // where there is no user session, so resolve the address from the user
+    // record server-side instead of emailing an arbitrary address.
+    const email = await getUserEmail(userId);
+    if (!email) return;
+
     await sendWelcomeEmail({
       to: email,
       username,
@@ -245,13 +252,39 @@ export async function sendWelcomeNotification(
 }
 
 /**
+ * Resolve the authenticated user's id, or null if there is no session.
+ *
+ * SECURITY (SEC-12): the notification senders below are exported server actions
+ * and are therefore directly invokable by any client. We must never trust a
+ * client-supplied "actor" id, otherwise a caller could forge notifications and
+ * trigger emails as another user. Every actor-bearing sender authenticates the
+ * caller and forces the actor to the session user's id.
+ */
+async function getAuthenticatedUserId(): Promise<string | null> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Send follow notification email
  */
 export async function sendFollowNotification(
-  followerId: string,
+  followerIdInput: string,
   followingId: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): force actor to the authenticated user.
+    const followerId = await getAuthenticatedUserId();
+    if (!followerId) return;
+    void followerIdInput;
+
     if (followerId === followingId) return;
 
     const { send, queueForDigest: shouldQueue } = await shouldSendEmail(followingId, "follow");
@@ -298,11 +331,16 @@ export async function sendFollowNotification(
  * Send like notification email
  */
 export async function sendLikeNotification(
-  likerId: string,
+  likerIdInput: string,
   postId: string,
   postAuthorId: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): force actor to the authenticated user.
+    const likerId = await getAuthenticatedUserId();
+    if (!likerId) return;
+    void likerIdInput;
+
     if (likerId === postAuthorId) return;
 
     const { send, queueForDigest: shouldQueue } = await shouldSendEmail(postAuthorId, "like");
@@ -362,13 +400,18 @@ export async function sendLikeNotification(
  * Send comment notification email
  */
 export async function sendCommentNotification(
-  commenterId: string,
+  commenterIdInput: string,
   postId: string,
   postAuthorId: string,
   commentContent: string,
   commentId?: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): force actor to the authenticated user.
+    const commenterId = await getAuthenticatedUserId();
+    if (!commenterId) return;
+    void commenterIdInput;
+
     if (commenterId === postAuthorId) return;
 
     const { send, queueForDigest: shouldQueue } = await shouldSendEmail(postAuthorId, "comment");
@@ -425,13 +468,18 @@ export async function sendCommentNotification(
  * Send reblog notification email
  */
 export async function sendReblogNotification(
-  rebloggerId: string,
+  rebloggerIdInput: string,
   originalPostId: string,
   originalAuthorId: string,
   reblogPostId: string,
   reblogComment?: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): force actor to the authenticated user.
+    const rebloggerId = await getAuthenticatedUserId();
+    if (!rebloggerId) return;
+    void rebloggerIdInput;
+
     if (rebloggerId === originalAuthorId) return;
 
     const { send, queueForDigest: shouldQueue } = await shouldSendEmail(originalAuthorId, "reblog");
@@ -491,12 +539,17 @@ export async function sendReblogNotification(
  * Send message notification email (with throttling)
  */
 export async function sendMessageNotification(
-  senderId: string,
+  senderIdInput: string,
   recipientId: string,
   conversationId: string,
   messageContent: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): force actor to the authenticated user.
+    const senderId = await getAuthenticatedUserId();
+    if (!senderId) return;
+    void senderIdInput;
+
     const { send, queueForDigest: shouldQueue } = await shouldSendEmail(recipientId, "message");
 
     if (shouldQueue) {
@@ -563,12 +616,17 @@ export async function sendMessageNotification(
  * Send mention notification email
  */
 export async function sendMentionNotification(
-  mentionerId: string,
+  mentionerIdInput: string,
   mentionedUserId: string,
   postId: string,
   context: string
 ): Promise<void> {
   try {
+    // SECURITY (SEC-12): force actor to the authenticated user.
+    const mentionerId = await getAuthenticatedUserId();
+    if (!mentionerId) return;
+    void mentionerIdInput;
+
     if (mentionerId === mentionedUserId) return;
 
     const { send, queueForDigest: shouldQueue } = await shouldSendEmail(mentionedUserId, "mention");

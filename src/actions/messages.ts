@@ -5,6 +5,20 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimiters } from "@/lib/rate-limit";
 
+/**
+ * SECURITY (SEC-13): sanitize raw values before interpolating them into a
+ * PostgREST filter string (`.or(...)`). PostgREST treats certain characters as
+ * reserved syntax inside filter expressions, so unsanitized input allows filter
+ * injection. Strip the reserved characters (`,` `(` `)` `*` `:`) and any
+ * leading/trailing `.` separators.
+ */
+function sanitizeFilterTerm(term: string): string {
+  return term
+    .replace(/[,()*:]/g, "")
+    .replace(/^\.+|\.+$/g, "")
+    .trim();
+}
+
 interface MessageResult {
   success: boolean;
   messageId?: string;
@@ -12,16 +26,39 @@ interface MessageResult {
   error?: string;
 }
 
+/** Aggregated reaction for a message: one entry per distinct emoji. */
+interface MessageReaction {
+  emoji: string;
+  count: number;
+  reactedByMe: boolean;
+}
+
+/** Minimal context for the message a reply points at. */
+interface ReplyContext {
+  id: string;
+  senderId: string;
+  senderName?: string;
+  /** Short text/preview snippet of the replied-to message. */
+  preview: string;
+}
+
 interface Message {
   id: string;
   content: string;
   mediaUrl?: string;
   mediaType?: string;
+  /** Duration in seconds for audio (voice note) messages. */
+  mediaDuration?: number;
   senderId: string;
   isRead: boolean;
   isEdited: boolean;
   isDeleted: boolean;
+  /** Raw ISO 8601 timestamp (DB created_at). Format on the client. */
   createdAt: string;
+  /** Aggregated emoji reactions on this message. */
+  reactions: MessageReaction[];
+  /** Context of the message this one replies to, if any. */
+  replyTo?: ReplyContext;
 }
 
 interface Conversation {
@@ -35,6 +72,7 @@ interface Conversation {
   lastMessage?: {
     content: string;
     senderId: string;
+    /** Raw ISO 8601 timestamp (DB created_at). Format on the client. */
     createdAt: string;
     isRead: boolean;
   };
@@ -170,7 +208,8 @@ export async function getConversations(): Promise<{
           ? {
               content: lastMessage.content,
               senderId: lastMessage.sender_id,
-              createdAt: formatTimeAgo(lastMessage.created_at),
+              // Expose the raw ISO timestamp; the client formats it (<TimeAgo />).
+              createdAt: lastMessage.created_at,
               isRead: lastMessage.sender_id === user.id ||
                      (lastReadAt && new Date(lastMessage.created_at) <= new Date(lastReadAt)),
             }
@@ -252,19 +291,102 @@ export async function getMessages(
       .eq("conversation_id", conversationId)
       .eq("profile_id", user.id);
 
-    const messages: Message[] = (data || [])
-      .reverse()
-      .map((msg: any) => ({
-        id: msg.id,
-        content: msg.content,
-        mediaUrl: msg.media_url,
-        mediaType: msg.media_type,
-        senderId: msg.sender_id,
-        isRead: true, // Marked as read by fetching
-        isEdited: msg.is_edited,
-        isDeleted: msg.is_deleted,
-        createdAt: formatTime(msg.created_at),
-      }));
+    const rows: any[] = (data || []).slice().reverse();
+    const messageIds = rows.map((m) => m.id);
+
+    // --- Reactions: one query for all loaded messages, aggregated in JS. ---
+    const reactionMap = new Map<string, MessageReaction[]>();
+    if (messageIds.length > 0) {
+      const { data: reactionRows } = await (supabase as any)
+        .from("message_reactions")
+        .select("message_id, emoji, user_id")
+        .in("message_id", messageIds);
+
+      // emoji -> { count, reactedByMe } keyed first by message id
+      const perMessage = new Map<string, Map<string, MessageReaction>>();
+      for (const r of reactionRows || []) {
+        let byEmoji = perMessage.get(r.message_id);
+        if (!byEmoji) {
+          byEmoji = new Map();
+          perMessage.set(r.message_id, byEmoji);
+        }
+        const entry = byEmoji.get(r.emoji);
+        if (entry) {
+          entry.count += 1;
+          if (r.user_id === user.id) entry.reactedByMe = true;
+        } else {
+          byEmoji.set(r.emoji, {
+            emoji: r.emoji,
+            count: 1,
+            reactedByMe: r.user_id === user.id,
+          });
+        }
+      }
+      for (const [mid, byEmoji] of perMessage) {
+        reactionMap.set(mid, Array.from(byEmoji.values()));
+      }
+    }
+
+    // --- Reply context: look up the replied-to messages in one query. ---
+    const replyMap = new Map<string, ReplyContext>();
+    const replyIds = Array.from(
+      new Set(rows.map((m) => m.reply_to_id).filter(Boolean))
+    );
+    if (replyIds.length > 0) {
+      const { data: repliedRows } = await (supabase as any)
+        .from("messages")
+        .select("id, content, media_type, sender_id, is_deleted")
+        .in("id", replyIds);
+
+      // Resolve sender usernames for the replied-to messages.
+      const replySenderIds = Array.from(
+        new Set((repliedRows || []).map((r: any) => r.sender_id))
+      );
+      const nameMap = new Map<string, string>();
+      if (replySenderIds.length > 0) {
+        const { data: profiles } = await (supabase as any)
+          .from("profiles")
+          .select("id, username")
+          .in("id", replySenderIds);
+        for (const p of profiles || []) nameMap.set(p.id, p.username);
+      }
+
+      for (const r of repliedRows || []) {
+        const preview = r.is_deleted
+          ? "Deleted message"
+          : r.content
+            ? r.content.slice(0, 120)
+            : r.media_type === "audio"
+              ? "Voice message"
+              : r.media_type === "image"
+                ? "Photo"
+                : r.media_type === "video"
+                  ? "Video"
+                  : "Attachment";
+        replyMap.set(r.id, {
+          id: r.id,
+          senderId: r.sender_id,
+          senderName: nameMap.get(r.sender_id),
+          preview,
+        });
+      }
+    }
+
+    const messages: Message[] = rows.map((msg: any) => ({
+      id: msg.id,
+      content: msg.content,
+      mediaUrl: msg.media_url,
+      mediaType: msg.media_type,
+      mediaDuration: msg.media_duration ?? undefined,
+      senderId: msg.sender_id,
+      isRead: true, // Marked as read by fetching
+      isEdited: msg.is_edited,
+      isDeleted: msg.is_deleted,
+      // Expose the raw ISO timestamp; the client formats it.
+      createdAt: msg.created_at,
+      reactions: reactionMap.get(msg.id) || [],
+      replyTo: msg.reply_to_id ? replyMap.get(msg.reply_to_id) : undefined,
+    }));
 
     return { success: true, messages };
   } catch (error) {
@@ -280,7 +402,9 @@ export async function sendMessage(
   conversationId: string,
   content: string,
   mediaUrl?: string,
-  mediaType?: string
+  mediaType?: string,
+  mediaDuration?: number,
+  replyToId?: string
 ): Promise<MessageResult> {
   try {
     const supabase = await createClient();
@@ -323,7 +447,7 @@ export async function sendMessage(
         .from("blocks")
         .select("blocker_id")
         .or(
-          `and(blocker_id.eq.${user.id},blocked_id.eq.${otherPart.profile_id}),and(blocker_id.eq.${otherPart.profile_id},blocked_id.eq.${user.id})`
+          `and(blocker_id.eq.${sanitizeFilterTerm(user.id)},blocked_id.eq.${sanitizeFilterTerm(otherPart.profile_id)}),and(blocker_id.eq.${sanitizeFilterTerm(otherPart.profile_id)},blocked_id.eq.${sanitizeFilterTerm(user.id)})`
         )
         .limit(1)
         .maybeSingle();
@@ -342,6 +466,8 @@ export async function sendMessage(
         content,
         media_url: mediaUrl || null,
         media_type: mediaType || null,
+        media_duration: mediaDuration ?? null,
+        reply_to_id: replyToId || null,
       })
       .select("id")
       .single();
@@ -408,7 +534,7 @@ export async function startConversation(
       .from("blocks")
       .select("blocker_id")
       .or(
-        `and(blocker_id.eq.${user.id},blocked_id.eq.${participantId}),and(blocker_id.eq.${participantId},blocked_id.eq.${user.id})`
+        `and(blocker_id.eq.${sanitizeFilterTerm(user.id)},blocked_id.eq.${sanitizeFilterTerm(participantId)}),and(blocker_id.eq.${sanitizeFilterTerm(participantId)},blocked_id.eq.${sanitizeFilterTerm(user.id)})`
       )
       .limit(1)
       .maybeSingle();
@@ -617,40 +743,3 @@ export async function markConversationAsRead(
   }
 }
 
-// Helper functions
-function formatTimeAgo(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-
-  return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-
-  if (isToday) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
-
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) {
-    return "Yesterday";
-  }
-
-  return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
-}

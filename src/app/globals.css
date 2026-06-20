@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
-:root {
-  /* Core colors */
-  --background: #1a1a1a;
-  --foreground: #ededed;
+/* Drive the `dark:` variant from the next-themes `.dark` class on <html>,
+   not OS prefers-color-scheme (Tailwind v4's default). */
+@custom-variant dark (&:where(.dark, .dark *));
 
-  /* Brand colors */
+/* =============================================================================
+   Theme tokens
+   - Brand colors are theme-independent.
+   - Surface/background tokens flip between light (:root default) and dark (.dark).
+   - All Tailwind color utilities below resolve via var(), so existing
+     `bg-vocl-accent` / `text-foreground` usages adapt to the active theme with
+     no markup changes.
+   ============================================================================ */
+:root {
+  /* Brand colors (theme-independent) */
   --vocl-pink: #F20D5E;
   --vocl-accent: #5B9A8B;
   --vocl-accent-hover: #4A8578;
@@ -13,11 +21,37 @@
   --vocl-like: #E27D60;
   --vocl-reblog: #85C88A;
 
-  /* Surface colors */
+  /* Semantic primary = brand pink (conversion CTAs: Follow, send, post) */
+  --vocl-primary: var(--vocl-pink);
+  --vocl-primary-hover: #D10B50;
+
+  /* Content surfaces.
+     --vocl-surface (white) and --vocl-surface-muted (#EBEBEB) are the post-card
+     internals — intentionally light in BOTH themes.
+     --vocl-surface-dark is the theme-aware CARD surface (white in light, dark in
+     dark) used by panels/modals/dropdowns.
+     --vocl-overlay is the ALWAYS-dark accent (post reblog band, CW/NSFW overlays). */
   --vocl-surface: #ffffff;
   --vocl-surface-muted: #EBEBEB;
-  --vocl-surface-dark: #2a2a2a;
+  --vocl-overlay: #2a2a2a;
   --vocl-action-bar: #1f1f1f;
+
+  /* ---- Light theme (default) ---- */
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --vocl-surface-dark: #ffffff;
+  --vocl-border: rgba(0, 0, 0, 0.08);
+  --vocl-hover: rgba(0, 0, 0, 0.04);
+  --vocl-hover-strong: rgba(0, 0, 0, 0.07);
+}
+
+.dark {
+  --background: #1a1a1a;
+  --foreground: #ededed;
+  --vocl-surface-dark: #2a2a2a;
+  --vocl-border: rgba(255, 255, 255, 0.06);
+  --vocl-hover: rgba(255, 255, 255, 0.05);
+  --vocl-hover-strong: rgba(255, 255, 255, 0.10);
 }
 
 @theme inline {
@@ -26,13 +60,19 @@
   --color-vocl-pink: var(--vocl-pink);
   --color-vocl-accent: var(--vocl-accent);
   --color-vocl-accent-hover: var(--vocl-accent-hover);
+  --color-vocl-primary: var(--vocl-primary);
+  --color-vocl-primary-hover: var(--vocl-primary-hover);
   --color-vocl-comment: var(--vocl-comment);
   --color-vocl-like: var(--vocl-like);
   --color-vocl-reblog: var(--vocl-reblog);
   --color-vocl-surface: var(--vocl-surface);
   --color-vocl-surface-muted: var(--vocl-surface-muted);
   --color-vocl-surface-dark: var(--vocl-surface-dark);
+  --color-vocl-overlay: var(--vocl-overlay);
   --color-vocl-action-bar: var(--vocl-action-bar);
+  --color-vocl-border: var(--vocl-border);
+  --color-vocl-hover: var(--vocl-hover);
+  --color-vocl-hover-strong: var(--vocl-hover-strong);
   --font-sans: var(--font-lexend-sans);
   --font-display: var(--font-gloock--display);
 }
@@ -41,6 +81,61 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth color transition when toggling themes (not on every element to avoid jank) */
+html.theme-transition,
+html.theme-transition body {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* =============================================================================
+   Typography scale (FND-4)
+   - Display/headings/quotes use Gloock (--font-display) for editorial feel.
+   - Body is confident: base size, comfortable line-height, normal weight
+     (replacing the timid `font-light text-sm` pattern surface-by-surface).
+   ============================================================================ */
+.type-display-lg {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+.type-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 1.1rem + 1.1vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.type-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+.type-quote {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.6rem);
+  line-height: 1.4;
+}
+.type-body-lg {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  font-weight: 400;
+}
+.type-body {
+  font-size: 1rem;
+  line-height: 1.65;
+  font-weight: 400;
+}
+.type-meta {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  font-weight: 400;
 }
 
 /* Animations */
@@ -66,12 +161,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--vocl-hover-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--vocl-border);
 }
 
 /* Skip link for keyboard navigation */
@@ -184,8 +279,40 @@ body {
   animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Like microinteraction (UX-3) — pop + radiating burst */
+@keyframes like-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.animate-like-pop {
+  animation: like-pop 0.4s ease-out;
+}
+
+@keyframes like-burst {
+  0% { transform: scale(0.4); opacity: 0.65; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+.animate-like-burst {
+  animation: like-burst 0.5s ease-out forwards;
+}
+
+/* Off-screen virtualization (dependency-free): the browser skips layout/paint
+   for cards not near the viewport while keeping their DOM + state intact.
+   contain-intrinsic-size reserves an estimated height so the scrollbar stays
+   stable. Containment only applies while off-screen, so on-screen overflow
+   (reblog radial menu, tag overlays) paints normally. */
+.cv-feed-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+.cv-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+
 /* Toast animation overrides */
 [data-sonner-toaster] [data-sonner-toast] {
   font-family: var(--font-sans);
 }
-

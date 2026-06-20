@@ -34,7 +34,9 @@ import {
   type CommunityRule,
   type JoinRequest,
 } from "@/actions/communities";
+import { motion, MotionConfig } from "framer-motion";
 import { toast } from "@/components/ui";
+import { fadeUp } from "@/lib/motion";
 
 export default function CommunitySettingsPage() {
   const params = useParams();
@@ -226,11 +228,14 @@ export default function CommunitySettingsPage() {
 
   if (denied || !community) {
     return (
-      <div className="py-12 px-4 max-w-xl mx-auto text-center">
-        <h1 className="text-xl font-semibold text-foreground mb-1">Access denied</h1>
-        <p className="text-sm text-foreground/50">You need to be a moderator or owner to access settings.</p>
-        <Link href={`/c/${slug}`} className="inline-block mt-4 text-sm text-vocl-accent hover:underline">
-          Back to community
+      <div className="py-16 px-4 max-w-xl mx-auto text-center">
+        <span className="type-meta uppercase tracking-widest text-foreground/40 font-semibold">
+          Restricted
+        </span>
+        <h1 className="type-display text-foreground mt-1 mb-1">Access denied</h1>
+        <p className="type-body text-foreground/50">You need to be a moderator or owner to access settings.</p>
+        <Link href={`/c/${slug}`} className="inline-block mt-4 text-sm font-medium text-vocl-primary hover:underline">
+          Back to the desk
         </Link>
       </div>
     );
@@ -239,77 +244,91 @@ export default function CommunitySettingsPage() {
   const isOwner = community.myRole === "owner";
 
   return (
-    <div className="py-6 px-4 max-w-2xl mx-auto">
+    <MotionConfig reducedMotion="user">
+    <motion.div
+      className="py-3 sm:py-6 px-2 sm:px-4 max-w-2xl mx-auto"
+      initial="hidden"
+      animate="show"
+      variants={fadeUp}
+    >
       {community && <title>{`Settings — ${community.name} | be.vocl`}</title>}
       <Link
         href={`/c/${community.slug}`}
-        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-6 transition-colors"
       >
         <IconArrowLeft size={16} />
-        Back to community
+        Back to the desk
       </Link>
 
-      <h1 className="text-2xl font-bold text-foreground mb-1">Community settings</h1>
-      <p className="text-sm text-foreground/50 mb-8">
-        /c/{community.slug} • {community.myRole}
-      </p>
+      <header className="mb-8 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          The Masthead
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1">Desk settings</h1>
+        <p className="type-meta text-foreground/50 mt-1">
+          /c/{community.slug} · {community.myRole}
+        </p>
+      </header>
 
       {/* Main info */}
       <section className="mb-10">
-        <h2 className="text-lg font-semibold text-foreground mb-3">General</h2>
-        <div className="space-y-4 p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+        <div className="mb-4 flex items-center gap-3">
+          <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">General</span>
+          <span className="h-px flex-1 bg-vocl-border" />
+        </div>
+        <div className="space-y-4 p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
           <div>
-            <label className="block text-xs font-medium text-foreground/60 mb-1.5">Name</label>
+            <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={60}
-              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-foreground/60 mb-1.5">Description</label>
+            <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={500}
-              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent resize-none"
+              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent resize-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-foreground/60 mb-1.5">Icon URL</label>
+              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Icon URL</label>
               <input
                 type="url"
                 value={iconUrl}
                 onChange={(e) => setIconUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-foreground/60 mb-1.5">Banner URL</label>
+              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Banner URL</label>
               <input
                 type="url"
                 value={bannerUrl}
                 onChange={(e) => setBannerUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-foreground/60 mb-1.5">Visibility</label>
+              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Visibility</label>
               <select
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
               >
                 <option value="public">Public — anyone can view</option>
                 <option value="restricted">Restricted — anyone can view, members post</option>
@@ -317,11 +336,11 @@ export default function CommunitySettingsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-foreground/60 mb-1.5">Join policy</label>
+              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Join policy</label>
               <select
                 value={joinPolicy}
                 onChange={(e) => setJoinPolicy(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
               >
                 <option value="open">Open — anyone can join</option>
                 <option value="request">Request — requires approval</option>
@@ -337,7 +356,7 @@ export default function CommunitySettingsPage() {
               aria-checked={nsfw}
               onClick={() => setNsfw(!nsfw)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                nsfw ? "bg-rose-500" : "bg-white/10"
+                nsfw ? "bg-rose-500" : "bg-vocl-hover-strong"
               }`}
             >
               <span
@@ -352,7 +371,7 @@ export default function CommunitySettingsPage() {
           <button
             onClick={handleSaveMain}
             disabled={savingMain}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-vocl-accent text-white text-sm font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-2 rounded-full bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
           >
             {savingMain ? <IconLoader2 size={16} className="animate-spin mx-auto" /> : "Save changes"}
           </button>
@@ -362,17 +381,20 @@ export default function CommunitySettingsPage() {
       {/* Join requests */}
       {(community.joinPolicy === "request" || community.joinPolicy === "invite_only") && (
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-foreground mb-3">
-            Pending join requests {requests.length > 0 && <span className="text-sm font-normal text-foreground/40">({requests.length})</span>}
-          </h2>
+          <div className="mb-4 flex items-center gap-3">
+            <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
+              Pending join requests {requests.length > 0 && <span className="text-foreground/35">({requests.length})</span>}
+            </span>
+            <span className="h-px flex-1 bg-vocl-border" />
+          </div>
           {requests.length === 0 ? (
-            <div className="rounded-xl bg-white/5 border border-white/5 p-6 text-center">
+            <div className="rounded-xl bg-vocl-hover border border-vocl-border p-6 text-center">
               <p className="text-sm text-foreground/50">No pending requests.</p>
             </div>
           ) : (
             <div className="space-y-2">
               {requests.map((r) => (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-white/5">
+                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border">
                   <Link href={`/profile/${r.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                     {r.avatarUrl ? (
                       <Image src={r.avatarUrl} alt={r.username} fill className="object-cover" />
@@ -414,12 +436,15 @@ export default function CommunitySettingsPage() {
 
       {/* Members */}
       <section className="mb-10">
-        <h2 className="text-lg font-semibold text-foreground mb-3">
-          Members <span className="text-sm font-normal text-foreground/40">({members.length})</span>
-        </h2>
+        <div className="mb-4 flex items-center gap-3">
+          <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
+            Members <span className="text-foreground/35">({members.length})</span>
+          </span>
+          <span className="h-px flex-1 bg-vocl-border" />
+        </div>
         <div className="space-y-2">
           {members.map((m) => (
-            <div key={m.userId} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <div key={m.userId} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border">
               <Link href={`/profile/${m.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                 {m.avatarUrl ? (
                   <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
@@ -443,7 +468,7 @@ export default function CommunitySettingsPage() {
                     <button
                       onClick={() => handleChangeRole(m.userId, "moderator")}
                       disabled={busy[`role-${m.userId}`]}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 text-xs text-foreground/70 hover:bg-white/10"
+                      className="px-2.5 py-1 rounded-lg bg-vocl-hover text-xs text-foreground/70 hover:bg-vocl-hover-strong"
                     >
                       Make mod
                     </button>
@@ -451,7 +476,7 @@ export default function CommunitySettingsPage() {
                     <button
                       onClick={() => handleChangeRole(m.userId, "member")}
                       disabled={busy[`role-${m.userId}`]}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 text-xs text-foreground/70 hover:bg-white/10"
+                      className="px-2.5 py-1 rounded-lg bg-vocl-hover text-xs text-foreground/70 hover:bg-vocl-hover-strong"
                     >
                       Demote
                     </button>
@@ -473,23 +498,24 @@ export default function CommunitySettingsPage() {
 
       {/* Rules */}
       <section className="mb-10">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-foreground">Rules</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">Rules</span>
+          <span className="h-px flex-1 bg-vocl-border" />
           <button
             onClick={handleAddRule}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-vocl-accent/20 text-vocl-accent hover:bg-vocl-accent/30 text-xs font-medium"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-vocl-accent/15 text-vocl-accent hover:bg-vocl-accent/25 text-xs font-medium flex-shrink-0"
           >
             <IconPlus size={14} /> Add rule
           </button>
         </div>
         {rules.length === 0 ? (
-          <div className="rounded-xl bg-white/5 border border-white/5 p-6 text-center">
+          <div className="rounded-xl bg-vocl-hover border border-vocl-border p-6 text-center">
             <p className="text-sm text-foreground/50">No rules yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {rules.map((rule, idx) => (
-              <div key={rule.id} className="p-3 rounded-xl bg-vocl-surface-dark border border-white/5 space-y-2">
+              <div key={rule.id} className="p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-2">
                 <div className="flex items-start gap-2">
                   <div className="flex flex-col">
                     <button onClick={() => moveRule(idx, -1)} disabled={idx === 0} className="text-foreground/40 hover:text-foreground disabled:opacity-30">
@@ -505,14 +531,14 @@ export default function CommunitySettingsPage() {
                       value={rule.title}
                       onChange={(e) => setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, title: e.target.value } : r)))}
                       maxLength={120}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent"
                     />
                     <textarea
                       value={rule.body || ""}
                       onChange={(e) => setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, body: e.target.value } : r)))}
                       placeholder="Explain the rule (optional)"
                       rows={2}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none"
                     />
                     <div className="flex gap-2">
                       <button
@@ -540,7 +566,10 @@ export default function CommunitySettingsPage() {
       {/* Danger zone */}
       {isOwner && (
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-rose-400 mb-3">Danger zone</h2>
+          <div className="mb-4 flex items-center gap-3">
+            <span className="type-meta uppercase tracking-widest text-rose-400 font-semibold">Danger zone</span>
+            <span className="h-px flex-1 bg-rose-500/20" />
+          </div>
           <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-3">
             <p className="text-sm text-foreground/70">
               Deleting this community removes all members, posts, and rules. This cannot be undone.
@@ -569,7 +598,7 @@ export default function CommunitySettingsPage() {
                       setConfirmDelete(false);
                       setDeleteText("");
                     }}
-                    className="px-3 py-2 rounded-xl bg-white/10 text-foreground text-sm"
+                    className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
                   >
                     Cancel
                   </button>
@@ -586,6 +615,7 @@ export default function CommunitySettingsPage() {
           </div>
         </section>
       )}
-    </div>
+    </motion.div>
+    </MotionConfig>
   );
 }

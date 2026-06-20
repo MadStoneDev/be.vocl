@@ -1,5 +1,6 @@
 "use server";
 
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { transcribeAudio } from "@/lib/openai/whisper";
 
@@ -13,14 +14,26 @@ import { transcribeAudio } from "@/lib/openai/whisper";
  */
 export async function transcribePostAudio(postId: string): Promise<{ success: boolean; transcript?: string; error?: string }> {
   try {
+    // SECURITY (SEC-4): authenticate the caller and verify they own the post
+    // before doing any work with the privileged admin client. Without this, any
+    // caller could trigger transcription on (and overwrite the content of) an
+    // arbitrary post.
+    const authClient = await createClient();
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+
+    if (!user) return { success: false, error: "Unauthorized" };
+
     const supabase = createAdminClient();
     const { data: post, error } = await (supabase as any)
       .from("posts")
-      .select("id, post_type, content")
+      .select("id, post_type, content, author_id")
       .eq("id", postId)
       .single();
 
     if (error || !post) return { success: false, error: "Post not found" };
+    if (post.author_id !== user.id) return { success: false, error: "Unauthorized" };
     if (post.post_type !== "audio") return { success: false, error: "Not an audio post" };
 
     const content = (post.content || {}) as any;

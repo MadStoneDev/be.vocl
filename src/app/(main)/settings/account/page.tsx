@@ -88,18 +88,23 @@ export default function AccountSettingsPage() {
         Back to settings
       </Link>
 
-      <h1 className="text-2xl font-bold text-foreground mb-1">Account & Data</h1>
-      <p className="text-sm text-foreground/60 mb-8">
-        Manage your data and account.
-      </p>
+      <div className="mb-8 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          Settings
+        </span>
+        <h1 className="type-display font-display text-foreground">Account &amp; Data</h1>
+        <p className="type-body text-foreground/55 mt-1">
+          Manage your data and account.
+        </p>
+      </div>
 
       {/* Data export */}
       <section className="mb-10">
-        <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          <IconDownload size={20} className="text-vocl-accent" />
+        <h2 className="type-heading font-display text-foreground mb-3 flex items-center gap-2">
+          <IconDownload size={20} className="text-vocl-primary" />
           Export your data
         </h2>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5 space-y-3">
+        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-3">
           <p className="text-sm text-foreground/70">
             Download a copy of all your posts, messages, and account data.
             We'll email you when it's ready (usually within a few minutes).
@@ -111,7 +116,7 @@ export default function AccountSettingsPage() {
                 href={exportStatus.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-accent text-white text-sm font-medium"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
               >
                 Download export <IconExternalLink size={14} />
               </a>
@@ -130,7 +135,7 @@ export default function AccountSettingsPage() {
             <button
               onClick={handleRequestExport}
               disabled={requestingExport}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-accent text-white text-sm font-medium hover:bg-vocl-accent-hover disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
             >
               {requestingExport ? (
                 <IconLoader2 size={14} className="animate-spin" />
@@ -145,7 +150,7 @@ export default function AccountSettingsPage() {
 
       {/* Danger zone */}
       <section className="mb-10">
-        <h2 className="text-lg font-semibold text-rose-400 mb-3 flex items-center gap-2">
+        <h2 className="type-heading font-display text-rose-400 mb-3 flex items-center gap-2">
           <IconAlertOctagon size={20} />
           Danger zone
         </h2>
@@ -177,7 +182,7 @@ export default function AccountSettingsPage() {
                 Before continuing, you may want to{" "}
                 <button
                   onClick={() => setDeleteStep("idle")}
-                  className="text-vocl-accent hover:underline"
+                  className="text-vocl-primary hover:underline"
                 >
                   request a data export first
                 </button>
@@ -192,7 +197,7 @@ export default function AccountSettingsPage() {
                 </button>
                 <button
                   onClick={() => setDeleteStep("idle")}
-                  className="px-3 py-2 rounded-xl bg-white/10 text-foreground text-sm"
+                  className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
                 >
                   Cancel
                 </button>
@@ -227,7 +232,7 @@ export default function AccountSettingsPage() {
                     setDeleteStep("idle");
                     setDeleteUsernameInput("");
                   }}
-                  className="px-3 py-2 rounded-xl bg-white/10 text-foreground text-sm"
+                  className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
                 >
                   Cancel
                 </button>
@@ -259,7 +264,7 @@ export default function AccountSettingsPage() {
                     setDeleteStep("idle");
                     setDeleteUsernameInput("");
                   }}
-                  className="px-3 py-2 rounded-xl bg-white/10 text-foreground text-sm"
+                  className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
                 >
                   Cancel
                 </button>

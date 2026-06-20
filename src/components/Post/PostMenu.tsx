@@ -155,14 +155,14 @@ export function PostMenu({
       {/* Menu */}
       <div
         ref={menuRef}
-        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-vocl-surface-dark shadow-xl border border-white/10 py-1 overflow-hidden"
+        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-vocl-surface-dark shadow-xl border border-vocl-border py-1 overflow-hidden"
         role="menu"
         aria-orientation="vertical"
       >
         {/* Copy Link */}
         <button
           onClick={handleCopyLink}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
           role="menuitem"
         >
           {copied ? (
@@ -181,7 +181,7 @@ export function PostMenu({
         {/* Embed */}
         <button
           onClick={handleCopyEmbed}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
           role="menuitem"
         >
           {embedCopied ? (
@@ -204,7 +204,7 @@ export function PostMenu({
               onShare();
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
             role="menuitem"
           >
             <IconShare size={18} />
@@ -218,7 +218,7 @@ export function PostMenu({
             onBookmark?.();
             onClose();
           }}
-          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
           role="menuitem"
         >
           {isBookmarked ? (
@@ -242,7 +242,7 @@ export function PostMenu({
                 onPin?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
               role="menuitem"
             >
               {isPinned ? (
@@ -264,7 +264,7 @@ export function PostMenu({
                 onMuteNotifications?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
               role="menuitem"
             >
               {isNotificationMuted ? (
@@ -287,7 +287,7 @@ export function PostMenu({
                   onContinueThread();
                   onClose();
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
                 role="menuitem"
               >
                 <IconMessagePlus size={18} />
@@ -301,7 +301,7 @@ export function PostMenu({
                 onEdit?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
               role="menuitem"
             >
               <IconPencil size={18} />
@@ -309,7 +309,7 @@ export function PostMenu({
             </button>
 
             {/* Divider */}
-            <div className="h-px bg-white/10 my-1" />
+            <div className="h-px bg-vocl-border my-1" />
 
             {/* Delete Post */}
             <button
@@ -332,7 +332,7 @@ export function PostMenu({
                 onMute?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
               role="menuitem"
             >
               <IconVolumeOff size={18} />
@@ -345,7 +345,7 @@ export function PostMenu({
                 onFollowToggle?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
               role="menuitem"
             >
               {isFollowingAuthor ? (
@@ -371,7 +371,7 @@ export function PostMenu({
                       onMuteTag(tag.id, tag.name);
                       onClose();
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
                     role="menuitem"
                   >
                     <IconHash size={18} />
@@ -382,7 +382,7 @@ export function PostMenu({
             )}
 
             {/* Divider */}
-            <div className="h-px bg-white/10 my-1" />
+            <div className="h-px bg-vocl-border my-1" />
 
             {/* Flag Post */}
             <button

@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { IconArrowLeft, IconLoader2 } from "@tabler/icons-react";
+import { motion, MotionConfig } from "framer-motion";
 import { createCommunity } from "@/actions/communities";
 import { toast } from "@/components/ui";
+import { fadeUp } from "@/lib/motion";
 
 export default function NewCommunityPage() {
   const router = useRouter();
@@ -49,24 +51,35 @@ export default function NewCommunityPage() {
   };
 
   return (
-    <div className="py-6 px-4 max-w-xl mx-auto">
+    <MotionConfig reducedMotion="user">
+    <motion.div
+      className="py-3 sm:py-6 px-2 sm:px-4 max-w-xl mx-auto"
+      initial="hidden"
+      animate="show"
+      variants={fadeUp}
+    >
       <title>New community | be.vocl</title>
       <Link
         href="/communities"
-        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-6 transition-colors"
       >
         <IconArrowLeft size={16} />
-        Back to communities
+        Back to the desks
       </Link>
 
-      <h1 className="text-2xl font-bold text-foreground mb-2">Create a community</h1>
-      <p className="text-sm text-foreground/60 mb-6">
-        A space for people who share an interest. You'll be the owner.
-      </p>
+      <header className="mb-7 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          Open a Desk
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1">Start a community</h1>
+        <p className="type-body text-foreground/55 mt-1">
+          A section for people who share an interest. You'll be the owner.
+        </p>
+      </header>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-foreground/80 mb-1.5">
+          <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-2">
             Name
           </label>
           <input
@@ -74,7 +87,7 @@ export default function NewCommunityPage() {
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="e.g. Photography Enthusiasts"
-            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
             required
             minLength={2}
             maxLength={60}
@@ -82,11 +95,11 @@ export default function NewCommunityPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground/80 mb-1.5">
+          <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-2">
             URL (slug)
           </label>
-          <div className="flex items-stretch rounded-xl bg-vocl-surface-dark border border-white/10 focus-within:ring-2 focus-within:ring-vocl-accent focus-within:border-transparent overflow-hidden">
-            <span className="px-3 py-2.5 text-sm text-foreground/40 bg-white/[0.03] border-r border-white/10">
+          <div className="flex items-stretch rounded-xl bg-vocl-surface-dark border border-vocl-border focus-within:ring-2 focus-within:ring-vocl-accent focus-within:border-transparent overflow-hidden">
+            <span className="px-3 py-2.5 text-sm text-foreground/40 bg-vocl-hover border-r border-vocl-border">
               /c/
             </span>
             <input
@@ -106,7 +119,7 @@ export default function NewCommunityPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground/80 mb-1.5">
+          <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-2">
             Description <span className="text-foreground/40">(optional)</span>
           </label>
           <textarea
@@ -115,7 +128,7 @@ export default function NewCommunityPage() {
             placeholder="What is this community about?"
             rows={3}
             maxLength={500}
-            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm resize-none"
+            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm resize-none"
           />
         </div>
 
@@ -126,7 +139,7 @@ export default function NewCommunityPage() {
             aria-checked={nsfw}
             onClick={() => setNsfw(!nsfw)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              nsfw ? "bg-rose-500" : "bg-white/10"
+              nsfw ? "bg-rose-500" : "bg-vocl-hover-strong"
             }`}
           >
             <span
@@ -146,7 +159,7 @@ export default function NewCommunityPage() {
         <button
           type="submit"
           disabled={submitting || !name || !slug}
-          className="w-full py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-full bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (
             <IconLoader2 size={18} className="animate-spin mx-auto" />
@@ -155,6 +168,7 @@ export default function NewCommunityPage() {
           )}
         </button>
       </form>
-    </div>
+    </motion.div>
+    </MotionConfig>
   );
 }

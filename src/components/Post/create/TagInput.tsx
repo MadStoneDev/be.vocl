@@ -30,6 +30,7 @@ export function TagInput({
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +103,13 @@ export function TagInput({
       }
     };
   }, [inputValue, tags]);
+
+  // Clear any pending blur-commit timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    };
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -182,7 +190,7 @@ export function TagInput({
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className="ml-1 hover:text-white transition-colors"
+              className="ml-1 hover:text-foreground transition-colors"
             >
               <IconX size={14} />
             </button>
@@ -227,12 +235,13 @@ export function TagInput({
             }}
             onBlur={() => {
               // Delay to allow click on suggestion
-              setTimeout(() => {
+              if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+              blurTimeoutRef.current = setTimeout(() => {
                 if (inputValue) addTag(inputValue);
               }, 200);
             }}
             placeholder={placeholder}
-            className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent transition-colors text-sm"
+            className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent transition-colors text-sm"
             maxLength={30}
             autoComplete="off"
           />
@@ -241,7 +250,7 @@ export function TagInput({
           {showDropdown && (suggestions.length > 0 || (queryNormalized.length >= 2 && !exactMatchExists)) && (
             <div
               ref={dropdownRef}
-              className="absolute z-50 left-0 right-0 mt-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl overflow-hidden max-h-52 overflow-y-auto"
+              className="absolute z-50 left-0 right-0 mt-1 rounded-xl bg-vocl-surface-dark border border-vocl-border shadow-xl overflow-hidden max-h-52 overflow-y-auto"
             >
               {suggestions.map((suggestion, index) => (
                 <button
@@ -255,7 +264,7 @@ export function TagInput({
                   className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
                     index === highlightedIndex
                       ? "bg-vocl-accent/20 text-foreground"
-                      : "text-foreground/80 hover:bg-white/5"
+                      : "text-foreground/80 hover:bg-vocl-hover"
                   }`}
                 >
                   <span className="flex items-center gap-2 text-sm">
@@ -280,10 +289,10 @@ export function TagInput({
                     addTag(queryNormalized);
                   }}
                   onMouseEnter={() => setHighlightedIndex(suggestions.length)}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left border-t border-white/5 transition-colors ${
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-left border-t border-vocl-border transition-colors ${
                     highlightedIndex === suggestions.length
                       ? "bg-vocl-accent/20 text-foreground"
-                      : "text-foreground/60 hover:bg-white/5"
+                      : "text-foreground/60 hover:bg-vocl-hover"
                   }`}
                 >
                   <span className="text-sm">

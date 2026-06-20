@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback, useTransition, useMemo, type ReactNode } from "react";
+import { useState, useCallback, useTransition, useMemo, memo, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Post, TextContent, ImageContent } from "./Post";
 import { VideoContent } from "./content/VideoContent";
 import { AudioContent } from "./content/AudioContent";
+import { AskContent } from "./content/AskContent";
 import { GalleryContent } from "./content/GalleryContent";
+import { PostAudioReactions } from "./PostAudioReactions";
 import { LinkPreviewCarousel } from "./content/LinkPreviewCarousel";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
 import type { VideoEmbedPlatform } from "@/types/database";
@@ -36,10 +38,7 @@ const ReportDialog = dynamic(() => import("./ReportDialog").then(mod => ({ defau
 const UserReportDialog = dynamic(() => import("./UserReportDialog").then(mod => ({ default: mod.UserReportDialog })), {
   ssr: false,
 });
-const EditPostModal = dynamic(() => import("./create/EditPostModal").then(mod => ({ default: mod.EditPostModal })), {
-  ssr: false,
-});
-const CreatePostModal = dynamic(() => import("./create/CreatePostModal").then(mod => ({ default: mod.CreatePostModal })), {
+const EditorialComposer = dynamic(() => import("./create/composer/EditorialComposer").then(mod => ({ default: mod.EditorialComposer })), {
   ssr: false,
 });
 
@@ -82,7 +81,7 @@ interface InteractivePostProps {
   threadLength?: number;
 }
 
-export function InteractivePost({
+function InteractivePostComponent({
   id,
   author,
   authorId,
@@ -110,7 +109,7 @@ export function InteractivePost({
   threadLength,
 }: InteractivePostProps) {
   // User content settings - own posts always auto-reveal, otherwise check user preferences
-  const { profile } = useAuth();
+  const { profile, isAuthenticated } = useAuth();
   const autoRevealSensitive = isOwn || (profile?.blurSensitiveByDefault === false);
 
   // Menu and dialog state
@@ -555,6 +554,9 @@ export function InteractivePost({
           />
         );
 
+      case "ask":
+        return <AskContent content={contentData} />;
+
       default:
         return children;
     }
@@ -601,6 +603,11 @@ export function InteractivePost({
       >
         {renderContent()}
       </Post>
+
+      {/* Spoken (voice) reactions — VOCL signature feature */}
+      {!isReblog && (
+        <PostAudioReactions postId={id} isLoggedIn={isAuthenticated} />
+      )}
 
       {/* Post Menu */}
       <PostMenu
@@ -678,13 +685,13 @@ export function InteractivePost({
       )}
 
       {/* Edit Post Dialog */}
-      {(currentContent || isReblog) && (
-        <EditPostModal
-          isOpen={showEditDialog}
-          onClose={() => setShowEditDialog(false)}
-          onSuccess={handleEditSuccess}
+      {showEditDialog && (currentContent || isReblog) && (
+        <EditorialComposer
+          mode="edit"
           isReblogEdit={isReblog}
-          post={{
+          onClose={() => setShowEditDialog(false)}
+          onEditSuccess={handleEditSuccess}
+          existingPost={{
             id,
             postType: isReblog ? "text" : contentType,
             content: isReblog
@@ -697,11 +704,16 @@ export function InteractivePost({
       )}
 
       {/* Continue Thread Dialog */}
-      <CreatePostModal
-        isOpen={showCreateForThread}
-        onClose={() => setShowCreateForThread(false)}
-        threadId={threadId || id}
-      />
+      {showCreateForThread && (
+        <EditorialComposer
+          mode="create"
+          threadId={threadId || id}
+          onClose={() => setShowCreateForThread(false)}
+        />
+      )}
     </div>
   );
 }
+
+// Memoized so feed list items don't all re-render on parent state changes.
+export const InteractivePost = memo(InteractivePostComponent);

@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { PaddleServer, TIP_PRODUCTS, VERIFICATION_PRODUCT } from "@/lib/paddle/client";
 
@@ -72,44 +71,11 @@ export async function initiateTip(
   }
 }
 
-/**
- * Complete a tip after payment
- */
-export async function completeTip(transactionId: string): Promise<PaymentResult> {
-  try {
-    const supabase = await createClient();
-
-    // Update tip status
-    const { data: tip, error } = await (supabase as any)
-      .from("tips")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", transactionId)
-      .eq("status", "pending")
-      .select("sender_id, recipient_id, amount")
-      .single();
-
-    if (error || !tip) {
-      return { success: false, error: "Tip not found or already completed" };
-    }
-
-    // Create notification for recipient
-    await (supabase as any).from("notifications").insert({
-      recipient_id: tip.recipient_id,
-      actor_id: tip.sender_id,
-      notification_type: "tip",
-      is_read: false,
-    });
-
-    revalidatePath("/");
-    return { success: true, transactionId };
-  } catch (error) {
-    console.error("Complete tip error:", error);
-    return { success: false, error: "An unexpected error occurred" };
-  }
-}
+// SECURITY (SEC-3): `completeTip` was removed. It allowed any caller to mark an
+// arbitrary tip as "completed" (and fire a notification) with no auth and no
+// payment proof. Tips are now only finalized server-side by the verified Paddle
+// webhook (see src/app/api/webhooks/paddle). Do not reintroduce a client-callable
+// completion action.
 
 /**
  * Get tips received by a user
@@ -354,48 +320,11 @@ export async function initiateVerification(): Promise<PaymentResult> {
   }
 }
 
-/**
- * Complete verification after payment
- */
-export async function completeVerification(
-  transactionId: string
-): Promise<PaymentResult> {
-  try {
-    const supabase = await createClient();
-
-    // Update verification status
-    const { data: verification, error } = await (supabase as any)
-      .from("verifications")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", transactionId)
-      .eq("status", "pending")
-      .select("user_id")
-      .single();
-
-    if (error || !verification) {
-      return { success: false, error: "Verification not found" };
-    }
-
-    // Update user profile to verified
-    await (supabase as any)
-      .from("profiles")
-      .update({
-        is_verified: true,
-        verified_at: new Date().toISOString(),
-      })
-      .eq("id", verification.user_id);
-
-    revalidatePath("/profile/[username]", "page");
-    revalidatePath("/settings");
-    return { success: true, transactionId };
-  } catch (error) {
-    console.error("Complete verification error:", error);
-    return { success: false, error: "An unexpected error occurred" };
-  }
-}
+// SECURITY (SEC-2): `completeVerification` was removed. It allowed any caller to
+// set `is_verified = true` on a profile with no auth and no payment proof.
+// Verification is now only granted server-side by the verified Paddle webhook
+// (see src/app/api/webhooks/paddle). Do not reintroduce a client-callable
+// completion action.
 
 /**
  * Check if user is verified

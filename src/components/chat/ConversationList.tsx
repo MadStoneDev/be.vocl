@@ -12,6 +12,7 @@ import {
   IconBan,
   IconFlag,
 } from "@tabler/icons-react";
+import { TimeAgo } from "@/components/ui/TimeAgo";
 
 interface Conversation {
   id: string;
@@ -119,7 +120,7 @@ export function ConversationList({
   }
 
   return (
-    <div className="divide-y divide-white/5">
+    <div className="divide-y divide-vocl-border">
       {/* Context menu - portaled to body to escape overflow clipping */}
       {contextMenu && createPortal(
         <>
@@ -128,7 +129,7 @@ export function ConversationList({
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-[70] w-52 py-1 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl"
+            className="fixed z-[70] w-52 py-1 rounded-xl bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
               top: Math.min(contextMenu.y, window.innerHeight - 280),
@@ -139,7 +140,7 @@ export function ConversationList({
                 onMarkAsRead?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               <IconMailOpened size={18} />
               Mark as read
@@ -149,12 +150,12 @@ export function ConversationList({
                 onMuteNotifications?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               <IconBellOff size={18} />
               Mute notifications
             </button>
-            <div className="my-1 border-t border-white/5" />
+            <div className="my-1 border-t border-vocl-border" />
             <button
               onClick={() => {
                 onBlockUser?.(contextMenu.conversationId);
@@ -201,7 +202,7 @@ export function ConversationList({
           onTouchStart={(e) => handleTouchStart(conversation.id, e)}
           onTouchEnd={handleTouchEnd}
           onTouchMove={handleTouchEnd}
-          className="w-full flex items-center gap-3 p-4 hover:bg-white/5 transition-colors text-left"
+          className="w-full flex items-center gap-3 p-4 hover:bg-vocl-hover transition-colors text-left"
         >
           {/* Avatar with online indicator */}
           <div className="relative flex-shrink-0">
@@ -234,9 +235,10 @@ export function ConversationList({
                 @{conversation.participant.username}
               </span>
               {conversation.lastMessage && (
-                <span className="text-xs text-foreground/40 flex-shrink-0 ml-2">
-                  {conversation.lastMessage.createdAt}
-                </span>
+                <TimeAgo
+                  iso={conversation.lastMessage.createdAt}
+                  className="text-xs text-foreground/40 flex-shrink-0 ml-2"
+                />
               )}
             </div>
             {conversation.lastMessage && (
@@ -278,7 +280,8 @@ export function ConversationList({
                   y: rect.bottom + 4,
                 });
               }}
-              className="p-1.5 rounded-lg text-foreground/30 hover:text-foreground/70 hover:bg-white/5 transition-colors"
+              aria-label={`Options for @${conversation.participant.username}`}
+              className="p-1.5 rounded-lg text-foreground/30 hover:text-foreground/70 hover:bg-vocl-hover transition-colors"
             >
               <IconDots size={16} />
             </button>

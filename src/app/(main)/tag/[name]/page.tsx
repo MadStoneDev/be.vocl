@@ -140,7 +140,7 @@ export default function TagPage() {
               {content.plain || content.text}
             </TextContent>
             {content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+              <div className="bg-vocl-surface-muted -mt-16 pb-16">
                 <LinkPreviewCarousel previews={content.link_previews} />
               </div>
             )}
@@ -198,32 +198,33 @@ export default function TagPage() {
     <PullToRefresh onRefresh={() => fetchPosts(0, false)}>
       {tag && <title>{`#${tag.name} | be.vocl`}</title>}
     <div className="max-w-xl mx-auto py-3 sm:py-6">
-      {/* Tag Header */}
-      <div className="px-2 sm:px-4 mb-4 sm:mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-              <IconHash size={24} className="text-vocl-accent" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">#{tagName}</h1>
-              {tag && (
-                <p className="text-sm text-foreground/60">
-                  {tag.postCount.toLocaleString()} {tag.postCount === 1 ? "post" : "posts"}
-                </p>
-              )}
-            </div>
+      {/* Section masthead */}
+      <div className="px-2 sm:px-4 mb-5 sm:mb-7 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          Section
+        </span>
+        <div className="flex items-start justify-between gap-4 mt-1">
+          <div className="min-w-0">
+            <h1 className="type-display-lg text-foreground flex items-center gap-2 break-words">
+              <IconHash size={30} className="text-vocl-primary flex-shrink-0" />
+              {tagName}
+            </h1>
+            {tag && (
+              <p className="type-meta text-foreground/55 mt-1">
+                {tag.postCount.toLocaleString()} {tag.postCount === 1 ? "post" : "posts"}
+              </p>
+            )}
           </div>
 
           {tag && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={handleMuteToggle}
                 disabled={isMutePending}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   tag.isMuting
                     ? "bg-red-500/20 text-red-400"
-                    : "bg-white/10 text-foreground/60 hover:bg-white/20"
+                    : "border border-vocl-border text-foreground/60 hover:border-vocl-primary/50"
                 }`}
               >
                 {isMutePending ? (
@@ -243,10 +244,10 @@ export default function TagPage() {
               <button
                 onClick={handleFollowToggle}
                 disabled={isFollowPending}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   tag.isFollowing
-                    ? "bg-vocl-accent text-white"
-                    : "bg-white/10 text-foreground hover:bg-white/20"
+                    ? "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+                    : "border border-vocl-border text-foreground hover:border-vocl-primary/50"
                 }`}
               >
                 {isFollowPending ? (
@@ -284,9 +285,9 @@ export default function TagPage() {
       {/* Empty State */}
       {!isLoading && !error && posts.length === 0 && (
         <div className="text-center py-16 px-4">
-          <p className="text-foreground/40 text-lg mb-2">No posts found</p>
-          <p className="text-foreground/30 text-sm">
-            Be the first to post with #{tagName}!
+          <p className="type-display text-foreground/45 mb-2">Nothing here yet</p>
+          <p className="type-body text-foreground/40">
+            Be the first to post with #{tagName}.
           </p>
         </div>
       )}
@@ -330,7 +331,7 @@ export default function TagPage() {
           <button
             onClick={() => fetchPosts(posts.length, true)}
             disabled={isLoadingMore}
-            className="px-6 py-2 bg-white/5 text-foreground/70 rounded-xl hover:bg-white/10 transition-colors disabled:opacity-50"
+            className="px-6 py-2 border border-vocl-border text-foreground/70 rounded-full hover:border-vocl-primary/50 hover:text-vocl-primary transition-colors disabled:opacity-50 type-meta uppercase tracking-wide"
           >
             {isLoadingMore ? "Loading..." : "Load more"}
           </button>

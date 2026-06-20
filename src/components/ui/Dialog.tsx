@@ -92,7 +92,7 @@ export function Dialog({
         onKeyDown={handleKeyDown}
         className={`
           relative w-full ${sizeClasses[size]} mx-4
-          bg-vocl-surface-dark border border-white/10 rounded-2xl
+          bg-vocl-surface border border-vocl-border rounded-2xl
           shadow-2xl
           animate-in zoom-in-95 fade-in duration-200
           focus:outline-none
@@ -100,13 +100,13 @@ export function Dialog({
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-vocl-border">
             <h2 id="dialog-title" className="text-lg font-semibold text-foreground">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-white/5 text-neutral-400 hover:text-foreground transition-colors"
+              className="p-1.5 rounded-lg hover:bg-vocl-hover text-foreground/60 hover:text-foreground transition-colors"
               aria-label="Close dialog"
             >
               <IconX className="w-5 h-5" />
@@ -121,7 +121,7 @@ export function Dialog({
         {!title && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/5 text-neutral-400 hover:text-foreground transition-colors"
+            className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-vocl-hover text-foreground/60 hover:text-foreground transition-colors"
             aria-label="Close dialog"
           >
             <IconX className="w-5 h-5" />
@@ -139,7 +139,7 @@ interface DialogFooterProps {
 
 export function DialogFooter({ children }: DialogFooterProps) {
   return (
-    <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10">
+    <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-vocl-border">
       {children}
     </div>
   );

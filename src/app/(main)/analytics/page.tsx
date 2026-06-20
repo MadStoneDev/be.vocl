@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Time Range Selector */}
-        <div className="flex gap-1 bg-vocl-surface-dark rounded-xl p-1 border border-white/5">
+        <div className="flex gap-1 bg-vocl-surface-dark rounded-xl p-1 border border-vocl-border">
           {(["7d", "30d", "90d"] as TimeRange[]).map((range) => (
             <button
               key={range}
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 timeRange === range
                   ? "bg-vocl-accent text-white"
-                  : "text-foreground/50 hover:text-foreground hover:bg-white/5"
+                  : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
               }`}
             >
               {range}
@@ -217,7 +217,7 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconTrendingUp className="w-4 h-4" />
                 <span className="text-xs">Total Engagement</span>
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
                 {totalEngagement.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconHeart className="w-4 h-4" />
                 <span className="text-xs">Likes</span>
@@ -235,7 +235,7 @@ export default function AnalyticsPage() {
                 {totalLikes.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconMessage className="w-4 h-4" />
                 <span className="text-xs">Comments</span>
@@ -244,7 +244,7 @@ export default function AnalyticsPage() {
                 {totalComments.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/5">
+            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconUsers className="w-4 h-4" />
                 <span className="text-xs">Followers</span>
@@ -256,7 +256,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Post Type Breakdown */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-white/5 p-5">
+          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Post Type Breakdown
             </h2>
@@ -283,7 +283,7 @@ export default function AnalyticsPage() {
                         {item.count} ({item.percentage}%)
                       </span>
                     </div>
-                    <div className="w-full h-2.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="w-full h-2.5 bg-vocl-hover rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
                           postTypeColors[item.postType] || "bg-vocl-accent"
@@ -298,7 +298,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Posts */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-white/5 p-5">
+          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Top Posts
             </h2>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
                     <div key={post.id}>
                       <button
                         onClick={() => togglePostDetail(post.id)}
-                        className="w-full flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
+                        className="w-full flex items-start gap-3 p-3 rounded-xl hover:bg-vocl-hover transition-colors text-left"
                       >
                         <span className="text-sm font-bold text-foreground/30 w-6 text-right mt-0.5">
                           {index + 1}
@@ -367,7 +367,7 @@ export default function AnalyticsPage() {
 
                       {/* Expanded Detail Panel */}
                       {isExpanded && (
-                        <div className="mx-3 mb-2 p-4 rounded-xl bg-white/5 border border-white/5 space-y-4">
+                        <div className="mx-3 mb-2 p-4 rounded-xl bg-vocl-hover border border-vocl-border space-y-4">
                           {postDetailLoading ? (
                             <div className="flex justify-center py-4">
                               <LoadingSpinner size="sm" />
@@ -380,7 +380,7 @@ export default function AnalyticsPage() {
                                   Engagement Breakdown
                                 </h3>
                                 <div className="grid grid-cols-3 gap-3">
-                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-white/5 text-center">
+                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-vocl-border text-center">
                                     <IconHeart className="w-4 h-4 text-red-400 mx-auto mb-1" />
                                     <p className="text-lg font-bold text-foreground">
                                       {postDetail.totalLikes}
@@ -389,7 +389,7 @@ export default function AnalyticsPage() {
                                       Likes
                                     </p>
                                   </div>
-                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-white/5 text-center">
+                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-vocl-border text-center">
                                     <IconMessage className="w-4 h-4 text-blue-400 mx-auto mb-1" />
                                     <p className="text-lg font-bold text-foreground">
                                       {postDetail.totalComments}
@@ -398,7 +398,7 @@ export default function AnalyticsPage() {
                                       Comments
                                     </p>
                                   </div>
-                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-white/5 text-center">
+                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-vocl-border text-center">
                                     <IconRepeat className="w-4 h-4 text-green-400 mx-auto mb-1" />
                                     <p className="text-lg font-bold text-foreground">
                                       {postDetail.totalReblogs}
@@ -419,7 +419,7 @@ export default function AnalyticsPage() {
                                   <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                       <thead>
-                                        <tr className="border-b border-white/5">
+                                        <tr className="border-b border-vocl-border">
                                           <th className="text-left py-2 pr-4 text-foreground/50 font-medium">
                                             Date
                                           </th>
@@ -447,7 +447,7 @@ export default function AnalyticsPage() {
                                             return (
                                               <tr
                                                 key={day.date}
-                                                className="border-b border-white/5 last:border-0"
+                                                className="border-b border-vocl-border last:border-0"
                                               >
                                                 <td className="py-2 pr-4 text-foreground/70">
                                                   {formatDate(day.date)}
@@ -485,7 +485,7 @@ export default function AnalyticsPage() {
                                       (commenter) => (
                                         <div
                                           key={commenter.username}
-                                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-vocl-surface-dark border border-white/5"
+                                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-vocl-surface-dark border border-vocl-border"
                                         >
                                           <Link
                                             href={`/u/${commenter.username}`}
@@ -531,7 +531,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Tags */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-white/5 p-5">
+          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Top Tags
             </h2>
@@ -544,7 +544,7 @@ export default function AnalyticsPage() {
                 {topTags.map((tag) => (
                   <div
                     key={tag.tag}
-                    className="p-3 rounded-xl bg-white/5 border border-white/5"
+                    className="p-3 rounded-xl bg-vocl-hover border border-vocl-border"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <IconHash className="w-4 h-4 text-vocl-accent" />
@@ -576,7 +576,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Engagement Over Time */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-white/5 p-5">
+          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
             <div className="flex items-center gap-2 mb-4">
               <IconCalendar className="w-5 h-5 text-foreground/50" />
               <h2 className="text-lg font-semibold text-foreground">
@@ -591,7 +591,7 @@ export default function AnalyticsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/5">
+                    <tr className="border-b border-vocl-border">
                       <th className="text-left py-2 pr-4 text-foreground/50 font-medium">
                         Date
                       </th>
@@ -615,7 +615,7 @@ export default function AnalyticsPage() {
                       return (
                         <tr
                           key={day.date}
-                          className="border-b border-white/5 last:border-0"
+                          className="border-b border-vocl-border last:border-0"
                         >
                           <td className="py-2 pr-4 text-foreground/70">
                             {formatDate(day.date)}

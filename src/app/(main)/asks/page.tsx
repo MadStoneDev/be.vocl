@@ -8,10 +8,20 @@ import {
   IconTrash,
   IconSend,
   IconUserQuestion,
+  IconMicrophone,
 } from "@tabler/icons-react";
 import { RichTextEditor } from "@/components/Post/create/RichTextEditor";
+import { VoiceRecorder } from "@/components/Post/create/VoiceRecorder";
+import { VoiceClipPlayer } from "@/components/Post/content/VoiceClipPlayer";
 import { getMyAsks, answerAsk, deleteAsk } from "@/actions/asks";
 import { PullToRefresh } from "@/components/ui";
+
+// VoiceRecorder uploads via the post-audio presign flow which needs an id to
+// namespace the R2 key. The answer post doesn't exist yet, so we mint a
+// throwaway id (the answer audio is later linked to the created post).
+function makeAnswerAudioId(askId: string): string {
+  return `ask-answer-${askId}`;
+}
 
 function formatTimeAgo(dateStr: string): string {
   const date = new Date(dateStr);
@@ -28,6 +38,8 @@ function formatTimeAgo(dateStr: string): string {
 interface Ask {
   id: string;
   question: string;
+  question_audio_url: string | null;
+  question_audio_duration: number | null;
   is_anonymous: boolean;
   status: "pending" | "answered" | "deleted";
   created_at: string;
@@ -43,6 +55,9 @@ export default function AsksPage() {
   const [asks, setAsks] = useState<Ask[]>([]);
   const [answeringId, setAnsweringId] = useState<string | null>(null);
   const [answerContent, setAnswerContent] = useState({ html: "", plain: "" });
+  const [showAnswerRecorder, setShowAnswerRecorder] = useState(false);
+  const [answerAudioUrl, setAnswerAudioUrl] = useState<string | null>(null);
+  const [answerAudioDuration, setAnswerAudioDuration] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,26 +79,39 @@ export default function AsksPage() {
   }, [fetchAsks]);
 
   const handleAnswer = async (askId: string) => {
-    if (!answerContent.plain.trim()) {
-      setError("Please write an answer");
+    if (!answerContent.plain.trim() && !answerAudioUrl) {
+      setError("Please write or record an answer");
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
 
-    const result = await answerAsk(askId, answerContent.html);
+    const result = await answerAsk(
+      askId,
+      answerContent.html,
+      answerAudioUrl
+        ? { url: answerAudioUrl, duration: answerAudioDuration }
+        : null
+    );
 
     if (result.success) {
       // Remove the answered ask from the list
       setAsks((prev) => prev.filter((a) => a.id !== askId));
-      setAnsweringId(null);
-      setAnswerContent({ html: "", plain: "" });
+      resetAnswerState();
     } else {
       setError(result.error || "Failed to post answer");
     }
 
     setIsSubmitting(false);
+  };
+
+  const resetAnswerState = () => {
+    setAnsweringId(null);
+    setAnswerContent({ html: "", plain: "" });
+    setShowAnswerRecorder(false);
+    setAnswerAudioUrl(null);
+    setAnswerAudioDuration(0);
   };
 
   const handleDelete = async (askId: string) => {
@@ -99,8 +127,7 @@ export default function AsksPage() {
   };
 
   const cancelAnswer = () => {
-    setAnsweringId(null);
-    setAnswerContent({ html: "", plain: "" });
+    resetAnswerState();
     setError(null);
   };
 
@@ -132,7 +159,7 @@ export default function AsksPage() {
         </div>
       ) : asks.length === 0 ? (
         <div className="text-center py-16">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mx-auto mb-4">
             <IconMessageQuestion size={32} className="text-foreground/30" />
           </div>
           <h3 className="text-lg font-medium text-foreground mb-2">
@@ -150,7 +177,7 @@ export default function AsksPage() {
               className="bg-vocl-surface-dark rounded-2xl overflow-hidden"
             >
               {/* Ask header */}
-              <div className="p-4 border-b border-white/5">
+              <div className="p-4 border-b border-vocl-border">
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
                   {ask.is_anonymous || !ask.sender ? (
@@ -179,7 +206,19 @@ export default function AsksPage() {
                         {formatTimeAgo(ask.created_at)}
                       </span>
                     </div>
-                    <p className="text-foreground/90 mt-1">{ask.question}</p>
+                    {ask.question && (
+                      <p className="text-foreground/90 mt-1">{ask.question}</p>
+                    )}
+                    {ask.question_audio_url && (
+                      <div className="mt-2">
+                        <VoiceClipPlayer
+                          src={ask.question_audio_url}
+                          duration={ask.question_audio_duration}
+                          variant="dark"
+                          label="Voice"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -195,6 +234,39 @@ export default function AsksPage() {
                     minHeight="120px"
                   />
 
+                  {/* Voice answer (VOCL) */}
+                  {!showAnswerRecorder && !answerAudioUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAnswerRecorder(true)}
+                      className="flex items-center gap-2 text-sm font-medium text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+                    >
+                      <IconMicrophone size={18} />
+                      Add a voice answer
+                    </button>
+                  )}
+                  {(showAnswerRecorder || answerAudioUrl) && (
+                    <div>
+                      <p className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground/70">
+                        <IconMicrophone size={16} className="text-vocl-accent" />
+                        Voice answer
+                      </p>
+                      <VoiceRecorder
+                        postId={makeAnswerAudioId(ask.id)}
+                        uploadedUrl={answerAudioUrl}
+                        onComplete={(url, duration) => {
+                          setAnswerAudioUrl(url);
+                          setAnswerAudioDuration(duration);
+                        }}
+                        onClear={() => {
+                          setAnswerAudioUrl(null);
+                          setAnswerAudioDuration(0);
+                          setShowAnswerRecorder(false);
+                        }}
+                      />
+                    </div>
+                  )}
+
                   {error && (
                     <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
                       {error}
@@ -206,14 +278,17 @@ export default function AsksPage() {
                       type="button"
                       onClick={cancelAnswer}
                       disabled={isSubmitting}
-                      className="px-4 py-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+                      className="px-4 py-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAnswer(ask.id)}
-                      disabled={isSubmitting || !answerContent.plain.trim()}
+                      disabled={
+                        isSubmitting ||
+                        (!answerContent.plain.trim() && !answerAudioUrl)
+                      }
                       className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50"
                     >
                       {isSubmitting ? (

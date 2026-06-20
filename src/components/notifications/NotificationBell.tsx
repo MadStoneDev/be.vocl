@@ -27,7 +27,7 @@ export function NotificationBell({ unreadCount, onClick }: NotificationBellProps
     <Link
       href="/notifications"
       onClick={onClick}
-      className="relative p-2 rounded-xl hover:bg-white/10 transition-colors group"
+      className="relative p-2 rounded-xl hover:bg-vocl-hover-strong transition-colors group"
     >
       <IconBell
         size={24}

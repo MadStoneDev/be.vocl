@@ -10,7 +10,7 @@ import {
   IconStar,
   IconTrendingUp,
 } from "@tabler/icons-react";
-import { initiateVerification, completeVerification } from "@/actions/payments";
+import { initiateVerification } from "@/actions/payments";
 import { openPaddleCheckout, VERIFICATION_PRODUCT } from "@/lib/paddle/client";
 import { Portal, toast } from "@/components/ui";
 
@@ -68,15 +68,11 @@ export function GetVerifiedModal({
       const priceId = process.env.NEXT_PUBLIC_PADDLE_VERIFICATION_PRICE_ID;
 
       if (!priceId) {
-        // Fallback: complete verification directly for demo purposes
-        await completeVerification(result.transactionId);
-        setIsComplete(true);
-        toast.success("You are now verified!");
-        setTimeout(() => {
-          onSuccess?.();
-          onClose();
-          setIsComplete(false);
-        }, 2000);
+        // SECURITY (SEC-2): the previous "demo" fallback that directly marked the
+        // user verified has been removed. Verification can only be granted by the
+        // Paddle webhook after a real payment. Without a configured price ID we
+        // cannot start checkout, so surface an error instead of self-verifying.
+        toast.error("Verification is temporarily unavailable. Please try again later.");
         setIsProcessing(false);
         return;
       }
@@ -120,9 +116,9 @@ export function GetVerifiedModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-background border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconRosetteDiscountCheckFilled
               size={20}
@@ -133,7 +129,7 @@ export function GetVerifiedModal({
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="p-2 rounded-full hover:bg-white/5 transition-colors disabled:opacity-50"
+            className="p-2 rounded-full hover:bg-vocl-hover transition-colors disabled:opacity-50"
           >
             <IconX size={20} className="text-foreground/60" />
           </button>
@@ -177,7 +173,7 @@ export function GetVerifiedModal({
               {BENEFITS.map((benefit, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-vocl-surface-dark/50"
+                  className="flex items-start gap-3 p-3 rounded-xl bg-vocl-hover"
                 >
                   <div className="mt-0.5">{benefit.icon}</div>
                   <div>
@@ -193,7 +189,7 @@ export function GetVerifiedModal({
             </div>
 
             {/* Submit button */}
-            <div className="p-4 border-t border-white/5">
+            <div className="p-4 border-t border-vocl-border">
               <button
                 onClick={handleVerify}
                 disabled={isProcessing}

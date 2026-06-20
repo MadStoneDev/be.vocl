@@ -29,7 +29,7 @@ async function getArchive(username: string) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url")
+    .select("id, username, display_name, avatar_url, allow_search_indexing")
     .eq("username", username)
     .single();
 
@@ -40,7 +40,6 @@ async function getArchive(username: string) {
     .select("id, post_type, content, created_at")
     .eq("author_id", (profile as any).id)
     .eq("status", "published")
-    .eq("is_deleted", false)
     .order("created_at", { ascending: false });
 
   const buckets = new Map<string, MonthBucket>();
@@ -59,7 +58,7 @@ async function getArchive(username: string) {
   }
 
   return {
-    profile: profile as { id: string; username: string; display_name: string | null; avatar_url: string | null },
+    profile: profile as { id: string; username: string; display_name: string | null; avatar_url: string | null; allow_search_indexing: boolean | null },
     months: Array.from(buckets.values()),
     totalPosts: posts?.length ?? 0,
   };
@@ -73,6 +72,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${name}'s archive | be.vocl`,
     description: `Browse all ${data.totalPosts} posts from @${data.profile.username}`,
+    ...(data.profile.allow_search_indexing === false && {
+      robots: { index: false, follow: false },
+    }),
   };
 }
 

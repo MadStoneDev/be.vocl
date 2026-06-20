@@ -14,3 +14,4 @@ export { OnlineIndicator } from './OnlineIndicator';
 export { StaffBadge } from './StaffBadge';
 export { MutualBadge } from './MutualBadge';
 export { PullToRefresh } from './PullToRefresh';
+export { TimeAgo } from './TimeAgo';

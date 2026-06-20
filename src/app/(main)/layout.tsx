@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { MainNav, BottomNav, LeftSidebar } from "@/components/layout";
+import { MainNav, BottomNav, LeftSidebar, CommandPalette, OPEN_CHAT_EVENT } from "@/components/layout";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
 import { ConversationUrlOpener } from "@/components/chat/ConversationUrlOpener";
@@ -14,18 +14,18 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { checkOnboardingStatus } from "@/actions/profile";
 import { ErrorBoundary } from "@/components/ui";
-import { IconMessage, IconMessageOff, IconX } from "@tabler/icons-react";
+import { IconMessageOff, IconX } from "@tabler/icons-react";
 
 // Chat-specific error fallback
 function ChatErrorFallback({ onClose }: { onClose: () => void }) {
   return (
-    <aside className="fixed top-0 right-0 bottom-0 w-full md:w-96 bg-background border-l border-white/5 z-50 flex flex-col">
-      <div className="flex items-center justify-between h-16 px-4 border-b border-white/5">
+    <aside className="fixed top-0 right-0 bottom-0 w-full md:w-96 lg:w-[680px] bg-background border-l border-vocl-border z-50 flex flex-col">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-vocl-border">
         <h2 className="font-semibold text-foreground">Messages</h2>
         <button
           type="button"
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-all"
+          className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all"
           aria-label="Close messages"
         >
           <IconX size={20} />
@@ -120,6 +120,13 @@ export default function MainLayout({
     return () => window.removeEventListener("vocl:open-conversation", handler);
   }, []);
 
+  // Open the chat sidebar when the command palette (or anything) requests it.
+  useEffect(() => {
+    const handler = () => setIsChatOpen(true);
+    window.addEventListener(OPEN_CHAT_EVENT, handler);
+    return () => window.removeEventListener(OPEN_CHAT_EVENT, handler);
+  }, []);
+
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 
   // Render everything immediately - components handle their own loading states
@@ -152,7 +159,7 @@ export default function MainLayout({
       <main
         id="main-content"
         className={`pt-12 pb-14 md:pt-0 md:pb-8 transition-all duration-300 ease-in-out ${
-          isChatOpen ? "md:pl-16 md:pr-96" : "md:pl-52 lg:pl-56"
+          isChatOpen ? "md:pl-16 md:pr-96 lg:pr-[680px]" : "md:pl-52 lg:pl-56"
         }`}
         tabIndex={-1}
       >
@@ -160,22 +167,6 @@ export default function MainLayout({
           {children}
         </div>
       </main>
-
-      {/* Desktop Messages Button - circle pinned to right edge, vertically centered */}
-      <button
-        type="button"
-        onClick={toggleChat}
-        className={`hidden md:flex fixed top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-vocl-accent text-white shadow-lg items-center justify-center transition-all duration-300 ease-in-out z-30 hover:shadow-xl ${
-          isChatOpen ? "right-98" : "pr-0.5 -right-2.5"
-        }`}
-      >
-        <IconMessage size={20} />
-        {totalUnread > 0 && !isChatOpen && (
-          <span className="absolute -top-1 -left-1 min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold">
-            {totalUnread > 99 ? "99+" : totalUnread}
-          </span>
-        )}
-      </button>
 
       {/* Bottom Navigation (Mobile) */}
       <BottomNav
@@ -204,6 +195,9 @@ export default function MainLayout({
 
       {/* Security Warning Modal - shown once after first login */}
       <SecurityWarningModal isAuthenticated={!!user && !authLoading} />
+
+      {/* Command palette (Cmd/Ctrl+K) */}
+      <CommandPalette username={profile?.username} onOpenChat={toggleChat} />
 
       {/* Global keyboard shortcuts */}
       <KeyboardShortcuts />

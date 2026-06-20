@@ -10,7 +10,7 @@ import {
   IconLoader2,
   IconCheck,
 } from "@tabler/icons-react";
-import { initiateTip, completeTip } from "@/actions/payments";
+import { initiateTip } from "@/actions/payments";
 import { openPaddleCheckout, TIP_PRODUCTS } from "@/lib/paddle/client";
 import { Portal, toast } from "@/components/ui";
 
@@ -81,16 +81,11 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
       const priceId = process.env[`NEXT_PUBLIC_PADDLE_TIP_${selectedTier.toUpperCase()}_PRICE_ID`];
 
       if (!priceId) {
-        // Fallback: complete the tip directly for demo purposes
-        await completeTip(result.transactionId);
-        setIsComplete(true);
-        toast.success(`You tipped $${TIP_PRODUCTS[selectedTier].amount} to @${recipient.username}!`);
-        setTimeout(() => {
-          onClose();
-          setIsComplete(false);
-          setSelectedTier(null);
-          setMessage("");
-        }, 2000);
+        // SECURITY (SEC-3): the previous "demo" fallback that directly completed
+        // the tip has been removed. Tips can only be finalized by the Paddle
+        // webhook after a real payment. Without a configured price ID we cannot
+        // start checkout, so surface an error instead of completing it client-side.
+        toast.error("Tipping is temporarily unavailable. Please try again later.");
         setIsProcessing(false);
         return;
       }
@@ -138,9 +133,9 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-background border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-sm bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconCoin size={20} className="text-yellow-500" />
             <h2 className="font-semibold text-foreground">Send a Tip</h2>
@@ -148,14 +143,14 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="p-2 rounded-full hover:bg-white/5 transition-colors disabled:opacity-50"
+            className="p-2 rounded-full hover:bg-vocl-hover transition-colors disabled:opacity-50"
           >
             <IconX size={20} className="text-foreground/60" />
           </button>
         </div>
 
         {/* Recipient info */}
-        <div className="flex items-center gap-3 p-4 bg-vocl-surface-dark/50">
+        <div className="flex items-center gap-3 p-4 bg-vocl-hover">
           <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             {recipient.avatarUrl ? (
               <Image
@@ -208,7 +203,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                     className={`p-4 rounded-xl border transition-all ${
                       selectedTier === tier.id
                         ? "border-vocl-accent bg-vocl-accent/10"
-                        : "border-white/10 hover:border-white/20 bg-vocl-surface-dark"
+                        : "border-vocl-border hover:border-vocl-hover-strong bg-vocl-surface"
                     } disabled:opacity-50`}
                   >
                     <div
@@ -241,12 +236,12 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                 maxLength={280}
                 rows={2}
                 disabled={isProcessing}
-                className="w-full px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none disabled:opacity-50"
+                className="w-full px-3 py-2 rounded-xl bg-vocl-surface border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none disabled:opacity-50"
               />
             </div>
 
             {/* Submit button */}
-            <div className="p-4 border-t border-white/5">
+            <div className="p-4 border-t border-vocl-border">
               <button
                 onClick={handleTip}
                 disabled={!selectedTier || isProcessing}

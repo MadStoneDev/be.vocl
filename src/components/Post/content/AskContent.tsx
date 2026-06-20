@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { IconUserQuestion } from "@tabler/icons-react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import { VoiceClipPlayer } from "./VoiceClipPlayer";
 import type { AskPostContent } from "@/types/database";
 
 interface AskContentProps {
@@ -60,7 +61,7 @@ export function AskContent({ content }: AskContentProps) {
               )}
             </div>
 
-            {/* Question */}
+            {/* Question (text — only render when there is text) */}
             {content.question_html ? (
               <div
                 className="text-neutral-800 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
@@ -68,21 +69,58 @@ export function AskContent({ content }: AskContentProps) {
                   __html: sanitizeHtmlWithSafeLinks(content.question_html),
                 }}
               />
-            ) : (
+            ) : content.question ? (
               <p className="text-neutral-800">{content.question}</p>
+            ) : null}
+
+            {/* Question voice clip */}
+            {content.question_audio_url && (
+              <div className="mt-2">
+                <VoiceClipPlayer
+                  src={content.question_audio_url}
+                  duration={content.question_audio_duration}
+                  variant="light"
+                  label="Voice"
+                />
+                {content.question_audio_transcript && (
+                  <p className="mt-1.5 text-sm text-neutral-500 italic whitespace-pre-wrap leading-relaxed">
+                    &ldquo;{content.question_audio_transcript}&rdquo;
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
       </div>
 
       {/* Answer section */}
-      <div className="p-4">
-        <div
-          className="font-sans text-sm sm:text-base font-light leading-relaxed text-neutral-700 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
-          dangerouslySetInnerHTML={{
-            __html: sanitizeHtmlWithSafeLinks(content.answer_html),
-          }}
-        />
+      <div className="p-4 space-y-3">
+        {/* Answer text — only render when present */}
+        {content.answer_html && content.answer_html.trim() && (
+          <div
+            className="font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtmlWithSafeLinks(content.answer_html),
+            }}
+          />
+        )}
+
+        {/* Answer voice clip */}
+        {content.answer_audio_url && (
+          <div>
+            <VoiceClipPlayer
+              src={content.answer_audio_url}
+              duration={content.answer_audio_duration}
+              variant="light"
+              label="Voice answer"
+            />
+            {content.answer_audio_transcript && (
+              <p className="mt-1.5 text-sm text-neutral-500 italic whitespace-pre-wrap leading-relaxed">
+                &ldquo;{content.answer_audio_transcript}&rdquo;
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

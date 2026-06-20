@@ -303,6 +303,20 @@ export async function resolveReport(
       return { success: false, error: "This report requires a higher role level" };
     }
 
+    // SECURITY (SEC-11): the report must be claimed by the acting moderator
+    // before they can resolve it. Previously any moderator could resolve a
+    // report assigned to someone else.
+    if (report.assigned_to && report.assigned_to !== user.id) {
+      return { success: false, error: "This report is assigned to another moderator" };
+    }
+
+    // SECURITY (SEC-11): banning a user is a destructive, high-impact action and
+    // must be restricted to admins. A junior mod (role 3) could previously set
+    // lock_status = "banned".
+    if (resolution === "resolved_ban" && profile.role < ROLES.ADMIN) {
+      return { success: false, error: "Only administrators can ban users" };
+    }
+
     // Get reported user's role
     const { data: reportedUser } = await (supabase as any)
       .from("profiles")

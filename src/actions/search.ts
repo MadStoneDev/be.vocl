@@ -2,6 +2,21 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * SECURITY (SEC-13): sanitize raw user input before it is interpolated into a
+ * PostgREST filter string (`.or(...)` / `.ilike(...)`). PostgREST treats certain
+ * characters as reserved syntax inside filter expressions, so unsanitized input
+ * allows filter injection (e.g. breaking out of the intended column/operator).
+ * Strip the reserved characters (`,` `(` `)` `*` `:`) and any leading/trailing
+ * `.` separators. The `%` wildcard added by callers stays outside this function.
+ */
+function sanitizeFilterTerm(term: string): string {
+  return term
+    .replace(/[,()*:]/g, "")
+    .replace(/^\.+|\.+$/g, "")
+    .trim();
+}
+
 // Sensitive keywords that may contain NSFW content
 const SENSITIVE_KEYWORDS = [
   "nsfw",
@@ -119,7 +134,7 @@ export async function searchUsers(
       `,
         { count: "exact" }
       )
-      .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
+      .or(`username.ilike.%${sanitizeFilterTerm(searchTerm)}%,display_name.ilike.%${sanitizeFilterTerm(searchTerm)}%`)
       .order("username")
       .range(offset, offset + limit - 1);
 
@@ -193,7 +208,7 @@ export async function searchTags(
     const { data: tags, error, count } = await supabase
       .from("tags")
       .select("id, name, post_count", { count: "exact" })
-      .ilike("name", `%${searchTerm}%`)
+      .ilike("name", `%${sanitizeFilterTerm(searchTerm)}%`)
       .order("post_count", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -381,7 +396,7 @@ export async function searchPosts(
       )
       .eq("status", "published")
       .or(
-        `content->plain.ilike.%${searchTerm}%,content->html.ilike.%${searchTerm}%,content->caption_html.ilike.%${searchTerm}%`
+        `content->plain.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->html.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->caption_html.ilike.%${sanitizeFilterTerm(searchTerm)}%`
       );
 
     // Apply advanced filters

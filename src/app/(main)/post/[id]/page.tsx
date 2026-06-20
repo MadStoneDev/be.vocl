@@ -5,8 +5,20 @@ import { useParams, useRouter } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
 import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
+import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
+import { fadeUp } from "@/lib/motion";
 import type { VideoEmbedPlatform } from "@/types/database";
+
+const POST_TYPE_KICKER: Record<string, string> = {
+  text: "Note",
+  image: "Photo",
+  gallery: "Photo",
+  video: "Video",
+  audio: "Listen",
+  poll: "Poll",
+  ask: "Ask",
+};
 
 interface PostData {
   id: string;
@@ -73,13 +85,13 @@ export default function PostPage() {
   if (error || !post) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Post Not Found</h1>
-        <p className="text-foreground/60 mb-6">
+        <h1 className="type-display text-foreground mb-4">Post Not Found</h1>
+        <p className="type-body text-foreground/60 mb-6">
           {error || "This post may have been deleted or you don't have permission to view it."}
         </p>
         <Link
           href="/feed"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-accent text-white rounded-xl hover:bg-vocl-accent-hover transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-primary text-white rounded-full hover:bg-vocl-primary-hover transition-colors"
         >
           <IconArrowLeft size={18} />
           Back to Feed
@@ -167,17 +179,42 @@ export default function PostPage() {
     return `${snippet} — @${post.author.username}`;
   })();
 
+  const content = post.content || {};
+  const isEssay = post.postType === "text" && content.is_essay;
+  const essayTitle = isEssay ? (content.essay_title as string | undefined) : undefined;
+  const kicker = isEssay ? "Essay" : POST_TYPE_KICKER[post.postType] || "Note";
+
   return (
+    <MotionConfig reducedMotion="user">
     <div className="max-w-xl mx-auto py-6 px-4">
       {post && postTitleText && <title>{`${postTitleText} | be.vocl`}</title>}
-      {/* Back button */}
+      {/* Back-to-feed affordance */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
       >
-        <IconArrowLeft size={18} />
+        <IconArrowLeft size={15} />
         Back
       </button>
+
+      {/* Editorial dateline + headline framing for essays */}
+      <motion.div
+        className="mb-4"
+        initial="hidden"
+        animate="show"
+        variants={fadeUp}
+      >
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          {kicker}
+          {isEssay && content.reading_time_minutes
+            ? ` · ${content.reading_time_minutes} min read`
+            : ""}
+        </span>
+        {essayTitle && (
+          <h1 className="type-display-lg text-foreground mt-1">{essayTitle}</h1>
+        )}
+        <span className="mt-4 block h-px w-full bg-vocl-border" />
+      </motion.div>
 
       {/* Post */}
       <InteractivePost
@@ -209,5 +246,6 @@ export default function PostPage() {
         {renderContent()}
       </InteractivePost>
     </div>
+    </MotionConfig>
   );
 }

@@ -95,24 +95,24 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               unoptimized
             />
           ) : (
-            <IconLink size={14} className="text-foreground/40" />
+            <IconLink size={14} className="text-white/40" />
           )}
-          <span className="text-xs text-foreground/50 truncate">
+          <span className="text-xs text-white/60 truncate">
             {data.siteName || hostname}
           </span>
-          <IconExternalLink size={12} className="text-foreground/30 ml-auto flex-shrink-0" />
+          <IconExternalLink size={12} className="text-white/40 ml-auto flex-shrink-0" />
         </div>
 
         {/* Title */}
         {data.title && (
-          <p className="text-sm font-medium text-foreground line-clamp-2">
+          <p className="text-sm font-medium text-white line-clamp-2">
             {data.title}
           </p>
         )}
 
         {/* Description */}
         {data.description && (
-          <p className="text-xs text-foreground/60 mt-1 line-clamp-2">
+          <p className="text-xs text-white/70 mt-1 line-clamp-2">
             {data.description}
           </p>
         )}

@@ -38,7 +38,22 @@
       "Bash(ls -la \"/mnt/g/Development-Sandbox/_Rumblebuffin/be.vocl/src/app/\\(main\\)/post/[id]/thread/\")",
       "Bash(cat:*)",
       "Bash(cat \"/mnt/g/Development-Sandbox/_Rumblebuffin/be.vocl/src/app/\\(main\\)/explore/page.tsx\")",
-      "Bash(cat /mnt/g/Development-Sandbox/_Rumblebuffin/be.vocl/src/app/\\\\\\(main\\\\\\)/feed/FeedClient.tsx)"
+      "Bash(cat /mnt/g/Development-Sandbox/_Rumblebuffin/be.vocl/src/app/\\\\\\(main\\\\\\)/feed/FeedClient.tsx)",
+      "Bash(awk 'NR==905,/^              \\\\\\)\\\\}/{print NR\": \"$0}' src/components/Post/create/CreatePostModal.tsx)",
+      "Bash(awk '/^      <\\\\/section>/{c++} c==4{print NR\": \"$0; exit}' src/app/\\\\\\(main\\\\\\)/explore/page.tsx)",
+      "Bash(sed -n '385,400p' src/app/u/[username]/page.tsx)",
+      "Bash(sed -n '1200,1215p' src/components/Post/Post.tsx)",
+      "Bash(sed -n '60,90p' src/components/Post/content/AskContent.tsx)",
+      "Bash(npx eslint *)",
+      "Bash(awk '/      posts: {/,/        Relationships:/' database.types.ts)",
+      "Bash(awk 'NR>=1130 && NR<=1185' database.types.ts)",
+      "Bash(git rm *)",
+      "Bash(perl -0pi -e 's/allowAnonymousAsks: data\\\\.allow_anonymous_asks \\\\?\\\\? true,\\\\n\\(\\\\s*\\)createdAt: data\\\\.created_at,/allowAnonymousAsks: data.allow_anonymous_asks ?? true,\\\\n${1}accentColor: data.accent_color ?? null,\\\\n${1}createdAt: data.created_at,/g' src/actions/profile.ts)",
+      "Bash(sed -n '58,66p' src/components/Post/create/composer/ComposerInspector.tsx)",
+      "Bash(sed -n '50,62p' src/components/feed/FeedTabs.tsx)",
+      "Bash(sed -n '96,104p' src/components/feed/WhoToFollow.tsx)",
+      "Bash(awk *)",
+      "Bash(git checkout *)"
     ]
   }
 }

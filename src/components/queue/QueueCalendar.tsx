@@ -268,7 +268,7 @@ export function QueueCalendar({
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
           disabled={weekOffset <= 0}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <IconChevronLeft size={20} />
         </button>
@@ -278,7 +278,7 @@ export function QueueCalendar({
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconChevronRight size={20} />
         </button>
@@ -295,7 +295,7 @@ export function QueueCalendar({
               className={`rounded-xl border p-2 min-h-[140px] flex flex-col ${
                 isToday
                   ? "border-vocl-accent/40 bg-vocl-accent/5"
-                  : "border-white/5 bg-vocl-surface-dark"
+                  : "border-vocl-border bg-vocl-surface-dark"
               }`}
             >
               {/* Day header */}

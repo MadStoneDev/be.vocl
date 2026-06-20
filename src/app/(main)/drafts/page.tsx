@@ -216,7 +216,7 @@ export default function DraftsPage() {
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 text-neutral-400">
+          <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4 text-foreground/60">
             <IconFileOff size={32} />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">
@@ -224,7 +224,7 @@ export default function DraftsPage() {
             {activeTab === "scheduled" && "No scheduled posts"}
             {activeTab === "queue" && "No queued posts"}
           </h3>
-          <p className="text-sm text-neutral-400 max-w-sm">
+          <p className="text-sm text-foreground/60 max-w-sm">
             {activeTab === "drafts" && "Posts you save as drafts will appear here."}
             {activeTab === "scheduled" && "Schedule posts to be published at a specific time."}
             {activeTab === "queue" && "Add posts to your queue to publish them in order."}
@@ -240,10 +240,10 @@ export default function DraftsPage() {
             return (
               <div
                 key={post.id}
-                className="flex items-start gap-4 p-4 rounded-xl bg-vocl-surface-dark hover:bg-white/5 transition-colors"
+                className="flex items-start gap-4 p-4 rounded-xl bg-vocl-surface-dark hover:bg-vocl-hover transition-colors"
               >
                 {/* Post type icon */}
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-foreground/70" />
                 </div>
 
@@ -282,7 +282,7 @@ export default function DraftsPage() {
                 <div className="flex items-center gap-1 shrink-0">
                   <Link
                     href={`/create?edit=${post.id}`}
-                    className="p-2 rounded-lg text-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors"
+                    className="p-2 rounded-lg text-foreground/40 hover:text-foreground hover:bg-vocl-hover-strong transition-colors"
                     title="Edit"
                   >
                     <IconEdit size={18} />

@@ -138,13 +138,13 @@ export default function ThreadPage() {
   if (error) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">
+        <h1 className="type-display text-foreground mb-4">
           Thread Not Found
         </h1>
-        <p className="text-foreground/60 mb-6">{error}</p>
+        <p className="type-body text-foreground/60 mb-6">{error}</p>
         <Link
           href="/feed"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-accent text-white rounded-xl hover:bg-vocl-accent-hover transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-primary text-white rounded-full hover:bg-vocl-primary-hover transition-colors"
         >
           <IconArrowLeft size={18} />
           Back to Feed
@@ -156,34 +156,35 @@ export default function ThreadPage() {
   return (
     <div className="max-w-xl mx-auto py-6 px-4">
       <title>Thread | be.vocl</title>
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
-        >
-          <IconArrowLeft size={18} />
-          Back
-        </button>
-      </div>
+      {/* Back-to-feed affordance */}
+      <button
+        onClick={() => window.history.back()}
+        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
+      >
+        <IconArrowLeft size={15} />
+        Back
+      </button>
 
-      <h1 className="text-xl font-bold text-foreground mb-1">Thread</h1>
-      <p className="text-sm text-foreground/50 mb-3">
-        {posts.length} {posts.length === 1 ? "post" : "posts"} in this thread
-      </p>
+      {/* Editorial masthead */}
+      <header className="border-b border-vocl-border pb-5 mb-6">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          A Thread · {posts.length} {posts.length === 1 ? "part" : "parts"}
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1">Thread</h1>
 
-      {posts.length > 0 &&
-        posts.every((p) => p.postType === "audio") &&
-        posts[0].author?.username && (
-          <a
-            href={`/rss/podcast/${posts[0].author.username}/${threadId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mb-6 px-3 py-1.5 rounded-xl bg-vocl-accent/15 text-vocl-accent text-xs font-medium hover:bg-vocl-accent/25 transition-colors"
-          >
-            🎙 Podcast feed (RSS)
-          </a>
-        )}
+        {posts.length > 0 &&
+          posts.every((p) => p.postType === "audio") &&
+          posts[0].author?.username && (
+            <a
+              href={`/rss/podcast/${posts[0].author.username}/${threadId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full border border-vocl-border text-vocl-primary type-meta font-medium hover:border-vocl-primary/50 transition-colors"
+            >
+              🎙 Podcast feed (RSS)
+            </a>
+          )}
+      </header>
 
       {/* Thread posts */}
       {posts.length === 0 ? (

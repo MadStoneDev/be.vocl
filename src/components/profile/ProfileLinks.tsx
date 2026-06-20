@@ -48,10 +48,10 @@ export function ProfileLinks({ links }: ProfileLinksProps) {
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all"
+            className="group flex items-center gap-3 p-3 rounded-xl bg-vocl-hover hover:bg-vocl-hover-strong border border-vocl-border hover:border-vocl-border transition-all"
           >
             {/* Favicon */}
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-vocl-hover-strong flex items-center justify-center overflow-hidden flex-shrink-0">
               <img
                 src={getFaviconUrl(link.url)}
                 alt=""

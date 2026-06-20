@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { filename, contentType, uploadType, postId, messageId, conversationId, index } = body;
+    const { filename, contentType, uploadType, postId, messageId, conversationId, index, fileSize } = body;
 
     // Validate content type
     if (!ALL_ALLOWED_TYPES.includes(contentType)) {
@@ -44,6 +44,30 @@ export async function POST(request: NextRequest) {
         { error: "Invalid file type" },
         { status: 400 }
       );
+    }
+
+    // Validate declared file size against the per-type limit (SEC-14).
+    // When the client declares `fileSize`, we (a) reject over-limit uploads here
+    // and (b) bind the size into the presigned URL's signature (see
+    // generatePresignedUrl), so the issued URL cannot be used to upload more
+    // bytes than declared/allowed.
+    //
+    // `fileSize` is optional for backwards compatibility with existing clients
+    // that don't send it yet; when omitted the limit is advisory only. Clients
+    // SHOULD send fileSize (= File.size) so the limit is hard-enforced.
+    const maxSize = getMaxSizeForType(contentType);
+    let declaredSize: number | undefined;
+    if (fileSize !== undefined && fileSize !== null) {
+      if (typeof fileSize !== "number" || !Number.isFinite(fileSize) || fileSize <= 0) {
+        return NextResponse.json({ error: "Invalid fileSize" }, { status: 400 });
+      }
+      if (fileSize > maxSize) {
+        return NextResponse.json(
+          { error: `File too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB` },
+          { status: 400 }
+        );
+      }
+      declaredSize = fileSize;
     }
 
     // Generate appropriate key based on upload type
@@ -98,13 +122,16 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const { uploadUrl, publicUrl } = await generatePresignedUrl(key, contentType);
+    const { uploadUrl, publicUrl } = await generatePresignedUrl(key, contentType, {
+      contentLength: declaredSize,
+      maxSize,
+    });
 
     return NextResponse.json({
       uploadUrl,
       key,
       publicUrl,
-      maxSize: getMaxSizeForType(contentType),
+      maxSize,
       mediaType: getMediaType(contentType),
     });
   } catch (error) {

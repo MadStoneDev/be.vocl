@@ -78,7 +78,7 @@ export function MainNav({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 md:hidden">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-vocl-border md:hidden">
       <div className="px-3 h-12 flex items-center justify-between">
         {/* Left: Back button on sub-pages, Logo on root routes */}
         <div className="flex items-center gap-1">
@@ -87,7 +87,7 @@ export function MainNav({
               type="button"
               onClick={handleBack}
               aria-label="Go back"
-              className="w-9 h-9 flex items-center justify-center rounded-full text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               <IconArrowLeft size={20} />
             </button>
@@ -126,7 +126,7 @@ export function MainNav({
             <button
               onClick={() => setShowMenu(!showMenu)}
               aria-label="More options"
-              className="flex items-center justify-center w-9 h-9 rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+              className="flex items-center justify-center w-9 h-9 rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               <IconDots size={20} aria-hidden="true" />
             </button>
@@ -143,7 +143,7 @@ export function MainNav({
                     <Link
                       href="/admin"
                       onClick={() => setShowMenu(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                     >
                       <IconShield size={18} className="text-red-500" />
                       Admin Dashboard
@@ -156,7 +156,7 @@ export function MainNav({
                       setShowMenu(false);
                       toggleFullscreen();
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
                   >
                     {isFullscreen ? (
                       <IconMinimize size={18} className="text-foreground/60" />
@@ -170,7 +170,7 @@ export function MainNav({
                   <Link
                     href="/communities"
                     onClick={() => setShowMenu(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
                     <IconUsersGroup size={18} className="text-emerald-400" />
                     Communities
@@ -180,7 +180,7 @@ export function MainNav({
                   <Link
                     href="/queue"
                     onClick={() => setShowMenu(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
                     <IconStack2 size={18} className="text-indigo-400" />
                     Queue & Schedule
@@ -190,7 +190,7 @@ export function MainNav({
                   <Link
                     href="/tips"
                     onClick={() => setShowMenu(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
                     <IconCoin size={18} className="text-amber-400" />
                     Tips
@@ -200,7 +200,7 @@ export function MainNav({
                   <Link
                     href="/settings"
                     onClick={() => setShowMenu(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
                     <IconSettings size={18} className="text-foreground/60" />
                     Settings

@@ -110,7 +110,7 @@ export function ReportDialog({
       {/* Dialog */}
       <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-vocl-surface-dark rounded-3xl z-50 flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconFlag size={20} className="text-vocl-like" />
             <h2 className="font-semibold text-foreground">Flag Post</h2>
@@ -118,7 +118,7 @@ export function ReportDialog({
           <button
             type="button"
             onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-white/5 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all"
           >
             <IconX size={20} />
           </button>
@@ -165,7 +165,7 @@ export function ReportDialog({
                     className={`w-full p-3 rounded-xl text-left transition-all ${
                       selectedReason === reason.value
                         ? "bg-vocl-accent/20 border-2 border-vocl-accent"
-                        : "bg-white/5 border-2 border-transparent hover:bg-white/10"
+                        : "bg-vocl-hover border-2 border-transparent hover:bg-vocl-hover-strong"
                     }`}
                   >
                     <p className="font-medium text-foreground text-sm">
@@ -189,7 +189,7 @@ export function ReportDialog({
                     onChange={(e) => setDetails(e.target.value)}
                     placeholder="Provide any additional context..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none text-sm"
                   />
                 </div>
               )}
@@ -207,13 +207,13 @@ export function ReportDialog({
 
         {/* Footer */}
         {!submitted && (
-          <div className="p-4 border-t border-white/5">
+          <div className="p-4 border-t border-vocl-border">
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={handleClose}
                 disabled={isPending}
-                className="px-5 py-2.5 rounded-xl text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors font-medium"
+                className="px-5 py-2.5 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors font-medium"
               >
                 Cancel
               </button>

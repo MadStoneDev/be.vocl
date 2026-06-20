@@ -78,7 +78,7 @@ export function Avatar({
   if (showFallback) {
     return (
       <div
-        className={`${baseClasses} bg-background hover:bg-vocl-accent ${clickableClasses} flex items-center justify-center font-semibold text-white transition-all`}
+        className={`${baseClasses} bg-vocl-accent hover:bg-vocl-accent-hover ${clickableClasses} flex items-center justify-center font-semibold text-white transition-all`}
         onClick={onClick}
         role={onClick ? "button" : undefined}
       >

@@ -3,8 +3,9 @@
  * Used by posts.ts and recommendations.ts to avoid duplicating this logic.
  * NOT a server action - imported by server action files.
  *
- * Optimized: Uses per-post count queries (head: true) instead of fetching all rows.
- * For 20 posts with 50 likes each, this transfers 20 counts instead of 1000 rows.
+ * Optimized: Reads denormalized counter columns (posts.like_count/comment_count/
+ * reblog_count) in a single query instead of 3*N per-post count queries.
+ * User-interaction Sets, tags, and bookmarks are fetched as before.
  */
 export async function batchFetchPostStats(
   supabase: any,
@@ -25,18 +26,15 @@ export async function batchFetchPostStats(
     };
   }
 
-  // Build all queries in parallel - use count queries for totals, row queries only for user interactions
+  // Build all queries in parallel.
+  // Counts come from denormalized counter columns in ONE query (replaces 3*N
+  // per-post count queries). User interactions remain per-user row queries.
   const queries: Promise<any>[] = [
-    // Count queries: use individual count per post for accurate counts without fetching rows
-    ...postIds.map((id) =>
-      supabase.from("likes").select("*", { count: "exact", head: true }).eq("post_id", id)
-    ),
-    ...postIds.map((id) =>
-      supabase.from("comments").select("*", { count: "exact", head: true }).eq("post_id", id)
-    ),
-    ...postIds.map((id) =>
-      supabase.from("posts").select("*", { count: "exact", head: true }).eq("reblogged_from_id", id).eq("status", "published")
-    ),
+    // Single counter query for all posts.
+    supabase
+      .from("posts")
+      .select("id, like_count, comment_count, reblog_count")
+      .in("id", postIds),
     // User interaction queries: only fetch the user's own interactions (small result sets)
     userId
       ? supabase.from("likes").select("post_id").eq("user_id", userId).in("post_id", postIds)
@@ -63,26 +61,25 @@ export async function batchFetchPostStats(
 
   const results = await Promise.all(queries);
 
-  // Parse count results (3 groups of postIds.length)
-  const n = postIds.length;
+  // Parse counter results (single query: posts with denormalized counters)
   const likeCountMap = new Map<string, number>();
   const commentCountMap = new Map<string, number>();
   const reblogCountMap = new Map<string, number>();
 
-  for (let i = 0; i < n; i++) {
-    likeCountMap.set(postIds[i], results[i].count || 0);
-    commentCountMap.set(postIds[i], results[n + i].count || 0);
-    reblogCountMap.set(postIds[i], results[2 * n + i].count || 0);
+  for (const row of results[0]?.data || []) {
+    likeCountMap.set(row.id, row.like_count || 0);
+    commentCountMap.set(row.id, row.comment_count || 0);
+    reblogCountMap.set(row.id, row.reblog_count || 0);
   }
 
   // Parse user interaction results
-  const userLikesData = results[3 * n];
-  const userCommentsData = results[3 * n + 1];
-  const userReblogsData = results[3 * n + 2];
+  const userLikesData = results[1];
+  const userCommentsData = results[2];
+  const userReblogsData = results[3];
 
   // Parse optional results
   const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
-  let optIdx = 3 * n + 3;
+  let optIdx = 4;
   if (options?.includeTags) {
     const postTagsData = results[optIdx];
     for (const pt of postTagsData?.data || []) {

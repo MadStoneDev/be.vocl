@@ -108,7 +108,7 @@ export function ProfileTabs({
   return (
     <div className="relative mt-6">
       {/* Tab buttons */}
-      <div className="relative flex border-b border-white/5" role="tablist" aria-label="Profile content">
+      <div className="relative flex border-b border-vocl-border" role="tablist" aria-label="Profile content">
         {tabs.map((tab, index) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -151,7 +151,7 @@ export function ProfileTabs({
                   className={`text-xs px-1.5 py-0.5 rounded-full ${
                     isActive
                       ? "bg-vocl-accent/20 text-vocl-accent"
-                      : "bg-white/10 text-foreground/50"
+                      : "bg-vocl-hover-strong text-foreground/50"
                   }`}
                   aria-label={`${count} ${tab.label.toLowerCase()}`}
                 >

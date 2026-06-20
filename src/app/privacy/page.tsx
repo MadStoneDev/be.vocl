@@ -268,7 +268,7 @@ export default function PrivacyPolicyPage() {
           </section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/10">
+        <div className="mt-12 pt-8 border-t border-vocl-border">
           <a
             href="/terms"
             className="text-vocl-accent hover:text-vocl-accent-hover transition-colors"

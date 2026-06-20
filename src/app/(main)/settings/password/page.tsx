@@ -78,16 +78,16 @@ function PasswordSettingsContent() {
     return (
       <div className="py-6">
         <div className="max-w-md mx-auto text-center">
-          <div className="w-16 h-16 rounded-full bg-vocl-accent/10 flex items-center justify-center mx-auto mb-4">
-            <IconCheck className="w-8 h-8 text-vocl-accent" />
+          <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mx-auto mb-4">
+            <IconCheck className="w-8 h-8 text-vocl-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Password Updated</h1>
+          <h1 className="type-display font-display text-foreground mb-2">Password Updated</h1>
           <p className="text-foreground/60 mb-6">
             Your password has been changed successfully.
           </p>
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-vocl-accent hover:bg-vocl-accent-hover text-white rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-xl transition-colors"
           >
             Back to Settings
           </Link>
@@ -101,18 +101,21 @@ function PasswordSettingsContent() {
       <title>Settings — Password | be.vocl</title>
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
           <Link
             href="/settings"
-            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-vocl-hover transition-colors"
           >
-            <IconArrowLeft className="w-5 h-5" />
+            <IconArrowLeft className="w-5 h-5 text-foreground/70" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+              Security
+            </span>
+            <h1 className="type-display font-display text-foreground">
               {isReset ? "Set New Password" : "Change Password"}
             </h1>
-            <p className="text-sm text-foreground/60">
+            <p className="type-body text-foreground/55 mt-1">
               {isReset
                 ? "Create a new password for your account"
                 : "Update your account password"}
@@ -137,7 +140,7 @@ function PasswordSettingsContent() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   disabled={isPending}
-                  className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                  className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
                   required={!isReset}
                 />
               </div>
@@ -159,7 +162,7 @@ function PasswordSettingsContent() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-12 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-12 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />
@@ -188,7 +191,7 @@ function PasswordSettingsContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />
@@ -206,7 +209,7 @@ function PasswordSettingsContent() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-3.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isPending ? (
               <>

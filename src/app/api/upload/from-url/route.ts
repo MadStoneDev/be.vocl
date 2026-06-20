@@ -5,6 +5,7 @@ import { getR2Client, R2_BUCKET_NAME, R2_PUBLIC_URL, ALLOWED_IMAGE_TYPES, MAX_IM
 import { generateKeys } from "@/lib/r2/presign";
 import { rateLimiters, getRateLimitHeaders } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { isPrivateOrReservedHost, safeFetch } from "@/app/api/_lib/ssrf";
 
 const MIME_FROM_EXT: Record<string, string> = {
   jpg: "image/jpeg",
@@ -74,17 +75,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
-    if (!parsedUrl.protocol.startsWith("http")) {
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
       return NextResponse.json({ error: "Only HTTP/HTTPS URLs are supported" }, { status: 400 });
     }
 
-    // Download the image
+    // SSRF protection: block private/internal/reserved hosts.
+    if (isPrivateOrReservedHost(parsedUrl.hostname)) {
+      return NextResponse.json({ error: "URL not allowed" }, { status: 403 });
+    }
+
+    // Download the image. safeFetch re-validates each redirect target's host
+    // (redirect: "manual") so a public URL cannot redirect into a private IP.
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await safeFetch(url, {
         signal: controller.signal,
         headers: {
           "User-Agent": "BeVocl/1.0 (Image Proxy)",
@@ -92,6 +99,10 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       clearTimeout(timeout);
+      const message = err instanceof Error ? err.message : "";
+      if (message === "URL not allowed" || message === "Redirect to disallowed host") {
+        return NextResponse.json({ error: "URL not allowed" }, { status: 403 });
+      }
       return NextResponse.json(
         { error: "Failed to download image from URL" },
         { status: 422 }

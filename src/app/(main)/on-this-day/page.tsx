@@ -73,44 +73,47 @@ export default function OnThisDayPage() {
       <title>On this day | be.vocl</title>
       <Link
         href="/feed"
-        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="inline-flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
       >
-        <IconArrowLeft size={16} />
+        <IconArrowLeft size={15} />
         Back to feed
       </Link>
 
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <IconCalendarEvent size={26} className="text-vocl-accent" />
-          On this day
+      <header className="mb-6 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          From the Archives
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1 flex items-center gap-3">
+          <IconCalendarEvent size={28} className="text-vocl-primary flex-shrink-0" />
+          On This Day
         </h1>
-        <p className="text-sm text-foreground/60 mt-1">
-          Your posts from {today} in previous years
+        <p className="type-body text-foreground/55 mt-1">
+          Your posts from {today} in previous years.
         </p>
       </header>
 
       {posts.length === 0 ? (
-        <div className="rounded-xl bg-white/5 border border-white/5 p-10 text-center">
+        <div className="border-t border-vocl-border py-12 text-center">
           <IconCalendarEvent size={40} className="mx-auto text-foreground/20 mb-3" />
-          <p className="text-sm text-foreground/60 mb-1">No posts from this day yet.</p>
-          <p className="text-xs text-foreground/40">
+          <p className="type-body text-foreground/60 mb-1">No posts from this day yet.</p>
+          <p className="type-meta text-foreground/40">
             Check back next year — something you post today may appear here.
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="divide-y divide-vocl-border">
           {posts.map((post) => (
             <Link
               key={post.id}
               href={`/post/${post.id}`}
-              className="block rounded-xl bg-vocl-surface-dark border border-white/5 hover:border-white/10 transition-colors p-4"
+              className="group block py-5 first:pt-0"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-vocl-accent/15 text-vocl-accent text-xs font-medium">
+              <div className="flex items-center gap-2 mb-2 type-meta uppercase tracking-wide">
+                <span className="inline-flex items-center gap-1 text-vocl-primary font-semibold">
                   <IconRefresh size={11} />
                   {post.yearsAgo} {post.yearsAgo === 1 ? "year" : "years"} ago
                 </span>
-                <span className="text-xs text-foreground/40">
+                <span className="text-foreground/40 normal-case tracking-normal">
                   {new Date(post.createdAt).toLocaleDateString(undefined, {
                     year: "numeric",
                     month: "short",
@@ -126,10 +129,10 @@ export default function OnThisDayPage() {
                   </div>
                 ) : null}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground/80 line-clamp-4">
+                  <p className="type-heading text-foreground line-clamp-3 group-hover:text-vocl-primary transition-colors">
                     {snippet(post) || "View this post"}
                   </p>
-                  <div className="flex items-center gap-3 mt-2 text-xs text-foreground/50">
+                  <div className="flex items-center gap-3 mt-2 type-meta text-foreground/50">
                     <span className="inline-flex items-center gap-1">
                       <IconHeart size={12} /> {post.likeCount}
                     </span>

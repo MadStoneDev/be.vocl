@@ -59,7 +59,7 @@ export function FollowButton({
           isFollowing
             ? isHovering
               ? "bg-vocl-like/20 text-vocl-like"
-              : "bg-white/10 text-foreground/70"
+              : "bg-vocl-hover-strong text-foreground/70"
             : "bg-vocl-accent/20 text-vocl-accent hover:bg-vocl-accent/30"
         }`}
       >
@@ -90,7 +90,7 @@ export function FollowButton({
         isFollowing
           ? isHovering
             ? "bg-vocl-like/20 text-vocl-like border border-vocl-like/30"
-            : "bg-white/10 text-foreground border border-white/10 hover:border-vocl-like/30"
+            : "bg-vocl-hover-strong text-foreground border border-vocl-border hover:border-vocl-like/30"
           : "bg-vocl-accent text-white hover:bg-vocl-accent-hover shadow-lg shadow-vocl-accent/25"
       }`}
     >

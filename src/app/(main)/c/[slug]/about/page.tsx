@@ -9,10 +9,8 @@ import {
   IconLoader2,
   IconCrown,
   IconShield,
-  IconUser,
-  IconNotes,
-  IconCalendar,
 } from "@tabler/icons-react";
+import { motion, MotionConfig } from "framer-motion";
 import {
   getCommunity,
   listCommunityMembers,
@@ -21,6 +19,7 @@ import {
   type CommunityMember,
   type CommunityRule,
 } from "@/actions/communities";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 export default function CommunityAboutPage() {
   const params = useParams();
@@ -62,10 +61,13 @@ export default function CommunityAboutPage() {
 
   if (notFound || !community) {
     return (
-      <div className="py-12 px-4 max-w-xl mx-auto text-center">
-        <h1 className="text-xl font-semibold text-foreground mb-1">Community not found</h1>
-        <Link href="/communities" className="inline-block mt-4 text-sm text-vocl-accent hover:underline">
-          Browse communities
+      <div className="py-16 px-4 max-w-xl mx-auto text-center">
+        <span className="type-meta uppercase tracking-widest text-foreground/40 font-semibold">
+          No such desk
+        </span>
+        <h1 className="type-display text-foreground mt-1 mb-1">Community not found</h1>
+        <Link href="/communities" className="inline-block mt-4 text-sm font-medium text-vocl-primary hover:underline">
+          Browse the desks
         </Link>
       </div>
     );
@@ -74,73 +76,82 @@ export default function CommunityAboutPage() {
   const moderators = members.filter((m) => m.role === "owner" || m.role === "moderator");
 
   return (
-    <div className="py-6 px-4 max-w-2xl mx-auto">
+    <MotionConfig reducedMotion="user">
+    <motion.div
+      className="py-3 sm:py-6 px-2 sm:px-4 max-w-2xl mx-auto"
+      initial="hidden"
+      animate="show"
+      variants={fadeUp}
+    >
       {community && <title>{`About — ${community.name} | be.vocl`}</title>}
       <Link
         href={`/c/${community.slug}`}
-        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-6 transition-colors"
       >
         <IconArrowLeft size={16} />
-        Back to community
+        Back to the desk
       </Link>
 
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-vocl-surface-dark overflow-hidden flex items-center justify-center text-white font-bold">
+      {/* Section masthead */}
+      <header className="flex items-center gap-3 mb-5 border-b border-vocl-border pb-5">
+        <div className="w-14 h-14 rounded-xl bg-vocl-surface-dark border border-vocl-border overflow-hidden flex items-center justify-center text-white font-bold flex-shrink-0">
           {community.iconUrl ? (
-            <Image src={community.iconUrl} alt="" width={48} height={48} className="object-cover" />
+            <Image src={community.iconUrl} alt="" width={56} height={56} className="object-cover" />
           ) : (
-            <span className="bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center">
+            <span className="text-xl bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center font-display">
               {community.name.charAt(0).toUpperCase()}
             </span>
           )}
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">{community.name}</h1>
-          <p className="text-xs text-foreground/50">/c/{community.slug}</p>
+        <div className="min-w-0">
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            About the Desk
+          </span>
+          <h1 className="type-display text-foreground truncate">{community.name}</h1>
+          <p className="type-meta text-foreground/40">/c/{community.slug}</p>
         </div>
-      </div>
+      </header>
 
       {community.description && (
-        <p className="text-sm text-foreground/80 mb-6">{community.description}</p>
+        <p className="type-body text-foreground/80 mb-7">{community.description}</p>
       )}
 
-      <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="p-3 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
-          <IconUser size={18} className="text-vocl-accent mx-auto mb-1" />
-          <p className="text-base font-bold text-foreground">{community.memberCount.toLocaleString()}</p>
-          <p className="text-xs text-foreground/50">Members</p>
+      {/* Masthead stats — hairline columns */}
+      <div className="grid grid-cols-3 border-y border-vocl-border divide-x divide-vocl-border mb-9">
+        <div className="py-4 text-center">
+          <p className="type-display text-foreground leading-none">{community.memberCount.toLocaleString()}</p>
+          <p className="type-meta uppercase tracking-widest text-foreground/45 mt-1.5">Members</p>
         </div>
-        <div className="p-3 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
-          <IconNotes size={18} className="text-vocl-accent mx-auto mb-1" />
-          <p className="text-base font-bold text-foreground">{community.postCount.toLocaleString()}</p>
-          <p className="text-xs text-foreground/50">Posts</p>
+        <div className="py-4 text-center">
+          <p className="type-display text-foreground leading-none">{community.postCount.toLocaleString()}</p>
+          <p className="type-meta uppercase tracking-widest text-foreground/45 mt-1.5">Posts</p>
         </div>
-        <div className="p-3 rounded-xl bg-vocl-surface-dark border border-white/5 text-center">
-          <IconCalendar size={18} className="text-vocl-accent mx-auto mb-1" />
-          <p className="text-xs font-bold text-foreground">
+        <div className="py-4 text-center">
+          <p className="type-heading text-foreground leading-none">
             {new Date(community.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
           </p>
-          <p className="text-xs text-foreground/50">Created</p>
+          <p className="type-meta uppercase tracking-widest text-foreground/45 mt-1.5">Founded</p>
         </div>
       </div>
 
       {/* Rules */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-3">Rules</h2>
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-3">
+          <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">Rules</span>
+          <span className="h-px flex-1 bg-vocl-border" />
+        </div>
         {rules.length === 0 ? (
-          <div className="rounded-xl bg-white/5 border border-white/5 p-6 text-center">
-            <p className="text-sm text-foreground/50">No rules set.</p>
-          </div>
+          <p className="type-body text-foreground/45 py-2">No rules set.</p>
         ) : (
-          <ol className="space-y-2">
+          <ol className="divide-y divide-vocl-border border-t border-vocl-border">
             {rules.map((r, idx) => (
-              <li key={r.id} className="flex gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-white/5">
-                <span className="text-vocl-accent font-mono text-sm font-semibold flex-shrink-0">
-                  {idx + 1}.
+              <li key={r.id} className="flex gap-4 py-4">
+                <span className="type-display text-vocl-primary leading-none flex-shrink-0">
+                  {idx + 1}
                 </span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{r.title}</p>
-                  {r.body && <p className="text-xs text-foreground/70 mt-1 whitespace-pre-wrap">{r.body}</p>}
+                <div className="min-w-0">
+                  <p className="type-heading text-foreground">{r.title}</p>
+                  {r.body && <p className="type-body text-foreground/65 mt-1 whitespace-pre-wrap">{r.body}</p>}
                 </div>
               </li>
             ))}
@@ -150,38 +161,50 @@ export default function CommunityAboutPage() {
 
       {/* Mods */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-3">Moderators</h2>
-        <div className="space-y-2">
-          {moderators.map((m) => (
-            <Link
-              key={m.userId}
-              href={`/profile/${m.username}`}
-              className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-white/5 hover:bg-white/5 transition-colors"
-            >
-              <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                {m.avatarUrl ? (
-                  <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold">
-                    {m.username.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                  {m.displayName || m.username}
-                  {m.role === "owner" ? (
-                    <IconCrown size={14} className="text-amber-400" />
-                  ) : (
-                    <IconShield size={14} className="text-vocl-accent" />
-                  )}
-                </p>
-                <p className="text-xs text-foreground/50">@{m.username}</p>
-              </div>
-            </Link>
-          ))}
+        <div className="mb-4 flex items-center gap-3">
+          <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">The Editors</span>
+          <span className="h-px flex-1 bg-vocl-border" />
         </div>
+        <motion.div
+          className="divide-y divide-vocl-border border-t border-vocl-border"
+          initial="hidden"
+          animate="show"
+          variants={staggerContainer(0.04)}
+        >
+          {moderators.map((m) => (
+            <motion.div key={m.userId} variants={fadeUp}>
+              <Link
+                href={`/profile/${m.username}`}
+                className="flex items-center gap-3 py-4 group"
+              >
+                <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
+                  {m.avatarUrl ? (
+                    <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold">
+                      {m.username.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="type-heading text-foreground flex items-center gap-1.5 group-hover:text-vocl-primary transition-colors">
+                    {m.displayName || m.username}
+                    {m.role === "owner" ? (
+                      <IconCrown size={14} className="text-amber-400" />
+                    ) : (
+                      <IconShield size={14} className="text-vocl-accent" />
+                    )}
+                  </p>
+                  <p className="type-meta text-foreground/50">
+                    @{m.username} · {m.role === "owner" ? "Editor-in-chief" : "Editor"}
+                  </p>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
-    </div>
+    </motion.div>
+    </MotionConfig>
   );
 }

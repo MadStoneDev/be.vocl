@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { moderateContent } from "@/lib/sightengine/client";
 import type {
   PostType,
@@ -941,6 +942,179 @@ export async function getCommentedPosts(
 }
 
 /**
+ * Public front page post shape — matches the FeedList `FeedPost` interface so the
+ * Front Page tiles can render it directly (read-only, no auth required).
+ */
+export interface PublicFrontPagePost {
+  id: string;
+  author: { username: string; avatarUrl: string; role?: number };
+  authorId: string;
+  timestamp: string;
+  contentType: "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
+  content: {
+    text?: string;
+    html?: string;
+    imageUrl?: string;
+    imageUrls?: string[];
+    videoUrl?: string;
+    videoThumbnailUrl?: string;
+    embedUrl?: string;
+    embedPlatform?: string;
+    audioUrl?: string;
+    albumArtUrl?: string;
+    spotifyData?: any;
+    captionHtml?: string;
+    transcript?: string;
+    isVoiceNote?: boolean;
+    isEssay?: boolean;
+    essayTitle?: string;
+    readingTimeMinutes?: number;
+  };
+  rawContent: any;
+  stats: { comments: number; likes: number; reblogs: number };
+  interactions: { hasCommented: boolean; hasLiked: boolean; hasReblogged: boolean };
+  isSensitive: boolean;
+  isOwn: boolean;
+  tags: Array<{ id: string; name: string }>;
+  threadId: string | null;
+}
+
+/** Map a raw posts row into the FeedPost-shaped content object. */
+function shapePublicContent(postType: string, postContent: any): PublicFrontPagePost["content"] {
+  const c: PublicFrontPagePost["content"] = {};
+  if (postType === "text") {
+    c.text = postContent?.plain || postContent?.html?.replace(/<[^>]*>/g, "") || "";
+    c.html = postContent?.html;
+    c.isEssay = !!postContent?.is_essay;
+    c.essayTitle = postContent?.essay_title;
+    c.readingTimeMinutes = postContent?.reading_time_minutes;
+  } else if (postType === "image") {
+    c.imageUrl = postContent?.urls?.[0] || postContent?.url;
+    c.captionHtml = postContent?.caption_html;
+  } else if (postType === "gallery") {
+    c.imageUrls = postContent?.urls;
+    c.imageUrl = postContent?.urls?.[0];
+    c.captionHtml = postContent?.caption_html;
+  } else if (postType === "video") {
+    c.videoUrl = postContent?.url;
+    c.videoThumbnailUrl = postContent?.thumbnail_url;
+    c.embedUrl = postContent?.embed_url;
+    c.embedPlatform = postContent?.embed_platform;
+    c.captionHtml = postContent?.caption_html;
+  } else if (postType === "audio") {
+    c.audioUrl = postContent?.url;
+    c.albumArtUrl = postContent?.album_art_url;
+    c.captionHtml = postContent?.caption_html;
+    c.spotifyData = postContent?.spotify_data;
+    c.transcript = postContent?.transcript;
+    c.isVoiceNote = !!postContent?.is_voice_note;
+  }
+  return c;
+}
+
+/**
+ * Get posts for the public, unauthenticated front page (the landing page).
+ *
+ * Returns published, approved, non-sensitive posts that the author has not
+ * excluded from public view, authored by discoverable + non-restricted users.
+ * Uses the admin/service client (like the /u public pages) so it works without
+ * an authenticated session. The result is FeedPost-shaped for the Front Page tiles.
+ */
+export async function getPublicFrontPagePosts(
+  options?: { limit?: number }
+): Promise<PublicFrontPagePost[]> {
+  try {
+    const supabase = createAdminClient();
+    const limit = options?.limit ?? 24;
+
+    const { data: posts, error } = await (supabase as any)
+      .from("posts")
+      .select(
+        `
+        id,
+        author_id,
+        post_type,
+        content,
+        is_sensitive,
+        created_at,
+        thread_id,
+        author:author_id (
+          username,
+          avatar_url,
+          role,
+          is_discoverable,
+          lock_status
+        )
+      `
+      )
+      .eq("status", "published")
+      .eq("moderation_status", "approved")
+      .eq("is_sensitive", false)
+      .eq("exclude_from_public", false)
+      .order("created_at", { ascending: false })
+      .limit(limit * 3); // over-fetch to allow author-side filtering
+
+    if (error || !posts) {
+      if (error) console.error("Get public front page posts error:", error);
+      return [];
+    }
+
+    const visible = (posts as any[]).filter((p) => {
+      const a = p.author;
+      if (!a) return false;
+      if (a.is_discoverable === false) return false;
+      if (a.lock_status === "restricted" || a.lock_status === "banned") return false;
+      return true;
+    });
+
+    const limited = visible.slice(0, limit);
+    const postIds = limited.map((p) => p.id);
+
+    // Fetch tags joined to these posts
+    let tagsByPost: Record<string, Array<{ id: string; name: string }>> = {};
+    if (postIds.length > 0) {
+      const { data: postTagRows } = await (supabase as any)
+        .from("post_tags")
+        .select("post_id, tag:tags!tag_id(id, name)")
+        .in("post_id", postIds);
+
+      tagsByPost = (postTagRows ?? []).reduce(
+        (acc: Record<string, Array<{ id: string; name: string }>>, row: any) => {
+          if (!row.tag) return acc;
+          if (!acc[row.post_id]) acc[row.post_id] = [];
+          acc[row.post_id].push({ id: row.tag.id, name: row.tag.name });
+          return acc;
+        },
+        {}
+      );
+    }
+
+    return limited.map((post): PublicFrontPagePost => ({
+      id: post.id,
+      author: {
+        username: post.author?.username || "unknown",
+        avatarUrl: post.author?.avatar_url || "",
+        role: post.author?.role || 0,
+      },
+      authorId: post.author_id,
+      timestamp: post.created_at,
+      contentType: post.post_type,
+      content: shapePublicContent(post.post_type, post.content),
+      rawContent: post.content,
+      stats: { comments: 0, likes: 0, reblogs: 0 },
+      interactions: { hasCommented: false, hasLiked: false, hasReblogged: false },
+      isSensitive: post.is_sensitive,
+      isOwn: false,
+      tags: tagsByPost[post.id] ?? [],
+      threadId: post.thread_id ?? null,
+    }));
+  } catch (error) {
+    console.error("Get public front page posts error:", error);
+    return [];
+  }
+}
+
+/**
  * Get feed posts (from followed users or all public posts)
  */
 export async function getFeedPosts(options?: {
@@ -1027,7 +1201,7 @@ export async function getFeedPosts(options?: {
     }
 
     query = query.order("created_at", { ascending: false });
-    query = query.range(offset, offset + limit);
+    query = query.range(offset, offset + limit - 1); // PostgREST range is inclusive on both ends
 
     const { data: posts, error } = await query;
 
@@ -1088,14 +1262,16 @@ export async function getFeedPosts(options?: {
     const threadIds = Array.from(new Set<string>(posts.filter((p: any) => p.thread_id).map((p: any) => p.thread_id)));
     const threadLengthMap = new Map<string, number>();
     if (threadIds.length > 0) {
-      const threadCountResults = await Promise.all(
-        threadIds.map((tid: string) =>
-          (supabase as any).from("posts").select("*", { count: "exact", head: true }).eq("thread_id", tid).eq("status", "published")
-        )
-      );
-      threadIds.forEach((tid: string, i: number) => {
-        threadLengthMap.set(tid, threadCountResults[i].count || 0);
-      });
+      // Single query: fetch all published thread members, tally per thread_id in JS.
+      const { data: threadRows } = await (supabase as any)
+        .from("posts")
+        .select("thread_id")
+        .in("thread_id", threadIds)
+        .eq("status", "published");
+      for (const row of threadRows || []) {
+        if (!row.thread_id) continue;
+        threadLengthMap.set(row.thread_id, (threadLengthMap.get(row.thread_id) || 0) + 1);
+      }
     }
 
     let formattedPosts: PostWithDetails[] = posts.map((post: any) => {

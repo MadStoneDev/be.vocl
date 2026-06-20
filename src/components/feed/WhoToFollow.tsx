@@ -32,6 +32,10 @@ export function WhoToFollow() {
       const result = await getSuggestedUsers(3);
       if (result.success && result.users && result.users.length > 0) {
         setUsers(result.users);
+        // Seed follow state from the server so already-followed users don't show "Follow"
+        setFollowingMap(
+          Object.fromEntries(result.users.map((u) => [u.id, u.isFollowing])),
+        );
       }
       setIsLoading(false);
     };
@@ -60,7 +64,7 @@ export function WhoToFollow() {
   if (isLoading || users.length === 0) return null;
 
   return (
-    <div className="rounded-xl bg-white/5 border border-white/5 p-4 mb-4">
+    <div className="rounded-xl bg-vocl-hover border border-vocl-border p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <IconUserPlus size={18} className="text-vocl-accent" />
@@ -126,7 +130,7 @@ export function WhoToFollow() {
               disabled={followLoadingMap[user.id]}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors flex-shrink-0 ${
                 followingMap[user.id]
-                  ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+                  ? "bg-vocl-hover-strong text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
                   : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
               }`}
             >

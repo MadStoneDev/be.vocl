@@ -300,6 +300,35 @@ export async function resolveFlag(
       return { success: false, error: "This flag requires a higher role level" };
     }
 
+    // SECURITY (SEC-11): the flag must be claimed by the acting moderator before
+    // they can resolve it.
+    if (flag.assigned_to && flag.assigned_to !== user.id) {
+      return { success: false, error: "This flag is assigned to another moderator" };
+    }
+
+    // SECURITY (SEC-11): mirror reports.ts — a moderator must out-rank the author
+    // of the flagged post to act on it. Prevents a junior mod from removing a
+    // higher-role user's post.
+    if (flag.post_id) {
+      const { data: flaggedPost } = await (supabase as any)
+        .from("posts")
+        .select("author_id")
+        .eq("id", flag.post_id)
+        .single();
+
+      if (flaggedPost?.author_id) {
+        const { data: postAuthor } = await (supabase as any)
+          .from("profiles")
+          .select("role")
+          .eq("id", flaggedPost.author_id)
+          .single();
+
+        if (postAuthor && !canModerateUser(profile.role, postAuthor.role)) {
+          return { success: false, error: "Cannot moderate content from a user with equal or higher role" };
+        }
+      }
+    }
+
     // Update flag
     const { error } = await (supabase as any)
       .from("flags")

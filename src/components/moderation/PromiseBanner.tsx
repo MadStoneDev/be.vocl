@@ -45,7 +45,7 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
             for illegal content—especially anything harmful to minors.
           </p>
 
-          <div className="bg-background/50 rounded-xl p-4 mb-4 border border-white/5">
+          <div className="bg-background/50 rounded-xl p-4 mb-4 border border-vocl-border">
             <div className="flex items-center gap-2 mb-2">
               <IconAlertTriangle size={16} className="text-amber-500" />
               <span className="text-sm font-medium text-foreground">

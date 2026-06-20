@@ -89,7 +89,7 @@ export function RichTextEditor({
       className={`p-2 rounded-lg transition-colors ${
         isActive
           ? "bg-vocl-accent text-white"
-          : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+          : "text-foreground/60 hover:text-foreground hover:bg-vocl-hover"
       }`}
     >
       {children}
@@ -109,9 +109,9 @@ export function RichTextEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden has-[:focus]:ring-2 has-[:focus]:ring-vocl-accent has-[:focus]:border-vocl-accent transition-colors">
+    <div className="rounded-2xl border border-vocl-border overflow-hidden has-[:focus]:ring-2 has-[:focus]:ring-vocl-accent has-[:focus]:border-vocl-accent transition-colors">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-white/10 bg-vocl-surface-dark/50">
+      <div className="flex items-center gap-1 p-2 border-b border-vocl-border bg-vocl-surface-dark/50">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive("bold")}
@@ -133,7 +133,7 @@ export function RichTextEditor({
         >
           <IconStrikethrough size={18} />
         </ToolbarButton>
-        <div className="w-px h-5 bg-white/10 mx-1" />
+        <div className="w-px h-5 bg-vocl-border mx-1" />
         <ToolbarButton
           onClick={addLink}
           isActive={editor.isActive("link")}
@@ -141,7 +141,7 @@ export function RichTextEditor({
         >
           <IconLink size={18} />
         </ToolbarButton>
-        <div className="w-px h-5 bg-white/10 mx-1" />
+        <div className="w-px h-5 bg-vocl-border mx-1" />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editor.isActive("bulletList")}

@@ -61,7 +61,7 @@ function ThreadEntry({ entry, isLast }: { entry: ThreadEntry; isLast: boolean })
 
       <Link
         href={`/post/${entry.id}`}
-        className="block p-4 rounded-xl bg-white/5 hover:bg-white/[0.08] transition-colors"
+        className="block p-4 rounded-xl border border-vocl-border hover:border-vocl-primary/50 transition-colors"
       >
         {/* Author header */}
         <div className="flex items-center gap-3 mb-3">
@@ -190,13 +190,13 @@ export default function ReblogThreadPage() {
   if (error) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">
+        <h1 className="type-display text-foreground mb-4">
           Thread Not Found
         </h1>
-        <p className="text-foreground/60 mb-6">{error}</p>
+        <p className="type-body text-foreground/60 mb-6">{error}</p>
         <Link
           href={`/post/${postId}`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-accent text-white rounded-xl hover:bg-vocl-accent-hover transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-primary text-white rounded-full hover:bg-vocl-primary-hover transition-colors"
         >
           <IconArrowLeft size={18} />
           Back to Post
@@ -212,21 +212,22 @@ export default function ReblogThreadPage() {
       {originalAuthor && (
         <title>{`Thread — @${originalAuthor} | be.vocl`}</title>
       )}
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link
-          href={`/post/${postId}`}
-          className="flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
-        >
-          <IconArrowLeft size={18} />
-          Back to post
-        </Link>
-      </div>
+      {/* Back affordance */}
+      <Link
+        href={`/post/${postId}`}
+        className="inline-flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
+      >
+        <IconArrowLeft size={15} />
+        Back to post
+      </Link>
 
-      <h1 className="text-xl font-bold text-foreground mb-1">Reblog Thread</h1>
-      <p className="text-sm text-foreground/50 mb-6">
-        {thread.length} {thread.length === 1 ? "post" : "posts"} in this thread
-      </p>
+      {/* Editorial masthead */}
+      <header className="border-b border-vocl-border pb-5 mb-6">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          The Echo · {thread.length} {thread.length === 1 ? "post" : "posts"}
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1">Reblog Thread</h1>
+      </header>
 
       {/* Thread entries */}
       {thread.length === 0 ? (

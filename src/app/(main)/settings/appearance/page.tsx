@@ -12,6 +12,7 @@ import {
   IconPalette,
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
+import { updateAccentColor, getCurrentProfile } from "@/actions/profile";
 
 type Theme = "light" | "dark" | "system";
 type FontSize = "small" | "medium" | "large";
@@ -51,8 +52,21 @@ const accentColors: { value: AccentColor; label: string; color: string }[] = [
   { value: "pink", label: "Pink", color: "bg-pink-500" },
 ];
 
+// Per-profile blog accent presets (saved to the user's profile, not localStorage).
+// Drives --vocl-primary / --vocl-accent within the profile page (Tumblr-style theming).
+const profileAccentPresets: { label: string; color: string }[] = [
+  { label: "Brand Pink", color: "#F20D5E" },
+  { label: "Teal", color: "#5B9A8B" },
+  { label: "Violet", color: "#8B5CF6" },
+  { label: "Blue", color: "#3B82F6" },
+  { label: "Amber", color: "#F59E0B" },
+  { label: "Rose", color: "#F43F5E" },
+];
+
 export default function AppearanceSettingsPage() {
   const [settings, setSettings] = useState<AppearanceSettings>(defaultSettings);
+  const [profileAccent, setProfileAccent] = useState<string>("#F20D5E");
+  const [savingAccent, setSavingAccent] = useState(false);
 
   useEffect(() => {
     // Load settings from localStorage
@@ -65,6 +79,27 @@ export default function AppearanceSettingsPage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    // Load the saved per-profile accent color
+    getCurrentProfile().then((result) => {
+      if (result.success && result.profile?.accentColor) {
+        setProfileAccent(result.profile.accentColor);
+      }
+    });
+  }, []);
+
+  const saveProfileAccent = async (color: string) => {
+    setProfileAccent(color);
+    setSavingAccent(true);
+    const result = await updateAccentColor(color);
+    setSavingAccent(false);
+    if (result.success) {
+      toast.success("Profile accent saved");
+    } else {
+      toast.error(result.error || "Failed to save accent");
+    }
+  };
 
   const updateSetting = <K extends keyof AppearanceSettings>(
     key: K,
@@ -98,19 +133,24 @@ export default function AppearanceSettingsPage() {
     <div className="py-6">
       <title>Settings — Appearance | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl hover:bg-white/5 transition-colors"
+          className="p-2 -ml-2 rounded-xl hover:bg-vocl-hover transition-colors"
         >
-          <IconArrowLeft size={24} className="text-foreground/70" />
+          <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">Appearance</h1>
+        <div>
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            Settings
+          </span>
+          <h1 className="type-display font-display text-foreground">Appearance</h1>
+        </div>
       </div>
 
       {/* Theme Selection */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-2">Theme</h2>
+      <section className="mb-10">
+        <h2 className="type-heading font-display text-foreground mb-1">Theme</h2>
         <p className="text-sm text-foreground/50 mb-4">
           Choose how be.vocl looks to you
         </p>
@@ -127,7 +167,7 @@ export default function AppearanceSettingsPage() {
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                   isSelected
                     ? "border-vocl-accent bg-vocl-accent/10"
-                    : "border-white/10 bg-vocl-surface-dark hover:border-white/20"
+                    : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
                 }`}
               >
                 <Icon
@@ -153,10 +193,10 @@ export default function AppearanceSettingsPage() {
       </section>
 
       {/* Font Size */}
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
+      <section className="mb-10">
+        <div className="flex items-center gap-2 mb-1">
           <IconTextSize size={20} className="text-foreground/70" />
-          <h2 className="text-lg font-semibold text-foreground">Font Size</h2>
+          <h2 className="type-heading font-display text-foreground">Font Size</h2>
         </div>
         <p className="text-sm text-foreground/50 mb-4">
           Adjust text size for better readability
@@ -173,7 +213,7 @@ export default function AppearanceSettingsPage() {
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                   isSelected
                     ? "border-vocl-accent bg-vocl-accent/10"
-                    : "border-white/10 bg-vocl-surface-dark hover:border-white/20"
+                    : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
                 }`}
               >
                 <span
@@ -206,10 +246,10 @@ export default function AppearanceSettingsPage() {
       </section>
 
       {/* Accent Color */}
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
+      <section className="mb-10">
+        <div className="flex items-center gap-2 mb-1">
           <IconPalette size={20} className="text-foreground/70" />
-          <h2 className="text-lg font-semibold text-foreground">Accent Color</h2>
+          <h2 className="type-heading font-display text-foreground">Accent Color</h2>
         </div>
         <p className="text-sm text-foreground/50 mb-4">
           Personalize buttons and highlights
@@ -224,7 +264,7 @@ export default function AppearanceSettingsPage() {
                 key={option.value}
                 onClick={() => updateSetting("accentColor", option.value)}
                 className={`relative w-12 h-12 rounded-full ${option.color} transition-all ${
-                  isSelected ? "ring-2 ring-offset-2 ring-offset-background ring-white" : ""
+                  isSelected ? "ring-2 ring-offset-2 ring-offset-background ring-foreground" : ""
                 }`}
                 aria-label={option.label}
                 title={option.label}
@@ -235,6 +275,63 @@ export default function AppearanceSettingsPage() {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* Profile Accent Color (Tumblr-style blog theming, saved to profile) */}
+      <section className="mb-10">
+        <div className="flex items-center gap-2 mb-1">
+          <IconPalette size={20} className="text-foreground/70" />
+          <h2 className="type-heading font-display text-foreground">
+            Profile Accent
+          </h2>
+        </div>
+        <p className="text-sm text-foreground/50 mb-4">
+          Theme your profile page. Buttons, links, and highlights on your profile
+          use this color for everyone who visits.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {profileAccentPresets.map((preset) => {
+            const isSelected =
+              profileAccent.toLowerCase() === preset.color.toLowerCase();
+            return (
+              <button
+                key={preset.color}
+                type="button"
+                onClick={() => saveProfileAccent(preset.color)}
+                disabled={savingAccent}
+                className={`relative w-12 h-12 rounded-full transition-all disabled:opacity-50 ${
+                  isSelected
+                    ? "ring-2 ring-offset-2 ring-offset-background ring-foreground"
+                    : ""
+                }`}
+                style={{ backgroundColor: preset.color }}
+                aria-label={preset.label}
+                title={preset.label}
+              >
+                {isSelected && (
+                  <IconCheck
+                    size={20}
+                    className="absolute inset-0 m-auto text-white"
+                  />
+                )}
+              </button>
+            );
+          })}
+
+          <label className="flex items-center gap-2 ml-1 cursor-pointer">
+            <input
+              type="color"
+              value={profileAccent}
+              onChange={(e) => saveProfileAccent(e.target.value)}
+              disabled={savingAccent}
+              className="w-12 h-12 rounded-full border-0 bg-transparent cursor-pointer p-0"
+              aria-label="Custom accent color"
+              title="Custom color"
+            />
+            <span className="text-sm text-foreground/60">Custom</span>
+          </label>
         </div>
       </section>
 
@@ -253,7 +350,7 @@ export default function AppearanceSettingsPage() {
             aria-checked={settings.reducedMotion}
             onClick={() => updateSetting("reducedMotion", !settings.reducedMotion)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-              settings.reducedMotion ? "bg-vocl-accent" : "bg-white/20"
+              settings.reducedMotion ? "bg-vocl-accent" : "bg-vocl-hover-strong"
             }`}
           >
             <span

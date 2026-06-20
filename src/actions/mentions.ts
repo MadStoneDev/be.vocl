@@ -30,18 +30,30 @@ export async function extractMentions(text: string): Promise<string[]> {
  */
 export async function processMentions(
   content: string,
-  authorId: string,
+  _authorId: string,
   postId: string,
   type: "post" | "comment" = "post"
 ): Promise<{ success: boolean; mentionedCount: number }> {
   try {
+    const supabase = await createClient();
+
+    // SECURITY (SEC-12): authenticate the caller and force the mention actor to
+    // the session user. Previously this exported server action trusted a
+    // client-supplied authorId, allowing forged mention notifications/emails.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, mentionedCount: 0 };
+    }
+    const authorId = user.id;
+    void _authorId;
+
     const usernames = await extractMentions(content);
 
     if (usernames?.length === 0) {
       return { success: true, mentionedCount: 0 };
     }
-
-    const supabase = await createClient();
 
     // Look up user IDs for the mentioned usernames
     const { data: mentionedUsers, error } = await supabase

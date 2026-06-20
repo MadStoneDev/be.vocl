@@ -5,11 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  IconFlame,
   IconSearch,
   IconX,
-  IconTrendingUp,
-  IconUserPlus,
   IconHash,
   IconLoader2,
   IconUsers,
@@ -25,9 +22,23 @@ import {
   IconMusic,
   IconCompass,
 } from "@tabler/icons-react";
+import { motion, MotionConfig } from "framer-motion";
 import { getExploreData } from "@/actions/explore";
 import { followUser, unfollowUser } from "@/actions/follows";
 import { toast, PullToRefresh } from "@/components/ui";
+import { fadeUp, staggerContainer } from "@/lib/motion";
+
+/** Editorial section band header: uppercase kicker + hairline rule. */
+function SectionBand({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-5 flex items-center gap-3">
+      <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
+        {children}
+      </span>
+      <span className="h-px flex-1 bg-vocl-border" />
+    </div>
+  );
+}
 
 interface TrendingTag {
   id: string;
@@ -132,20 +143,29 @@ export default function ExplorePage() {
   return (
     <PullToRefresh onRefresh={loadData}>
       <title>Explore | be.vocl</title>
+    <MotionConfig reducedMotion="user">
     <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <IconCompass size={26} className="text-orange-400" />
+      {/* Editorial masthead */}
+      <motion.header
+        className="mb-6 border-b border-vocl-border pb-5"
+        initial="hidden"
+        animate="show"
+        variants={fadeUp}
+      >
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          The Newsstand
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1 flex items-center gap-3">
+          <IconCompass size={30} className="text-vocl-primary flex-shrink-0" />
           Explore
         </h1>
-        <p className="text-foreground/50 mt-1">
-          Search, discover trending topics, and find new creators
+        <p className="type-body text-foreground/55 mt-1">
+          Trending topics, rising voices, and stories worth reading.
         </p>
-      </div>
+      </motion.header>
 
       {/* Search bar — submits to /search */}
-      <form onSubmit={handleSearchSubmit} className="relative mb-8">
+      <form onSubmit={handleSearchSubmit} className="relative mb-10">
         <IconSearch
           size={18}
           className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none"
@@ -155,7 +175,7 @@ export default function ExplorePage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search @users, #tags, or posts..."
-          className="w-full pl-10 pr-10 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+          className="w-full pl-10 pr-10 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
         />
         {searchQuery && (
           <button
@@ -169,70 +189,59 @@ export default function ExplorePage() {
         )}
       </form>
 
-      <div className="space-y-10">
+      <div className="space-y-12">
         {/* Trending Now */}
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <IconFlame size={22} className="text-orange-400" />
-            <h2 className="text-lg font-semibold text-foreground">
-              Trending Tags
-            </h2>
-          </div>
+          <SectionBand>Trending Tags</SectionBand>
           {trendingTags.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {trendingTags.map((tag) => (
                 <Link
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className="group flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/30 transition-colors"
+                  className="group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-vocl-border hover:border-vocl-primary/50 transition-colors"
                 >
                   <IconHash
                     size={14}
-                    className="text-orange-400 group-hover:text-orange-300"
+                    className="text-vocl-primary"
                   />
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-medium text-foreground group-hover:text-vocl-primary transition-colors">
                     {tag.name}
                   </span>
-                  <span className="text-xs text-foreground/40 ml-0.5">
+                  <span className="type-meta text-foreground/40 ml-0.5">
                     {tag.postCount}
                   </span>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="rounded-xl bg-white/5 border border-white/5 p-8 text-center">
-              <IconFlame
-                size={32}
-                className="mx-auto text-foreground/20 mb-2"
-              />
-              <p className="text-foreground/40 text-sm">
-                No trending tags in the last 24 hours
-              </p>
-            </div>
+            <p className="type-body text-foreground/45 py-2">
+              No trending tags in the last 24 hours.
+            </p>
           )}
         </section>
 
         {/* Trending Posts */}
         {trendingPosts.length > 0 && (
           <section>
-            <div className="flex items-center gap-2 mb-4">
-              <IconFlame size={22} className="text-rose-400" />
-              <h2 className="text-lg font-semibold text-foreground">
-                Trending Posts
-              </h2>
-            </div>
-            <div className="space-y-3">
+            <SectionBand>Trending Stories</SectionBand>
+            <motion.div
+              className="divide-y divide-vocl-border"
+              initial="hidden"
+              animate="show"
+              variants={staggerContainer(0.05)}
+            >
               {trendingPosts.map((post) => (
+                <motion.div key={post.id} variants={fadeUp}>
                 <Link
-                  key={post.id}
                   href={`/post/${post.id}`}
-                  className="block rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.07] hover:border-white/10 transition-colors overflow-hidden"
+                  className="group block overflow-hidden py-5 first:pt-0"
                 >
                   {/* Media preview */}
                   <TrendingPostMedia post={post} />
 
                   {/* Body */}
-                  <div className="p-3">
+                  <div className={post.postType === "text" || post.postType === "poll" ? "" : "pt-3"}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <div className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
                         {post.author.avatarUrl ? (
@@ -259,95 +268,70 @@ export default function ExplorePage() {
                       </span>
                     </div>
                     {post.snippet && (
-                      <p className="text-sm text-foreground/70 line-clamp-2">
+                      <p className="type-heading text-foreground line-clamp-2 group-hover:text-vocl-primary transition-colors">
                         {post.snippet}
                       </p>
                     )}
-                    <div className="flex items-center gap-4 mt-2 text-xs text-foreground/40">
+                    <div className="flex items-center gap-4 mt-2 type-meta text-foreground/40">
                       <span className="flex items-center gap-1">
-                        <IconHeart size={12} className="text-rose-400" />
+                        <IconHeart size={12} />
                         {post.likeCount}
                       </span>
                       <span className="flex items-center gap-1">
-                        <IconMessage size={12} className="text-sky-400" />
+                        <IconMessage size={12} />
                         {post.commentCount}
                       </span>
                       <span className="flex items-center gap-1">
-                        <IconRefresh size={12} className="text-emerald-400" />
+                        <IconRefresh size={12} />
                         {post.reblogCount}
                       </span>
                     </div>
                   </div>
                 </Link>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </section>
         )}
 
         {/* Popular Topics */}
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <IconTrendingUp size={22} className="text-vocl-accent" />
-            <h2 className="text-lg font-semibold text-foreground">
-              Popular Topics
-            </h2>
-          </div>
+          <SectionBand>Sections</SectionBand>
           {popularTags.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6">
               {popularTags.map((tag) => (
                 <Link
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className="group rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-colors p-4"
+                  className="group border-t border-vocl-border pt-4"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-vocl-accent/15 flex items-center justify-center">
-                      <IconHash
-                        size={16}
-                        className="text-vocl-accent"
-                      />
-                    </div>
-                  </div>
-                  <p className="font-medium text-foreground text-sm truncate group-hover:text-vocl-accent transition-colors">
+                  <p className="type-heading text-foreground truncate group-hover:text-vocl-primary transition-colors flex items-center gap-1">
+                    <IconHash size={18} className="text-vocl-primary flex-shrink-0" />
                     {tag.name}
                   </p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <IconNotes size={12} className="text-foreground/30" />
-                    <p className="text-xs text-foreground/40">
-                      {tag.totalPosts.toLocaleString()}{" "}
-                      {tag.totalPosts === 1 ? "post" : "posts"}
-                    </p>
-                  </div>
+                  <p className="type-meta text-foreground/45 mt-1">
+                    {tag.totalPosts.toLocaleString()}{" "}
+                    {tag.totalPosts === 1 ? "post" : "posts"}
+                  </p>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="rounded-xl bg-white/5 border border-white/5 p-8 text-center">
-              <IconTrendingUp
-                size={32}
-                className="mx-auto text-foreground/20 mb-2"
-              />
-              <p className="text-foreground/40 text-sm">
-                No popular topics yet
-              </p>
-            </div>
+            <p className="type-body text-foreground/45 py-2">
+              No popular topics yet.
+            </p>
           )}
         </section>
 
         {/* Rising Creators */}
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <IconUserPlus size={22} className="text-emerald-400" />
-            <h2 className="text-lg font-semibold text-foreground">
-              Rising Creators
-            </h2>
-          </div>
+          <SectionBand>Rising Voices</SectionBand>
           {risingCreators.length > 0 ? (
-            <div className="space-y-3">
+            <div className="divide-y divide-vocl-border">
               {risingCreators.map((creator) => (
                 <div
                   key={creator.id}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.07] transition-colors"
+                  className="flex items-center gap-3 py-4 first:pt-0"
                 >
                   <Link
                     href={`/profile/${creator.username}`}
@@ -373,26 +357,26 @@ export default function ExplorePage() {
                     href={`/profile/${creator.username}`}
                     className="flex-1 min-w-0"
                   >
-                    <p className="font-medium text-foreground truncate">
+                    <p className="type-heading text-foreground truncate hover:text-vocl-primary transition-colors">
                       {creator.displayName || creator.username}
                     </p>
-                    <p className="text-sm text-foreground/50 truncate">
+                    <p className="type-meta text-foreground/50 truncate">
                       @{creator.username}
                     </p>
                     {creator.bio && (
-                      <p className="text-sm text-foreground/60 mt-1 line-clamp-1">
+                      <p className="type-body text-foreground/60 mt-1 line-clamp-1">
                         {creator.bio}
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="flex items-center gap-1 text-xs text-foreground/40">
+                      <span className="flex items-center gap-1 type-meta text-foreground/40">
                         <IconUsers size={12} />
                         {creator.followerCount.toLocaleString()}{" "}
                         {creator.followerCount === 1
                           ? "follower"
                           : "followers"}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-foreground/40">
+                      <span className="flex items-center gap-1 type-meta text-foreground/40">
                         <IconNotes size={12} />
                         {creator.postCount.toLocaleString()}{" "}
                         {creator.postCount === 1 ? "post" : "posts"}
@@ -403,10 +387,10 @@ export default function ExplorePage() {
                   <button
                     onClick={() => handleFollowToggle(creator.id)}
                     disabled={followLoadingMap[creator.id]}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
                       followingMap[creator.id]
-                        ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                        : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                        ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+                        : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
                     }`}
                   >
                     {followLoadingMap[creator.id] ? (
@@ -421,19 +405,14 @@ export default function ExplorePage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl bg-white/5 border border-white/5 p-8 text-center">
-              <IconUserPlus
-                size={32}
-                className="mx-auto text-foreground/20 mb-2"
-              />
-              <p className="text-foreground/40 text-sm">
-                No rising creators to show right now
-              </p>
-            </div>
+            <p className="type-body text-foreground/45 py-2">
+              No rising creators to show right now.
+            </p>
           )}
         </section>
       </div>
     </div>
+    </MotionConfig>
     </PullToRefresh>
   );
 }
@@ -560,22 +539,22 @@ function ExploreSkeleton() {
     <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4 animate-pulse">
       {/* Header skeleton */}
       <div className="mb-8">
-        <div className="h-8 w-32 bg-white/10 rounded-lg" />
-        <div className="h-4 w-64 bg-white/5 rounded-lg mt-2" />
+        <div className="h-8 w-32 bg-vocl-hover-strong rounded-lg" />
+        <div className="h-4 w-64 bg-vocl-hover rounded-lg mt-2" />
       </div>
 
       <div className="space-y-10">
         {/* Trending skeleton */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-white/10 rounded" />
-            <div className="h-5 w-36 bg-white/10 rounded-lg" />
+            <div className="w-6 h-6 bg-vocl-hover-strong rounded" />
+            <div className="h-5 w-36 bg-vocl-hover-strong rounded-lg" />
           </div>
           <div className="flex flex-wrap gap-2">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="h-9 rounded-full bg-white/5"
+                className="h-9 rounded-full bg-vocl-hover"
                 style={{ width: `${60 + Math.random() * 60}px` }}
               />
             ))}
@@ -585,12 +564,12 @@ function ExploreSkeleton() {
         {/* Popular topics skeleton */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-white/10 rounded" />
-            <div className="h-5 w-36 bg-white/10 rounded-lg" />
+            <div className="w-6 h-6 bg-vocl-hover-strong rounded" />
+            <div className="h-5 w-36 bg-vocl-hover-strong rounded-lg" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-24 rounded-xl bg-white/5" />
+              <div key={i} className="h-24 rounded-xl bg-vocl-hover" />
             ))}
           </div>
         </section>
@@ -598,22 +577,22 @@ function ExploreSkeleton() {
         {/* Rising creators skeleton */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-white/10 rounded" />
-            <div className="h-5 w-36 bg-white/10 rounded-lg" />
+            <div className="w-6 h-6 bg-vocl-hover-strong rounded" />
+            <div className="h-5 w-36 bg-vocl-hover-strong rounded-lg" />
           </div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-4 rounded-xl bg-white/5"
+                className="flex items-center gap-3 p-4 rounded-xl bg-vocl-hover"
               >
-                <div className="w-12 h-12 rounded-full bg-white/10 flex-shrink-0" />
+                <div className="w-12 h-12 rounded-full bg-vocl-hover-strong flex-shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-28 bg-white/10 rounded" />
-                  <div className="h-3 w-20 bg-white/5 rounded" />
-                  <div className="h-3 w-48 bg-white/5 rounded" />
+                  <div className="h-4 w-28 bg-vocl-hover-strong rounded" />
+                  <div className="h-3 w-20 bg-vocl-hover rounded" />
+                  <div className="h-3 w-48 bg-vocl-hover rounded" />
                 </div>
-                <div className="h-8 w-20 bg-white/10 rounded-lg flex-shrink-0" />
+                <div className="h-8 w-20 bg-vocl-hover-strong rounded-lg flex-shrink-0" />
               </div>
             ))}
           </div>

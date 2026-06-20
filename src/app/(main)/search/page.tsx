@@ -11,8 +11,6 @@ import {
   IconHash,
   IconFileText,
   IconAlertTriangle,
-  IconTrendingUp,
-  IconUserPlus,
   IconX,
   IconFilter,
   IconChevronDown,
@@ -36,14 +34,33 @@ import { InteractivePost, ImageContent, TextContent, LinkPreviewCarousel } from 
 
 type SearchTab = "all" | "users" | "tags" | "posts";
 
+/** Editorial section band: uppercase kicker + hairline rule, optional action. */
+function SectionBand({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex items-center gap-3">
+      <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
+        {children}
+      </span>
+      <span className="h-px flex-1 bg-vocl-border" />
+      {action}
+    </div>
+  );
+}
+
 function SearchLoading() {
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
       <div className="animate-pulse">
-        <div className="h-12 bg-white/10 rounded-xl mb-6" />
+        <div className="h-12 bg-vocl-hover-strong rounded-xl mb-6" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-white/5 rounded-xl" />
+            <div key={i} className="h-20 bg-vocl-hover rounded-xl" />
           ))}
         </div>
       </div>
@@ -335,8 +352,15 @@ function SearchContent() {
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
       <title>Search | be.vocl</title>
+      {/* Editorial masthead */}
+      <header className="mb-5 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          The Index
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1">Search</h1>
+      </header>
       {/* Search Input */}
-      <div className="relative mb-6">
+      <div className="relative mb-8">
         <IconSearch
           size={20}
           className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
@@ -350,7 +374,7 @@ function SearchContent() {
             setBrowsingTag(null);
           }}
           placeholder="Search @users, #tags, or posts..."
-          className="w-full pl-12 pr-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+          className="w-full pl-12 pr-4 py-3 rounded-full bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
         />
         {(query || browsingTag) && (
           <button
@@ -384,7 +408,7 @@ function SearchContent() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSensitiveWarning(false)}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 text-foreground font-medium hover:bg-white/15 transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover-strong transition-colors"
               >
                 Cancel
               </button>
@@ -401,27 +425,28 @@ function SearchContent() {
 
       {/* Browsing Tag Header */}
       {browsingTag && (
-        <div className="mb-6 p-4 rounded-xl bg-vocl-accent/10 border border-vocl-accent/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <IconHash size={20} className="text-vocl-accent" />
-                <span className="text-lg font-semibold text-foreground">
-                  {browsingTag.name}
-                </span>
-              </div>
-              <p className="text-sm text-foreground/60 mt-1">
+        <div className="mb-6 border-b border-vocl-border pb-5">
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            Section
+          </span>
+          <div className="flex items-start justify-between gap-4 mt-1">
+            <div className="min-w-0">
+              <h2 className="type-display text-foreground flex items-center gap-1.5 break-words">
+                <IconHash size={24} className="text-vocl-primary flex-shrink-0" />
+                {browsingTag.name}
+              </h2>
+              <p className="type-meta text-foreground/55 mt-1">
                 {browsingTag.postCount.toLocaleString()} posts
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={handleTagFollowToggle}
                 disabled={isTogglingTagFollow}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   isFollowingBrowsingTag
-                    ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                    : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                    ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+                    : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
                 }`}
               >
                 {isTogglingTagFollow ? (
@@ -434,7 +459,7 @@ function SearchContent() {
               </button>
               <button
                 onClick={clearTagBrowsing}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-2 rounded-lg hover:bg-vocl-hover-strong transition-colors"
               >
                 <IconX size={20} className="text-foreground/60" />
               </button>
@@ -465,17 +490,17 @@ function SearchContent() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${
                   activeTab === tab
-                    ? "bg-vocl-accent text-white"
-                    : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                    ? "bg-vocl-primary text-white border-vocl-primary"
+                    : "border-vocl-border text-foreground/70 hover:border-vocl-primary/50"
                 }`}
               >
                 <Icon size={16} />
                 <span className="capitalize">{tab}</span>
                 {counts[tab] > 0 && (
                   <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                    activeTab === tab ? "bg-white/20" : "bg-white/10"
+                    activeTab === tab ? "bg-white/20" : "bg-vocl-hover-strong"
                   }`}>
                     {counts[tab]}
                   </span>
@@ -491,7 +516,7 @@ function SearchContent() {
         <div className="mb-6">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-foreground/70 hover:bg-white/10 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong transition-colors text-sm font-medium"
           >
             <IconFilter size={16} />
             <span>Filters</span>
@@ -499,7 +524,7 @@ function SearchContent() {
           </button>
 
           {showFilters && (
-            <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 space-y-5">
+            <div className="mt-3 p-4 rounded-xl bg-vocl-hover border border-vocl-border space-y-5">
               {/* Post Type */}
               <div>
                 <label className="block text-sm font-medium text-foreground/70 mb-2">
@@ -520,7 +545,7 @@ function SearchContent() {
                       className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                         filterPostType === type.value
                           ? "bg-vocl-accent text-white"
-                          : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                          : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
                       }`}
                     >
                       {type.label}
@@ -545,7 +570,7 @@ function SearchContent() {
                       className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                         filterSortBy === sort.value
                           ? "bg-vocl-accent text-white"
-                          : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                          : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
                       }`}
                     >
                       {sort.label}
@@ -564,7 +589,7 @@ function SearchContent() {
                     type="date"
                     value={filterDateFrom}
                     onChange={(e) => setFilterDateFrom(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
                     placeholder="From"
                   />
                   <span className="text-foreground/40 text-sm">to</span>
@@ -572,7 +597,7 @@ function SearchContent() {
                     type="date"
                     value={filterDateTo}
                     onChange={(e) => setFilterDateTo(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
                     placeholder="To"
                   />
                 </div>
@@ -594,7 +619,7 @@ function SearchContent() {
                     aria-checked={filterHasMedia}
                     onClick={() => setFilterHasMedia(!filterHasMedia)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      filterHasMedia ? "bg-vocl-accent" : "bg-white/10"
+                      filterHasMedia ? "bg-vocl-accent" : "bg-vocl-hover-strong"
                     }`}
                   >
                     <span
@@ -612,7 +637,7 @@ function SearchContent() {
                     value={filterAuthor}
                     onChange={(e) => setFilterAuthor(e.target.value)}
                     placeholder="Filter by username..."
-                    className="w-full px-3 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    className="w-full px-3 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
                   />
                 </div>
               </div>
@@ -647,13 +672,10 @@ function SearchContent() {
 
       {/* Discovery Content */}
       {showDiscovery && (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {/* Trending Tags */}
           <section>
-            <div className="flex items-center gap-2 mb-4">
-              <IconTrendingUp size={20} className="text-vocl-accent" />
-              <h2 className="text-lg font-semibold text-foreground">Trending Tags</h2>
-            </div>
+            <SectionBand>Trending Tags</SectionBand>
             {isLoadingDiscovery ? (
               <div className="flex justify-center py-6">
                 <IconLoader2 size={24} className="animate-spin text-foreground/40" />
@@ -664,31 +686,28 @@ function SearchContent() {
                   <button
                     key={tag.id}
                     onClick={() => handleTagClick(tag.name)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                    className="group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-vocl-border hover:border-vocl-primary/50 transition-colors"
                   >
-                    <IconHash size={14} className="text-vocl-accent" />
-                    <span className="text-sm text-foreground">{tag.name}</span>
-                    <span className="text-xs text-foreground/40">{tag.postCount}</span>
+                    <IconHash size={14} className="text-vocl-primary" />
+                    <span className="text-sm text-foreground group-hover:text-vocl-primary transition-colors">{tag.name}</span>
+                    <span className="type-meta text-foreground/40">{tag.postCount}</span>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="text-foreground/50 text-sm">No trending tags yet</p>
+              <p className="type-body text-foreground/45">No trending tags yet.</p>
             )}
           </section>
 
           {/* Suggested Users */}
           <section>
-            <div className="flex items-center gap-2 mb-4">
-              <IconUserPlus size={20} className="text-vocl-accent" />
-              <h2 className="text-lg font-semibold text-foreground">Who to Follow</h2>
-            </div>
+            <SectionBand>Who to Follow</SectionBand>
             {isLoadingDiscovery ? (
               <div className="flex justify-center py-6">
                 <IconLoader2 size={24} className="animate-spin text-foreground/40" />
               </div>
             ) : suggestedUsers.length > 0 ? (
-              <div className="space-y-2">
+              <div className="divide-y divide-vocl-border">
                 {suggestedUsers.map((user) => (
                   <UserCard
                     key={user.id}
@@ -698,7 +717,7 @@ function SearchContent() {
                 ))}
               </div>
             ) : (
-              <p className="text-foreground/50 text-sm">No suggestions available</p>
+              <p className="type-body text-foreground/45">No suggestions available.</p>
             )}
           </section>
         </div>
@@ -711,19 +730,22 @@ function SearchContent() {
           {users.length > 0 && (activeTab === "all" || activeTab === "users") && (
             <section>
               {activeTab === "all" && (
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Users</h3>
-                  {userCount > 5 && (
-                    <button
-                      onClick={() => setActiveTab("users")}
-                      className="text-sm text-vocl-accent hover:underline"
-                    >
-                      See all {userCount}
-                    </button>
-                  )}
-                </div>
+                <SectionBand
+                  action={
+                    userCount > 5 ? (
+                      <button
+                        onClick={() => setActiveTab("users")}
+                        className="type-meta text-vocl-primary hover:underline normal-case tracking-normal"
+                      >
+                        See all {userCount}
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  People
+                </SectionBand>
               )}
-              <div className="space-y-2">
+              <div className="divide-y divide-vocl-border">
                 {users.map((user) => (
                   <UserCard
                     key={user.id}
@@ -739,28 +761,31 @@ function SearchContent() {
           {tags.length > 0 && (activeTab === "all" || activeTab === "tags") && (
             <section>
               {activeTab === "all" && (
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Tags</h3>
-                  {tagCount > 5 && (
-                    <button
-                      onClick={() => setActiveTab("tags")}
-                      className="text-sm text-vocl-accent hover:underline"
-                    >
-                      See all {tagCount}
-                    </button>
-                  )}
-                </div>
+                <SectionBand
+                  action={
+                    tagCount > 5 ? (
+                      <button
+                        onClick={() => setActiveTab("tags")}
+                        className="type-meta text-vocl-primary hover:underline normal-case tracking-normal"
+                      >
+                        See all {tagCount}
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  Tags
+                </SectionBand>
               )}
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <button
                     key={tag.id}
                     onClick={() => handleTagClick(tag.name)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                    className="group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-vocl-border hover:border-vocl-primary/50 transition-colors"
                   >
-                    <IconHash size={14} className="text-vocl-accent" />
-                    <span className="text-sm text-foreground">{tag.name}</span>
-                    <span className="text-xs text-foreground/40">{tag.postCount}</span>
+                    <IconHash size={14} className="text-vocl-primary" />
+                    <span className="text-sm text-foreground group-hover:text-vocl-primary transition-colors">{tag.name}</span>
+                    <span className="type-meta text-foreground/40">{tag.postCount}</span>
                   </button>
                 ))}
               </div>
@@ -771,17 +796,20 @@ function SearchContent() {
           {posts.length > 0 && (activeTab === "all" || activeTab === "posts" || browsingTag) && (
             <section>
               {activeTab === "all" && !browsingTag && (
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Posts</h3>
-                  {postCount > 5 && (
-                    <button
-                      onClick={() => setActiveTab("posts")}
-                      className="text-sm text-vocl-accent hover:underline"
-                    >
-                      See all {postCount}
-                    </button>
-                  )}
-                </div>
+                <SectionBand
+                  action={
+                    postCount > 5 ? (
+                      <button
+                        onClick={() => setActiveTab("posts")}
+                        className="type-meta text-vocl-primary hover:underline normal-case tracking-normal"
+                      >
+                        See all {postCount}
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  Posts
+                </SectionBand>
               )}
               <div className="space-y-6">
                 {posts.map((post) => (
@@ -795,9 +823,9 @@ function SearchContent() {
           {!hasResults && query && (
             <div className="text-center py-12">
               <IconSearch size={48} className="mx-auto text-foreground/20 mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
-              <p className="text-foreground/50">
-                Try searching for something else or browse trending tags
+              <h3 className="type-display text-foreground mb-2">No results found</h3>
+              <p className="type-body text-foreground/50">
+                Try searching for something else or browse trending tags.
               </p>
             </div>
           )}
@@ -828,7 +856,7 @@ function UserCard({
   return (
     <Link
       href={`/profile/${user.username}`}
-      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+      className="group flex items-center gap-3 py-4 first:pt-0 transition-colors"
     >
       <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
         {user.avatarUrl ? (
@@ -847,21 +875,21 @@ function UserCard({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">
+        <p className="type-heading text-foreground truncate group-hover:text-vocl-primary transition-colors">
           {user.displayName || user.username}
         </p>
-        <p className="text-sm text-foreground/50 truncate">@{user.username}</p>
+        <p className="type-meta text-foreground/50 truncate">@{user.username}</p>
         {user.bio && (
-          <p className="text-sm text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
+          <p className="type-body text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
         )}
       </div>
       <button
         onClick={handleFollow}
         disabled={isLoading}
-        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
+        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
           user.isFollowing
-            ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-            : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+            ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+            : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
         }`}
       >
         {isLoading ? (
@@ -913,7 +941,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
               <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
             </TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB]">
+              <div className="bg-vocl-surface-muted">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}
@@ -923,7 +951,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
           <>
             <TextContent>{post.content.plain}</TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB]">
+              <div className="bg-vocl-surface-muted">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}

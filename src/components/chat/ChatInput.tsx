@@ -8,26 +8,44 @@ import {
   IconGif,
   IconX,
   IconLoader2,
+  IconMicrophone,
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import Image from "next/image";
 import { GifPicker } from "./GifPicker";
 import { EmojiPicker } from "./EmojiPicker";
+import { VoiceRecorder } from "@/components/Post/create/VoiceRecorder";
+
+interface ReplyingTo {
+  id: string;
+  senderName: string;
+  preview: string;
+}
 
 interface ChatInputProps {
+  /** Conversation id, used as the upload scope for voice notes. */
+  conversationId: string;
   onSend: (content: string, mediaFile?: File) => Promise<void>;
   onSendGif?: (gifUrl: string) => Promise<void>;
+  onSendVoice?: (url: string, duration: number) => Promise<void>;
   onTyping?: () => void;
   disabled?: boolean;
   placeholder?: string;
+  /** When set, shows a "replying to" banner above the input. */
+  replyingTo?: ReplyingTo | null;
+  onCancelReply?: () => void;
 }
 
 export function ChatInput({
+  conversationId,
   onSend,
   onSendGif,
+  onSendVoice,
   onTyping,
   disabled = false,
   placeholder = "Type a message...",
+  replyingTo,
+  onCancelReply,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
@@ -35,6 +53,7 @@ export function ChatInput({
   const [isSending, setIsSending] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +73,19 @@ export function ChatInput({
       setIsSending(true);
       try {
         await onSend(gifUrl);
+      } finally {
+        setIsSending(false);
+      }
+    }
+  };
+
+  // Handle a completed voice recording (already uploaded by VoiceRecorder).
+  const handleVoiceComplete = async (url: string, duration: number) => {
+    setShowVoiceRecorder(false);
+    if (onSendVoice) {
+      setIsSending(true);
+      try {
+        await onSendVoice(url, duration);
       } finally {
         setIsSending(false);
       }
@@ -150,7 +182,41 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-white/5 p-3">
+    <div className="border-t border-vocl-border p-3">
+      {/* Replying-to banner */}
+      {replyingTo && (
+        <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-vocl-surface-muted border-l-2 border-vocl-accent dark:bg-vocl-surface-dark">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-vocl-accent">
+              Replying to {replyingTo.senderName}
+            </p>
+            <p className="text-xs text-foreground/60 truncate">
+              {replyingTo.preview}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancelReply}
+            aria-label="Cancel reply"
+            className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          >
+            <IconX size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Voice recorder */}
+      {showVoiceRecorder && (
+        <div className="mb-3">
+          <VoiceRecorder
+            postId={conversationId}
+            uploadedUrl={null}
+            onComplete={handleVoiceComplete}
+            onClear={() => setShowVoiceRecorder(false)}
+          />
+        </div>
+      )}
+
       {/* Media preview */}
       {mediaPreview && (
         <div className="relative inline-block mb-3">
@@ -191,7 +257,7 @@ export function ChatInput({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isSending}
-            className="flex-shrink-0 p-2.5 rounded-xl text-foreground/50 hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50"
+            className="flex-shrink-0 p-2.5 rounded-xl text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-50"
             title="Upload image or video"
           >
             <IconPhoto size={20} />
@@ -208,11 +274,30 @@ export function ChatInput({
             className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
               showGifPicker
                 ? "bg-vocl-accent text-white"
-                : "text-foreground/50 hover:text-foreground hover:bg-white/5"
+                : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
             }`}
             title="Send a GIF"
           >
             <IconGif size={20} />
+          </button>
+
+          {/* Voice note button */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowVoiceRecorder((v) => !v);
+              setShowGifPicker(false);
+              setShowEmojiPicker(false);
+            }}
+            disabled={disabled || isSending}
+            className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+              showVoiceRecorder
+                ? "bg-vocl-accent text-white"
+                : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
+            }`}
+            title="Record a voice note"
+          >
+            <IconMicrophone size={20} />
           </button>
         </div>
         <input
@@ -235,7 +320,7 @@ export function ChatInput({
             placeholder={placeholder}
             disabled={disabled || isSending}
             rows={1}
-            className="w-full py-2.5 px-4 pr-10 rounded-xl bg-vocl-surface-dark border border-white/5 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent transition-colors text-sm resize-none disabled:opacity-50"
+            className="w-full py-2.5 px-4 pr-10 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-accent transition-colors text-sm resize-none disabled:opacity-50 dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
             style={{ maxHeight: "120px" }}
           />
           {/* Emoji button and picker */}
@@ -267,7 +352,7 @@ export function ChatInput({
           type="button"
           onClick={handleSend}
           disabled={(!message.trim() && !mediaFile) || disabled || isSending}
-          className="flex-shrink-0 p-2.5 rounded-xl bg-vocl-accent text-white hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-shrink-0 p-2.5 rounded-xl bg-vocl-primary text-white hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSending ? (
             <IconLoader2 size={20} className="animate-spin" />

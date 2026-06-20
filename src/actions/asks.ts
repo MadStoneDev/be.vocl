@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { transcribeAudio } from "@/lib/openai/whisper";
 import { rateLimiters } from "@/lib/rate-limit";
 
 interface AskResult {
@@ -13,6 +16,8 @@ interface AskResult {
 interface Ask {
   id: string;
   question: string;
+  question_audio_url: string | null;
+  question_audio_duration: number | null;
   is_anonymous: boolean;
   status: "pending" | "answered" | "deleted";
   created_at: string;
@@ -35,7 +40,8 @@ interface AskListResult {
 export async function sendAsk(
   recipientUsername: string,
   question: string,
-  isAnonymous: boolean
+  isAnonymous: boolean,
+  audio?: { url: string; duration: number } | null
 ): Promise<AskResult> {
   try {
     const supabase = await createClient();
@@ -53,9 +59,11 @@ export async function sendAsk(
       return { success: false, error: "You're sending too many asks. Please try again later." };
     }
 
-    // Validate question
+    // Validate question. A question may be text, audio, or both — but at least
+    // one must be present.
     const trimmedQuestion = question.trim();
-    if (!trimmedQuestion) {
+    const hasAudio = !!audio?.url;
+    if (!trimmedQuestion && !hasAudio) {
       return { success: false, error: "Question cannot be empty" };
     }
     if (trimmedQuestion.length > 500) {
@@ -109,6 +117,8 @@ export async function sendAsk(
         question: trimmedQuestion,
         is_anonymous: isAnonymous,
         status: "pending",
+        question_audio_url: hasAudio ? audio!.url : null,
+        question_audio_duration: hasAudio ? Math.round(audio!.duration) : null,
       })
       .select("id")
       .single();
@@ -152,6 +162,8 @@ export async function getMyAsks(): Promise<AskListResult> {
       .select(`
         id,
         question,
+        question_audio_url,
+        question_audio_duration,
         is_anonymous,
         status,
         created_at,
@@ -211,7 +223,8 @@ export async function getPendingAskCount(): Promise<{
  */
 export async function answerAsk(
   askId: string,
-  answerHtml: string
+  answerHtml: string,
+  audio?: { url: string; duration: number } | null
 ): Promise<{ success: boolean; postId?: string; error?: string }> {
   try {
     const supabase = await createClient();
@@ -223,11 +236,13 @@ export async function answerAsk(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Validate answer
+    // Validate answer. An answer may be text, audio, or both.
     const trimmedAnswer = answerHtml.trim();
-    if (!trimmedAnswer) {
+    const hasAudio = !!audio?.url;
+    if (!trimmedAnswer && !hasAudio) {
       return { success: false, error: "Answer cannot be empty" };
     }
+    const answerDuration = hasAudio ? Math.round(audio!.duration) : null;
 
     // Get the ask
     const { data: ask } = await (supabase as any)
@@ -242,13 +257,19 @@ export async function answerAsk(
       return { success: false, error: "Ask not found" };
     }
 
-    // Create the post
+    // Create the post. The ask's question/answer audio is embedded into the
+    // post content so the AskContent feed renderer can show audio players
+    // without an extra join back to the asks table.
     const content = {
       question: ask.question,
       answer_html: trimmedAnswer,
       asker_id: ask.is_anonymous ? null : ask.sender_id,
       asker_username: ask.is_anonymous ? "Anonymous" : ask.sender?.username,
       is_anonymous: ask.is_anonymous,
+      question_audio_url: ask.question_audio_url || null,
+      question_audio_duration: ask.question_audio_duration ?? null,
+      answer_audio_url: hasAudio ? audio!.url : null,
+      answer_audio_duration: answerDuration,
     };
 
     const { data: post, error: postError } = await (supabase as any)
@@ -269,15 +290,49 @@ export async function answerAsk(
       return { success: false, error: "Failed to create post" };
     }
 
-    // Update ask status
+    // Update ask status, persisting the answer audio on the ask row.
     await (supabase as any)
       .from("asks")
       .update({
         status: "answered",
         answered_post_id: post.id,
+        answer_audio_url: hasAudio ? audio!.url : null,
+        answer_audio_duration: answerDuration,
         updated_at: new Date().toISOString(),
       })
       .eq("id", askId);
+
+    // Best-effort: transcribe any audio attached to this ask and fold the
+    // transcripts into the post content. Runs after the response is sent so it
+    // never blocks the answer; failures are swallowed.
+    if (hasAudio || ask.question_audio_url) {
+      const postId = post.id as string;
+      const questionAudioUrl = ask.question_audio_url as string | null;
+      const answerAudioUrl = hasAudio ? (audio!.url as string) : null;
+      after(async () => {
+        try {
+          const admin = createAdminClient();
+          const [questionTranscript, answerTranscript] = await Promise.all([
+            questionAudioUrl ? transcribeAudio(questionAudioUrl) : Promise.resolve(null),
+            answerAudioUrl ? transcribeAudio(answerAudioUrl) : Promise.resolve(null),
+          ]);
+          if (!questionTranscript && !answerTranscript) return;
+          const { data: fresh } = await (admin as any)
+            .from("posts")
+            .select("content")
+            .eq("id", postId)
+            .single();
+          const merged = {
+            ...(fresh?.content || content),
+            ...(questionTranscript ? { question_audio_transcript: questionTranscript } : {}),
+            ...(answerTranscript ? { answer_audio_transcript: answerTranscript } : {}),
+          };
+          await (admin as any).from("posts").update({ content: merged }).eq("id", postId);
+        } catch {
+          // best-effort; ignore
+        }
+      });
+    }
 
     // Notify the asker if not anonymous
     if (!ask.is_anonymous && ask.sender_id) {

@@ -14,7 +14,7 @@ export default function QueueError({
       <h2 className="text-xl font-semibold text-foreground mb-2">
         Queue unavailable
       </h2>
-      <p className="text-neutral-400 mb-6">
+      <p className="text-foreground/60 mb-6">
         We couldn&apos;t load your queue. Please try again.
       </p>
       <button

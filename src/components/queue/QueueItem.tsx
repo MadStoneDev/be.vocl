@@ -129,12 +129,12 @@ export function QueueItem({
 
   return (
     <div
-      className={`group rounded-2xl bg-vocl-surface-dark border border-white/5 transition-all overflow-hidden ${
-        isDragging ? "opacity-50 scale-[0.98]" : "hover:border-white/10"
+      className={`group rounded-2xl bg-vocl-surface-dark border border-vocl-border transition-all overflow-hidden ${
+        isDragging ? "opacity-50 scale-[0.98]" : "hover:border-vocl-border"
       }`}
     >
       {/* Header bar: drag handle + position + actions */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-vocl-border">
         <div className="flex items-center gap-2">
           <span className="cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/50">
             <IconGripVertical size={18} />
@@ -175,7 +175,7 @@ export function QueueItem({
       {/* Reblog comment (if present) */}
       {isReblog && post.reblogCommentHtml && (
         <div
-          className="px-4 py-3 text-sm text-foreground/80 border-b border-white/5"
+          className="px-4 py-3 text-sm text-foreground/80 border-b border-vocl-border"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.reblogCommentHtml) }}
         />
       )}

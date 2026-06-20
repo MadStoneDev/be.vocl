@@ -59,6 +59,10 @@ export type Database = {
           answered_post_id: string | null
           created_at: string | null
           updated_at: string | null
+          question_audio_url: string | null
+          question_audio_duration: number | null
+          answer_audio_url: string | null
+          answer_audio_duration: number | null
         }
         Insert: {
           id?: string
@@ -70,6 +74,10 @@ export type Database = {
           answered_post_id?: string | null
           created_at?: string | null
           updated_at?: string | null
+          question_audio_url?: string | null
+          question_audio_duration?: number | null
+          answer_audio_url?: string | null
+          answer_audio_duration?: number | null
         }
         Update: {
           id?: string
@@ -81,6 +89,10 @@ export type Database = {
           answered_post_id?: string | null
           created_at?: string | null
           updated_at?: string | null
+          question_audio_url?: string | null
+          question_audio_duration?: number | null
+          answer_audio_url?: string | null
+          answer_audio_duration?: number | null
         }
         Relationships: []
       }
@@ -233,28 +245,187 @@ export type Database = {
           id: string
           user_id: string
           post_id: string
-          content_html: string
+          content_html: string | null
           parent_id: string | null
           created_at: string | null
           updated_at: string | null
+          audio_url: string | null
+          audio_duration: number | null
         }
         Insert: {
           id?: string
           user_id: string
           post_id: string
-          content_html: string
+          content_html?: string | null
           parent_id?: string | null
           created_at?: string | null
           updated_at?: string | null
+          audio_url?: string | null
+          audio_duration?: number | null
         }
         Update: {
           id?: string
           user_id?: string
           post_id?: string
-          content_html?: string
+          content_html?: string | null
           parent_id?: string | null
           created_at?: string | null
           updated_at?: string | null
+          audio_url?: string | null
+          audio_duration?: number | null
+        }
+        Relationships: []
+      }
+      communities: {
+        Row: {
+          id: string
+          slug: string
+          name: string
+          description: string | null
+          banner_url: string | null
+          icon_url: string | null
+          visibility: string | null
+          join_policy: string | null
+          nsfw: boolean
+          created_by: string
+          member_count: number
+          post_count: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          name: string
+          description?: string | null
+          banner_url?: string | null
+          icon_url?: string | null
+          visibility?: string | null
+          join_policy?: string | null
+          nsfw?: boolean
+          created_by: string
+          member_count?: number
+          post_count?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          name?: string
+          description?: string | null
+          banner_url?: string | null
+          icon_url?: string | null
+          visibility?: string | null
+          join_policy?: string | null
+          nsfw?: boolean
+          created_by?: string
+          member_count?: number
+          post_count?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      community_join_requests: {
+        Row: {
+          id: string
+          community_id: string
+          user_id: string
+          message: string | null
+          status: string | null
+          reviewed_by: string | null
+          reviewed_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          community_id: string
+          user_id: string
+          message?: string | null
+          status?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          community_id?: string
+          user_id?: string
+          message?: string | null
+          status?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      community_members: {
+        Row: {
+          community_id: string
+          user_id: string
+          role: string | null
+          joined_at: string
+        }
+        Insert: {
+          community_id: string
+          user_id: string
+          role?: string | null
+          joined_at?: string
+        }
+        Update: {
+          community_id?: string
+          user_id?: string
+          role?: string | null
+          joined_at?: string
+        }
+        Relationships: []
+      }
+      community_posts: {
+        Row: {
+          community_id: string
+          post_id: string
+          added_by: string
+          pinned: boolean
+          added_at: string
+        }
+        Insert: {
+          community_id: string
+          post_id: string
+          added_by: string
+          pinned?: boolean
+          added_at?: string
+        }
+        Update: {
+          community_id?: string
+          post_id?: string
+          added_by?: string
+          pinned?: boolean
+          added_at?: string
+        }
+        Relationships: []
+      }
+      community_rules: {
+        Row: {
+          id: string
+          community_id: string
+          position: number
+          title: string
+          body: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          community_id: string
+          position?: number
+          title: string
+          body?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          community_id?: string
+          position?: number
+          title?: string
+          body?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -666,6 +837,30 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          id: string
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          user_id?: string
+          emoji?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           id: string
@@ -678,6 +873,8 @@ export type Database = {
           is_edited: boolean | null
           created_at: string | null
           updated_at: string | null
+          reply_to_id: string | null
+          media_duration: number | null
         }
         Insert: {
           id?: string
@@ -690,6 +887,8 @@ export type Database = {
           is_edited?: boolean | null
           created_at?: string | null
           updated_at?: string | null
+          reply_to_id?: string | null
+          media_duration?: number | null
         }
         Update: {
           id?: string
@@ -702,6 +901,8 @@ export type Database = {
           is_edited?: boolean | null
           created_at?: string | null
           updated_at?: string | null
+          reply_to_id?: string | null
+          media_duration?: number | null
         }
         Relationships: []
       }
@@ -855,6 +1056,36 @@ export type Database = {
         }
         Relationships: []
       }
+      post_audio_reactions: {
+        Row: {
+          id: string
+          post_id: string
+          user_id: string
+          audio_url: string
+          duration: number | null
+          transcript: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          user_id: string
+          audio_url: string
+          duration?: number | null
+          transcript?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          user_id?: string
+          audio_url?: string
+          duration?: number | null
+          transcript?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       post_tags: {
         Row: {
           post_id: string
@@ -893,6 +1124,12 @@ export type Database = {
           moderated_by: string | null
           thread_id: string | null
           thread_position: number | null
+          pending_community_ids: string[] | null
+          published_from_queue: boolean
+          exclude_from_public: boolean
+          like_count: number
+          comment_count: number
+          reblog_count: number
         }
         Insert: {
           id?: string
@@ -916,6 +1153,12 @@ export type Database = {
           moderated_by?: string | null
           thread_id?: string | null
           thread_position?: number | null
+          pending_community_ids?: string[] | null
+          published_from_queue?: boolean
+          exclude_from_public?: boolean
+          like_count?: number
+          comment_count?: number
+          reblog_count?: number
         }
         Update: {
           id?: string
@@ -939,6 +1182,12 @@ export type Database = {
           moderated_by?: string | null
           thread_id?: string | null
           thread_position?: number | null
+          pending_community_ids?: string[] | null
+          published_from_queue?: boolean
+          exclude_from_public?: boolean
+          like_count?: number
+          comment_count?: number
+          reblog_count?: number
         }
         Relationships: []
       }
@@ -1014,6 +1263,11 @@ export type Database = {
           invited_by: string | null
           invite_code_used: string | null
           invite_codes_remaining: number | null
+          accent_color: string | null
+          feed_layout: string
+          is_discoverable: boolean
+          allow_search_indexing: boolean
+          follower_count: number
         }
         Insert: {
           id: string
@@ -1059,6 +1313,11 @@ export type Database = {
           invited_by?: string | null
           invite_code_used?: string | null
           invite_codes_remaining?: number | null
+          accent_color?: string | null
+          feed_layout?: string
+          is_discoverable?: boolean
+          allow_search_indexing?: boolean
+          follower_count?: number
         }
         Update: {
           id?: string
@@ -1104,6 +1363,11 @@ export type Database = {
           invited_by?: string | null
           invite_code_used?: string | null
           invite_codes_remaining?: number | null
+          accent_color?: string | null
+          feed_layout?: string
+          is_discoverable?: boolean
+          allow_search_indexing?: boolean
+          follower_count?: number
         }
         Relationships: []
       }

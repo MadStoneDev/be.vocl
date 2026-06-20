@@ -174,7 +174,7 @@ export default function QueuePage() {
         </div>
 
         {/* View toggle */}
-        <div className="flex items-center rounded-xl bg-vocl-surface-dark border border-white/5 p-1">
+        <div className="flex items-center rounded-xl bg-vocl-surface-dark border border-vocl-border p-1">
           <button
             type="button"
             onClick={() => setViewMode("list")}

@@ -220,7 +220,7 @@ export default function BookmarksPage() {
           className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             activeCollection === null
               ? "bg-vocl-accent text-white shadow-lg"
-              : "bg-white/5 text-foreground/60 hover:text-foreground hover:bg-white/10"
+              : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
           }`}
         >
           <IconBookmark size={15} />
@@ -233,7 +233,7 @@ export default function BookmarksPage() {
           className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             activeCollection === "uncollected"
               ? "bg-vocl-accent text-white shadow-lg"
-              : "bg-white/5 text-foreground/60 hover:text-foreground hover:bg-white/10"
+              : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
           }`}
         >
           <IconFolder size={15} />
@@ -256,7 +256,7 @@ export default function BookmarksPage() {
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   maxLength={50}
-                  className="w-28 px-3 py-1.5 rounded-full text-sm bg-white/10 border border-vocl-accent text-foreground focus:outline-none"
+                  className="w-28 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border border-vocl-accent text-foreground focus:outline-none"
                   onBlur={() => {
                     setRenamingId(null);
                     setRenameValue("");
@@ -282,7 +282,7 @@ export default function BookmarksPage() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCollection === col.id
                     ? "bg-vocl-accent text-white shadow-lg"
-                    : "bg-white/5 text-foreground/60 hover:text-foreground hover:bg-white/10"
+                    : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
                 }`}
               >
                 {activeCollection === col.id ? (
@@ -310,7 +310,7 @@ export default function BookmarksPage() {
                   className={`ml-1 p-0.5 rounded-full transition-colors ${
                     activeCollection === col.id
                       ? "hover:bg-white/20"
-                      : "hover:bg-white/10"
+                      : "hover:bg-vocl-hover-strong"
                   }`}
                 >
                   <IconDots size={14} />
@@ -322,7 +322,7 @@ export default function BookmarksPage() {
             {menuOpenId === col.id && (
               <div
                 ref={menuRef}
-                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl py-1 min-w-[140px]"
+                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl py-1 min-w-[140px]"
               >
                 <button
                   onClick={() => {
@@ -330,7 +330,7 @@ export default function BookmarksPage() {
                     setRenamingId(col.id);
                     setRenameValue(col.name);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground/80 hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                 >
                   <IconPencil size={15} />
                   Rename
@@ -340,7 +340,7 @@ export default function BookmarksPage() {
                     setMenuOpenId(null);
                     setDeleteTarget(col);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-vocl-like hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-vocl-like hover:bg-vocl-hover transition-colors"
                 >
                   <IconTrash size={15} />
                   Delete
@@ -368,7 +368,7 @@ export default function BookmarksPage() {
               }}
               placeholder="Collection name"
               maxLength={50}
-              className={`w-36 px-3 py-1.5 rounded-full text-sm bg-white/10 border text-foreground placeholder:text-foreground/30 focus:outline-none ${
+              className={`w-36 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border text-foreground placeholder:text-foreground/30 focus:outline-none ${
                 createError ? "border-vocl-like" : "border-vocl-accent"
               }`}
             />
@@ -390,7 +390,7 @@ export default function BookmarksPage() {
                 setNewName("");
                 setCreateError(null);
               }}
-              className="p-1.5 rounded-full bg-white/5 text-foreground/60 hover:text-foreground transition-colors"
+              className="p-1.5 rounded-full bg-vocl-hover text-foreground/60 hover:text-foreground transition-colors"
             >
               <IconX size={14} />
             </button>
@@ -398,7 +398,7 @@ export default function BookmarksPage() {
         ) : (
           <button
             onClick={() => setIsCreating(true)}
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm text-foreground/40 hover:text-foreground/70 bg-white/5 hover:bg-white/10 transition-all border border-dashed border-white/10 hover:border-white/20"
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm text-foreground/40 hover:text-foreground/70 bg-vocl-hover hover:bg-vocl-hover-strong transition-all border border-dashed border-vocl-border hover:border-vocl-border"
           >
             <IconPlus size={15} />
             <span>New</span>
@@ -460,13 +460,13 @@ export default function BookmarksPage() {
 
                     {/* Move dropdown */}
                     {moveMenuPostId === post.id && (
-                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-white/10 rounded-xl shadow-xl py-1 min-w-[180px]">
+                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl py-1 min-w-[180px]">
                         <button
                           onClick={() => handleMoveBookmark(post.id, null)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
                             !post.collectionId
                               ? "text-vocl-accent bg-vocl-accent/5"
-                              : "text-foreground/80 hover:bg-white/5"
+                              : "text-foreground/80 hover:bg-vocl-hover"
                           }`}
                         >
                           <IconBookmark size={15} />
@@ -484,7 +484,7 @@ export default function BookmarksPage() {
                             className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
                               post.collectionId === col.id
                                 ? "text-vocl-accent bg-vocl-accent/5"
-                                : "text-foreground/80 hover:bg-white/5"
+                                : "text-foreground/80 hover:bg-vocl-hover"
                             }`}
                           >
                             <IconFolder size={15} />
@@ -574,7 +574,7 @@ export default function BookmarksPage() {
               <button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="px-6 py-2 bg-white/5 text-foreground/70 rounded-xl hover:bg-white/10 transition-colors disabled:opacity-50"
+                className="px-6 py-2 bg-vocl-hover text-foreground/70 rounded-xl hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
               >
                 {isFetchingNextPage ? "Loading..." : "Load more"}
               </button>
