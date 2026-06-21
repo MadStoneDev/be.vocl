@@ -1,253 +1,189 @@
-"use client";
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { PostPageClient } from "./PostPageClient";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
-import { getPostById } from "@/actions/posts";
-import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
-import { motion, MotionConfig } from "framer-motion";
-import Link from "next/link";
-import { fadeUp } from "@/lib/motion";
-import type { VideoEmbedPlatform } from "@/types/database";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
 
-const POST_TYPE_KICKER: Record<string, string> = {
-  text: "Note",
-  image: "Photo",
-  gallery: "Photo",
-  video: "Video",
-  audio: "Listen",
-  poll: "Poll",
-  ask: "Ask",
-};
-
-interface PostData {
-  id: string;
-  authorId: string;
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    role: number;
-  };
-  postType: string;
-  content: any;
-  isSensitive: boolean;
-  excludeFromPublic?: boolean;
-  isPinned: boolean;
-  isOwn: boolean;
-  createdAt: string;
-  likeCount: number;
-  commentCount: number;
-  reblogCount: number;
-  hasLiked: boolean;
-  hasCommented: boolean;
-  hasReblogged: boolean;
-  tags?: Array<{ id: string; name: string }>;
+interface Props {
+  params: Promise<{ id: string }>;
 }
 
-export default function PostPage() {
-  const params = useParams();
-  const router = useRouter();
-  const postId = params.id as string;
+interface PostMeta {
+  id: string;
+  post_type: string;
+  content: any;
+  is_sensitive: boolean;
+  exclude_from_public: boolean;
+  status: string;
+  moderation_status: string;
+  created_at: string;
+  updated_at: string | null;
+  author: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    is_discoverable: boolean | null;
+    allow_search_indexing: boolean | null;
+    lock_status: string | null;
+  } | null;
+}
 
-  const [post, setPost] = useState<PostData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/** Fetch the minimal post + author flags needed to decide audience + metadata. */
+async function getPostMeta(id: string): Promise<PostMeta | null> {
+  const supabase = createAdminClient();
+  const { data } = await (supabase as any)
+    .from("posts")
+    .select(
+      "id, post_type, content, is_sensitive, exclude_from_public, status, moderation_status, created_at, updated_at, author:author_id ( username, display_name, avatar_url, is_discoverable, allow_search_indexing, lock_status )"
+    )
+    .eq("id", id)
+    .maybeSingle();
+  return (data as PostMeta) ?? null;
+}
 
-  useEffect(() => {
-    async function fetchPost() {
-      setIsLoading(true);
-      setError(null);
+/** Whether a post is reachable at all (published + approved, author not banned). */
+function isViewable(p: PostMeta): boolean {
+  if (p.status !== "published" || p.moderation_status !== "approved") return false;
+  if (p.author?.lock_status === "banned") return false;
+  return true;
+}
 
-      const result = await getPostById(postId);
+/** Whether a post is fully PUBLIC (visible to logged-out visitors). NSFW never is. */
+function isPublic(p: PostMeta): boolean {
+  if (!isViewable(p)) return false;
+  if (p.is_sensitive || p.exclude_from_public) return false;
+  const a = p.author;
+  if (!a) return false;
+  if (a.is_discoverable === false) return false;
+  if (a.lock_status === "restricted" || a.lock_status === "banned") return false;
+  return true;
+}
 
-      if (result.success && result.post) {
-        setPost(result.post as PostData);
-      } else {
-        setError(result.error || "Post not found");
-      }
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
 
-      setIsLoading(false);
-    }
+function postTitle(p: PostMeta): string {
+  const c = p.content || {};
+  const raw: string =
+    c.essay_title || c.plain || c.text || stripHtml(c.caption_html || c.html || "") || "";
+  const trimmed = raw.replace(/\s+/g, " ").trim();
+  const handle = p.author?.username ? `@${p.author.username}` : "be.vocl";
+  if (!trimmed) return `Post by ${handle}`;
+  const snippet = trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed;
+  return `${snippet} — ${handle}`;
+}
 
-    if (postId) {
-      fetchPost();
-    }
-  }, [postId]);
+function postDescription(p: PostMeta): string {
+  const c = p.content || {};
+  const raw: string = c.plain || c.text || stripHtml(c.caption_html || c.html || "") || "";
+  const trimmed = raw.replace(/\s+/g, " ").trim();
+  if (!trimmed) return `A post on be.vocl.`;
+  return trimmed.length > 200 ? `${trimmed.slice(0, 200)}…` : trimmed;
+}
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <IconLoader2 size={40} className="animate-spin text-vocl-accent" />
-      </div>
-    );
+function ogImage(p: PostMeta): string | null {
+  const c = p.content || {};
+  return c.urls?.[0] || c.url || c.thumbnail_url || c.album_art_url || null;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const p = await getPostMeta(id);
+
+  if (!p || !isViewable(p)) {
+    return { title: "Post not found | be.vocl", robots: { index: false, follow: false } };
   }
 
-  if (error || !post) {
-    return (
-      <div className="max-w-xl mx-auto py-12 px-4 text-center">
-        <h1 className="type-display text-foreground mb-4">Post Not Found</h1>
-        <p className="type-body text-foreground/60 mb-6">
-          {error || "This post may have been deleted or you don't have permission to view it."}
-        </p>
-        <Link
-          href="/feed"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-primary text-white rounded-full hover:bg-vocl-primary-hover transition-colors"
-        >
-          <IconArrowLeft size={18} />
-          Back to Feed
-        </Link>
-      </div>
-    );
+  // Members-only posts get a generic, non-indexed card.
+  if (!isPublic(p)) {
+    return {
+      title: "be.vocl",
+      description: "Log in to view this post on be.vocl.",
+      robots: { index: false, follow: false },
+    };
   }
 
-  // Prepare content based on post type
-  const renderContent = () => {
-    const content = post.content;
+  const title = `${postTitle(p)} | be.vocl`;
+  const description = postDescription(p);
+  const image = ogImage(p);
+  const canonical = `${APP_URL}/post/${p.id}`;
+  // Honour the author's external search-indexing preference.
+  const noindex = p.author?.allow_search_indexing === false;
 
-    switch (post.postType) {
-      case "text":
-        return (
-          <>
-            <TextContent
-              html={content.html}
-              isEssay={content.is_essay}
-              essayTitle={content.essay_title}
-              readingTimeMinutes={content.reading_time_minutes}
-            >
-              {content.plain || content.text}
-            </TextContent>
-            {content.link_previews && content.link_previews.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
-                <LinkPreviewCarousel previews={content.link_previews} />
-              </div>
-            )}
-          </>
-        );
-
-      case "image":
-        return (
-          <ImageContent
-            src={content.urls?.[0] || content.url}
-            alt="Post image"
-          />
-        );
-
-      case "gallery":
-        return (
-          <GalleryContent
-            images={content.urls || []}
-            caption={content.caption_html}
-          />
-        );
-
-      case "video":
-        return (
-          <VideoContent
-            src={content.url}
-            thumbnailUrl={content.thumbnail_url}
-            embedUrl={content.embed_url}
-            embedPlatform={content.embed_platform as VideoEmbedPlatform}
-            caption={content.caption_html}
-          />
-        );
-
-      case "audio":
-        return (
-          <AudioContent
-            src={content.url}
-            albumArtUrl={content.album_art_url}
-            spotifyData={content.spotify_data}
-            caption={content.caption_html}
-            transcript={content.transcript}
-            isVoiceNote={content.is_voice_note}
-          />
-        );
-
-      default:
-        return null;
-    }
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    ...(noindex && { robots: { index: false, follow: false } }),
+    openGraph: {
+      type: "article",
+      url: canonical,
+      siteName: "be.vocl",
+      title,
+      description,
+      ...(image && { images: [{ url: image }] }),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(image && { images: [image] }),
+    },
   };
+}
 
-  const postTitleText = (() => {
-    if (!post) return null;
-    const c = post.content || {};
-    const raw: string =
-      c.plain || c.text || c.essay_title || c.caption || c.title || "";
-    const trimmed = raw.replace(/\s+/g, " ").trim();
-    if (!trimmed) return `Post — @${post.author.username}`;
-    const snippet = trimmed.length > 50 ? `${trimmed.slice(0, 50)}…` : trimmed;
-    return `${snippet} — @${post.author.username}`;
-  })();
+export default async function PostPage({ params }: Props) {
+  const { id } = await params;
 
-  const content = post.content || {};
-  const isEssay = post.postType === "text" && content.is_essay;
-  const essayTitle = isEssay ? (content.essay_title as string | undefined) : undefined;
-  const kicker = isEssay ? "Essay" : POST_TYPE_KICKER[post.postType] || "Note";
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const p = await getPostMeta(id);
+
+  // Unknown / unpublished posts: let the client view render its own "not found".
+  if (p && isViewable(p) && !user && !isPublic(p)) {
+    // Members-only post viewed by a logged-out visitor → send them to log in.
+    redirect(`/login?next=${encodeURIComponent(`/post/${id}`)}`);
+  }
+  if (!p && !user) {
+    notFound();
+  }
+
+  // Article JSON-LD for public posts (helps SEO + answer/generative engines).
+  const jsonLd =
+    p && isPublic(p)
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: postTitle(p).split(" — ")[0],
+          description: postDescription(p),
+          url: `${APP_URL}/post/${p.id}`,
+          datePublished: p.created_at,
+          dateModified: p.updated_at || p.created_at,
+          author: {
+            "@type": "Person",
+            name: p.author?.display_name || `@${p.author?.username}`,
+            url: p.author?.username ? `${APP_URL}/u/${p.author.username}` : undefined,
+          },
+          publisher: { "@type": "Organization", name: "be.vocl", url: APP_URL },
+        }
+      : null;
 
   return (
-    <MotionConfig reducedMotion="user">
-    <div className="max-w-xl mx-auto py-6 px-4">
-      {post && postTitleText && <title>{`${postTitleText} | be.vocl`}</title>}
-      {/* Back-to-feed affordance */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
-      >
-        <IconArrowLeft size={15} />
-        Back
-      </button>
-
-      {/* Editorial dateline + headline framing for essays */}
-      <motion.div
-        className="mb-4"
-        initial="hidden"
-        animate="show"
-        variants={fadeUp}
-      >
-        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
-          {kicker}
-          {isEssay && content.reading_time_minutes
-            ? ` · ${content.reading_time_minutes} min read`
-            : ""}
-        </span>
-        {essayTitle && (
-          <h1 className="type-display-lg text-foreground mt-1">{essayTitle}</h1>
-        )}
-        <span className="mt-4 block h-px w-full bg-vocl-border" />
-      </motion.div>
-
-      {/* Post */}
-      <InteractivePost
-        id={post.id}
-        author={{
-          username: post.author.username,
-          avatarUrl: post.author.avatarUrl || "",
-          role: post.author.role,
-        }}
-        authorId={post.authorId}
-        timestamp={post.createdAt}
-        contentType={post.postType as any}
-        initialStats={{
-          comments: post.commentCount,
-          likes: post.likeCount,
-          reblogs: post.reblogCount,
-        }}
-        initialInteractions={{
-          hasCommented: post.hasCommented,
-          hasLiked: post.hasLiked,
-          hasReblogged: post.hasReblogged,
-        }}
-        isSensitive={post.isSensitive}
-        excludeFromPublic={post.excludeFromPublic}
-        isOwn={post.isOwn}
-        isPinned={post.isPinned}
-        tags={post.tags}
-        content={post.content}
-      >
-        {renderContent()}
-      </InteractivePost>
-    </div>
-    </MotionConfig>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <PostPageClient postId={id} />
+    </>
   );
 }

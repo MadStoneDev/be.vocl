@@ -1,0 +1,239 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
+import { getPostById } from "@/actions/posts";
+import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
+import { motion, MotionConfig } from "framer-motion";
+import Link from "next/link";
+import { fadeUp } from "@/lib/motion";
+import type { VideoEmbedPlatform } from "@/types/database";
+
+const POST_TYPE_KICKER: Record<string, string> = {
+  text: "Note",
+  image: "Photo",
+  gallery: "Photo",
+  video: "Video",
+  audio: "Listen",
+  poll: "Poll",
+  ask: "Ask",
+};
+
+interface PostData {
+  id: string;
+  authorId: string;
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: number;
+  };
+  postType: string;
+  content: any;
+  isSensitive: boolean;
+  excludeFromPublic?: boolean;
+  isPinned: boolean;
+  isOwn: boolean;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  reblogCount: number;
+  hasLiked: boolean;
+  hasCommented: boolean;
+  hasReblogged: boolean;
+  tags?: Array<{ id: string; name: string }>;
+}
+
+export function PostPageClient({ postId }: { postId: string }) {
+  const router = useRouter();
+
+  const [post, setPost] = useState<PostData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPost() {
+      setIsLoading(true);
+      setError(null);
+
+      const result = await getPostById(postId);
+
+      if (result.success && result.post) {
+        setPost(result.post as PostData);
+      } else {
+        setError(result.error || "Post not found");
+      }
+
+      setIsLoading(false);
+    }
+
+    if (postId) {
+      fetchPost();
+    }
+  }, [postId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <IconLoader2 size={40} className="animate-spin text-vocl-accent" />
+      </div>
+    );
+  }
+
+  if (error || !post) {
+    return (
+      <div className="max-w-xl mx-auto py-12 px-4 text-center">
+        <h1 className="type-display text-foreground mb-4">Post Not Found</h1>
+        <p className="type-body text-foreground/60 mb-6">
+          {error || "This post may have been deleted or you don't have permission to view it."}
+        </p>
+        <Link
+          href="/feed"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-primary text-white rounded-full hover:bg-vocl-primary-hover transition-colors"
+        >
+          <IconArrowLeft size={18} />
+          Back to Feed
+        </Link>
+      </div>
+    );
+  }
+
+  // Prepare content based on post type
+  const renderContent = () => {
+    const content = post.content;
+
+    switch (post.postType) {
+      case "text":
+        return (
+          <>
+            <TextContent
+              html={content.html}
+              isEssay={content.is_essay}
+              essayTitle={content.essay_title}
+              readingTimeMinutes={content.reading_time_minutes}
+            >
+              {content.plain || content.text}
+            </TextContent>
+            {content.link_previews && content.link_previews.length > 0 && (
+              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+                <LinkPreviewCarousel previews={content.link_previews} />
+              </div>
+            )}
+          </>
+        );
+
+      case "image":
+        return (
+          <ImageContent
+            src={content.urls?.[0] || content.url}
+            alt="Post image"
+          />
+        );
+
+      case "gallery":
+        return (
+          <GalleryContent
+            images={content.urls || []}
+            caption={content.caption_html}
+          />
+        );
+
+      case "video":
+        return (
+          <VideoContent
+            src={content.url}
+            thumbnailUrl={content.thumbnail_url}
+            embedUrl={content.embed_url}
+            embedPlatform={content.embed_platform as VideoEmbedPlatform}
+            caption={content.caption_html}
+          />
+        );
+
+      case "audio":
+        return (
+          <AudioContent
+            src={content.url}
+            albumArtUrl={content.album_art_url}
+            spotifyData={content.spotify_data}
+            caption={content.caption_html}
+            transcript={content.transcript}
+            isVoiceNote={content.is_voice_note}
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const content = post.content || {};
+  const isEssay = post.postType === "text" && content.is_essay;
+  const essayTitle = isEssay ? (content.essay_title as string | undefined) : undefined;
+  const kicker = isEssay ? "Essay" : POST_TYPE_KICKER[post.postType] || "Note";
+
+  return (
+    <MotionConfig reducedMotion="user">
+    <div className="max-w-xl mx-auto py-6 px-4">
+      {/* Back-to-feed affordance */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
+      >
+        <IconArrowLeft size={15} />
+        Back
+      </button>
+
+      {/* Editorial dateline + headline framing for essays */}
+      <motion.div
+        className="mb-4"
+        initial="hidden"
+        animate="show"
+        variants={fadeUp}
+      >
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          {kicker}
+          {isEssay && content.reading_time_minutes
+            ? ` · ${content.reading_time_minutes} min read`
+            : ""}
+        </span>
+        {essayTitle && (
+          <h1 className="type-display-lg text-foreground mt-1">{essayTitle}</h1>
+        )}
+        <span className="mt-4 block h-px w-full bg-vocl-border" />
+      </motion.div>
+
+      {/* Post */}
+      <InteractivePost
+        id={post.id}
+        author={{
+          username: post.author.username,
+          avatarUrl: post.author.avatarUrl || "",
+          role: post.author.role,
+        }}
+        authorId={post.authorId}
+        timestamp={post.createdAt}
+        contentType={post.postType as any}
+        initialStats={{
+          comments: post.commentCount,
+          likes: post.likeCount,
+          reblogs: post.reblogCount,
+        }}
+        initialInteractions={{
+          hasCommented: post.hasCommented,
+          hasLiked: post.hasLiked,
+          hasReblogged: post.hasReblogged,
+        }}
+        isSensitive={post.isSensitive}
+        excludeFromPublic={post.excludeFromPublic}
+        isOwn={post.isOwn}
+        isPinned={post.isPinned}
+        tags={post.tags}
+        content={post.content}
+      >
+        {renderContent()}
+      </InteractivePost>
+    </div>
+    </MotionConfig>
+  );
+}
