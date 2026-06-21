@@ -1160,12 +1160,14 @@ export async function getFeedPosts(options?: {
     // Get user first
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Get followed IDs, muted user IDs, and muted tag IDs (only if logged in)
+    // Get followed IDs, muted user IDs, muted tag IDs, and followed tag IDs (only if logged in)
     let followedIds: string[] = [];
     let mutedIds: string[] = [];
     let mutedTagIds: Set<string> = new Set();
+    // Post IDs surfaced because the viewer follows one of their tags.
+    let followedTagPostIds: string[] = [];
     if (user) {
-      const [{ data: follows }, { data: mutes }, { data: mutedTags }] = await Promise.all([
+      const [{ data: follows }, { data: mutes }, { data: mutedTags }, { data: followedTags }] = await Promise.all([
         (supabase as any)
           .from("follows")
           .select("following_id")
@@ -1178,6 +1180,10 @@ export async function getFeedPosts(options?: {
           .from("muted_tags")
           .select("tag_id")
           .eq("profile_id", user.id),
+        (supabase as any)
+          .from("followed_tags")
+          .select("tag_id")
+          .eq("profile_id", user.id),
       ]);
       mutedIds = (mutes || []).map((m: any) => m.muted_id);
       mutedTagIds = new Set((mutedTags || []).map((mt: any) => mt.tag_id));
@@ -1186,6 +1192,24 @@ export async function getFeedPosts(options?: {
         ...(follows || []).map((f: any) => f.following_id).filter((id: string) => !mutedSet.has(id)),
         user.id,
       ];
+
+      // Resolve followed tags → recent post IDs so tag subscriptions show in the feed.
+      // Exclude any tags the viewer also muted (mute wins over follow).
+      const followedTagIds = (followedTags || [])
+        .map((ft: any) => ft.tag_id)
+        .filter((id: string) => !mutedTagIds.has(id));
+      if (followedTagIds.length > 0) {
+        // post_tags has no timestamp of its own, so order by the embedded post's
+        // created_at (inner join) to grab the most recent tagged posts.
+        const { data: tagPosts } = await (supabase as any)
+          .from("post_tags")
+          .select("post_id, posts!inner(created_at, status)")
+          .in("tag_id", followedTagIds)
+          .eq("posts.status", "published")
+          .order("created_at", { foreignTable: "posts", ascending: false })
+          .limit(500);
+        followedTagPostIds = [...new Set((tagPosts || []).map((tp: any) => tp.post_id))] as string[];
+      }
     }
 
     // Build and execute the main posts query
@@ -1216,9 +1240,17 @@ export async function getFeedPosts(options?: {
       )
       .eq("status", "published");
 
-    // Filter by followed users if logged in and following someone
-    if (user && followedIds.length > 0) {
-      query = query.in("author_id", followedIds);
+    // Filter to posts from followed users OR posts carrying a followed tag.
+    if (user && (followedIds.length > 0 || followedTagPostIds.length > 0)) {
+      if (followedTagPostIds.length > 0 && followedIds.length > 0) {
+        query = query.or(
+          `author_id.in.(${followedIds.join(",")}),id.in.(${followedTagPostIds.join(",")})`
+        );
+      } else if (followedTagPostIds.length > 0) {
+        query = query.in("id", followedTagPostIds);
+      } else {
+        query = query.in("author_id", followedIds);
+      }
     }
 
     // Exclude muted users' posts
