@@ -11,38 +11,56 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 1,
     },
+    {
+      url: `${APP_URL}/discover`,
+      lastModified: new Date(),
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
   ];
 
   try {
     const supabase = createAdminClient();
-    // Only list profiles that are discoverable AND allow search indexing,
-    // and are not restricted/banned.
-    const { data: profiles } = await (supabase as any)
-      .from("profiles")
-      .select("username, updated_at, lock_status")
-      .eq("is_discoverable", true)
-      .eq("allow_search_indexing", true)
+
+    // Profiles are members-only and never indexed, so they are NOT in the sitemap.
+    // Public discoverability happens at the post level: index only Public posts
+    // (not sensitive, not opted out) from authors who allow the public web + search
+    // indexing and are not restricted/banned.
+    const { data: posts } = await (supabase as any)
+      .from("posts")
+      .select(
+        "id, updated_at, created_at, author:author_id ( is_discoverable, allow_search_indexing, lock_status )"
+      )
+      .eq("status", "published")
+      .eq("moderation_status", "approved")
+      .eq("is_sensitive", false)
+      .eq("exclude_from_public", false)
+      .order("created_at", { ascending: false })
       .limit(5000);
 
-    for (const p of (profiles ?? []) as Array<{
-      username: string;
+    for (const p of (posts ?? []) as Array<{
+      id: string;
       updated_at: string | null;
-      lock_status: string | null;
+      created_at: string | null;
+      author: {
+        is_discoverable: boolean | null;
+        allow_search_indexing: boolean | null;
+        lock_status: string | null;
+      } | null;
     }>) {
-      if (!p.username) continue;
-      if (p.lock_status === "restricted" || p.lock_status === "banned") continue;
-      const lastModified = p.updated_at ? new Date(p.updated_at) : new Date();
+      const a = p.author;
+      if (!a) continue;
+      if (a.is_discoverable === false || a.allow_search_indexing === false) continue;
+      if (a.lock_status === "restricted" || a.lock_status === "banned") continue;
       entries.push({
-        url: `${APP_URL}/u/${p.username}`,
-        lastModified,
-        changeFrequency: "daily",
-        priority: 0.6,
-      });
-      entries.push({
-        url: `${APP_URL}/u/${p.username}/archive`,
-        lastModified,
+        url: `${APP_URL}/post/${p.id}`,
+        lastModified: p.updated_at
+          ? new Date(p.updated_at)
+          : p.created_at
+            ? new Date(p.created_at)
+            : new Date(),
         changeFrequency: "weekly",
-        priority: 0.4,
+        priority: 0.7,
       });
     }
   } catch (error) {

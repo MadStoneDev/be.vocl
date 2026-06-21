@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   InteractivePost,
   ImageContent,
@@ -139,9 +140,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    ...(profile.allow_search_indexing === false && {
-      robots: { index: false, follow: false },
-    }),
+    // Profiles are members-only — never index them. Public reach happens at the
+    // per-post level (Public posts on /discover and /post/[id]).
+    robots: { index: false, follow: false },
     openGraph: {
       title,
       description,
@@ -161,6 +162,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PublicProfilePage({ params }: Props) {
   const { username } = await params;
+
+  // Profiles are members-only: logged-out visitors must sign in to view them.
+  const authClient = await createClient();
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
+  if (!user) {
+    redirect(`/login?next=${encodeURIComponent(`/u/${username}`)}`);
+  }
+
   const data = await getProfile(username);
 
   if (!data) {

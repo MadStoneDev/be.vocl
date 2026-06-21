@@ -15,6 +15,7 @@ import {
   IconAlertCircle,
   IconMessageQuestion,
   IconWorld,
+  IconSearch,
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import {
@@ -60,6 +61,7 @@ export default function PrivacySettingsPage() {
   // Public web settings
   const [isDiscoverable, setIsDiscoverable] = useState(true);
   const [allowSearchIndexing, setAllowSearchIndexing] = useState(true);
+  const [isSearchable, setIsSearchable] = useState(true);
 
   // Content settings
   const [showSensitivePosts, setShowSensitivePosts] = useState(false);
@@ -88,6 +90,7 @@ export default function PrivacySettingsPage() {
         setShowFollowing(profileResult.profile.showFollowing);
         setIsDiscoverable(profileResult.profile.isDiscoverable ?? true);
         setAllowSearchIndexing(profileResult.profile.allowSearchIndexing ?? true);
+        setIsSearchable(profileResult.profile.isSearchable ?? true);
         setShowSensitivePosts(profileResult.profile.showSensitivePosts);
         setBlurSensitiveByDefault(profileResult.profile.blurSensitiveByDefault);
         setAllowAsks(profileResult.profile.allowAsks ?? true);
@@ -113,7 +116,7 @@ export default function PrivacySettingsPage() {
   }, []);
 
   const handleWebVisibilityChange = useCallback(
-    (key: "isDiscoverable" | "allowSearchIndexing", value: boolean) => {
+    (key: "isDiscoverable" | "allowSearchIndexing" | "isSearchable", value: boolean) => {
       startTransition(async () => {
         const result = await updateWebVisibilitySettings({ [key]: value });
         if (result.success) {
@@ -290,14 +293,44 @@ export default function PrivacySettingsPage() {
           </div>
 
           <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+              <IconSearch size={20} />
+              Finding you on be.vocl
+            </h3>
+            <p className="text-xs text-foreground/50 mb-4">
+              Controls whether other members can find your account through the in-app
+              search box.
+            </p>
+            <div className="space-y-4">
+              <ToggleSetting
+                label="Let other members find me in search"
+                description="Show my account in be.vocl's people search results. Turning this off doesn't affect people who already follow you or have your link."
+                checked={isSearchable}
+                onChange={(checked) => {
+                  setIsSearchable(checked);
+                  handleWebVisibilityChange("isSearchable", checked);
+                }}
+                disabled={isPending}
+              />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
               <IconWorld size={20} />
               Public web
             </h3>
+            <p className="text-xs text-foreground/50 mb-4">
+              Your profile and feed are only visible to logged-in be.vocl members.
+              Only posts you set to{" "}
+              <span className="font-medium text-foreground/70">Public</span> can be
+              seen by logged-out visitors. These settings control where those public
+              posts can appear.
+            </p>
             <div className="space-y-4">
               <ToggleSetting
-                label="Show my posts on the public be.vocl front page"
-                description="Let logged-out visitors discover your public posts on the be.vocl landing page"
+                label="Feature my public posts on be.vocl"
+                description="Let your Public posts appear on the be.vocl front page and the public Discover page for logged-out visitors."
                 checked={isDiscoverable}
                 onChange={(checked) => {
                   setIsDiscoverable(checked);
@@ -306,8 +339,8 @@ export default function PrivacySettingsPage() {
                 disabled={isPending}
               />
               <ToggleSetting
-                label="Allow search engines to index my blog"
-                description="Let search engines like Google index your public profile and posts"
+                label="Allow search engines to index my public posts"
+                description="Let search engines like Google index the Public posts you share. Your profile and Members-only posts are never indexed."
                 checked={allowSearchIndexing}
                 onChange={(checked) => {
                   setAllowSearchIndexing(checked);

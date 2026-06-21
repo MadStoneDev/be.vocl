@@ -29,6 +29,7 @@ interface Profile {
   allowAnonymousAsks: boolean;
   isDiscoverable: boolean;
   allowSearchIndexing: boolean;
+  isSearchable: boolean;
   accentColor?: string | null;
   createdAt: string;
   role: number;
@@ -52,7 +53,7 @@ export async function getProfileByUsername(
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, accent_color, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
       .eq("username", username)
       .single();
 
@@ -80,6 +81,7 @@ export async function getProfileByUsername(
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
         isDiscoverable: data.is_discoverable ?? true,
         allowSearchIndexing: data.allow_search_indexing ?? true,
+        isSearchable: data.is_searchable ?? true,
         accentColor: data.accent_color ?? null,
         createdAt: data.created_at,
         role: data.role ?? 0,
@@ -111,7 +113,7 @@ export async function getCurrentProfile(): Promise<{
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, accent_color, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
       .eq("id", user.id)
       .single();
 
@@ -139,6 +141,7 @@ export async function getCurrentProfile(): Promise<{
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
         isDiscoverable: data.is_discoverable ?? true,
         allowSearchIndexing: data.allow_search_indexing ?? true,
+        isSearchable: data.is_searchable ?? true,
         accentColor: data.accent_color ?? null,
         createdAt: data.created_at,
         role: data.role ?? 0,
@@ -251,6 +254,7 @@ export async function updatePrivacySettings(settings: {
 export async function updateWebVisibilitySettings(settings: {
   isDiscoverable?: boolean;
   allowSearchIndexing?: boolean;
+  isSearchable?: boolean;
 }): Promise<ProfileResult> {
   try {
     const supabase = await createClient();
@@ -267,6 +271,8 @@ export async function updateWebVisibilitySettings(settings: {
       updateData.is_discoverable = settings.isDiscoverable;
     if (settings.allowSearchIndexing !== undefined)
       updateData.allow_search_indexing = settings.allowSearchIndexing;
+    if (settings.isSearchable !== undefined)
+      updateData.is_searchable = settings.isSearchable;
 
     const { error } = await (supabase as any)
       .from("profiles")
@@ -969,7 +975,7 @@ export async function getFullProfile(
     const [profileResult, authResult] = await Promise.all([
       (supabase as any)
         .from("profiles")
-        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, accent_color, created_at, role")
+        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
         .eq("username", username)
         .single(),
       supabase.auth.getUser(),
@@ -1001,6 +1007,7 @@ export async function getFullProfile(
       allowAnonymousAsks: data.allow_anonymous_asks ?? true,
       isDiscoverable: data.is_discoverable ?? true,
       allowSearchIndexing: data.allow_search_indexing ?? true,
+      isSearchable: data.is_searchable ?? true,
       accentColor: data.accent_color ?? null,
       createdAt: data.created_at,
       role: data.role ?? 0,

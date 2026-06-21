@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { IconCalendar, IconArrowLeft, IconPhoto, IconVideo, IconMusic, IconChartBar, IconArticle } from "@tabler/icons-react";
 
 interface Props {
@@ -119,6 +120,16 @@ function snippetFor(post: ArchivePost): string {
 
 export default async function ArchivePage({ params }: Props) {
   const { username } = await params;
+
+  // Members-only: logged-out visitors must sign in.
+  const authClient = await createClient();
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
+  if (!user) {
+    redirect(`/login?next=${encodeURIComponent(`/u/${username}/archive`)}`);
+  }
+
   const data = await getArchive(username);
   if (!data) notFound();
 

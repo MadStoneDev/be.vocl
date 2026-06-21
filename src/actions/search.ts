@@ -135,6 +135,9 @@ export async function searchUsers(
         { count: "exact" }
       )
       .or(`username.ilike.%${sanitizeFilterTerm(searchTerm)}%,display_name.ilike.%${sanitizeFilterTerm(searchTerm)}%`)
+      // Respect the per-profile internal-search opt-out (people who turned off
+      // "let others find me in search"). Users can still find their own account.
+      .or(`is_searchable.eq.true${user ? `,id.eq.${user.id}` : ""}`)
       .order("username")
       .range(offset, offset + limit - 1);
 

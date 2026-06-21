@@ -9,6 +9,8 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Authenticated / private app surfaces should never be indexed.
+        // Profiles (/u) and the in-app profile are members-only; public reach is
+        // per-post (/post/[id]) plus the public /discover page.
         disallow: [
           "/api/",
           "/feed",
@@ -21,6 +23,8 @@ export default function robots(): MetadataRoute.Robots {
           "/signup",
           "/onboarding",
           "/account-status",
+          "/u/",
+          "/profile/",
         ],
       },
     ],
