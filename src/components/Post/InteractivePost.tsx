@@ -52,6 +52,7 @@ interface InteractivePostProps {
   initialStats: PostStats;
   initialInteractions: PostInteractions;
   isSensitive?: boolean;
+  excludeFromPublic?: boolean;
   isOwn?: boolean;
   isFollowingAuthor?: boolean;
   isReblog?: boolean;
@@ -91,6 +92,7 @@ function InteractivePostComponent({
   initialStats,
   initialInteractions,
   isSensitive = false,
+  excludeFromPublic = false,
   isOwn = false,
   isFollowingAuthor = false,
   isReblog = false,
@@ -121,6 +123,7 @@ function InteractivePostComponent({
   // Edit dialog state
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [currentIsSensitive, setCurrentIsSensitive] = useState(isSensitive);
+  const [currentExcludeFromPublic, setCurrentExcludeFromPublic] = useState(excludeFromPublic);
   const [currentTags, setCurrentTags] = useState(tags);
   const [currentContent, setCurrentContent] = useState(content);
   const [currentReblogComment, setCurrentReblogComment] = useState(reblogCommentHtml);
@@ -448,6 +451,7 @@ function InteractivePostComponent({
   const handleEditSuccess = useCallback((updatedData: {
     content: any;
     isSensitive: boolean;
+    excludeFromPublic: boolean;
     tags: Array<{ id: string; name: string }>;
   }) => {
     if (isReblog) {
@@ -457,6 +461,7 @@ function InteractivePostComponent({
       setCurrentContent(updatedData.content);
     }
     setCurrentIsSensitive(updatedData.isSensitive);
+    setCurrentExcludeFromPublic(updatedData.excludeFromPublic);
     setCurrentTags(updatedData.tags);
     toast.success("Post updated");
   }, [isReblog]);
@@ -698,6 +703,7 @@ function InteractivePostComponent({
               ? { html: currentReblogComment || "", plain: "" }
               : currentContent,
             isSensitive: currentIsSensitive,
+            excludeFromPublic: currentExcludeFromPublic,
             tags: currentTags,
           }}
         />

@@ -30,6 +30,7 @@ interface PostWithDetails {
   postType: PostType;
   content: any;
   isSensitive: boolean;
+  excludeFromPublic?: boolean;
   isPinned: boolean;
   isOwn: boolean;
   createdAt: string;
@@ -162,6 +163,7 @@ function transformPost(post: PostWithDetails) {
       hasReblogged: post.hasReblogged,
     },
     isSensitive: post.isSensitive,
+    excludeFromPublic: post.excludeFromPublic,
     isOwn: post.isOwn,
     isFollowingAuthor: post.isFollowingAuthor || false,
     isBookmarked: post.hasBookmarked || false,
@@ -188,8 +190,9 @@ export default function FeedClient({
   const [showPromiseBanner, setShowPromiseBanner] = useState(initialShowPromise);
   const [showFlaggedBanner] = useState(initialShowFlagged);
 
-  // Feed layout: Reader (single column) vs Front Page (broadsheet, wide screens only)
-  const [layout, setLayout] = useState<"reader" | "frontpage">("reader");
+  // Feed layout: Reader (single column) vs Front Page (broadsheet, wide screens only).
+  // Front Page is the default; users can switch to Reader via the layout toggle.
+  const [layout, setLayout] = useState<"reader" | "frontpage">("frontpage");
   const [isWide, setIsWide] = useState(false);
   const { profile } = useAuth();
   // Whether localStorage already provided an explicit layout (instant-read source).

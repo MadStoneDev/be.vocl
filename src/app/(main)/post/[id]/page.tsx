@@ -32,6 +32,7 @@ interface PostData {
   postType: string;
   content: any;
   isSensitive: boolean;
+  excludeFromPublic?: boolean;
   isPinned: boolean;
   isOwn: boolean;
   createdAt: string;
@@ -238,6 +239,7 @@ export default function PostPage() {
           hasReblogged: post.hasReblogged,
         }}
         isSensitive={post.isSensitive}
+        excludeFromPublic={post.excludeFromPublic}
         isOwn={post.isOwn}
         isPinned={post.isPinned}
         tags={post.tags}

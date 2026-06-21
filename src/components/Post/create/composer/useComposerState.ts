@@ -33,6 +33,8 @@ export interface ComposerState {
   tags: string[];
   selectedCommunityIds: string[];
   isSensitive: boolean;
+  /** Author opted this post out of the public (logged-out) front page / web. */
+  excludeFromPublic: boolean;
   contentWarning: string;
   publishMode: PublishMode;
   scheduledDate: string;
@@ -97,6 +99,7 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     tags: [],
     selectedCommunityIds: [],
     isSensitive: false,
+    excludeFromPublic: false,
     contentWarning: "",
     publishMode: "now",
     scheduledDate: "",
@@ -175,6 +178,7 @@ const PERSISTED_KEYS: (keyof ComposerState)[] = [
   "tags",
   "selectedCommunityIds",
   "isSensitive",
+  "excludeFromPublic",
   "contentWarning",
   "publishMode",
   "scheduledDate",
@@ -393,6 +397,7 @@ export function useComposerState(
             postId: editPostId,
             reblogComment: s.content.html || null,
             isSensitive: s.isSensitive,
+            excludeFromPublic: s.excludeFromPublic,
             tags: s.tags,
           });
           if (result.success) {
@@ -424,6 +429,7 @@ export function useComposerState(
           postId: editPostId,
           content: updatedContent,
           isSensitive: s.isSensitive,
+          excludeFromPublic: s.excludeFromPublic,
           tags: s.tags,
         });
         if (result.success) {
@@ -592,6 +598,7 @@ export function useComposerState(
         postType: actualPostType,
         content: postContent,
         isSensitive: s.isSensitive,
+        excludeFromPublic: s.excludeFromPublic,
         tags: s.tags,
         publishMode: s.publishMode,
         scheduledFor:

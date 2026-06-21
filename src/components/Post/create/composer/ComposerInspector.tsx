@@ -5,6 +5,7 @@ import {
   IconClock,
   IconCalendar,
   IconAlertTriangle,
+  IconWorld,
 } from "@tabler/icons-react";
 import { TagInput } from "../TagInput";
 import type { ComposerState } from "./useComposerState";
@@ -189,6 +190,55 @@ export function ComposerInspector({
             </p>
           </div>
         </button>
+      </section>
+
+      {/* Public web visibility */}
+      <section>
+        {(() => {
+          // Sensitive posts are NEVER public — the toggle is forced off and locked.
+          const locked = state.isSensitive;
+          const showPublicly = !state.excludeFromPublic && !locked;
+          return (
+            <>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showPublicly}
+                disabled={locked}
+                onClick={() => patch({ excludeFromPublic: !state.excludeFromPublic })}
+                className={`flex items-center gap-3 w-full text-left ${
+                  locked ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <div
+                  className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+                  style={{
+                    backgroundColor: showPublicly
+                      ? "var(--vocl-primary)"
+                      : "var(--vocl-border)",
+                  }}
+                >
+                  <div
+                    className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                      showPublicly ? "left-6" : "left-1"
+                    }`}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5 text-foreground text-sm font-medium">
+                    <IconWorld size={16} />
+                    Show on the public web
+                  </div>
+                  <p className="text-foreground/45 text-xs mt-0.5">
+                    {locked
+                      ? "Sensitive posts are never shown to logged-out visitors."
+                      : "Let logged-out visitors see this post on the be.vocl front page."}
+                  </p>
+                </div>
+              </button>
+            </>
+          );
+        })()}
       </section>
 
       {/* Content warning */}

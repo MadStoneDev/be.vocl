@@ -19,6 +19,8 @@ interface CreatePostInput {
   postType: PostType;
   content: PostContent;
   isSensitive?: boolean;
+  /** Author opted this post out of the public (logged-out) front page / web. */
+  excludeFromPublic?: boolean;
   tags?: string[];
   publishMode?: "now" | "queue" | "schedule";
   scheduledFor?: string;
@@ -55,7 +57,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       return { success: false, error: "Your account is restricted from posting" };
     }
 
-    const { postType, content, isSensitive, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
+    const { postType, content, isSensitive, excludeFromPublic, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
 
     // Extract media URLs for moderation
     const mediaUrls = extractMediaUrls(postType, content);
@@ -106,6 +108,10 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     // Auto-tag as sensitive if moderation detected nudity/gore (even if user didn't mark it)
     const finalIsSensitive = isSensitive || autoSensitive;
 
+    // Hard rule: sensitive/NSFW content is NEVER shown to logged-out visitors,
+    // regardless of the author's choice. Otherwise honour the per-post opt-out.
+    const finalExcludeFromPublic = finalIsSensitive ? true : excludeFromPublic ?? false;
+
     // Determine thread_position if appending to an existing thread
     let threadPosition: number | null = null;
     if (threadId) {
@@ -126,6 +132,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         post_type: postType,
         content: content,
         is_sensitive: finalIsSensitive,
+        exclude_from_public: finalExcludeFromPublic,
         status,
         queue_position: queuePosition,
         scheduled_for: scheduledFor || null,
@@ -314,6 +321,8 @@ interface UpdatePostInput {
   content?: PostContent;
   reblogComment?: string | null;
   isSensitive?: boolean;
+  /** Author opted this post out of the public (logged-out) front page / web. */
+  excludeFromPublic?: boolean;
   tags?: string[];
 }
 
@@ -328,7 +337,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
       return { success: false, error: "Unauthorized" };
     }
 
-    const { postId, content, reblogComment, isSensitive, tags } = input;
+    const { postId, content, reblogComment, isSensitive, excludeFromPublic, tags } = input;
 
     // Verify ownership
     const { data: existingPost } = await (supabase as any)
@@ -346,6 +355,10 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     if (content !== undefined) updateData.content = content;
     if (reblogComment !== undefined) updateData.reblog_comment_html = reblogComment;
     if (isSensitive !== undefined) updateData.is_sensitive = isSensitive;
+    if (excludeFromPublic !== undefined) updateData.exclude_from_public = excludeFromPublic;
+    // Hard rule: marking a post sensitive forces it off the public web, no matter
+    // what the public-visibility toggle says.
+    if (isSensitive === true) updateData.exclude_from_public = true;
 
     const { error: updateError } = await (supabase as any)
       .from("posts")
@@ -506,6 +519,7 @@ interface PostWithDetails {
   postType: PostType;
   content: any;
   isSensitive: boolean;
+  excludeFromPublic?: boolean;
   isPinned: boolean;
   isOwn: boolean;
   createdAt: string;
@@ -564,6 +578,7 @@ export async function getPostById(postId: string): Promise<{
         post_type,
         content,
         is_sensitive,
+        exclude_from_public,
         is_pinned,
         created_at,
         author:author_id (
@@ -598,6 +613,7 @@ export async function getPostById(postId: string): Promise<{
       postType: post.post_type,
       content: post.content,
       isSensitive: post.is_sensitive,
+      excludeFromPublic: post.exclude_from_public ?? false,
       isPinned: post.is_pinned,
       isOwn: user?.id === post.author_id,
       createdAt: post.created_at,
@@ -649,6 +665,7 @@ export async function getPostsByUser(
         post_type,
         content,
         is_sensitive,
+        exclude_from_public,
         is_pinned,
         created_at,
         author:author_id (
@@ -693,6 +710,7 @@ export async function getPostsByUser(
       postType: post.post_type,
       content: post.content,
       isSensitive: post.is_sensitive,
+      excludeFromPublic: post.exclude_from_public ?? false,
       isPinned: post.is_pinned,
       isOwn: user ? post.author_id === user.id : false,
       createdAt: formatTimeAgo(post.created_at),
@@ -758,6 +776,8 @@ export async function getLikedPosts(
           post_type,
           content,
           is_sensitive,
+          exclude_from_public,
+        exclude_from_public,
           created_at,
           author:author_id (
             username,
@@ -796,6 +816,7 @@ export async function getLikedPosts(
       postType: l.post.post_type,
       content: l.post.content,
       isSensitive: l.post.is_sensitive,
+      excludeFromPublic: l.post.exclude_from_public ?? false,
       isPinned: false,
       isOwn: false,
       createdAt: formatTimeAgo(l.post.created_at),
@@ -870,6 +891,8 @@ export async function getCommentedPosts(
           post_type,
           content,
           is_sensitive,
+          exclude_from_public,
+        exclude_from_public,
           created_at,
           status,
           author:author_id (
@@ -919,6 +942,7 @@ export async function getCommentedPosts(
       postType: c.post.post_type,
       content: c.post.content,
       isSensitive: c.post.is_sensitive,
+      excludeFromPublic: c.post.exclude_from_public ?? false,
       isPinned: false,
       isOwn: false,
       createdAt: formatTimeAgo(c.post.created_at),
@@ -1036,6 +1060,7 @@ export async function getPublicFrontPagePosts(
         post_type,
         content,
         is_sensitive,
+        exclude_from_public,
         created_at,
         thread_id,
         author:author_id (
@@ -1173,6 +1198,7 @@ export async function getFeedPosts(options?: {
         post_type,
         content,
         is_sensitive,
+        exclude_from_public,
         is_pinned,
         created_at,
         original_post_id,
@@ -1290,6 +1316,7 @@ export async function getFeedPosts(options?: {
         postType: post.post_type,
         content: post.content,
         isSensitive: post.is_sensitive,
+        excludeFromPublic: post.exclude_from_public ?? false,
         isPinned: post.is_pinned,
         isOwn: user ? post.author_id === user.id : false,
         isFollowingAuthor: followingSet.has(post.author_id),

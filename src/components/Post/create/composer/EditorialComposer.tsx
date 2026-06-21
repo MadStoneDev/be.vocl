@@ -30,12 +30,14 @@ export interface ExistingPostData {
   postType: string;
   content: any;
   isSensitive: boolean;
+  excludeFromPublic?: boolean;
   tags: Array<{ id: string; name: string }>;
 }
 
 interface UpdatedPostData {
   content: any;
   isSensitive: boolean;
+  excludeFromPublic: boolean;
   tags: Array<{ id: string; name: string }>;
 }
 
@@ -67,6 +69,7 @@ function buildEditInitial(
   const base: Partial<ComposerState> = {
     postType: (post.postType as PostType) || "text",
     isSensitive: post.isSensitive,
+    excludeFromPublic: post.excludeFromPublic ?? false,
     tags: tagsToNames(post.tags),
   };
 
@@ -204,6 +207,8 @@ export function EditorialComposer({
           onEditSuccess?.({
             content: result.updatedContent,
             isSensitive: state.isSensitive,
+            // Mirror the server's hard rule so the in-place UI stays consistent.
+            excludeFromPublic: state.isSensitive ? true : state.excludeFromPublic,
             tags: state.tags.map((name, idx) => ({ id: `temp-${idx}`, name })),
           });
         } else {

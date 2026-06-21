@@ -66,6 +66,7 @@ export interface FeedPost {
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean;
+  excludeFromPublic?: boolean;
   isOwn?: boolean;
   isFollowingAuthor?: boolean;
   isBookmarked?: boolean;
@@ -142,6 +143,7 @@ export function FeedList({
           initialStats={post.stats}
           initialInteractions={post.interactions}
           isSensitive={post.isSensitive}
+          excludeFromPublic={post.excludeFromPublic}
           isOwn={post.isOwn}
           isFollowingAuthor={post.isFollowingAuthor}
           isReblog={post.isReblog}
