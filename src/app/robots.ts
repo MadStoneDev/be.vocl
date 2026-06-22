@@ -25,6 +25,7 @@ export default function robots(): MetadataRoute.Robots {
           "/account-status",
           "/u/",
           "/profile/",
+          "/thread/",
         ],
       },
     ],
