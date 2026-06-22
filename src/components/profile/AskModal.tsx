@@ -104,8 +104,8 @@ export function AskModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-              <IconMessageQuestion size={20} className="text-vocl-accent" />
+            <div className="w-9 h-9 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+              <IconMessageQuestion size={20} className="text-vocl-primary" />
             </div>
             <div>
               <h2 className="font-semibold text-foreground">Ask a question</h2>
@@ -127,7 +127,7 @@ export function AskModal({
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <IconLoader2 size={24} className="animate-spin text-vocl-accent" />
+              <IconLoader2 size={24} className="animate-spin text-vocl-primary" />
             </div>
           ) : !canAsk ? (
             <div className="text-center py-8">
@@ -145,7 +145,7 @@ export function AskModal({
                   placeholder="What would you like to ask?"
                   rows={4}
                   maxLength={500}
-                  className="w-full py-3 px-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent resize-none"
+                  className="w-full py-3 px-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary resize-none"
                 />
                 <div className="mt-1 text-xs text-foreground/40 text-right">
                   {question.length}/500
@@ -157,7 +157,7 @@ export function AskModal({
                 <button
                   type="button"
                   onClick={() => setShowRecorder(true)}
-                  className="flex items-center gap-2 text-sm font-medium text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium text-vocl-primary hover:text-vocl-primary-hover transition-colors"
                 >
                   <IconMicrophone size={18} />
                   Add a voice question
@@ -167,7 +167,7 @@ export function AskModal({
               {(showRecorder || audioUrl) && (
                 <div>
                   <p className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground/70">
-                    <IconMicrophone size={16} className="text-vocl-accent" />
+                    <IconMicrophone size={16} className="text-vocl-primary" />
                     Voice question
                   </p>
                   <VoiceRecorder
@@ -191,7 +191,7 @@ export function AskModal({
                 <label className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer">
                   <div
                     className={`relative w-11 h-6 rounded-full transition-colors ${
-                      isAnonymous ? "bg-vocl-accent" : "bg-vocl-hover-strong"
+                      isAnonymous ? "bg-vocl-primary" : "bg-vocl-hover-strong"
                     }`}
                   >
                     <div
@@ -237,7 +237,7 @@ export function AskModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting || (!question.trim() && !audioUrl)}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

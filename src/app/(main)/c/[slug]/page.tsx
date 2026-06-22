@@ -229,7 +229,7 @@ export default function CommunityPage() {
   if (loading || !community) {
     return (
       <div className="py-12 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -240,7 +240,7 @@ export default function CommunityPage() {
     <MotionConfig reducedMotion="user">
     <div className="pb-6">
       {/* Banner */}
-      <div className="relative h-32 sm:h-44 bg-gradient-to-br from-vocl-accent/30 to-vocl-accent-hover/20">
+      <div className="relative h-32 sm:h-44 bg-gradient-to-br from-vocl-primary/30 to-vocl-primary-hover/20">
         {community.bannerUrl && (
           <Image src={community.bannerUrl} alt="" fill className="object-cover" priority />
         )}
@@ -258,7 +258,7 @@ export default function CommunityPage() {
             {community.iconUrl ? (
               <Image src={community.iconUrl} alt="" width={80} height={80} className="object-cover" />
             ) : (
-              <span className="bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center font-display">
+              <span className="bg-gradient-to-br from-vocl-primary to-vocl-primary-hover w-full h-full flex items-center justify-center font-display">
                 {community.name.charAt(0).toUpperCase()}
               </span>
             )}
@@ -378,7 +378,7 @@ export default function CommunityPage() {
               <motion.div key={post.id} variants={fadeUp}>
                 <div className="flex items-center justify-between mb-1.5">
                   {post.isPinned ? (
-                    <div className="flex items-center gap-1 text-xs text-vocl-accent">
+                    <div className="flex items-center gap-1 text-xs text-vocl-primary">
                       <IconPinFilled size={12} />
                       <span>Pinned</span>
                     </div>

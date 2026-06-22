@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { IconX, IconKeyboard } from "@tabler/icons-react";
 
-const ACTIVE_CLASS = "ring-2 ring-vocl-accent ring-offset-2 ring-offset-background rounded-xl";
+const ACTIVE_CLASS = "ring-2 ring-vocl-primary ring-offset-2 ring-offset-background rounded-xl";
 
 function getPostElements(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>("[data-post-id]"));
@@ -108,7 +108,7 @@ export function KeyboardShortcuts() {
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <IconKeyboard size={20} className="text-vocl-accent" />
+            <IconKeyboard size={20} className="text-vocl-primary" />
             <h2 className="text-lg font-semibold text-foreground">Keyboard shortcuts</h2>
           </div>
           <button

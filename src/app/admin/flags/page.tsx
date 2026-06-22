@@ -190,7 +190,7 @@ export default function AdminFlagsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -202,7 +202,7 @@ export default function AdminFlagsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : flags.length === 0 ? (
         <div className="text-center py-20">
@@ -222,7 +222,7 @@ export default function AdminFlagsPage() {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       !flag.flagger_id
                         ? "bg-amber-500/20 text-amber-500"
-                        : "bg-vocl-accent/20 text-vocl-accent"
+                        : "bg-vocl-primary/20 text-vocl-primary"
                     }`}>
                       {!flag.flagger_id ? (
                         <span className="flex items-center gap-1">
@@ -266,7 +266,7 @@ export default function AdminFlagsPage() {
                     <span>Post by:</span>
                     <Link
                       href={`/@${flag.post.author.username}`}
-                      className="flex items-center gap-1.5 hover:text-vocl-accent"
+                      className="flex items-center gap-1.5 hover:text-vocl-primary"
                     >
                       <div className="w-5 h-5 rounded-full bg-vocl-surface-dark overflow-hidden">
                         {flag.post.author.avatar_url ? (
@@ -316,7 +316,7 @@ export default function AdminFlagsPage() {
                   {flag.status === "pending" && (
                     <button
                       onClick={() => handleClaim(flag.id)}
-                      className="px-4 py-2 bg-vocl-accent text-white rounded-xl text-sm font-medium hover:bg-vocl-accent-hover transition-colors"
+                      className="px-4 py-2 bg-vocl-primary text-white rounded-xl text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
                     >
                       Claim
                     </button>
@@ -368,7 +368,7 @@ export default function AdminFlagsPage() {
                     <select
                       value={escalationTarget || ""}
                       onChange={(e) => setEscalationTarget(Number(e.target.value))}
-                      className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+                      className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
                     >
                       <option value="">Select role level...</option>
                       {escalationTargets.map((role) => (
@@ -388,7 +388,7 @@ export default function AdminFlagsPage() {
                       onChange={(e) => setEscalationReason(e.target.value)}
                       placeholder="Explain why this needs higher-level review..."
                       rows={3}
-                      className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                      className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                     />
                   </div>
 
@@ -449,7 +449,7 @@ export default function AdminFlagsPage() {
                         onChange={(e) => setResolutionNotes(e.target.value)}
                         placeholder="Add notes about this decision..."
                         rows={3}
-                        className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                        className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                       />
                     </div>
                   </div>

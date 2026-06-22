@@ -162,8 +162,8 @@ export default function QueuePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-            <IconClock size={24} className="text-vocl-accent" />
+          <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+            <IconClock size={24} className="text-vocl-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Queue</h1>
@@ -180,7 +180,7 @@ export default function QueuePage() {
             onClick={() => setViewMode("list")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               viewMode === "list"
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "text-foreground/50 hover:text-foreground"
             }`}
           >
@@ -192,7 +192,7 @@ export default function QueuePage() {
             onClick={() => setViewMode("calendar")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               viewMode === "calendar"
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "text-foreground/50 hover:text-foreground"
             }`}
           >
@@ -228,7 +228,7 @@ export default function QueuePage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : viewMode === "calendar" ? (
         <QueueCalendar

@@ -38,7 +38,7 @@ export default function AdminEmailPage() {
     <div className="py-6">
       <title>Admin — Email | be.vocl</title>
       <div className="flex items-center gap-3 mb-6">
-        <IconMail size={28} className="text-vocl-accent" />
+        <IconMail size={28} className="text-vocl-primary" />
         <h1 className="text-2xl font-bold text-foreground">Email Management</h1>
       </div>
 
@@ -55,7 +55,7 @@ export default function AdminEmailPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ${
               activeTab === tab.id
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "text-foreground/70 hover:bg-white/5"
             }`}
           >
@@ -178,7 +178,7 @@ function ComposeTab() {
               onClick={() => setTemplateType("announcement")}
               className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                 templateType === "announcement"
-                  ? "bg-vocl-accent text-white"
+                  ? "bg-vocl-primary text-white"
                   : "bg-white/5 text-foreground/70 hover:bg-white/10"
               }`}
             >
@@ -188,7 +188,7 @@ function ComposeTab() {
               onClick={() => setTemplateType("founder_message")}
               className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                 templateType === "founder_message"
-                  ? "bg-vocl-accent text-white"
+                  ? "bg-vocl-primary text-white"
                   : "bg-white/5 text-foreground/70 hover:bg-white/10"
               }`}
             >
@@ -208,7 +208,7 @@ function ComposeTab() {
                 onClick={() => setRecipientType("all")}
                 className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                   recipientType === "all"
-                    ? "bg-vocl-accent text-white"
+                    ? "bg-vocl-primary text-white"
                     : "bg-white/5 text-foreground/70 hover:bg-white/10"
                 }`}
               >
@@ -218,7 +218,7 @@ function ComposeTab() {
                 onClick={() => setRecipientType("tags")}
                 className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                   recipientType === "tags"
-                    ? "bg-vocl-accent text-white"
+                    ? "bg-vocl-primary text-white"
                     : "bg-white/5 text-foreground/70 hover:bg-white/10"
                 }`}
               >
@@ -279,7 +279,7 @@ function ComposeTab() {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Enter email subject..."
-            className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+            className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
           />
         </div>
 
@@ -293,7 +293,7 @@ function ComposeTab() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your message here..."
             rows={8}
-            className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none"
+            className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
           />
           <p className="text-xs text-foreground/40 mt-1">
             Use line breaks to create paragraphs
@@ -311,7 +311,7 @@ function ComposeTab() {
               value={ctaText}
               onChange={(e) => setCtaText(e.target.value)}
               placeholder="e.g., Learn More"
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
             />
           </div>
           <div>
@@ -323,7 +323,7 @@ function ComposeTab() {
               value={ctaUrl}
               onChange={(e) => setCtaUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
             />
           </div>
         </div>
@@ -341,7 +341,7 @@ function ComposeTab() {
                   value={founderName}
                   onChange={(e) => setFounderName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                  className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
                 />
               </div>
               <div>
@@ -353,7 +353,7 @@ function ComposeTab() {
                   value={founderTitle}
                   onChange={(e) => setFounderTitle(e.target.value)}
                   placeholder="e.g., Founder, be.vocl"
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                  className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
                 />
               </div>
             </div>
@@ -366,7 +366,7 @@ function ComposeTab() {
                 onChange={(e) => setSignature(e.target.value)}
                 placeholder="e.g., Cheers,&#10;John"
                 rows={2}
-                className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none"
+                className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
               />
             </div>
           </>
@@ -384,7 +384,7 @@ function ComposeTab() {
           <button
             onClick={handleSend}
             disabled={isSending || !subject || !content || recipientCount === 0}
-            className="flex-1 py-2.5 rounded-lg bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSending ? (
               <IconLoader2 size={18} className="animate-spin" />
@@ -556,7 +556,7 @@ function TemplatesTab() {
             onClick={() => setSelectedTemplate(template.id)}
             className={`w-full text-left p-3 rounded-lg transition-colors ${
               selectedTemplate === template.id
-                ? "bg-vocl-accent/20 border border-vocl-accent/40"
+                ? "bg-vocl-primary/20 border border-vocl-primary/40"
                 : "bg-white/5 hover:bg-white/10"
             }`}
           >
@@ -975,7 +975,7 @@ function TagsTab() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -986,7 +986,7 @@ function TagsTab() {
         <h3 className="text-lg font-semibold text-foreground">User Tags</h3>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
         >
           {showCreateForm ? <IconX size={18} /> : <IconPlus size={18} />}
           {showCreateForm ? "Cancel" : "Create Tag"}
@@ -1005,7 +1005,7 @@ function TagsTab() {
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               placeholder="e.g., beta-tester"
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
             />
           </div>
           <div>
@@ -1017,7 +1017,7 @@ function TagsTab() {
               value={newTagDescription}
               onChange={(e) => setNewTagDescription(e.target.value)}
               placeholder="Brief description..."
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
             />
           </div>
           <div>
@@ -1040,7 +1040,7 @@ function TagsTab() {
           <button
             onClick={handleCreateTag}
             disabled={isCreating}
-            className="w-full py-2.5 rounded-lg bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-lg bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isCreating ? (
               <IconLoader2 size={18} className="animate-spin" />
@@ -1129,7 +1129,7 @@ function HistoryTab() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }

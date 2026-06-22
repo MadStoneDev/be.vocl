@@ -87,7 +87,7 @@ export default function NewCommunityPage() {
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="e.g. Photography Enthusiasts"
-            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm"
             required
             minLength={2}
             maxLength={60}
@@ -98,7 +98,7 @@ export default function NewCommunityPage() {
           <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-2">
             URL (slug)
           </label>
-          <div className="flex items-stretch rounded-xl bg-vocl-surface-dark border border-vocl-border focus-within:ring-2 focus-within:ring-vocl-accent focus-within:border-transparent overflow-hidden">
+          <div className="flex items-stretch rounded-xl bg-vocl-surface-dark border border-vocl-border focus-within:ring-2 focus-within:ring-vocl-primary focus-within:border-transparent overflow-hidden">
             <span className="px-3 py-2.5 text-sm text-foreground/40 bg-vocl-hover border-r border-vocl-border">
               /c/
             </span>
@@ -128,7 +128,7 @@ export default function NewCommunityPage() {
             placeholder="What is this community about?"
             rows={3}
             maxLength={500}
-            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm resize-none"
+            className="w-full px-3 py-2.5 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm resize-none"
           />
         </div>
 

@@ -156,7 +156,7 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
       )}
       {state === "uploading" && (
         <>
-          <IconLoader2 size={14} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={14} className="animate-spin text-vocl-primary" />
           <span className="text-xs text-neutral-600">Uploading…</span>
         </>
       )}

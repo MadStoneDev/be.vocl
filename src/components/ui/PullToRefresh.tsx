@@ -117,11 +117,11 @@ export function PullToRefresh({ onRefresh, children, disabled }: PullToRefreshPr
       >
         <div className="mt-2 w-9 h-9 rounded-full bg-vocl-surface border border-vocl-border shadow-lg flex items-center justify-center">
           {refreshing ? (
-            <IconLoader2 size={18} className="animate-spin text-vocl-accent" />
+            <IconLoader2 size={18} className="animate-spin text-vocl-primary" />
           ) : (
             <IconArrowDown
               size={18}
-              className={`transition-transform ${triggered ? "rotate-180 text-vocl-accent" : "text-foreground/60"}`}
+              className={`transition-transform ${triggered ? "rotate-180 text-vocl-primary" : "text-foreground/60"}`}
             />
           )}
         </div>

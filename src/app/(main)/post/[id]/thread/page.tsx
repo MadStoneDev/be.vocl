@@ -83,8 +83,8 @@ function ThreadEntry({ entry, isLast }: { entry: ThreadEntry; isLast: boolean })
               <span>{formatRelativeTime(entry.createdAt)}</span>
               {entry.depth > 0 && (
                 <>
-                  <IconArrowForward size={12} className="text-vocl-accent/60" />
-                  <span className="text-vocl-accent/60">echoed</span>
+                  <IconArrowForward size={12} className="text-vocl-primary/60" />
+                  <span className="text-vocl-primary/60">echoed</span>
                 </>
               )}
             </div>
@@ -94,7 +94,7 @@ function ThreadEntry({ entry, isLast }: { entry: ThreadEntry; isLast: boolean })
         {/* Reblog comment */}
         {entry.reblogComment && (
           <div
-            className="mb-3 text-sm text-foreground/80 border-l-2 border-vocl-accent/30 pl-3"
+            className="mb-3 text-sm text-foreground/80 border-l-2 border-vocl-primary/30 pl-3"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(entry.reblogComment) }}
           />
         )}
@@ -182,7 +182,7 @@ export default function ReblogThreadPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <IconLoader2 size={40} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={40} className="animate-spin text-vocl-primary" />
       </div>
     );
   }

@@ -194,7 +194,7 @@ function PostHeader({
           <div className="flex items-center gap-1">
             <Link
               href={`/profile/${author.username}`}
-              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-accent transition-colors"
+              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-primary transition-colors"
             >
               {author.username}
             </Link>
@@ -551,13 +551,13 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
               maxLength={2000}
-              className={`flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-accent"}`}
+              className={`flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-primary"}`}
             />
             {postId && (
               <button
                 type="button"
                 onClick={() => setRecordingMode(true)}
-                className="p-2 rounded-full bg-neutral-100 text-neutral-600 hover:bg-vocl-accent/10 hover:text-vocl-accent transition-colors"
+                className="p-2 rounded-full bg-neutral-100 text-neutral-600 hover:bg-vocl-primary/10 hover:text-vocl-primary transition-colors"
                 aria-label="Record voice reply"
               >
                 <IconMicrophone size={18} />
@@ -586,8 +586,8 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
           </div>
         )}
         {recordedAudioUrl && (
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-vocl-accent/10 rounded-full">
-            <IconMicrophone size={16} className="text-vocl-accent" />
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-vocl-primary/10 rounded-full">
+            <IconMicrophone size={16} className="text-vocl-primary" />
             <span className="text-xs text-neutral-700">
               Voice reply ({recordedDuration}s)
             </span>
@@ -644,7 +644,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/profile/${comment.author.username}`}
-                    className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors"
+                    className="font-medium text-sm text-neutral-800 hover:text-vocl-primary transition-colors"
                   >
                     {comment.author.username}
                   </Link>
@@ -692,7 +692,7 @@ function CommentAudioPlayer({ src, duration }: { src: string; duration?: number 
             setPlaying(true);
           }
         }}
-        className="w-7 h-7 rounded-full bg-vocl-accent text-white flex items-center justify-center"
+        className="w-7 h-7 rounded-full bg-vocl-primary text-white flex items-center justify-center"
       >
         {playing ? <IconPlayerPause size={14} /> : <IconPlayerPlay size={14} />}
       </button>
@@ -700,7 +700,7 @@ function CommentAudioPlayer({ src, duration }: { src: string; duration?: number 
         {duration ? `${duration}s` : "Voice"}
       </span>
       <div className="w-24 h-1 rounded-full bg-neutral-300 overflow-hidden">
-        <div className="h-full bg-vocl-accent" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-vocl-primary" style={{ width: `${progress}%` }} />
       </div>
       <audio
         ref={audioRef}
@@ -742,7 +742,7 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
             <Avatar src={user.avatarUrl} username={user.username} size="md" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors">
+                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-primary transition-colors">
                   {user.displayName || user.username}
                 </span>
                 {user.role !== undefined && (
@@ -1146,7 +1146,7 @@ export const Post = memo(function Post({
                   <div className="flex items-center gap-1">
                     <Link
                       href={`/profile/${originalAuthor.username}`}
-                      className="font-display text-base font-normal text-white hover:text-vocl-accent transition-colors"
+                      className="font-display text-base font-normal text-white hover:text-vocl-primary transition-colors"
                     >
                       {originalAuthor.username}
                     </Link>
@@ -1226,7 +1226,7 @@ export const Post = memo(function Post({
                 </p>
                 <button
                   onClick={() => setIsCWDismissed(true)}
-                  className="px-5 py-2 rounded-full bg-vocl-accent text-neutral-900 font-medium text-sm hover:brightness-110 transition-all"
+                  className="px-5 py-2 rounded-full bg-vocl-primary text-neutral-900 font-medium text-sm hover:brightness-110 transition-all"
                 >
                   Show Content
                 </button>
@@ -1453,14 +1453,14 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
               </h2>
             )}
             <p className="text-xs text-neutral-500 inline-flex items-center gap-1.5">
-              <span className="font-medium text-vocl-accent">Essay</span>
+              <span className="font-medium text-vocl-primary">Essay</span>
               {readingTimeMinutes ? <span>· {readingTimeMinutes} min read</span> : null}
             </p>
           </div>
         )}
         {html ? (
           <div
-            className="font-serif text-base sm:text-lg leading-relaxed text-neutral-800 prose prose-sm sm:prose-base max-w-none prose-p:my-3 prose-headings:font-serif [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-accent [&_blockquote]:pl-4 [&_blockquote]:italic [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+            className="font-serif text-base sm:text-lg leading-relaxed text-neutral-800 prose prose-sm sm:prose-base max-w-none prose-p:my-3 prose-headings:font-serif [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
           />
         ) : (

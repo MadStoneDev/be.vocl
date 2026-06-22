@@ -28,10 +28,10 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
   };
 
   return (
-    <div className="bg-gradient-to-r from-vocl-accent/10 to-amber-500/10 border border-vocl-accent/20 rounded-2xl p-5 mb-6">
+    <div className="bg-gradient-to-r from-vocl-primary/10 to-amber-500/10 border border-vocl-primary/20 rounded-2xl p-5 mb-6">
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-          <IconShieldCheck size={24} className="text-vocl-accent" />
+        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+          <IconShieldCheck size={24} className="text-vocl-primary" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -65,7 +65,7 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
                 <a
                   href="/terms"
                   target="_blank"
-                  className="text-vocl-accent hover:underline"
+                  className="text-vocl-primary hover:underline"
                 >
                   Terms of Service
                 </a>
@@ -80,7 +80,7 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
           <button
             onClick={handleAccept}
             disabled={isAccepting}
-            className="px-6 py-2.5 bg-vocl-accent text-white rounded-xl font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 bg-vocl-primary text-white rounded-xl font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isAccepting ? "Accepting..." : "I Understand & Agree"}
           </button>

@@ -150,14 +150,14 @@ export default async function ArchivePage({ params }: Props) {
           {profile.avatar_url ? (
             <Image src={profile.avatar_url} alt={profile.username} fill className="object-cover" />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold text-xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold text-xl">
               {profile.username.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <IconCalendar size={22} className="text-vocl-accent" />
+            <IconCalendar size={22} className="text-vocl-primary" />
             Archive
           </h1>
           <p className="text-sm text-foreground/60">
@@ -188,7 +188,7 @@ export default async function ArchivePage({ params }: Props) {
                     <Link
                       key={post.id}
                       href={`/post/${post.id}`}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-vocl-surface-dark border border-white/5 hover:border-vocl-accent/40 transition-colors group"
+                      className="relative aspect-square rounded-lg overflow-hidden bg-vocl-surface-dark border border-white/5 hover:border-vocl-primary/40 transition-colors group"
                     >
                       {thumb ? (
                         <Image

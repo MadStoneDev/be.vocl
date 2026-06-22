@@ -66,7 +66,7 @@ export function FeaturedCarousel({ items }: { items: FeaturedItem[] }) {
           )}
 
           {/* Center stage */}
-          <div className="relative aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-accent/30">
+          <div className="relative aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-primary/30">
             <AnimatePresence initial={false} custom={dir} mode="popLayout">
               <motion.article
                 key={current.slug}
@@ -179,7 +179,7 @@ function SidePeek({
       onClick={onClick}
       aria-label={side === "left" ? "Previous story" : "Next story"}
       tabIndex={-1}
-      className={`group absolute top-1/2 hidden aspect-[3/4] w-[15%] max-w-[140px] -translate-y-1/2 overflow-hidden rounded-lg opacity-50 transition-all hover:opacity-80 lg:block bg-gradient-to-br from-vocl-primary/40 to-vocl-accent/30 ${
+      className={`group absolute top-1/2 hidden aspect-[3/4] w-[15%] max-w-[140px] -translate-y-1/2 overflow-hidden rounded-lg opacity-50 transition-all hover:opacity-80 lg:block bg-gradient-to-br from-vocl-primary/40 to-vocl-primary/30 ${
         side === "left" ? "left-0 -translate-x-[55%]" : "right-0 translate-x-[55%]"
       }`}
     >

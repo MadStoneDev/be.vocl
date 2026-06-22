@@ -105,7 +105,7 @@ export function PollContent({ postId, content }: PollContentProps) {
                   : "cursor-pointer hover:bg-neutral-200"
               } ${
                 isSelected && !hasVoted
-                  ? "ring-2 ring-vocl-accent bg-vocl-accent/10"
+                  ? "ring-2 ring-vocl-primary bg-vocl-primary/10"
                   : "bg-white"
               }`}
             >
@@ -113,7 +113,7 @@ export function PollContent({ postId, content }: PollContentProps) {
               {showResults && (
                 <div
                   className={`absolute inset-y-0 left-0 transition-all duration-500 ${
-                    isWinner ? "bg-vocl-accent/20" : "bg-neutral-200"
+                    isWinner ? "bg-vocl-primary/20" : "bg-neutral-200"
                   }`}
                   style={{ width: `${percentage}%` }}
                 />
@@ -126,7 +126,7 @@ export function PollContent({ postId, content }: PollContentProps) {
                   <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                       isSelected
-                        ? "border-vocl-accent bg-vocl-accent"
+                        ? "border-vocl-primary bg-vocl-primary"
                         : "border-neutral-300"
                     }`}
                   >
@@ -149,7 +149,7 @@ export function PollContent({ postId, content }: PollContentProps) {
                     <span className="text-neutral-500">{voteCount}</span>
                     <span
                       className={`font-semibold ${
-                        isWinner ? "text-vocl-accent" : "text-neutral-600"
+                        isWinner ? "text-vocl-primary" : "text-neutral-600"
                       }`}
                     >
                       {percentage}%
@@ -168,7 +168,7 @@ export function PollContent({ postId, content }: PollContentProps) {
           <button
             onClick={handleVote}
             disabled={selectedOption === null || isLoading}
-            className="px-4 py-2 bg-vocl-accent text-white rounded-full font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-accent/90 transition-colors"
+            className="px-4 py-2 bg-vocl-primary text-white rounded-full font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-primary/90 transition-colors"
           >
             {isLoading ? "Voting..." : "Vote"}
           </button>

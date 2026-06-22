@@ -185,9 +185,9 @@ export default function SecuritySettingsPage() {
         {/* 2FA Enrolled State */}
         {enrolledFactor && !enrolling && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-vocl-accent/10 border border-vocl-accent/20 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-                <IconCheck className="w-5 h-5 text-vocl-accent" />
+            <div className="p-4 rounded-xl bg-vocl-primary/10 border border-vocl-primary/20 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+                <IconCheck className="w-5 h-5 text-vocl-primary" />
               </div>
               <div className="flex-1">
                 <h3 className="font-medium text-foreground">
@@ -358,7 +358,7 @@ export default function SecuritySettingsPage() {
                   setVerifyCode(e.target.value.replace(/\D/g, ""))
                 }
                 placeholder="000000"
-                className="w-full py-3 px-4 rounded-xl bg-vocl-hover border border-vocl-border text-foreground text-center text-2xl font-mono tracking-[0.5em] placeholder:text-foreground/20 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all"
+                className="w-full py-3 px-4 rounded-xl bg-vocl-hover border border-vocl-border text-foreground text-center text-2xl font-mono tracking-[0.5em] placeholder:text-foreground/20 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all"
                 autoFocus
               />
 

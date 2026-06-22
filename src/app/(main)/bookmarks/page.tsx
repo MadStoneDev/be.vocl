@@ -206,8 +206,8 @@ export default function BookmarksPage() {
     <div className="max-w-xl mx-auto py-2 sm:py-3 px-2 sm:px-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-          <IconBookmark size={24} className="text-vocl-accent" />
+        <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+          <IconBookmark size={24} className="text-vocl-primary" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">Bookmarks</h1>
       </div>
@@ -219,7 +219,7 @@ export default function BookmarksPage() {
           onClick={() => setActiveCollection(null)}
           className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             activeCollection === null
-              ? "bg-vocl-accent text-white shadow-lg"
+              ? "bg-vocl-primary text-white shadow-lg"
               : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
           }`}
         >
@@ -232,7 +232,7 @@ export default function BookmarksPage() {
           onClick={() => setActiveCollection("uncollected")}
           className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             activeCollection === "uncollected"
-              ? "bg-vocl-accent text-white shadow-lg"
+              ? "bg-vocl-primary text-white shadow-lg"
               : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
           }`}
         >
@@ -256,7 +256,7 @@ export default function BookmarksPage() {
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   maxLength={50}
-                  className="w-28 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border border-vocl-accent text-foreground focus:outline-none"
+                  className="w-28 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border border-vocl-primary text-foreground focus:outline-none"
                   onBlur={() => {
                     setRenamingId(null);
                     setRenameValue("");
@@ -271,7 +271,7 @@ export default function BookmarksPage() {
                 <button
                   type="submit"
                   onMouseDown={(e) => e.preventDefault()}
-                  className="p-1 rounded-full bg-vocl-accent text-white"
+                  className="p-1 rounded-full bg-vocl-primary text-white"
                 >
                   <IconCheck size={14} />
                 </button>
@@ -281,7 +281,7 @@ export default function BookmarksPage() {
                 onClick={() => setActiveCollection(col.id)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCollection === col.id
-                    ? "bg-vocl-accent text-white shadow-lg"
+                    ? "bg-vocl-primary text-white shadow-lg"
                     : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
                 }`}
               >
@@ -369,13 +369,13 @@ export default function BookmarksPage() {
               placeholder="Collection name"
               maxLength={50}
               className={`w-36 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border text-foreground placeholder:text-foreground/30 focus:outline-none ${
-                createError ? "border-vocl-like" : "border-vocl-accent"
+                createError ? "border-vocl-like" : "border-vocl-primary"
               }`}
             />
             <button
               type="submit"
               disabled={isSubmitting || !newName.trim()}
-              className="p-1.5 rounded-full bg-vocl-accent text-white disabled:opacity-50 transition-opacity"
+              className="p-1.5 rounded-full bg-vocl-primary text-white disabled:opacity-50 transition-opacity"
             >
               {isSubmitting ? (
                 <IconLoader2 size={14} className="animate-spin" />
@@ -465,7 +465,7 @@ export default function BookmarksPage() {
                           onClick={() => handleMoveBookmark(post.id, null)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
                             !post.collectionId
-                              ? "text-vocl-accent bg-vocl-accent/5"
+                              ? "text-vocl-primary bg-vocl-primary/5"
                               : "text-foreground/80 hover:bg-vocl-hover"
                           }`}
                         >
@@ -483,7 +483,7 @@ export default function BookmarksPage() {
                             }
                             className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
                               post.collectionId === col.id
-                                ? "text-vocl-accent bg-vocl-accent/5"
+                                ? "text-vocl-primary bg-vocl-primary/5"
                                 : "text-foreground/80 hover:bg-vocl-hover"
                             }`}
                           >
@@ -585,7 +585,7 @@ export default function BookmarksPage() {
             <div className="flex items-center justify-center py-8">
               <IconLoader2
                 size={32}
-                className="animate-spin text-vocl-accent"
+                className="animate-spin text-vocl-primary"
               />
             </div>
           )}

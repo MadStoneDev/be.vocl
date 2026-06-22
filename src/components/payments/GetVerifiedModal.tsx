@@ -22,22 +22,22 @@ interface GetVerifiedModalProps {
 
 const BENEFITS = [
   {
-    icon: <IconRosetteDiscountCheckFilled size={20} className="text-vocl-accent" />,
+    icon: <IconRosetteDiscountCheckFilled size={20} className="text-vocl-primary" />,
     title: "Verified Badge",
     description: "Stand out with a badge next to your name",
   },
   {
-    icon: <IconShieldCheck size={20} className="text-vocl-accent" />,
+    icon: <IconShieldCheck size={20} className="text-vocl-primary" />,
     title: "Authenticity",
     description: "Let others know you're the real deal",
   },
   {
-    icon: <IconStar size={20} className="text-vocl-accent" />,
+    icon: <IconStar size={20} className="text-vocl-primary" />,
     title: "Priority Support",
     description: "Get faster responses from our team",
   },
   {
-    icon: <IconTrendingUp size={20} className="text-vocl-accent" />,
+    icon: <IconTrendingUp size={20} className="text-vocl-primary" />,
     title: "Increased Visibility",
     description: "Your content may get boosted in discovery",
   },
@@ -122,7 +122,7 @@ export function GetVerifiedModal({
           <div className="flex items-center gap-2">
             <IconRosetteDiscountCheckFilled
               size={20}
-              className="text-vocl-accent"
+              className="text-vocl-primary"
             />
             <h2 className="font-semibold text-foreground">Get Verified</h2>
           </div>
@@ -137,10 +137,10 @@ export function GetVerifiedModal({
 
         {isComplete ? (
           <div className="p-8 text-center">
-            <div className="w-20 h-20 mx-auto rounded-full bg-vocl-accent/10 flex items-center justify-center mb-4">
+            <div className="w-20 h-20 mx-auto rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
               <IconRosetteDiscountCheckFilled
                 size={48}
-                className="text-vocl-accent"
+                className="text-vocl-primary"
               />
             </div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -153,11 +153,11 @@ export function GetVerifiedModal({
         ) : (
           <>
             {/* Hero section */}
-            <div className="p-6 text-center bg-gradient-to-b from-vocl-accent/10 to-transparent">
-              <div className="w-16 h-16 mx-auto rounded-full bg-vocl-accent/20 flex items-center justify-center mb-4">
+            <div className="p-6 text-center bg-gradient-to-b from-vocl-primary/10 to-transparent">
+              <div className="w-16 h-16 mx-auto rounded-full bg-vocl-primary/20 flex items-center justify-center mb-4">
                 <IconRosetteDiscountCheckFilled
                   size={40}
-                  className="text-vocl-accent"
+                  className="text-vocl-primary"
                 />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
@@ -193,7 +193,7 @@ export function GetVerifiedModal({
               <button
                 onClick={handleVerify}
                 disabled={isProcessing}
-                className="w-full py-3 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>

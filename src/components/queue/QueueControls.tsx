@@ -70,7 +70,7 @@ export function QueueControls({
             disabled={isUpdating}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
               settings.paused
-                ? "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                ? "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
                 : "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30"
             }`}
           >
@@ -149,7 +149,7 @@ export function QueueControls({
                   postsPerDay: parseInt(e.target.value) || 1,
                 }))
               }
-              className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent"
+              className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
             />
           </div>
 
@@ -168,7 +168,7 @@ export function QueueControls({
                     windowStart: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent"
+                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
               />
             </div>
             <div>
@@ -184,7 +184,7 @@ export function QueueControls({
                     windowEnd: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent"
+                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
               />
             </div>
           </div>
@@ -200,7 +200,7 @@ export function QueueControls({
               type="button"
               onClick={handleSaveSettings}
               disabled={isUpdating}
-              className="px-4 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isUpdating && <IconLoader2 size={16} className="animate-spin" />}
               Save settings

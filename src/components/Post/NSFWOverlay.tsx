@@ -64,7 +64,7 @@ export function NSFWOverlay({ onReveal }: NSFWOverlayProps) {
           onClick={onReveal}
           className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${
             isHovering
-              ? 'bg-vocl-accent text-white shadow-lg shadow-vocl-accent/30 scale-105'
+              ? 'bg-vocl-primary text-white shadow-lg shadow-vocl-primary/30 scale-105'
               : 'bg-white/10 text-foreground hover:bg-white/20'
           }`}
         >

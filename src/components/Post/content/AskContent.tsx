@@ -50,7 +50,7 @@ export function AskContent({ content }: AskContentProps) {
               ) : content.asker_username ? (
                 <Link
                   href={`/profile/${content.asker_username}`}
-                  className="text-sm font-medium text-neutral-700 hover:text-vocl-accent transition-colors"
+                  className="text-sm font-medium text-neutral-700 hover:text-vocl-primary transition-colors"
                 >
                   {content.asker_username} asked:
                 </Link>

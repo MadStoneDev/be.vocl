@@ -91,7 +91,7 @@ export default function TipsPage() {
             onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${
               tab === t
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
             }`}
           >
@@ -102,7 +102,7 @@ export default function TipsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <IconLoader2 size={28} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={28} className="animate-spin text-vocl-primary" />
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-xl bg-vocl-hover border border-vocl-border p-10 text-center">
@@ -135,7 +135,7 @@ export default function TipsPage() {
                   {avatarUrl ? (
                     <Image src={avatarUrl} alt={username} fill className="object-cover" />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold">
+                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
                       {username.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -147,7 +147,7 @@ export default function TipsPage() {
                     </span>
                     <Link
                       href={`/profile/${username}`}
-                      className="font-medium text-foreground hover:text-vocl-accent truncate"
+                      className="font-medium text-foreground hover:text-vocl-primary truncate"
                     >
                       @{username}
                     </Link>

@@ -167,8 +167,8 @@ export function PostMenu({
         >
           {copied ? (
             <>
-              <IconCheck size={18} className="text-vocl-accent" />
-              <span className="text-vocl-accent">Link copied!</span>
+              <IconCheck size={18} className="text-vocl-primary" />
+              <span className="text-vocl-primary">Link copied!</span>
             </>
           ) : (
             <>
@@ -186,8 +186,8 @@ export function PostMenu({
         >
           {embedCopied ? (
             <>
-              <IconCheck size={18} className="text-vocl-accent" />
-              <span className="text-vocl-accent">Embed code copied!</span>
+              <IconCheck size={18} className="text-vocl-primary" />
+              <span className="text-vocl-primary">Embed code copied!</span>
             </>
           ) : (
             <>
@@ -223,7 +223,7 @@ export function PostMenu({
         >
           {isBookmarked ? (
             <>
-              <IconBookmarkFilled size={18} className="text-vocl-accent" />
+              <IconBookmarkFilled size={18} className="text-vocl-primary" />
               <span>Remove bookmark</span>
             </>
           ) : (
@@ -247,7 +247,7 @@ export function PostMenu({
             >
               {isPinned ? (
                 <>
-                  <IconPinFilled size={18} className="text-vocl-accent" />
+                  <IconPinFilled size={18} className="text-vocl-primary" />
                   <span>Unpin from profile</span>
                 </>
               ) : (
@@ -269,7 +269,7 @@ export function PostMenu({
             >
               {isNotificationMuted ? (
                 <>
-                  <IconBell size={18} className="text-vocl-accent" />
+                  <IconBell size={18} className="text-vocl-primary" />
                   <span>Unmute notifications</span>
                 </>
               ) : (

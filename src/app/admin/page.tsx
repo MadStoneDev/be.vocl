@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -112,8 +112,8 @@ export default function AdminDashboard() {
       value: stats?.activeInviteCodes || 0,
       icon: IconTicket,
       href: "/admin/invites",
-      color: "text-vocl-accent",
-      bgColor: "bg-vocl-accent/10",
+      color: "text-vocl-primary",
+      bgColor: "bg-vocl-primary/10",
     },
   ];
 
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             href="/admin/users"
             className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
-            <IconUsers size={20} className="text-vocl-accent" />
+            <IconUsers size={20} className="text-vocl-primary" />
             <span className="text-foreground">Manage users</span>
           </Link>
           <Link

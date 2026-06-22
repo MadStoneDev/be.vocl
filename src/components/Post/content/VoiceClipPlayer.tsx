@@ -68,7 +68,7 @@ export function VoiceClipPlayer({
         type="button"
         onClick={toggle}
         aria-label={playing ? "Pause voice clip" : "Play voice clip"}
-        className="shrink-0 w-8 h-8 rounded-full bg-vocl-accent text-white flex items-center justify-center hover:bg-vocl-accent-hover transition-colors"
+        className="shrink-0 w-8 h-8 rounded-full bg-vocl-primary text-white flex items-center justify-center hover:bg-vocl-primary-hover transition-colors"
       >
         {playing ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
       </button>
@@ -90,7 +90,7 @@ export function VoiceClipPlayer({
         }`}
       >
         <div
-          className="h-full bg-vocl-accent transition-[width] motion-reduce:transition-none"
+          className="h-full bg-vocl-primary transition-[width] motion-reduce:transition-none"
           style={{ width: `${progress}%` }}
         />
       </div>

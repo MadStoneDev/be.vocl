@@ -191,7 +191,7 @@ export default function PrivacySettingsPage() {
   if (isLoading) {
     return (
       <div className="py-6 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -231,7 +231,7 @@ export default function PrivacySettingsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "bg-vocl-hover text-foreground/60 hover:bg-vocl-hover-strong"
             }`}
           >
@@ -518,8 +518,8 @@ export default function PrivacySettingsPage() {
               <div className="space-y-2">
                 {mutedTags.map((tag) => (
                   <div key={tag.id} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-hover">
-                    <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-                      <IconHash size={18} className="text-vocl-accent" />
+                    <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+                      <IconHash size={18} className="text-vocl-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground text-sm truncate">
@@ -577,7 +577,7 @@ function ToggleSetting({
         onClick={() => onChange(!checked)}
         disabled={disabled}
         className={`relative w-11 h-6 rounded-full transition-colors ${
-          checked ? "bg-vocl-accent" : "bg-vocl-hover-strong"
+          checked ? "bg-vocl-primary" : "bg-vocl-hover-strong"
         } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         <span
@@ -611,7 +611,7 @@ function UserListItem({
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
             <span className="text-sm font-bold text-white">
               {user.username.charAt(0).toUpperCase()}
             </span>

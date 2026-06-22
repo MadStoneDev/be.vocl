@@ -6,9 +6,9 @@ const HEX_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
 /**
  * Scopes a per-profile accent color to its children by overriding the
- * --vocl-primary and --vocl-accent CSS custom properties. Buttons, links, and
- * active states within the profile pick up the blog owner's chosen color.
- * If no valid hex accent is provided, children render unwrapped.
+ * --vocl-primary (and legacy --vocl-accent) CSS custom properties. Buttons,
+ * links, and active states within the profile pick up the blog owner's chosen
+ * color. If no valid hex accent is provided, children render unwrapped.
  */
 export function ProfileAccentScope({
   accent,

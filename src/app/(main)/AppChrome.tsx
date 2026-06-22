@@ -43,7 +43,7 @@ function ChatErrorFallback({ onClose }: { onClose: () => void }) {
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-vocl-accent text-white rounded-xl hover:bg-vocl-accent-hover transition-colors"
+          className="px-4 py-2 bg-vocl-primary text-white rounded-xl hover:bg-vocl-primary-hover transition-colors"
         >
           Reload page
         </button>

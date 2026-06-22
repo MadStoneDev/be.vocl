@@ -221,7 +221,7 @@ export default function CommunitySettingsPage() {
   if (loading) {
     return (
       <div className="py-12 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -284,7 +284,7 @@ export default function CommunitySettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={60}
-              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
             />
           </div>
 
@@ -295,7 +295,7 @@ export default function CommunitySettingsPage() {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={500}
-              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent resize-none"
+              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
             />
           </div>
 
@@ -307,7 +307,7 @@ export default function CommunitySettingsPage() {
                 value={iconUrl}
                 onChange={(e) => setIconUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               />
             </div>
             <div>
@@ -317,7 +317,7 @@ export default function CommunitySettingsPage() {
                 value={bannerUrl}
                 onChange={(e) => setBannerUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -328,7 +328,7 @@ export default function CommunitySettingsPage() {
               <select
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               >
                 <option value="public">Public — anyone can view</option>
                 <option value="restricted">Restricted — anyone can view, members post</option>
@@ -340,7 +340,7 @@ export default function CommunitySettingsPage() {
               <select
                 value={joinPolicy}
                 onChange={(e) => setJoinPolicy(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               >
                 <option value="open">Open — anyone can join</option>
                 <option value="request">Request — requires approval</option>
@@ -399,7 +399,7 @@ export default function CommunitySettingsPage() {
                     {r.avatarUrl ? (
                       <Image src={r.avatarUrl} alt={r.username} fill className="object-cover" />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold">
+                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
                         {r.username.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -449,7 +449,7 @@ export default function CommunitySettingsPage() {
                 {m.avatarUrl ? (
                   <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold">
+                  <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
                     {m.username.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -458,7 +458,7 @@ export default function CommunitySettingsPage() {
                 <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                   {m.displayName || m.username}
                   {m.role === "owner" && <IconCrown size={14} className="text-amber-400" />}
-                  {m.role === "moderator" && <IconShield size={14} className="text-vocl-accent" />}
+                  {m.role === "moderator" && <IconShield size={14} className="text-vocl-primary" />}
                 </p>
                 <p className="text-xs text-foreground/50">@{m.username} • {m.role}</p>
               </div>
@@ -503,7 +503,7 @@ export default function CommunitySettingsPage() {
           <span className="h-px flex-1 bg-vocl-border" />
           <button
             onClick={handleAddRule}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-vocl-accent/15 text-vocl-accent hover:bg-vocl-accent/25 text-xs font-medium flex-shrink-0"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 text-xs font-medium flex-shrink-0"
           >
             <IconPlus size={14} /> Add rule
           </button>
@@ -531,20 +531,20 @@ export default function CommunitySettingsPage() {
                       value={rule.title}
                       onChange={(e) => setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, title: e.target.value } : r)))}
                       maxLength={120}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary"
                     />
                     <textarea
                       value={rule.body || ""}
                       onChange={(e) => setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, body: e.target.value } : r)))}
                       placeholder="Explain the rule (optional)"
                       rows={2}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSaveRule(rule)}
                         disabled={busy[`rule-${rule.id}`]}
-                        className="px-2.5 py-1 rounded-lg bg-vocl-accent text-white text-xs font-medium"
+                        className="px-2.5 py-1 rounded-lg bg-vocl-primary text-white text-xs font-medium"
                       >
                         Save
                       </button>

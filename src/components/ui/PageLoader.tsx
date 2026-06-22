@@ -18,7 +18,7 @@ export function PageLoader({ message = 'Loading...' }: PageLoaderProps) {
 export function FeedPageLoader() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-      <div className="w-12 h-12 rounded-full bg-vocl-accent/20 flex items-center justify-center">
+      <div className="w-12 h-12 rounded-full bg-vocl-primary/20 flex items-center justify-center">
         <LoadingSpinner size="md" />
       </div>
       <p className="text-sm text-foreground/60">Loading your feed...</p>
@@ -29,7 +29,7 @@ export function FeedPageLoader() {
 export function ProfilePageLoader() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-      <div className="w-12 h-12 rounded-full bg-vocl-accent/20 flex items-center justify-center">
+      <div className="w-12 h-12 rounded-full bg-vocl-primary/20 flex items-center justify-center">
         <LoadingSpinner size="md" />
       </div>
       <p className="text-sm text-foreground/60">Loading profile...</p>

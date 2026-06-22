@@ -131,7 +131,7 @@ export function SchedulePicker({
             value={date}
             onChange={(e) => handleDateChange(e.target.value)}
             min={minDateStr}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm"
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary transition-colors text-sm"
           />
         </div>
         <div className="relative">
@@ -142,7 +142,7 @@ export function SchedulePicker({
           <select
             value={time}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-accent transition-colors text-sm appearance-none cursor-pointer"
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary transition-colors text-sm appearance-none cursor-pointer"
           >
             {TIME_OPTIONS.map((t) => (
               <option key={t} value={t}>
@@ -160,7 +160,7 @@ export function SchedulePicker({
       {date && time && (
         <p className="text-sm text-foreground/50">
           Will be posted on{" "}
-          <span className="text-vocl-accent font-medium">
+          <span className="text-vocl-primary font-medium">
             {new Date(`${date}T${time}`).toLocaleString(undefined, {
               weekday: "long",
               month: "short",

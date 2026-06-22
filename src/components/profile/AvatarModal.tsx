@@ -77,7 +77,7 @@ export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModa
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover rounded-2xl flex items-center justify-center shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover rounded-2xl flex items-center justify-center shadow-2xl">
             <span className="text-8xl sm:text-9xl font-bold text-white">
               {username.charAt(0).toUpperCase()}
             </span>

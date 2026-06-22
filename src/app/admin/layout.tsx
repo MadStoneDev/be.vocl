@@ -65,7 +65,7 @@ export default function AdminLayout({
   if (isLoading || isAuthorized === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function AdminLayout({
             </Link>
             <div className="h-6 w-px bg-white/10" />
             <div className="flex items-center gap-2">
-              <IconShieldCheck size={20} className="text-vocl-accent" />
+              <IconShieldCheck size={20} className="text-vocl-primary" />
               <span className="font-semibold text-foreground">Admin</span>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function AdminLayout({
                     href={item.href}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                       isActive
-                        ? "bg-vocl-accent/10 text-vocl-accent font-medium"
+                        ? "bg-vocl-primary/10 text-vocl-primary font-medium"
                         : "text-foreground/60 hover:text-foreground hover:bg-white/5"
                     }`}
                   >
@@ -169,7 +169,7 @@ export default function AdminLayout({
                 href={item.href}
                 className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
                   isActive
-                    ? "text-vocl-accent"
+                    ? "text-vocl-primary"
                     : "text-foreground/60 hover:text-foreground"
                 }`}
               >

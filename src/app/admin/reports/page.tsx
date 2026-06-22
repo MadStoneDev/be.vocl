@@ -92,7 +92,7 @@ export default function AdminReportsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -104,7 +104,7 @@ export default function AdminReportsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : reports.length === 0 ? (
         <div className="text-center py-20">
@@ -124,7 +124,7 @@ export default function AdminReportsPage() {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       report.source === "auto_moderation"
                         ? "bg-amber-500/20 text-amber-500"
-                        : "bg-vocl-accent/20 text-vocl-accent"
+                        : "bg-vocl-primary/20 text-vocl-primary"
                     }`}>
                       {report.source === "auto_moderation" ? (
                         <span className="flex items-center gap-1">
@@ -191,7 +191,7 @@ export default function AdminReportsPage() {
                 {report.status === "pending" && (
                   <button
                     onClick={() => setSelectedReport(report)}
-                    className="px-4 py-2 bg-vocl-accent text-white rounded-xl text-sm font-medium hover:bg-vocl-accent-hover transition-colors"
+                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
                   >
                     Review
                   </button>
@@ -244,7 +244,7 @@ export default function AdminReportsPage() {
                     onChange={(e) => setResolutionNotes(e.target.value)}
                     placeholder="Add notes about this decision..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                   />
                 </div>
               </div>

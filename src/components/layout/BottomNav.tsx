@@ -33,7 +33,7 @@ export function BottomNav({
       icon: IconHome,
       iconActive: IconHomeFilled,
       label: "Home",
-      color: "text-vocl-accent",
+      color: "text-vocl-primary",
     },
     {
       href: "/explore",

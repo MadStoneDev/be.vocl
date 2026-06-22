@@ -312,7 +312,7 @@ function TagPills({ tags }: { tags: string[] }) {
       {tags.map((tag) => (
         <span
           key={tag}
-          className="text-[10px] px-1.5 py-0.5 rounded-full bg-vocl-accent/10 text-vocl-accent"
+          className="text-[10px] px-1.5 py-0.5 rounded-full bg-vocl-primary/10 text-vocl-primary"
         >
           #{tag}
         </span>

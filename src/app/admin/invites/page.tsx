@@ -189,7 +189,7 @@ export default function AdminInvitesPage() {
               setShowGenerateModal(true);
               setGeneratedCodes([]);
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
           >
             <IconPlus size={18} />
             <span className="hidden sm:inline">Generate</span>
@@ -209,7 +209,7 @@ export default function AdminInvitesPage() {
             <div className="text-sm text-foreground/50">Active Codes</div>
           </div>
           <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
-            <div className="text-2xl font-bold text-vocl-accent">{stats.totalUses}</div>
+            <div className="text-2xl font-bold text-vocl-primary">{stats.totalUses}</div>
             <div className="text-sm text-foreground/50">Total Redemptions</div>
           </div>
           <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
@@ -231,7 +231,7 @@ export default function AdminInvitesPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search codes..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
           />
         </div>
         <label className="flex items-center gap-2 text-sm text-foreground/60">
@@ -255,7 +255,7 @@ export default function AdminInvitesPage() {
       {/* Codes Table */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : filteredCodes.length === 0 ? (
         <div className="text-center py-20">
@@ -297,7 +297,7 @@ export default function AdminInvitesPage() {
                     <tr key={code.id} className="border-b border-white/5 last:border-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <code className="font-mono text-sm text-vocl-accent bg-vocl-accent/10 px-2 py-1 rounded">
+                          <code className="font-mono text-sm text-vocl-primary bg-vocl-primary/10 px-2 py-1 rounded">
                             {code.code}
                           </code>
                           <button
@@ -394,7 +394,7 @@ export default function AdminInvitesPage() {
                         key={code}
                         className="flex items-center justify-between gap-2 p-3 rounded-xl bg-vocl-surface-dark border border-white/5"
                       >
-                        <code className="font-mono text-vocl-accent">{code}</code>
+                        <code className="font-mono text-vocl-primary">{code}</code>
                         <button
                           onClick={() => copyToClipboard(code)}
                           className="p-2 rounded-lg hover:bg-white/5 text-foreground/40 hover:text-foreground transition-colors"
@@ -413,7 +413,7 @@ export default function AdminInvitesPage() {
                       const allCodes = generatedCodes.join("\n");
                       copyToClipboard(allCodes);
                     }}
-                    className="w-full mt-4 px-4 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover"
+                    className="w-full mt-4 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover"
                   >
                     Copy All Codes
                   </button>
@@ -437,7 +437,7 @@ export default function AdminInvitesPage() {
                       max={100}
                       value={generateQuantity}
                       onChange={(e) => setGenerateQuantity(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -453,7 +453,7 @@ export default function AdminInvitesPage() {
                         setGenerateMaxUses(e.target.value === "" ? "" : Number(e.target.value))
                       }
                       placeholder="Unlimited"
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent"
+                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -471,7 +471,7 @@ export default function AdminInvitesPage() {
                         )
                       }
                       placeholder="Never"
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent"
+                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -484,7 +484,7 @@ export default function AdminInvitesPage() {
                       value={generateNote}
                       onChange={(e) => setGenerateNote(e.target.value)}
                       placeholder="e.g., Beta testers batch 1"
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent"
+                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -498,7 +498,7 @@ export default function AdminInvitesPage() {
                     <button
                       onClick={handleGenerate}
                       disabled={generating}
-                      className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {generating ? (
                         <>
@@ -548,7 +548,7 @@ export default function AdminInvitesPage() {
                       value={grantSearch}
                       onChange={(e) => setGrantSearch(e.target.value)}
                       placeholder="Search by username..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -605,7 +605,7 @@ export default function AdminInvitesPage() {
                     max={100}
                     value={grantAmount}
                     onChange={(e) => setGrantAmount(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-accent"
+                    className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
                   />
                 </div>
 
@@ -619,7 +619,7 @@ export default function AdminInvitesPage() {
                   <button
                     onClick={handleGrantCodes}
                     disabled={granting || !grantUserId}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {granting ? (
                       <>

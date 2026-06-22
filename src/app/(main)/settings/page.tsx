@@ -119,9 +119,9 @@ function SettingsContent() {
       </header>
 
       {showSuccess && (
-        <div className="mb-6 p-4 rounded-xl bg-vocl-accent/10 border border-vocl-accent/20 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-            <IconCheck className="w-4 h-4 text-vocl-accent" />
+        <div className="mb-6 p-4 rounded-xl bg-vocl-primary/10 border border-vocl-primary/20 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+            <IconCheck className="w-4 h-4 text-vocl-primary" />
           </div>
           <p className="text-sm text-foreground">Your email has been updated successfully.</p>
         </div>

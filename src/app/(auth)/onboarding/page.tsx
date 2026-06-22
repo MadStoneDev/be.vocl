@@ -45,7 +45,7 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <IconLoader2 size={40} className="animate-spin text-vocl-accent mx-auto mb-4" />
+          <IconLoader2 size={40} className="animate-spin text-vocl-primary mx-auto mb-4" />
           <p className="text-foreground/50">Loading...</p>
         </div>
       </div>

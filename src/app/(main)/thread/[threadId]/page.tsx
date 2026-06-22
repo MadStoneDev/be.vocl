@@ -130,7 +130,7 @@ export default function ThreadPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <IconLoader2 size={40} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={40} className="animate-spin text-vocl-primary" />
       </div>
     );
   }

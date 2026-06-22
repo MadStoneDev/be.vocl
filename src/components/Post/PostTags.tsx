@@ -23,7 +23,7 @@ export function PostTags({ tags, maxVisible = 5 }: PostTagsProps) {
         <Link
           key={tag.id}
           href={`/search?tag=${encodeURIComponent(tag.name)}`}
-          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-vocl-accent/10 text-vocl-accent text-xs font-medium hover:bg-vocl-accent/20 transition-colors"
+          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-vocl-primary/10 text-vocl-primary text-xs font-medium hover:bg-vocl-primary/20 transition-colors"
         >
           <IconHash size={12} />
           {tag.name}

@@ -129,7 +129,7 @@ export function ImageLightbox({
               }}
               className={`relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
                 index === currentIndex
-                  ? "ring-2 ring-vocl-accent scale-110"
+                  ? "ring-2 ring-vocl-primary scale-110"
                   : "opacity-60 hover:opacity-100"
               }`}
             >

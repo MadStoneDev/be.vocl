@@ -11,13 +11,13 @@ export function PinnedPost({ children }: PinnedPostProps) {
   return (
     <div className="relative">
       {/* Pinned badge */}
-      <div className="absolute -top-3 right-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-accent text-white text-xs font-medium shadow-lg">
+      <div className="absolute -top-3 right-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-primary text-white text-xs font-medium shadow-lg">
         <IconPin size={12} />
         <span>Pinned</span>
       </div>
 
       {/* Post wrapper with subtle highlight */}
-      <div className="ring-2 ring-vocl-accent/30 rounded-[50px]">
+      <div className="ring-2 ring-vocl-primary/30 rounded-[50px]">
         {children}
       </div>
     </div>

@@ -75,7 +75,7 @@ export function ProfileLinks({ links }: ProfileLinksProps) {
             {/* External link icon */}
             <IconExternalLink
               size={16}
-              className="text-foreground/30 group-hover:text-vocl-accent transition-colors flex-shrink-0"
+              className="text-foreground/30 group-hover:text-vocl-primary transition-colors flex-shrink-0"
             />
           </a>
         ))}

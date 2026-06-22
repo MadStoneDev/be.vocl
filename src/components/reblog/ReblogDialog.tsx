@@ -101,7 +101,7 @@ export function ReblogDialog({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
-            <IconRefresh size={20} className="text-vocl-accent" />
+            <IconRefresh size={20} className="text-vocl-primary" />
             <h2 className="font-semibold text-foreground">Echo</h2>
           </div>
           <button
@@ -176,7 +176,7 @@ export function ReblogDialog({
                   onClick={() => setMode(id)}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
                     mode === id
-                      ? "bg-vocl-accent text-white"
+                      ? "bg-vocl-primary text-white"
                       : "text-foreground/60 hover:text-foreground"
                   }`}
                 >
@@ -226,7 +226,7 @@ export function ReblogDialog({
               type="button"
               onClick={handleSubmit}
               disabled={isPending}
-              className="px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isPending ? (
                 <>

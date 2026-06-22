@@ -113,7 +113,7 @@ export default async function EmbedPostPage({ params }: Props) {
               {author?.avatar_url ? (
                 <Image src={author.avatar_url} alt={author.username} fill className="object-cover" unoptimized />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold text-sm">
+                <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold text-sm">
                   {author?.username?.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -129,7 +129,7 @@ export default async function EmbedPostPage({ params }: Props) {
             href={postUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-vocl-accent inline-flex items-center gap-1 hover:underline"
+            className="text-xs text-vocl-primary inline-flex items-center gap-1 hover:underline"
           >
             be.vocl <IconExternalLink size={12} />
           </Link>

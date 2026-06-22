@@ -198,7 +198,7 @@ export default function DraftsPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 sm:rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-vocl-accent text-white shadow-lg"
+                  ? "bg-vocl-primary text-white shadow-lg"
                   : "text-foreground/60 hover:text-foreground"
               }`}
             >
@@ -255,13 +255,13 @@ export default function DraftsPage() {
 
                   <div className="flex items-center gap-3 mt-2 text-xs text-foreground/40">
                     {activeTab === "scheduled" && post.scheduled_for && (
-                      <span className="flex items-center gap-1 text-vocl-accent">
+                      <span className="flex items-center gap-1 text-vocl-primary">
                         <IconCalendarEvent size={14} />
                         {formatScheduledDate(post.scheduled_for)}
                       </span>
                     )}
                     {activeTab === "queue" && post.queue_position != null && (
-                      <span className="flex items-center gap-1 text-vocl-accent">
+                      <span className="flex items-center gap-1 text-vocl-primary">
                         <IconList size={14} />
                         #{post.queue_position}
                       </span>
@@ -292,7 +292,7 @@ export default function DraftsPage() {
                     type="button"
                     onClick={() => handlePublish(post.id)}
                     disabled={isActioning}
-                    className="p-2 rounded-lg text-foreground/40 hover:text-vocl-accent hover:bg-vocl-accent/10 transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg text-foreground/40 hover:text-vocl-primary hover:bg-vocl-primary/10 transition-colors disabled:opacity-50"
                     title="Publish now"
                   >
                     <IconSend size={18} />

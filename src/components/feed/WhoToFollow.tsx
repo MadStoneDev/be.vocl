@@ -67,14 +67,14 @@ export function WhoToFollow() {
     <div className="rounded-xl bg-vocl-hover border border-vocl-border p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <IconUserPlus size={18} className="text-vocl-accent" />
+          <IconUserPlus size={18} className="text-vocl-primary" />
           <h3 className="text-sm font-semibold text-foreground">
             Who to Follow
           </h3>
         </div>
         <Link
           href="/explore"
-          className="text-xs text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+          className="text-xs text-vocl-primary hover:text-vocl-primary-hover transition-colors"
         >
           See more
         </Link>
@@ -98,7 +98,7 @@ export function WhoToFollow() {
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-sm font-bold text-white">
                     {user.username.charAt(0).toUpperCase()}
                   </span>
@@ -118,7 +118,7 @@ export function WhoToFollow() {
                   @{user.username}
                 </p>
                 {user.followsYou && (
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-vocl-accent/15 text-vocl-accent flex-shrink-0">
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-vocl-primary/15 text-vocl-primary flex-shrink-0">
                     Follows you
                   </span>
                 )}
@@ -131,7 +131,7 @@ export function WhoToFollow() {
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors flex-shrink-0 ${
                 followingMap[user.id]
                   ? "bg-vocl-hover-strong text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                  : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                  : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
               }`}
             >
               {followLoadingMap[user.id] ? (

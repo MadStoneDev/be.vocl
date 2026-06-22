@@ -139,7 +139,7 @@ export function QueueItem({
           <span className="cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/50">
             <IconGripVertical size={18} />
           </span>
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-accent/20 text-xs font-semibold text-vocl-accent">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 text-xs font-semibold text-vocl-primary">
             {post.queuePosition}
           </span>
           {isReblog && (
@@ -154,7 +154,7 @@ export function QueueItem({
             type="button"
             onClick={handlePublishNow}
             disabled={isPublishing || isRemoving}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-accent/15 text-vocl-accent hover:bg-vocl-accent/25 text-xs font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 text-xs font-medium transition-colors disabled:opacity-50"
             title="Publish now"
           >
             {isPublishing ? <IconLoader2 size={14} className="animate-spin" /> : <IconSend size={14} />}

@@ -19,7 +19,7 @@ export default function QueueError({
       </p>
       <button
         onClick={reset}
-        className="inline-flex items-center gap-2 px-5 py-2.5 bg-vocl-accent hover:bg-vocl-accent-hover text-white rounded-xl transition-colors"
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-xl transition-colors"
       >
         <IconRefresh className="w-4 h-4" />
         Reload queue

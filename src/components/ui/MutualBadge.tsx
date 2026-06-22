@@ -10,7 +10,7 @@ interface MutualBadgeProps {
 export function MutualBadge({ size = 14, className = "" }: MutualBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1 text-xs text-vocl-accent font-medium ${className}`}
+      className={`inline-flex items-center gap-1 text-xs text-vocl-primary font-medium ${className}`}
       title="You follow each other"
     >
       <IconArrowsExchange size={size} />

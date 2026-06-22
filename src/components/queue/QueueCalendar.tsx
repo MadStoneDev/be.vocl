@@ -294,7 +294,7 @@ export function QueueCalendar({
               key={day.toDateString()}
               className={`rounded-xl border p-2 min-h-[140px] flex flex-col ${
                 isToday
-                  ? "border-vocl-accent/40 bg-vocl-accent/5"
+                  ? "border-vocl-primary/40 bg-vocl-primary/5"
                   : "border-vocl-border bg-vocl-surface-dark"
               }`}
             >
@@ -305,7 +305,7 @@ export function QueueCalendar({
                 </div>
                 <div
                   className={`text-sm font-semibold ${
-                    isToday ? "text-vocl-accent" : "text-foreground/70"
+                    isToday ? "text-vocl-primary" : "text-foreground/70"
                   }`}
                 >
                   {day.getDate()}
@@ -322,7 +322,7 @@ export function QueueCalendar({
                       key={`${slot.type}-${"id" in slot.post ? slot.post.id : idx}-${idx}`}
                       className={`rounded-lg px-1.5 py-1 text-[10px] leading-tight flex items-start gap-1 ${
                         isQueued
-                          ? "bg-vocl-accent/15 text-vocl-accent"
+                          ? "bg-vocl-primary/15 text-vocl-primary"
                           : "bg-green-500/15 text-green-400"
                       }`}
                       title={`${formatTime(slot.time)} - ${getPostPreview(slot.post)}`}
@@ -353,7 +353,7 @@ export function QueueCalendar({
       {/* Legend */}
       <div className="flex items-center gap-4 justify-center text-xs text-foreground/50">
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-vocl-accent/40" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-vocl-primary/40" />
           <span>Queued</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -361,7 +361,7 @@ export function QueueCalendar({
           <span>Scheduled</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <IconCalendarEvent size={12} className="text-vocl-accent/60" />
+          <IconCalendarEvent size={12} className="text-vocl-primary/60" />
           <span>Today highlighted</span>
         </div>
       </div>

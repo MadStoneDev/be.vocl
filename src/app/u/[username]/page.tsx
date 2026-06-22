@@ -195,7 +195,7 @@ export default async function PublicProfilePage({ params }: Props) {
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent/30 to-vocl-accent/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 to-vocl-primary/10" />
         )}
       </div>
 
@@ -211,7 +211,7 @@ export default async function PublicProfilePage({ params }: Props) {
               priority
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
               <span className="text-3xl font-bold text-white">
                 {profile.username.charAt(0).toUpperCase()}
               </span>
@@ -244,7 +244,7 @@ export default async function PublicProfilePage({ params }: Props) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={`/profile/${profile.username}`}
-            className="px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors text-sm"
+            className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
           >
             View on be.vocl
           </Link>
@@ -301,7 +301,7 @@ export default async function PublicProfilePage({ params }: Props) {
           {postCount > 0 && (
             <Link
               href={`/u/${profile.username}/archive`}
-              className="text-sm text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+              className="text-sm text-vocl-primary hover:text-vocl-primary-hover transition-colors"
             >
               View archive ({postCount.toLocaleString()})
             </Link>
@@ -330,7 +330,7 @@ export default async function PublicProfilePage({ params }: Props) {
           <div className="flex justify-center gap-3">
             <Link
               href={`/profile/${profile.username}`}
-              className="px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors text-sm"
+              className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
             >
               View Full Profile
             </Link>

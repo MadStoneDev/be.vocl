@@ -262,7 +262,7 @@ export default function ProfileSettingsPage() {
   if (isLoading) {
     return (
       <div className="py-6 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -297,7 +297,7 @@ export default function ProfileSettingsPage() {
               className="object-cover"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent/30 via-vocl-accent/10 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 via-vocl-primary/10 to-background" />
           )}
           {isUploadingHeader ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60">
@@ -335,7 +335,7 @@ export default function ProfileSettingsPage() {
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-2xl font-bold text-white">
                     {username.charAt(0).toUpperCase()}
                   </span>
@@ -378,7 +378,7 @@ export default function ProfileSettingsPage() {
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={username}
             maxLength={50}
-            className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+            className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
           />
           <p className="mt-1 text-xs text-foreground/50">
             {displayName.length}/50 characters
@@ -409,7 +409,7 @@ export default function ProfileSettingsPage() {
             placeholder="Tell the world about yourself..."
             maxLength={160}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent resize-none"
+            className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
           />
           <p className="mt-1 text-xs text-foreground/50">
             {bio.length}/160 characters
@@ -517,14 +517,14 @@ export default function ProfileSettingsPage() {
               onChange={(e) => setNewLinkTitle(e.target.value)}
               placeholder="Link title (e.g., My Website)"
               maxLength={30}
-              className="w-full px-4 py-2.5 rounded-lg bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+              className="w-full px-4 py-2.5 rounded-lg bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
             />
             <input
               type="url"
               value={newLinkUrl}
               onChange={(e) => setNewLinkUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full px-4 py-2.5 rounded-lg bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+              className="w-full px-4 py-2.5 rounded-lg bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
             />
             <button
               onClick={handleAddLink}

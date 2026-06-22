@@ -230,7 +230,7 @@ export function FeedList({
 
       {isLoadingMore && (
         <div className="flex items-center justify-center py-8">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" aria-label="Loading more posts" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" aria-label="Loading more posts" />
         </div>
       )}
     </div>

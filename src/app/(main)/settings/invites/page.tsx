@@ -180,9 +180,9 @@ export default function InviteSettingsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-vocl-accent/10 border border-vocl-accent/20 rounded-2xl p-4 mb-6">
+          <div className="bg-vocl-primary/10 border border-vocl-primary/20 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <IconTicket size={24} className="text-vocl-accent flex-shrink-0 mt-0.5" />
+              <IconTicket size={24} className="text-vocl-primary flex-shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-medium text-foreground mb-1">
                   Invite friends to be.vocl
@@ -204,7 +204,7 @@ export default function InviteSettingsPage() {
                     "Unlimited codes available"
                   ) : (
                     <>
-                      <span className="text-vocl-accent">{codesRemaining}</span> codes remaining
+                      <span className="text-vocl-primary">{codesRemaining}</span> codes remaining
                     </>
                   )}
                 </h3>
@@ -239,7 +239,7 @@ export default function InviteSettingsPage() {
       {/* Codes List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : codes.length === 0 ? (
         <div className="text-center py-12">
@@ -269,7 +269,7 @@ export default function InviteSettingsPage() {
                 <div className="p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <code className="font-mono text-lg text-vocl-accent bg-vocl-accent/10 px-3 py-1.5 rounded-lg">
+                      <code className="font-mono text-lg text-vocl-primary bg-vocl-primary/10 px-3 py-1.5 rounded-lg">
                         {code.code}
                       </code>
                       <button

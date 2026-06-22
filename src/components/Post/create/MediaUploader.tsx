@@ -137,7 +137,7 @@ export function MediaUploader({
           onDrop={handleDrop}
           className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${
             dragOver
-              ? "border-vocl-accent bg-vocl-accent/10"
+              ? "border-vocl-primary bg-vocl-primary/10"
               : "border-vocl-border hover:border-vocl-border"
           }`}
         >
@@ -152,21 +152,21 @@ export function MediaUploader({
 
           {isUploading ? (
             <div className="space-y-3">
-              <IconLoader2 size={40} className="mx-auto text-vocl-accent animate-spin" />
+              <IconLoader2 size={40} className="mx-auto text-vocl-primary animate-spin" />
               <p className="text-foreground/60">
                 Uploading... {progress?.percent || 0}%
               </p>
               <div className="w-48 h-1.5 mx-auto bg-vocl-hover-strong rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-vocl-accent transition-all"
+                  className="h-full bg-vocl-primary transition-all"
                   style={{ width: `${progress?.percent || 0}%` }}
                 />
               </div>
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-full bg-vocl-accent/10 flex items-center justify-center">
-                <Icon size={32} className="text-vocl-accent" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-vocl-primary/10 flex items-center justify-center">
+                <Icon size={32} className="text-vocl-primary" />
               </div>
               <div>
                 <p className="text-foreground font-medium">

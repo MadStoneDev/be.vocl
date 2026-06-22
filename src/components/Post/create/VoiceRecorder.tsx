@@ -253,8 +253,8 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
             onClick={startRecording}
             className="inline-flex flex-col items-center gap-2 group"
           >
-            <span className="w-16 h-16 rounded-full bg-vocl-accent/20 group-hover:bg-vocl-accent/30 transition-colors flex items-center justify-center">
-              <IconMicrophone size={28} className="text-vocl-accent" />
+            <span className="w-16 h-16 rounded-full bg-vocl-primary/20 group-hover:bg-vocl-primary/30 transition-colors flex items-center justify-center">
+              <IconMicrophone size={28} className="text-vocl-primary" />
             </span>
             <span className="text-sm font-medium text-foreground">Start recording</span>
           </button>
@@ -302,7 +302,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
             <button
               type="button"
               onClick={togglePreview}
-              className="w-10 h-10 rounded-full bg-vocl-accent text-white flex items-center justify-center hover:bg-vocl-accent-hover transition-colors"
+              className="w-10 h-10 rounded-full bg-vocl-primary text-white flex items-center justify-center hover:bg-vocl-primary-hover transition-colors"
             >
               {isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}
             </button>
@@ -326,7 +326,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
           <button
             type="button"
             onClick={uploadRecording}
-            className="w-full px-4 py-2 rounded-xl bg-vocl-accent text-white text-sm font-medium hover:bg-vocl-accent-hover"
+            className="w-full px-4 py-2 rounded-xl bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover"
           >
             Use this recording
           </button>
@@ -335,7 +335,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
 
       {state === "uploading" && (
         <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
-          <IconLoader2 size={24} className="animate-spin text-vocl-accent mx-auto mb-2" />
+          <IconLoader2 size={24} className="animate-spin text-vocl-primary mx-auto mb-2" />
           <p className="text-sm text-foreground/70">Uploading…</p>
         </div>
       )}

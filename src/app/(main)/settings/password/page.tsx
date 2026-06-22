@@ -140,7 +140,7 @@ function PasswordSettingsContent() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   disabled={isPending}
-                  className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                  className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                   required={!isReset}
                 />
               </div>
@@ -162,7 +162,7 @@ function PasswordSettingsContent() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-12 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-12 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />
@@ -191,7 +191,7 @@ function PasswordSettingsContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />

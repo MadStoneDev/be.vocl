@@ -132,13 +132,13 @@ export default function CommunitiesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search the desks..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm"
           />
         </div>
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <IconLoader2 size={28} className="animate-spin text-vocl-accent" />
+            <IconLoader2 size={28} className="animate-spin text-vocl-primary" />
           </div>
         ) : communities.length === 0 ? (
           <div className="border-t border-vocl-border py-16 text-center">
@@ -170,7 +170,7 @@ export default function CommunitiesPage() {
                   {c.iconUrl ? (
                     <Image src={c.iconUrl} alt="" width={56} height={56} className="object-cover" />
                   ) : (
-                    <span className="text-xl bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center font-display">
+                    <span className="text-xl bg-gradient-to-br from-vocl-primary to-vocl-primary-hover w-full h-full flex items-center justify-center font-display">
                       {c.name.charAt(0).toUpperCase()}
                     </span>
                   )}

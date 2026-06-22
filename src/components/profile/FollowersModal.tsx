@@ -137,7 +137,7 @@ export function FollowersModal({
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+              <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12 px-4">
@@ -165,7 +165,7 @@ export function FollowersModal({
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                           <span className="text-lg font-bold text-white">
                             {user.username.charAt(0).toUpperCase()}
                           </span>

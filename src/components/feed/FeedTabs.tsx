@@ -71,7 +71,7 @@ export function FeedTabs({
               onClick={() => onTabChange(tab.id)}
               title={tab.description}
               aria-pressed={activeTab === tab.id}
-              className={`flex-1 ${segmentClass(activeTab === tab.id, "bg-vocl-accent")}`}
+              className={`flex-1 ${segmentClass(activeTab === tab.id, "bg-vocl-primary")}`}
             >
               <Icon size={18} />
               <span>{tab.label}</span>

@@ -124,7 +124,7 @@ export function ProfileHeader({
             />
           ) : (
             // Tasteful gradient fallback when there's no custom banner
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent/30 via-vocl-primary/10 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 via-vocl-primary/10 to-background" />
           )}
           {/* Thin bottom scrim only — keeps custom banners vivid while keeping
               the avatar/name legible where they overlap. */}

@@ -53,7 +53,7 @@ const accentColors: { value: AccentColor; label: string; color: string }[] = [
 ];
 
 // Per-profile blog accent presets (saved to the user's profile, not localStorage).
-// Drives --vocl-primary / --vocl-accent within the profile page (Tumblr-style theming).
+// Drives --vocl-primary / --vocl-primary within the profile page (Tumblr-style theming).
 const profileAccentPresets: { label: string; color: string }[] = [
   { label: "Brand Pink", color: "#F20D5E" },
   { label: "Teal", color: "#5B9A8B" },
@@ -166,23 +166,23 @@ export default function AppearanceSettingsPage() {
                 onClick={() => updateSetting("theme", option.value)}
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                   isSelected
-                    ? "border-vocl-accent bg-vocl-accent/10"
+                    ? "border-vocl-primary bg-vocl-primary/10"
                     : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
                 }`}
               >
                 <Icon
                   size={28}
-                  className={isSelected ? "text-vocl-accent" : "text-foreground/70"}
+                  className={isSelected ? "text-vocl-primary" : "text-foreground/70"}
                 />
                 <span
                   className={`text-sm font-medium ${
-                    isSelected ? "text-vocl-accent" : "text-foreground/70"
+                    isSelected ? "text-vocl-primary" : "text-foreground/70"
                   }`}
                 >
                   {option.label}
                 </span>
                 {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-vocl-accent flex items-center justify-center">
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-vocl-primary flex items-center justify-center">
                     <IconCheck size={12} className="text-white" />
                   </div>
                 )}
@@ -212,7 +212,7 @@ export default function AppearanceSettingsPage() {
                 onClick={() => updateSetting("fontSize", option.value)}
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
                   isSelected
-                    ? "border-vocl-accent bg-vocl-accent/10"
+                    ? "border-vocl-primary bg-vocl-primary/10"
                     : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
                 }`}
               >
@@ -223,19 +223,19 @@ export default function AppearanceSettingsPage() {
                       : option.value === "large"
                       ? "text-xl"
                       : "text-base"
-                  } ${isSelected ? "text-vocl-accent" : "text-foreground/70"}`}
+                  } ${isSelected ? "text-vocl-primary" : "text-foreground/70"}`}
                 >
                   {option.sample}
                 </span>
                 <span
                   className={`text-sm ${
-                    isSelected ? "text-vocl-accent" : "text-foreground/70"
+                    isSelected ? "text-vocl-primary" : "text-foreground/70"
                   }`}
                 >
                   {option.label}
                 </span>
                 {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-vocl-accent flex items-center justify-center">
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-vocl-primary flex items-center justify-center">
                     <IconCheck size={12} className="text-white" />
                   </div>
                 )}
@@ -350,7 +350,7 @@ export default function AppearanceSettingsPage() {
             aria-checked={settings.reducedMotion}
             onClick={() => updateSetting("reducedMotion", !settings.reducedMotion)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-              settings.reducedMotion ? "bg-vocl-accent" : "bg-vocl-hover-strong"
+              settings.reducedMotion ? "bg-vocl-primary" : "bg-vocl-hover-strong"
             }`}
           >
             <span

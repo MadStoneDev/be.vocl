@@ -71,7 +71,7 @@ export function SecurityWarningModal({ isAuthenticated }: SecurityWarningModalPr
         <div className="px-4 py-3 border-t border-white/10">
           <button
             onClick={handleClose}
-            className="w-full py-2 rounded-lg bg-vocl-accent text-white text-sm font-medium hover:bg-vocl-accent-hover transition-colors"
+            className="w-full py-2 rounded-lg bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
           >
             Got it
           </button>

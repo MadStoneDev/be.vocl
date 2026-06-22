@@ -138,8 +138,8 @@ export default function AsksPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-            <IconMessageQuestion size={24} className="text-vocl-accent" />
+          <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
+            <IconMessageQuestion size={24} className="text-vocl-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Ask Inbox</h1>
@@ -155,7 +155,7 @@ export default function AsksPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : asks.length === 0 ? (
         <div className="text-center py-16">
@@ -239,7 +239,7 @@ export default function AsksPage() {
                     <button
                       type="button"
                       onClick={() => setShowAnswerRecorder(true)}
-                      className="flex items-center gap-2 text-sm font-medium text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+                      className="flex items-center gap-2 text-sm font-medium text-vocl-primary hover:text-vocl-primary-hover transition-colors"
                     >
                       <IconMicrophone size={18} />
                       Add a voice answer
@@ -248,7 +248,7 @@ export default function AsksPage() {
                   {(showAnswerRecorder || answerAudioUrl) && (
                     <div>
                       <p className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground/70">
-                        <IconMicrophone size={16} className="text-vocl-accent" />
+                        <IconMicrophone size={16} className="text-vocl-primary" />
                         Voice answer
                       </p>
                       <VoiceRecorder
@@ -289,7 +289,7 @@ export default function AsksPage() {
                         isSubmitting ||
                         (!answerContent.plain.trim() && !answerAudioUrl)
                       }
-                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <>
@@ -323,7 +323,7 @@ export default function AsksPage() {
                   <button
                     type="button"
                     onClick={() => setAnsweringId(ask.id)}
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
                   >
                     <IconSend size={18} />
                     Answer

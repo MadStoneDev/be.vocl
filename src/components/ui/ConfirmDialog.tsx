@@ -68,8 +68,8 @@ export function ConfirmDialog({
       button: "bg-yellow-500 hover:bg-yellow-600",
     },
     default: {
-      icon: "text-vocl-accent bg-vocl-accent/10",
-      button: "bg-vocl-accent hover:bg-vocl-accent-hover",
+      icon: "text-vocl-primary bg-vocl-primary/10",
+      button: "bg-vocl-primary hover:bg-vocl-primary-hover",
     },
   };
 

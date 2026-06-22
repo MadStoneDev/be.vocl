@@ -63,7 +63,7 @@ export default function OnThisDayPage() {
   if (loading) {
     return (
       <div className="py-12 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }

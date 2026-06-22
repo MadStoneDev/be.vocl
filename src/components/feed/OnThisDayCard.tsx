@@ -72,10 +72,10 @@ export function OnThisDayCard() {
   const firstPost = posts[0];
 
   return (
-    <div className="mb-4 rounded-xl bg-gradient-to-br from-vocl-accent/15 to-vocl-accent/5 border border-vocl-accent/20 p-4">
+    <div className="mb-4 rounded-xl bg-gradient-to-br from-vocl-primary/15 to-vocl-primary/5 border border-vocl-primary/20 p-4">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <IconCalendarEvent size={20} className="text-vocl-accent" />
+          <IconCalendarEvent size={20} className="text-vocl-primary" />
           <h3 className="text-sm font-semibold text-foreground">On this day</h3>
         </div>
         <button
@@ -97,7 +97,7 @@ export function OnThisDayCard() {
             </div>
           ) : null}
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-vocl-accent mb-0.5">
+            <p className="text-xs font-medium text-vocl-primary mb-0.5">
               {firstPost.yearsAgo} {firstPost.yearsAgo === 1 ? "year" : "years"} ago
             </p>
             <p className="text-sm text-foreground line-clamp-3">
@@ -121,7 +121,7 @@ export function OnThisDayCard() {
       {posts.length > 1 && (
         <Link
           href="/on-this-day"
-          className="inline-block mt-2 text-xs text-vocl-accent hover:underline"
+          className="inline-block mt-2 text-xs text-vocl-primary hover:underline"
         >
           See {posts.length - 1} more from today's memories →
         </Link>

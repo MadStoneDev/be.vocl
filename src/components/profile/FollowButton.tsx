@@ -60,7 +60,7 @@ export function FollowButton({
             ? isHovering
               ? "bg-vocl-like/20 text-vocl-like"
               : "bg-vocl-hover-strong text-foreground/70"
-            : "bg-vocl-accent/20 text-vocl-accent hover:bg-vocl-accent/30"
+            : "bg-vocl-primary/20 text-vocl-primary hover:bg-vocl-primary/30"
         }`}
       >
         {isLoading ? (
@@ -91,7 +91,7 @@ export function FollowButton({
           ? isHovering
             ? "bg-vocl-like/20 text-vocl-like border border-vocl-like/30"
             : "bg-vocl-hover-strong text-foreground border border-vocl-border hover:border-vocl-like/30"
-          : "bg-vocl-accent text-white hover:bg-vocl-accent-hover shadow-lg shadow-vocl-accent/25"
+          : "bg-vocl-primary text-white hover:bg-vocl-primary-hover shadow-lg shadow-vocl-primary/25"
       }`}
     >
       {isLoading ? (

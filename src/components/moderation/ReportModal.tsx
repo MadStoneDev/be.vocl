@@ -204,7 +204,7 @@ export function ReportModal({
                     onClick={() => setSelectedSubject(subject.value)}
                     className={`w-full text-left p-3 rounded-xl border transition-colors ${
                       selectedSubject === subject.value
-                        ? "border-vocl-accent bg-vocl-accent/10"
+                        ? "border-vocl-primary bg-vocl-primary/10"
                         : "border-vocl-border hover:border-vocl-hover-strong"
                     }`}
                   >
@@ -228,7 +228,7 @@ export function ReportModal({
                   onChange={(e) => setComments(e.target.value)}
                   placeholder="Provide any additional context..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                 />
               </div>
 

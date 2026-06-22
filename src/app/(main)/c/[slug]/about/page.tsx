@@ -54,7 +54,7 @@ export default function CommunityAboutPage() {
   if (loading) {
     return (
       <div className="py-12 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default function CommunityAboutPage() {
           {community.iconUrl ? (
             <Image src={community.iconUrl} alt="" width={56} height={56} className="object-cover" />
           ) : (
-            <span className="text-xl bg-gradient-to-br from-vocl-accent to-vocl-accent-hover w-full h-full flex items-center justify-center font-display">
+            <span className="text-xl bg-gradient-to-br from-vocl-primary to-vocl-primary-hover w-full h-full flex items-center justify-center font-display">
               {community.name.charAt(0).toUpperCase()}
             </span>
           )}
@@ -181,7 +181,7 @@ export default function CommunityAboutPage() {
                   {m.avatarUrl ? (
                     <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center text-white font-bold">
+                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
                       {m.username.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -192,7 +192,7 @@ export default function CommunityAboutPage() {
                     {m.role === "owner" ? (
                       <IconCrown size={14} className="text-amber-400" />
                     ) : (
-                      <IconShield size={14} className="text-vocl-accent" />
+                      <IconShield size={14} className="text-vocl-primary" />
                     )}
                   </p>
                   <p className="type-meta text-foreground/50">

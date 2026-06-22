@@ -19,7 +19,7 @@ export function VerificationBadge({
     >
       <IconRosetteDiscountCheckFilled
         size={size}
-        className="text-vocl-accent"
+        className="text-vocl-primary"
       />
     </span>
   );

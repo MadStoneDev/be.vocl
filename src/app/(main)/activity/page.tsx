@@ -18,8 +18,8 @@ const statCards = [
     key: "totalPosts" as const,
     label: "Total Posts",
     icon: IconArticle,
-    color: "text-vocl-accent",
-    bg: "bg-vocl-accent/10",
+    color: "text-vocl-primary",
+    bg: "bg-vocl-primary/10",
   },
   {
     key: "totalLikes" as const,
@@ -53,7 +53,7 @@ function getActivityIcon(type: ActivityItem["type"]) {
     case "reblog":
       return { icon: IconRepeat, color: "text-emerald-400", bg: "bg-emerald-400/20" };
     case "follow":
-      return { icon: IconUserPlus, color: "text-vocl-accent", bg: "bg-vocl-accent/20" };
+      return { icon: IconUserPlus, color: "text-vocl-primary", bg: "bg-vocl-primary/20" };
     case "mention":
       return { icon: IconAt, color: "text-amber-400", bg: "bg-amber-400/20" };
     default:
@@ -174,7 +174,7 @@ export default function ActivityPage() {
               onClick={() => setFilter(tab.key)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === tab.key
-                  ? "bg-vocl-accent text-white"
+                  ? "bg-vocl-primary text-white"
                   : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
               }`}
             >

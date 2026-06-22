@@ -249,7 +249,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
       case 0: // Welcome
         return (
           <div className="text-center space-y-6">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
               <IconSparkles size={48} className="text-white" />
             </div>
             <div>
@@ -289,7 +289,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
                   maxLength={50}
-                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent"
+                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
                   autoFocus
                 />
                 <p className="text-xs text-foreground/40 mt-1">
@@ -307,7 +307,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   placeholder="Tell the world a little about yourself..."
                   maxLength={160}
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
                 />
                 <p className="text-xs text-foreground/40 mt-1 text-right">
                   {bio.length}/160
@@ -397,7 +397,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {showSensitivePosts ? (
-                        <IconEye size={18} className="text-vocl-accent" />
+                        <IconEye size={18} className="text-vocl-primary" />
                       ) : (
                         <IconEyeOff size={18} className="text-foreground/50" />
                       )}
@@ -412,7 +412,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   <button
                     onClick={() => setShowSensitivePosts(!showSensitivePosts)}
                     className={`relative w-12 h-6 rounded-full transition-colors ${
-                      showSensitivePosts ? "bg-vocl-accent" : "bg-white/10"
+                      showSensitivePosts ? "bg-vocl-primary" : "bg-white/10"
                     }`}
                   >
                     <span
@@ -438,7 +438,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                     <button
                       onClick={() => setBlurSensitiveByDefault(!blurSensitiveByDefault)}
                       className={`relative w-12 h-6 rounded-full transition-colors ${
-                        blurSensitiveByDefault ? "bg-vocl-accent" : "bg-white/10"
+                        blurSensitiveByDefault ? "bg-vocl-primary" : "bg-white/10"
                       }`}
                     >
                       <span
@@ -472,7 +472,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
 
             {loadingTags ? (
               <div className="flex items-center justify-center py-8">
-                <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+                <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
               </div>
             ) : suggestedTags.length > 0 ? (
               <div className="flex flex-wrap gap-2 justify-center">
@@ -482,7 +482,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                     onClick={() => toggleTag(tag.name)}
                     className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                       selectedTags.has(tag.name)
-                        ? "bg-vocl-accent text-white"
+                        ? "bg-vocl-primary text-white"
                         : "bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5"
                     }`}
                   >
@@ -501,7 +501,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
             )}
 
             {selectedTags.size > 0 && (
-              <p className="text-sm text-center text-vocl-accent">
+              <p className="text-sm text-center text-vocl-primary">
                 {selectedTags.size} {selectedTags.size === 1 ? "interest" : "interests"} selected
               </p>
             )}
@@ -529,7 +529,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
 
             {loadingSuggestions ? (
               <div className="flex items-center justify-center py-8">
-                <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+                <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
               </div>
             ) : suggestedUsers.length > 0 ? (
               <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -547,7 +547,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                           <span className="text-white font-bold">
                             {user.username.charAt(0).toUpperCase()}
                           </span>
@@ -568,7 +568,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                         followedUsers.has(user.id)
                           ? "bg-white/10 text-foreground/50"
-                          : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+                          : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
                       }`}
                     >
                       {followedUsers.has(user.id) ? (
@@ -611,7 +611,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
             <div
               key={step.id}
               className={`w-2 h-2 rounded-full transition-colors ${
-                index <= currentStep ? "bg-vocl-accent" : "bg-white/20"
+                index <= currentStep ? "bg-vocl-primary" : "bg-white/20"
               }`}
             />
           ))}
@@ -640,7 +640,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
             <button
               onClick={handleComplete}
               disabled={isSubmitting || isUploadingAvatar}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
             >
               {isSubmitting || isUploadingAvatar ? (
                 <>
@@ -657,7 +657,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
           ) : (
             <button
               onClick={handleNext}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
             >
               Continue
               <IconArrowRight size={18} />

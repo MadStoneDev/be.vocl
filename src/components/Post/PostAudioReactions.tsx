@@ -113,7 +113,7 @@ export function PostAudioReactions({
         <button
           type="button"
           onClick={toggleOpen}
-          className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-vocl-accent transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-vocl-primary transition-colors"
           aria-expanded={open}
           aria-label={`${count} voice reaction${count === 1 ? "" : "s"}`}
         >
@@ -135,7 +135,7 @@ export function PostAudioReactions({
               setOpen(true);
               if (!loaded) void load();
             }}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-accent/10 text-vocl-accent text-xs font-medium hover:bg-vocl-accent/20 transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-primary/10 text-vocl-primary text-xs font-medium hover:bg-vocl-primary/20 transition-colors"
           >
             <IconMicrophone size={14} />
             {myReactionId ? "Re-react" : "Speak"}
@@ -208,7 +208,7 @@ export function PostAudioReactions({
                       {r.reactor ? (
                         <Link
                           href={`/profile/${r.reactor.username}`}
-                          className="font-medium text-sm text-neutral-800 hover:text-vocl-accent transition-colors truncate"
+                          className="font-medium text-sm text-neutral-800 hover:text-vocl-primary transition-colors truncate"
                         >
                           {r.reactor.username}
                         </Link>

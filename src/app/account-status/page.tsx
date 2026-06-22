@@ -96,7 +96,7 @@ export default function AccountStatusPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -191,7 +191,7 @@ export default function AccountStatusPage() {
             {/* Appeal Section */}
             <div className="border-t border-vocl-border pt-6">
               <div className="flex items-center gap-2 mb-4">
-                <IconMessageReport size={20} className="text-vocl-accent" />
+                <IconMessageReport size={20} className="text-vocl-primary" />
                 <h2 className="font-medium text-foreground">Appeal</h2>
               </div>
 
@@ -263,7 +263,7 @@ export default function AccountStatusPage() {
                     onChange={(e) => setAppealReason(e.target.value)}
                     placeholder="Explain why you believe this action was made in error..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                   />
                   {submitError && (
                     <p className="text-sm text-vocl-like">{submitError}</p>
@@ -271,7 +271,7 @@ export default function AccountStatusPage() {
                   <button
                     onClick={handleSubmitAppeal}
                     disabled={isSubmitting || !appealReason.trim()}
-                    className="w-full px-4 py-3 bg-vocl-accent text-white rounded-xl font-medium hover:bg-vocl-accent-hover disabled:opacity-50 transition-colors"
+                    className="w-full px-4 py-3 bg-vocl-primary text-white rounded-xl font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
                   >
                     {isSubmitting ? "Submitting..." : "Submit Appeal"}
                   </button>
@@ -304,7 +304,7 @@ export default function AccountStatusPage() {
         {/* Help text */}
         <p className="text-center text-sm text-foreground/40 mt-6">
           If you believe this is an error, please contact support at{" "}
-          <a href="mailto:support@vocl.app" className="text-vocl-accent hover:underline">
+          <a href="mailto:support@vocl.app" className="text-vocl-primary hover:underline">
             support@vocl.app
           </a>
         </p>

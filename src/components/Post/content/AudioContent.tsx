@@ -152,7 +152,7 @@ export function AudioContent({
             <button
               type="button"
               onClick={() => setShowTranscript((v) => !v)}
-              className="text-xs font-medium text-vocl-accent hover:underline"
+              className="text-xs font-medium text-vocl-primary hover:underline"
             >
               {showTranscript ? "Hide transcript" : isVoiceNote ? "Show transcript" : "Show captions"}
             </button>
@@ -251,7 +251,7 @@ export function AudioContent({
                 onClick={handleSeek}
               >
                 <div
-                  className="h-full bg-vocl-accent transition-all"
+                  className="h-full bg-vocl-primary transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>

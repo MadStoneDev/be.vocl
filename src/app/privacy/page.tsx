@@ -271,7 +271,7 @@ export default function PrivacyPolicyPage() {
         <div className="mt-12 pt-8 border-t border-vocl-border">
           <a
             href="/terms"
-            className="text-vocl-accent hover:text-vocl-accent-hover transition-colors"
+            className="text-vocl-primary hover:text-vocl-primary-hover transition-colors"
           >
             View Terms of Service
           </a>

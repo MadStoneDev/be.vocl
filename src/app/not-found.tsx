@@ -15,7 +15,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/feed"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-vocl-accent hover:bg-vocl-accent-hover text-white rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-xl transition-colors"
           >
             <IconHome className="w-5 h-5" />
             Go to Feed

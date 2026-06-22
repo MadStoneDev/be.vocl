@@ -133,7 +133,7 @@ export function UserReportDialog({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
               >
                 Done
               </button>
@@ -155,7 +155,7 @@ export function UserReportDialog({
                     onClick={() => setSelectedReason(reason.value)}
                     className={`w-full p-3 rounded-xl text-left transition-all ${
                       selectedReason === reason.value
-                        ? "bg-vocl-accent/20 border-2 border-vocl-accent"
+                        ? "bg-vocl-primary/20 border-2 border-vocl-primary"
                         : "bg-vocl-hover border-2 border-transparent hover:bg-vocl-hover-strong"
                     }`}
                   >
@@ -180,7 +180,7 @@ export function UserReportDialog({
                     onChange={(e) => setDetails(e.target.value)}
                     placeholder="Provide any additional context..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-accent resize-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none text-sm"
                   />
                 </div>
               )}

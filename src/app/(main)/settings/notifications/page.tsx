@@ -36,7 +36,7 @@ function Toggle({ enabled, onChange, disabled }: ToggleProps) {
       onClick={() => onChange(!enabled)}
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-      } ${enabled ? "bg-vocl-accent" : "bg-vocl-hover-strong"}`}
+      } ${enabled ? "bg-vocl-primary" : "bg-vocl-hover-strong"}`}
     >
       <span
         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -143,7 +143,7 @@ export default function NotificationsSettingsPage() {
   if (isLoading) {
     return (
       <div className="py-6 flex justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -187,7 +187,7 @@ export default function NotificationsSettingsPage() {
               key={option.value}
               className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
                 settings.emailFrequency === option.value
-                  ? "bg-vocl-accent/20 border border-vocl-accent/40"
+                  ? "bg-vocl-primary/20 border border-vocl-primary/40"
                   : "bg-vocl-hover border border-transparent hover:bg-vocl-hover-strong"
               }`}
             >
@@ -202,12 +202,12 @@ export default function NotificationsSettingsPage() {
               <div
                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                   settings.emailFrequency === option.value
-                    ? "border-vocl-accent"
+                    ? "border-vocl-primary"
                     : "border-vocl-border"
                 }`}
               >
                 {settings.emailFrequency === option.value && (
-                  <div className="w-2 h-2 rounded-full bg-vocl-accent" />
+                  <div className="w-2 h-2 rounded-full bg-vocl-primary" />
                 )}
               </div>
               <div className="flex-1">

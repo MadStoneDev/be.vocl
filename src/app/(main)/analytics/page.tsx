@@ -77,7 +77,7 @@ interface PostDetailData {
 }
 
 const postTypeColors: Record<string, string> = {
-  text: "bg-vocl-accent",
+  text: "bg-vocl-primary",
   image: "bg-green-500",
   video: "bg-blue-500",
   audio: "bg-purple-500",
@@ -185,8 +185,8 @@ export default function AnalyticsPage() {
       <title>Analytics | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-vocl-accent/20 flex items-center justify-center">
-            <IconChartBar className="w-5 h-5 text-vocl-accent" />
+          <div className="w-10 h-10 rounded-xl bg-vocl-primary/20 flex items-center justify-center">
+            <IconChartBar className="w-5 h-5 text-vocl-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
         </div>
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
               onClick={() => setTimeRange(range)}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 timeRange === range
-                  ? "bg-vocl-accent text-white"
+                  ? "bg-vocl-primary text-white"
                   : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
               }`}
             >
@@ -286,7 +286,7 @@ export default function AnalyticsPage() {
                     <div className="w-full h-2.5 bg-vocl-hover rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
-                          postTypeColors[item.postType] || "bg-vocl-accent"
+                          postTypeColors[item.postType] || "bg-vocl-primary"
                         }`}
                         style={{ width: `${item.percentage}%` }}
                       />
@@ -350,7 +350,7 @@ export default function AnalyticsPage() {
                         </div>
                         <div className="text-right flex items-start gap-2">
                           <div>
-                            <span className="text-sm font-semibold text-vocl-accent">
+                            <span className="text-sm font-semibold text-vocl-primary">
                               {post.engagement}
                             </span>
                             <p className="text-xs text-foreground/40">
@@ -461,7 +461,7 @@ export default function AnalyticsPage() {
                                                 <td className="py-2 px-4 text-right text-foreground">
                                                   {day.reblogs}
                                                 </td>
-                                                <td className="py-2 pl-4 text-right font-medium text-vocl-accent">
+                                                <td className="py-2 pl-4 text-right font-medium text-vocl-primary">
                                                   {total}
                                                 </td>
                                               </tr>
@@ -489,7 +489,7 @@ export default function AnalyticsPage() {
                                         >
                                           <Link
                                             href={`/u/${commenter.username}`}
-                                            className="text-sm text-foreground hover:text-vocl-accent transition-colors"
+                                            className="text-sm text-foreground hover:text-vocl-primary transition-colors"
                                           >
                                             @{commenter.username}
                                           </Link>
@@ -510,7 +510,7 @@ export default function AnalyticsPage() {
                               <div className="pt-1">
                                 <Link
                                   href={`/post/${post.id}`}
-                                  className="text-xs text-vocl-accent hover:underline"
+                                  className="text-xs text-vocl-primary hover:underline"
                                 >
                                   View full post
                                 </Link>
@@ -547,7 +547,7 @@ export default function AnalyticsPage() {
                     className="p-3 rounded-xl bg-vocl-hover border border-vocl-border"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <IconHash className="w-4 h-4 text-vocl-accent" />
+                      <IconHash className="w-4 h-4 text-vocl-primary" />
                       <span className="font-medium text-foreground">
                         {tag.tag}
                       </span>
@@ -629,7 +629,7 @@ export default function AnalyticsPage() {
                           <td className="py-2 px-4 text-right text-foreground">
                             {day.reblogs}
                           </td>
-                          <td className="py-2 pl-4 text-right font-medium text-vocl-accent">
+                          <td className="py-2 pl-4 text-right font-medium text-vocl-primary">
                             {total}
                           </td>
                         </tr>
