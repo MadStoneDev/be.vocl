@@ -271,6 +271,7 @@ interface PostActionBarProps {
   isReblogMenuOpen: boolean;
   expandedPanel: ExpandedPanel;
   voiceCount: number;
+  bare?: boolean;
   onCommentClick: () => void;
   onLike?: () => void;
   onLikesClick: () => void;
@@ -285,6 +286,7 @@ function PostActionBar({
   isReblogMenuOpen,
   expandedPanel,
   voiceCount,
+  bare,
   onCommentClick,
   onLike,
   onLikesClick,
@@ -302,7 +304,9 @@ function PostActionBar({
   };
   return (
     <div
-      className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5 bg-white border-t border-neutral-200`}
+      className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5 border-t ${
+        bare ? "bg-transparent border-vocl-border mt-6" : "bg-white border-neutral-200"
+      }`}
     >
       {/* Comment button - icon AND count open panel */}
       <button
@@ -1102,7 +1106,7 @@ export const Post = memo(function Post({
   return (
     <div className={`w-full max-w-full ${bare ? "" : "sm:max-w-xl"}`}>
       <article
-        className={`relative overflow-hidden ${bare ? "" : "shadow-xl rounded-br-[40px]"}`}
+        className={`relative ${bare ? "" : "shadow-xl overflow-hidden rounded-br-[40px]"}`}
         data-post-id={id}
         data-content-type={contentType}
       >
@@ -1172,8 +1176,8 @@ export const Post = memo(function Post({
           {/* For non-reblogs: normal content */}
           {!isReblog && (
             <div
-              className="relative overflow-hidden"
-              style={{ borderRadius: contentBorderRadius }}
+              className={`relative ${bare ? "" : "overflow-hidden"}`}
+              style={bare ? undefined : { borderRadius: contentBorderRadius }}
             >
               <PostTagsContext.Provider value={{ tags: tags || [], isHovered }}>
                 {children}
@@ -1300,6 +1304,7 @@ export const Post = memo(function Post({
           isReblogMenuOpen={isReblogMenuOpen}
           expandedPanel={expandedPanel}
           voiceCount={voiceCount}
+          bare={bare}
           onCommentClick={handleCommentClick}
           onLike={onLike}
           onLikesClick={handleLikesClick}
@@ -1370,13 +1375,18 @@ interface ImageContentProps {
   alt: string;
   caption?: string;
   priority?: boolean;
+  /** Broadsheet article mode: serif figcaption, no card box. */
+  article?: boolean;
+  /** Break the hero out to the full viewport. Only safe when the reading column
+   *  is viewport-centered (the logged-out reading view, no sidebar). */
+  fullBleed?: boolean;
 }
 
 // Clamp aspect ratio between 4:5 (portrait) and 2:1 (landscape)
 const MIN_ASPECT = 2 / 3; // 0.667 — allow taller portraits to breathe
 const MAX_ASPECT = 2 / 1; // 2.0
 
-export function ImageContent({ src, alt, caption, priority }: ImageContentProps) {
+export function ImageContent({ src, alt, caption, priority, article, fullBleed }: ImageContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
 
@@ -1387,6 +1397,48 @@ export function ImageContent({ src, alt, caption, priority }: ImageContentProps)
       setAspectRatio(Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, natural)));
     }
   };
+
+  // Broadsheet article: full-bleed hero image that breaks out of the reading
+  // column, capped in height, with a serif italic figcaption on the page.
+  if (article) {
+    return (
+      <figure className="my-6">
+        <div
+          className={`relative cursor-pointer overflow-hidden bg-vocl-hover max-h-[78vh] ${
+            fullBleed ? "left-1/2 right-1/2 -mx-[50vw] w-screen max-w-[100vw]" : "w-full"
+          }`}
+          style={aspectRatio ? { aspectRatio: `${aspectRatio}` } : { aspectRatio: "16 / 9" }}
+          onClick={() => setLightboxOpen(true)}
+        >
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes="100vw"
+            priority={!!priority}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            className="object-cover"
+            onLoad={handleImageLoad}
+          />
+        </div>
+        {caption && (
+          <figcaption
+            className="mx-auto max-w-2xl px-4 pt-3 font-serif italic text-sm text-foreground/55 text-center [&_*]:inline"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
+          />
+        )}
+        <ImageLightbox
+          images={[src]}
+          currentIndex={0}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onNavigate={() => {}}
+          alt={alt}
+        />
+      </figure>
+    );
+  }
 
   return (
     <>
@@ -1435,9 +1487,38 @@ interface TextContentProps {
   isEssay?: boolean;
   essayTitle?: string;
   readingTimeMinutes?: number;
+  /** Broadsheet article mode: boxless serif body + drop cap, on the page. */
+  article?: boolean;
 }
 
-export function TextContent({ children, html, isEssay, essayTitle, readingTimeMinutes }: TextContentProps) {
+export function TextContent({ children, html, isEssay, essayTitle, readingTimeMinutes, article }: TextContentProps) {
+  // Broadsheet article: the body flows directly on the page in serif, with a
+  // drop cap on the opening paragraph. No card/box — title is in the masthead.
+  if (article) {
+    const body =
+      "font-serif text-lg sm:text-xl leading-[1.75] text-foreground/90 max-w-none " +
+      "[&_p]:mb-5 [&_a]:text-vocl-primary [&_a]:underline [&_a]:underline-offset-2 " +
+      "[&_strong]:text-foreground [&_strong]:font-semibold [&_em]:italic " +
+      "[&_h2]:font-display [&_h2]:text-2xl [&_h2]:text-foreground [&_h2]:mt-8 [&_h2]:mb-3 " +
+      "[&_h3]:font-display [&_h3]:text-xl [&_h3]:text-foreground [&_h3]:mt-6 [&_h3]:mb-2 " +
+      "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-5 " +
+      "[&_blockquote]:border-l-4 [&_blockquote]:border-vocl-primary [&_blockquote]:pl-5 [&_blockquote]:italic [&_blockquote]:text-foreground/70 [&_blockquote]:my-6 " +
+      "[&_p:empty]:min-h-[1em]";
+    const dropcap =
+      "[&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:font-display " +
+      "[&>p:first-of-type]:first-letter:text-[3.4rem] [&>p:first-of-type]:first-letter:leading-[0.8] " +
+      "[&>p:first-of-type]:first-letter:pr-2 [&>p:first-of-type]:first-letter:mt-1 " +
+      "[&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:text-vocl-primary";
+    return html ? (
+      <div
+        className={`${body} ${dropcap}`}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
+      />
+    ) : (
+      <div className={`${body} whitespace-pre-wrap`}>{children}</div>
+    );
+  }
+
   const postTags = usePostTags();
   const tags = postTags?.tags || [];
   const isHovered = postTags?.isHovered || false;

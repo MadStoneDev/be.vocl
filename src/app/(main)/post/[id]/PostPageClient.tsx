@@ -154,11 +154,12 @@ export function PostPageClient({ postId }: { postId: string }) {
               isEssay={content.is_essay}
               essayTitle={content.essay_title}
               readingTimeMinutes={content.reading_time_minutes}
+              article
             >
               {content.plain || content.text}
             </TextContent>
             {content.link_previews && content.link_previews.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+              <div className="mt-6">
                 <LinkPreviewCarousel previews={content.link_previews} />
               </div>
             )}
@@ -170,6 +171,9 @@ export function PostPageClient({ postId }: { postId: string }) {
           <ImageContent
             src={content.urls?.[0] || content.url}
             alt="Post image"
+            caption={content.caption_html}
+            article
+            fullBleed={isGuest}
           />
         );
 
