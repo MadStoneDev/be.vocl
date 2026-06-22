@@ -182,6 +182,7 @@ export function PostPageClient({ postId }: { postId: string }) {
           <GalleryContent
             images={content.urls || []}
             caption={content.caption_html}
+            article
           />
         );
 
@@ -193,6 +194,8 @@ export function PostPageClient({ postId }: { postId: string }) {
             embedUrl={content.embed_url}
             embedPlatform={content.embed_platform as VideoEmbedPlatform}
             caption={content.caption_html}
+            article
+            fullBleed={isGuest}
           />
         );
 

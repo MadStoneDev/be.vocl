@@ -14,6 +14,10 @@ interface VideoContentProps {
   embedPlatform?: VideoEmbedPlatform;
   // Common
   caption?: string;
+  /** Broadsheet article mode: serif figcaption (no gray box). */
+  article?: boolean;
+  /** Full-viewport hero — only safe in the viewport-centered (logged-out) view. */
+  fullBleed?: boolean;
 }
 
 export function VideoContent({
@@ -21,7 +25,9 @@ export function VideoContent({
   thumbnailUrl,
   embedUrl,
   embedPlatform,
-  caption
+  caption,
+  article,
+  fullBleed,
 }: VideoContentProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -75,8 +81,8 @@ export function VideoContent({
     return url.toString();
   };
 
-  return (
-    <div className="relative bg-black">
+  const player = (
+    <>
       {isEmbed ? (
         // Embedded video player (YouTube, Vimeo, etc.)
         <div className="relative aspect-video">
@@ -139,6 +145,33 @@ export function VideoContent({
           <p className="text-foreground/40">Video unavailable</p>
         </div>
       )}
+    </>
+  );
+
+  // Broadsheet article: full-bleed (guest) player + serif italic figcaption.
+  if (article) {
+    return (
+      <figure className="my-6">
+        <div
+          className={`relative bg-black ${
+            fullBleed ? "left-1/2 right-1/2 -mx-[50vw] w-screen max-w-[100vw]" : "w-full"
+          }`}
+        >
+          {player}
+        </div>
+        {caption && (
+          <figcaption
+            className="mx-auto max-w-2xl px-4 pt-3 font-serif italic text-sm text-foreground/55 text-center [&_*]:inline"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
+          />
+        )}
+      </figure>
+    );
+  }
+
+  return (
+    <div className="relative bg-black">
+      {player}
 
       {/* Caption */}
       {caption && (

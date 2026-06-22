@@ -16,9 +16,11 @@ interface GalleryContentProps {
   caption?: string;
   alt?: string;
   priority?: boolean;
+  /** Broadsheet article mode: serif figcaption (no gray box). */
+  article?: boolean;
 }
 
-export function GalleryContent({ images, caption, alt = "Gallery image", priority }: GalleryContentProps) {
+export function GalleryContent({ images, caption, alt = "Gallery image", priority, article }: GalleryContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -140,7 +142,11 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
         {/* Caption */}
         {caption && (
           <div
-            className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB] text-neutral-700 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+            className={
+              article
+                ? "px-4 pt-3 font-serif italic text-sm text-foreground/55 text-center [&_*]:inline"
+                : "px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB] text-neutral-700 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\\00a0']"
+            }
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />
         )}
