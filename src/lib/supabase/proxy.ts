@@ -52,12 +52,18 @@ export async function updateSession(request: NextRequest) {
   //    avoids turning a 401 JSON response into an HTML redirect to /login.
   //  - RSS feeds must be reachable by external readers (no cookie jar).
   //  - /embed/* renders a public iframe view.
-  //  - /u/[username] is the public profile route.
+  //  - /u/[username] passes through here, but the page itself gates logged-out
+  //    visitors (profiles are members-only) and adds a ?next= login redirect.
+  //  - /discover is the public newspaper page of Public posts.
+  //  - /post/* is reachable by logged-out visitors; the post page server-gates
+  //    Members-only / sensitive posts to login itself.
   const machineOrPublicPrefixes = [
     "/api",
     "/rss",
     "/embed",
     "/u/",
+    "/discover",
+    "/post/",
     "/login",
     "/email-templates",
     "/signup",
