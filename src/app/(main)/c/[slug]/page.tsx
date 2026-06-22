@@ -254,7 +254,7 @@ export default function CommunityPage() {
         variants={fadeUp}
       >
         <div className="flex items-end gap-4">
-          <div className="w-20 h-20 rounded-2xl bg-vocl-surface-dark border-4 border-background overflow-hidden flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
+          <div className="w-20 h-20 rounded-sm bg-vocl-surface-dark border-4 border-background overflow-hidden flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
             {community.iconUrl ? (
               <Image src={community.iconUrl} alt="" width={80} height={80} className="object-cover" />
             ) : (
@@ -348,7 +348,7 @@ export default function CommunityPage() {
 
       {/* NSFW gate hint */}
       {community.nsfw && (
-        <div className="mx-4 sm:mx-6 mt-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2 text-xs text-rose-300">
+        <div className="mx-4 sm:mx-6 mt-5 p-3 rounded-sm bg-rose-500/10 border border-rose-500/20 flex items-start gap-2 text-xs text-rose-300">
           <IconAlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
           <p>This community is marked NSFW. Posts may contain adult content.</p>
         </div>

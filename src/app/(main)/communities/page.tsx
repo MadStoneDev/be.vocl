@@ -132,7 +132,7 @@ export default function CommunitiesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search the desks..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm"
           />
         </div>
 
@@ -165,7 +165,7 @@ export default function CommunitiesPage() {
               >
                 <Link
                   href={`/c/${c.slug}`}
-                  className="w-14 h-14 rounded-xl bg-vocl-surface-dark border border-vocl-border overflow-hidden flex items-center justify-center text-white font-bold flex-shrink-0"
+                  className="w-14 h-14 rounded-sm bg-vocl-surface-dark border border-vocl-border overflow-hidden flex items-center justify-center text-white font-bold flex-shrink-0"
                 >
                   {c.iconUrl ? (
                     <Image src={c.iconUrl} alt="" width={56} height={56} className="object-cover" />

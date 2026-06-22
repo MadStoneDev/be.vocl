@@ -166,7 +166,7 @@ export default function QueuePage() {
             <IconClock size={24} className="text-vocl-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Queue</h1>
+            <h1 className="type-display text-3xl font-bold text-foreground">Queue</h1>
             <p className="text-sm text-foreground/50">
               Manage your scheduled posts
             </p>
@@ -174,7 +174,7 @@ export default function QueuePage() {
         </div>
 
         {/* View toggle */}
-        <div className="flex items-center rounded-xl bg-vocl-surface-dark border border-vocl-border p-1">
+        <div className="flex items-center rounded-sm bg-vocl-surface-dark border border-vocl-border p-1">
           <button
             type="button"
             onClick={() => setViewMode("list")}
@@ -213,7 +213,7 @@ export default function QueuePage() {
 
       {/* Error state */}
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like flex items-center justify-between gap-3">
+        <div className="mb-6 p-4 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like flex items-center justify-between gap-3">
           <span>{error}</span>
           <button
             onClick={fetchQueue}

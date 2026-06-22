@@ -183,10 +183,10 @@ export default function DraftsPage() {
   return (
     <div className="py-6">
       <title>Drafts | be.vocl</title>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Drafts & Scheduled</h1>
+      <h1 className="type-display text-3xl font-bold text-foreground mb-6">Drafts & Scheduled</h1>
 
       {/* Tabs */}
-      <div className="flex sm:rounded-2xl bg-vocl-surface-dark/50 p-1 mb-6">
+      <div className="flex sm:rounded-sm bg-vocl-surface-dark/50 p-1 mb-6">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -196,7 +196,7 @@ export default function DraftsPage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 sm:rounded-xl text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 sm:rounded-sm text-sm font-medium transition-all ${
                 isActive
                   ? "bg-vocl-primary text-white shadow-lg"
                   : "text-foreground/60 hover:text-foreground"
@@ -240,10 +240,10 @@ export default function DraftsPage() {
             return (
               <div
                 key={post.id}
-                className="flex items-start gap-4 p-4 rounded-xl bg-vocl-surface-dark hover:bg-vocl-hover transition-colors"
+                className="flex items-start gap-4 p-4 rounded-sm bg-vocl-surface-dark hover:bg-vocl-hover transition-colors"
               >
                 {/* Post type icon */}
-                <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-sm bg-vocl-hover flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-foreground/70" />
                 </div>
 

@@ -119,8 +119,8 @@ export default function ActivityPage() {
   if (error || !stats) {
     return (
       <div className="py-6">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Activity</h1>
-        <div className="p-6 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
+        <h1 className="type-display text-3xl font-bold text-foreground mb-6">Activity</h1>
+        <div className="p-6 rounded-sm bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-foreground/50">{error || "Unable to load activity data."}</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function ActivityPage() {
   return (
     <div className="py-6">
       <title>Activity | be.vocl</title>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Activity</h1>
+      <h1 className="type-display text-3xl font-bold text-foreground mb-6">Activity</h1>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 gap-3 mb-8">
@@ -139,7 +139,7 @@ export default function ActivityPage() {
           return (
             <div
               key={card.key}
-              className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border"
+              className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border"
             >
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -172,7 +172,7 @@ export default function ActivityPage() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === tab.key
                   ? "bg-vocl-primary text-white"
                   : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
@@ -200,7 +200,7 @@ export default function ActivityPage() {
             : stats.recentActivity.filter((i) => i.type === filter);
         if (filtered.length === 0) {
           return (
-            <div className="p-6 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
+            <div className="p-6 rounded-sm bg-vocl-surface-dark border border-vocl-border text-center">
               <p className="text-foreground/50">
                 {filter === "all"
                   ? "No recent activity yet."
@@ -216,7 +216,7 @@ export default function ActivityPage() {
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border hover:bg-vocl-hover transition-colors"
+                className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border hover:bg-vocl-hover transition-colors"
               >
                 <div
                   className={`w-9 h-9 rounded-lg ${bg} flex-shrink-0 flex items-center justify-center`}

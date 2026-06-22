@@ -142,7 +142,7 @@ export default function AsksPage() {
             <IconMessageQuestion size={24} className="text-vocl-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Ask Inbox</h1>
+            <h1 className="type-display text-3xl font-bold text-foreground">Ask Inbox</h1>
             {asks.length > 0 && (
               <p className="text-sm text-foreground/50">
                 {asks.length} pending ask{asks.length !== 1 ? "s" : ""}
@@ -174,7 +174,7 @@ export default function AsksPage() {
           {asks.map((ask) => (
             <div
               key={ask.id}
-              className="bg-vocl-surface-dark rounded-2xl overflow-hidden"
+              className="bg-vocl-surface-dark rounded-sm overflow-hidden"
             >
               {/* Ask header */}
               <div className="p-4 border-b border-vocl-border">
@@ -268,7 +268,7 @@ export default function AsksPage() {
                   )}
 
                   {error && (
-                    <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+                    <div className="p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
                       {error}
                     </div>
                   )}
@@ -278,7 +278,7 @@ export default function AsksPage() {
                       type="button"
                       onClick={cancelAnswer}
                       disabled={isSubmitting}
-                      className="px-4 py-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                      className="px-4 py-2 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
                     >
                       Cancel
                     </button>
@@ -289,7 +289,7 @@ export default function AsksPage() {
                         isSubmitting ||
                         (!answerContent.plain.trim() && !answerAudioUrl)
                       }
-                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-5 py-2 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <>
@@ -311,7 +311,7 @@ export default function AsksPage() {
                     type="button"
                     onClick={() => handleDelete(ask.id)}
                     disabled={deletingId === ask.id}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-foreground/60 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 rounded-sm text-foreground/60 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
                   >
                     {deletingId === ask.id ? (
                       <IconLoader2 size={18} className="animate-spin" />
@@ -323,7 +323,7 @@ export default function AsksPage() {
                   <button
                     type="button"
                     onClick={() => setAnsweringId(ask.id)}
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+                    className="flex items-center gap-2 px-5 py-2 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
                   >
                     <IconSend size={18} />
                     Answer

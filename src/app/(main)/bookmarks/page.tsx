@@ -209,7 +209,7 @@ export default function BookmarksPage() {
         <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
           <IconBookmark size={24} className="text-vocl-primary" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Bookmarks</h1>
+        <h1 className="type-display text-3xl font-bold text-foreground">Bookmarks</h1>
       </div>
 
       {/* Collection pills */}
@@ -322,7 +322,7 @@ export default function BookmarksPage() {
             {menuOpenId === col.id && (
               <div
                 ref={menuRef}
-                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl py-1 min-w-[140px]"
+                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-vocl-border rounded-sm shadow-xl py-1 min-w-[140px]"
               >
                 <button
                   onClick={() => {
@@ -408,7 +408,7 @@ export default function BookmarksPage() {
 
       {/* Create error toast */}
       {createError && (
-        <div className="mb-4 px-4 py-2 rounded-xl bg-vocl-like/10 border border-vocl-like/20 text-sm text-vocl-like">
+        <div className="mb-4 px-4 py-2 rounded-sm bg-vocl-like/10 border border-vocl-like/20 text-sm text-vocl-like">
           {createError}
         </div>
       )}
@@ -460,7 +460,7 @@ export default function BookmarksPage() {
 
                     {/* Move dropdown */}
                     {moveMenuPostId === post.id && (
-                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl py-1 min-w-[180px]">
+                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-vocl-border rounded-sm shadow-xl py-1 min-w-[180px]">
                         <button
                           onClick={() => handleMoveBookmark(post.id, null)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
@@ -574,7 +574,7 @@ export default function BookmarksPage() {
               <button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="px-6 py-2 bg-vocl-hover text-foreground/70 rounded-xl hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
+                className="px-6 py-2 bg-vocl-hover text-foreground/70 rounded-sm hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
               >
                 {isFetchingNextPage ? "Loading..." : "Load more"}
               </button>

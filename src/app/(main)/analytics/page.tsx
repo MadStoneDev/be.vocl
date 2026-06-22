@@ -185,14 +185,14 @@ export default function AnalyticsPage() {
       <title>Analytics | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-vocl-primary/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-sm bg-vocl-primary/20 flex items-center justify-center">
             <IconChartBar className="w-5 h-5 text-vocl-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
+          <h1 className="type-display text-3xl font-bold text-foreground">Analytics</h1>
         </div>
 
         {/* Time Range Selector */}
-        <div className="flex gap-1 bg-vocl-surface-dark rounded-xl p-1 border border-vocl-border">
+        <div className="flex gap-1 bg-vocl-surface-dark rounded-sm p-1 border border-vocl-border">
           {(["7d", "30d", "90d"] as TimeRange[]).map((range) => (
             <button
               key={range}
@@ -217,7 +217,7 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconTrendingUp className="w-4 h-4" />
                 <span className="text-xs">Total Engagement</span>
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
                 {totalEngagement.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconHeart className="w-4 h-4" />
                 <span className="text-xs">Likes</span>
@@ -235,7 +235,7 @@ export default function AnalyticsPage() {
                 {totalLikes.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconMessage className="w-4 h-4" />
                 <span className="text-xs">Comments</span>
@@ -244,7 +244,7 @@ export default function AnalyticsPage() {
                 {totalComments.toLocaleString()}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-2 text-foreground/50 mb-1">
                 <IconUsers className="w-4 h-4" />
                 <span className="text-xs">Followers</span>
@@ -256,7 +256,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Post Type Breakdown */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
+          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Post Type Breakdown
             </h2>
@@ -298,7 +298,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Posts */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
+          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Top Posts
             </h2>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
                     <div key={post.id}>
                       <button
                         onClick={() => togglePostDetail(post.id)}
-                        className="w-full flex items-start gap-3 p-3 rounded-xl hover:bg-vocl-hover transition-colors text-left"
+                        className="w-full flex items-start gap-3 p-3 rounded-sm hover:bg-vocl-hover transition-colors text-left"
                       >
                         <span className="text-sm font-bold text-foreground/30 w-6 text-right mt-0.5">
                           {index + 1}
@@ -367,7 +367,7 @@ export default function AnalyticsPage() {
 
                       {/* Expanded Detail Panel */}
                       {isExpanded && (
-                        <div className="mx-3 mb-2 p-4 rounded-xl bg-vocl-hover border border-vocl-border space-y-4">
+                        <div className="mx-3 mb-2 p-4 rounded-sm bg-vocl-hover border border-vocl-border space-y-4">
                           {postDetailLoading ? (
                             <div className="flex justify-center py-4">
                               <LoadingSpinner size="sm" />
@@ -531,7 +531,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Tags */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
+          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Top Tags
             </h2>
@@ -544,7 +544,7 @@ export default function AnalyticsPage() {
                 {topTags.map((tag) => (
                   <div
                     key={tag.tag}
-                    className="p-3 rounded-xl bg-vocl-hover border border-vocl-border"
+                    className="p-3 rounded-sm bg-vocl-hover border border-vocl-border"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <IconHash className="w-4 h-4 text-vocl-primary" />
@@ -576,7 +576,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Engagement Over Time */}
-          <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-5">
+          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
             <div className="flex items-center gap-2 mb-4">
               <IconCalendar className="w-5 h-5 text-foreground/50" />
               <h2 className="text-lg font-semibold text-foreground">

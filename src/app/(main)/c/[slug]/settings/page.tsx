@@ -276,7 +276,7 @@ export default function CommunitySettingsPage() {
           <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">General</span>
           <span className="h-px flex-1 bg-vocl-border" />
         </div>
-        <div className="space-y-4 p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+        <div className="space-y-4 p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
           <div>
             <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Name</label>
             <input
@@ -284,7 +284,7 @@ export default function CommunitySettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={60}
-              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+              className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
             />
           </div>
 
@@ -295,7 +295,7 @@ export default function CommunitySettingsPage() {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={500}
-              className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
+              className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
             />
           </div>
 
@@ -307,7 +307,7 @@ export default function CommunitySettingsPage() {
                 value={iconUrl}
                 onChange={(e) => setIconUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               />
             </div>
             <div>
@@ -317,7 +317,7 @@ export default function CommunitySettingsPage() {
                 value={bannerUrl}
                 onChange={(e) => setBannerUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -328,7 +328,7 @@ export default function CommunitySettingsPage() {
               <select
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               >
                 <option value="public">Public — anyone can view</option>
                 <option value="restricted">Restricted — anyone can view, members post</option>
@@ -340,7 +340,7 @@ export default function CommunitySettingsPage() {
               <select
                 value={joinPolicy}
                 onChange={(e) => setJoinPolicy(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
               >
                 <option value="open">Open — anyone can join</option>
                 <option value="request">Request — requires approval</option>
@@ -388,13 +388,13 @@ export default function CommunitySettingsPage() {
             <span className="h-px flex-1 bg-vocl-border" />
           </div>
           {requests.length === 0 ? (
-            <div className="rounded-xl bg-vocl-hover border border-vocl-border p-6 text-center">
+            <div className="rounded-sm bg-vocl-hover border border-vocl-border p-6 text-center">
               <p className="text-sm text-foreground/50">No pending requests.</p>
             </div>
           ) : (
             <div className="space-y-2">
               {requests.map((r) => (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+                <div key={r.id} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border">
                   <Link href={`/profile/${r.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                     {r.avatarUrl ? (
                       <Image src={r.avatarUrl} alt={r.username} fill className="object-cover" />
@@ -444,7 +444,7 @@ export default function CommunitySettingsPage() {
         </div>
         <div className="space-y-2">
           {members.map((m) => (
-            <div key={m.userId} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div key={m.userId} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <Link href={`/profile/${m.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                 {m.avatarUrl ? (
                   <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
@@ -509,13 +509,13 @@ export default function CommunitySettingsPage() {
           </button>
         </div>
         {rules.length === 0 ? (
-          <div className="rounded-xl bg-vocl-hover border border-vocl-border p-6 text-center">
+          <div className="rounded-sm bg-vocl-hover border border-vocl-border p-6 text-center">
             <p className="text-sm text-foreground/50">No rules yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {rules.map((rule, idx) => (
-              <div key={rule.id} className="p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-2">
+              <div key={rule.id} className="p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border space-y-2">
                 <div className="flex items-start gap-2">
                   <div className="flex flex-col">
                     <button onClick={() => moveRule(idx, -1)} disabled={idx === 0} className="text-foreground/40 hover:text-foreground disabled:opacity-30">
@@ -570,7 +570,7 @@ export default function CommunitySettingsPage() {
             <span className="type-meta uppercase tracking-widest text-rose-400 font-semibold">Danger zone</span>
             <span className="h-px flex-1 bg-rose-500/20" />
           </div>
-          <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-3">
+          <div className="p-4 rounded-sm bg-rose-500/5 border border-rose-500/20 space-y-3">
             <p className="text-sm text-foreground/70">
               Deleting this community removes all members, posts, and rules. This cannot be undone.
             </p>
@@ -583,13 +583,13 @@ export default function CommunitySettingsPage() {
                   type="text"
                   value={deleteText}
                   onChange={(e) => setDeleteText(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-background/50 border border-rose-500/30 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full px-3 py-2 rounded-sm bg-background/50 border border-rose-500/30 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={handleDelete}
                     disabled={deleteText !== community.slug}
-                    className="px-3 py-2 rounded-xl bg-rose-500 text-white text-sm font-medium disabled:opacity-50"
+                    className="px-3 py-2 rounded-sm bg-rose-500 text-white text-sm font-medium disabled:opacity-50"
                   >
                     Delete forever
                   </button>
@@ -598,7 +598,7 @@ export default function CommunitySettingsPage() {
                       setConfirmDelete(false);
                       setDeleteText("");
                     }}
-                    className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
+                    className="px-3 py-2 rounded-sm bg-vocl-hover-strong text-foreground text-sm"
                   >
                     Cancel
                   </button>
@@ -607,7 +607,7 @@ export default function CommunitySettingsPage() {
             ) : (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/20 text-rose-400 text-sm font-medium hover:bg-rose-500/30"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-rose-500/20 text-rose-400 text-sm font-medium hover:bg-rose-500/30"
               >
                 <IconTrash size={14} /> Delete community
               </button>

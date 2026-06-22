@@ -56,7 +56,7 @@ export default function TipsPage() {
     <div className="py-6 px-4 max-w-2xl mx-auto">
       <title>Tips | be.vocl</title>
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+        <h1 className="type-display text-3xl font-bold text-foreground flex items-center gap-2">
           <IconCoin size={26} className="text-amber-400" />
           Tips
         </h1>
@@ -66,7 +66,7 @@ export default function TipsPage() {
       </header>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+        <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
           <div className="flex items-center gap-2 text-xs text-foreground/50 mb-1">
             <IconArrowDownLeft size={14} className="text-emerald-400" /> Received
           </div>
@@ -74,7 +74,7 @@ export default function TipsPage() {
             ${(receivedTotal / 100).toFixed(2)}
           </p>
         </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+        <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
           <div className="flex items-center gap-2 text-xs text-foreground/50 mb-1">
             <IconArrowUpRight size={14} className="text-rose-400" /> Sent
           </div>
@@ -89,7 +89,7 @@ export default function TipsPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${
+            className={`px-4 py-2 rounded-sm text-sm font-medium capitalize transition-colors ${
               tab === t
                 ? "bg-vocl-primary text-white"
                 : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
@@ -105,7 +105,7 @@ export default function TipsPage() {
           <IconLoader2 size={28} className="animate-spin text-vocl-primary" />
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl bg-vocl-hover border border-vocl-border p-10 text-center">
+        <div className="rounded-sm bg-vocl-hover border border-vocl-border p-10 text-center">
           <p className="text-foreground/50">
             {tab === "received"
               ? "No tips received yet."
@@ -126,7 +126,7 @@ export default function TipsPage() {
             return (
               <div
                 key={tip.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark border border-vocl-border"
+                className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border"
               >
                 <Link
                   href={`/profile/${username}`}
