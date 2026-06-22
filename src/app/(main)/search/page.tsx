@@ -57,10 +57,10 @@ function SearchLoading() {
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
       <div className="animate-pulse">
-        <div className="h-12 bg-vocl-hover-strong rounded-xl mb-6" />
+        <div className="h-12 bg-vocl-hover-strong rounded-sm mb-6" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-vocl-hover rounded-xl" />
+            <div key={i} className="h-20 bg-vocl-hover rounded-sm" />
           ))}
         </div>
       </div>
@@ -374,7 +374,7 @@ function SearchContent() {
             setBrowsingTag(null);
           }}
           placeholder="Search @users, #tags, or posts..."
-          className="w-full pl-12 pr-4 py-3 rounded-full bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+          className="w-full pl-12 pr-4 py-3 rounded-full bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
         />
         {(query || browsingTag) && (
           <button
@@ -392,7 +392,7 @@ function SearchContent() {
       {/* Sensitive Content Warning Modal */}
       {showSensitiveWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-vocl-surface-dark rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-vocl-surface-dark rounded-sm p-6 max-w-md w-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
                 <IconAlertTriangle size={24} className="text-yellow-500" />
@@ -408,13 +408,13 @@ function SearchContent() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSensitiveWarning(false)}
-                className="flex-1 py-2.5 rounded-xl bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover-strong transition-colors"
+                className="flex-1 py-2.5 rounded-sm bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover-strong transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSensitiveConfirm}
-                className="flex-1 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+                className="flex-1 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
               >
                 Continue
               </button>
@@ -516,7 +516,7 @@ function SearchContent() {
         <div className="mb-6">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 rounded-sm bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong transition-colors text-sm font-medium"
           >
             <IconFilter size={16} />
             <span>Filters</span>
@@ -524,7 +524,7 @@ function SearchContent() {
           </button>
 
           {showFilters && (
-            <div className="mt-3 p-4 rounded-xl bg-vocl-hover border border-vocl-border space-y-5">
+            <div className="mt-3 p-4 rounded-sm bg-vocl-hover border border-vocl-border space-y-5">
               {/* Post Type */}
               <div>
                 <label className="block text-sm font-medium text-foreground/70 mb-2">
@@ -542,9 +542,9 @@ function SearchContent() {
                     <button
                       key={type.value}
                       onClick={() => setFilterPostType(type.value)}
-                      className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
                         filterPostType === type.value
-                          ? "bg-vocl-accent text-white"
+                          ? "bg-vocl-primary text-white"
                           : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
                       }`}
                     >
@@ -567,9 +567,9 @@ function SearchContent() {
                     <button
                       key={sort.value}
                       onClick={() => setFilterSortBy(sort.value)}
-                      className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
                         filterSortBy === sort.value
-                          ? "bg-vocl-accent text-white"
+                          ? "bg-vocl-primary text-white"
                           : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
                       }`}
                     >
@@ -589,7 +589,7 @@ function SearchContent() {
                     type="date"
                     value={filterDateFrom}
                     onChange={(e) => setFilterDateFrom(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    className="flex-1 px-3 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
                     placeholder="From"
                   />
                   <span className="text-foreground/40 text-sm">to</span>
@@ -597,7 +597,7 @@ function SearchContent() {
                     type="date"
                     value={filterDateTo}
                     onChange={(e) => setFilterDateTo(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    className="flex-1 px-3 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
                     placeholder="To"
                   />
                 </div>
@@ -619,7 +619,7 @@ function SearchContent() {
                     aria-checked={filterHasMedia}
                     onClick={() => setFilterHasMedia(!filterHasMedia)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      filterHasMedia ? "bg-vocl-accent" : "bg-vocl-hover-strong"
+                      filterHasMedia ? "bg-vocl-primary" : "bg-vocl-hover-strong"
                     }`}
                   >
                     <span
@@ -637,7 +637,7 @@ function SearchContent() {
                     value={filterAuthor}
                     onChange={(e) => setFilterAuthor(e.target.value)}
                     placeholder="Filter by username..."
-                    className="w-full px-3 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent"
+                    className="w-full px-3 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
                   />
                 </div>
               </div>
@@ -653,7 +653,7 @@ function SearchContent() {
                     setFilterHasMedia(false);
                     setFilterAuthor("");
                   }}
-                  className="text-sm text-vocl-accent hover:underline"
+                  className="text-sm text-vocl-primary hover:underline"
                 >
                   Clear all filters
                 </button>
@@ -666,7 +666,7 @@ function SearchContent() {
       {/* Loading */}
       {isSearching && (
         <div className="flex justify-center py-12">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       )}
 
@@ -867,7 +867,7 @@ function UserCard({
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
             <span className="text-lg font-bold text-white">
               {user.username.charAt(0).toUpperCase()}
             </span>

@@ -189,7 +189,7 @@ export default function TagPage() {
   if (isLoading && posts.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <IconLoader2 size={40} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={40} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -275,7 +275,7 @@ export default function TagPage() {
           <p className="text-foreground/50 mb-4">{error}</p>
           <button
             onClick={() => fetchPosts(0, false)}
-            className="px-4 py-2 bg-vocl-accent text-white rounded-xl hover:bg-vocl-accent-hover transition-colors"
+            className="px-4 py-2 bg-vocl-primary text-white rounded-sm hover:bg-vocl-primary-hover transition-colors"
           >
             Try again
           </button>
@@ -340,7 +340,7 @@ export default function TagPage() {
 
       {isLoadingMore && (
         <div className="flex items-center justify-center py-8">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       )}
     </div>

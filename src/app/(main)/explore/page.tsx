@@ -175,7 +175,7 @@ export default function ExplorePage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search @users, #tags, or posts..."
-          className="w-full pl-10 pr-10 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent text-sm"
+          className="w-full pl-10 pr-10 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm"
         />
         {searchQuery && (
           <button
@@ -253,7 +253,7 @@ export default function ExplorePage() {
                             sizes="24px"
                           />
                         ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                             <span className="text-[10px] font-bold text-white">
                               {post.author.username.charAt(0).toUpperCase()}
                             </span>
@@ -345,7 +345,7 @@ export default function ExplorePage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                         <span className="text-lg font-bold text-white">
                           {creator.username.charAt(0).toUpperCase()}
                         </span>
@@ -443,8 +443,8 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
   if (postType === "image" || postType === "gallery") {
     if (!thumbnailUrl) {
       return (
-        <div className="aspect-[16/10] bg-gradient-to-br from-vocl-accent/10 to-vocl-accent/5 flex items-center justify-center">
-          <IconPhoto size={36} className="text-vocl-accent/40" />
+        <div className="aspect-[16/10] bg-gradient-to-br from-vocl-primary/10 to-vocl-primary/5 flex items-center justify-center">
+          <IconPhoto size={36} className="text-vocl-primary/40" />
         </div>
       );
     }
@@ -500,22 +500,22 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
     // Voice note or file
     const isVoice = (post as any).content?.is_voice_note;
     return (
-      <div className="relative aspect-[16/6] bg-gradient-to-br from-vocl-accent/20 to-vocl-accent/5 flex items-center gap-3 p-3">
+      <div className="relative aspect-[16/6] bg-gradient-to-br from-vocl-primary/20 to-vocl-primary/5 flex items-center gap-3 p-3">
         {thumbnailUrl ? (
           <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/20">
             <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="64px" />
           </div>
         ) : (
-          <div className="w-16 h-16 rounded-md bg-vocl-accent/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-md bg-vocl-primary/20 flex items-center justify-center flex-shrink-0">
             {isVoice ? (
-              <IconMicrophone size={24} className="text-vocl-accent" />
+              <IconMicrophone size={24} className="text-vocl-primary" />
             ) : (
-              <IconMusic size={24} className="text-vocl-accent" />
+              <IconMusic size={24} className="text-vocl-primary" />
             )}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="inline-flex items-center gap-1 text-xs text-vocl-accent font-medium">
+          <div className="inline-flex items-center gap-1 text-xs text-vocl-primary font-medium">
             {isVoice ? (
               <>
                 <IconMicrophone size={14} /> Voice note
@@ -569,7 +569,7 @@ function ExploreSkeleton() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-24 rounded-xl bg-vocl-hover" />
+              <div key={i} className="h-24 rounded-sm bg-vocl-hover" />
             ))}
           </div>
         </section>
@@ -584,7 +584,7 @@ function ExploreSkeleton() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-4 rounded-xl bg-vocl-hover"
+                className="flex items-center gap-3 p-4 rounded-sm bg-vocl-hover"
               >
                 <div className="w-12 h-12 rounded-full bg-vocl-hover-strong flex-shrink-0" />
                 <div className="flex-1 space-y-2">
