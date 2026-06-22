@@ -37,8 +37,10 @@ function headlineOf(post: FeedPost): string {
   const c = post.content;
   switch (post.contentType) {
     case "text":
+      // Only essays have a real title. Plain notes return "" so the tile renders
+      // the note body once (no synthetic heading derived from the body).
       if (c.isEssay && c.essayTitle) return c.essayTitle;
-      return firstWords(c.text || stripHtml(c.html), 16) || "Untitled";
+      return "";
     case "ask": {
       const r = raw(post);
       return clamp((r.question as string) || stripHtml(r.question_html as string) || "An ask", 120);
@@ -61,8 +63,8 @@ function headlineOf(post: FeedPost): string {
 function standfirstOf(post: FeedPost): string {
   const c = post.content;
   if (post.contentType === "text") {
-    const body = c.text || stripHtml(c.html);
-    return clamp(body, 220);
+    // No JS truncation — display clamping is handled with CSS line-clamp.
+    return c.text || stripHtml(c.html);
   }
   if (post.contentType === "ask") {
     return clamp(stripHtml(raw(post).answer_html as string), 200);
@@ -163,6 +165,24 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
   const standfirst = standfirstOf(post);
   const headlineClass =
     prominence === "lead" ? "type-display-lg" : prominence === "feature" ? "type-display" : "type-heading";
+  // CSS-only clamp for grid sanity (not data truncation).
+  const clampClass =
+    prominence === "lead" ? "line-clamp-5" : prominence === "feature" ? "line-clamp-4" : "line-clamp-3";
+
+  // Plain text note (no essay title): render the note ONCE in headline style — no
+  // synthetic heading + body duplication.
+  if (!headline) {
+    return (
+      <TileShell post={post} className="flex flex-col gap-2">
+        <Kicker post={post} />
+        <p className={`${headlineClass} ${clampClass} text-foreground group-hover:text-vocl-primary transition-colors`}>
+          {standfirst}
+        </p>
+        <Byline post={post} />
+      </TileShell>
+    );
+  }
+
   const showStandfirst = prominence !== "standard" && standfirst;
 
   return (

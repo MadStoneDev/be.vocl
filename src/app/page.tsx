@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getPublicFrontPagePosts } from "@/actions/posts";
 import { FrontPageGrid } from "@/components/feed/frontpage";
 import type { FeedPost } from "@/components/feed/FeedList";
+import { getFeaturedPosts } from "@/lib/featured";
+import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
 
@@ -44,6 +46,7 @@ export default async function Home() {
   }
 
   const posts = (await getPublicFrontPagePosts({ limit: 24 })) as unknown as FeedPost[];
+  const featured = getFeaturedPosts();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -70,31 +73,12 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* Editorial hero */}
-      <section className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6 sm:py-24">
-        <h1 className="mx-auto max-w-3xl type-display text-4xl font-bold leading-tight text-foreground sm:text-6xl">
-          Share your voice freely.
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl type-body text-lg text-foreground/65 sm:text-xl">
-          be.vocl is a calmer corner of the social web — a place to write, share,
-          and discover. Read what people are publishing right now, then join the
-          conversation.
-        </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/signup"
-            className="rounded-xl bg-vocl-primary px-7 py-3 text-base font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
-          >
-            Join be.vocl
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-xl border border-vocl-border px-7 py-3 text-base font-semibold text-foreground transition-colors hover:bg-vocl-hover"
-          >
-            Log in
-          </Link>
-        </div>
-      </section>
+      {/* Featured carousel hero */}
+      {featured.length > 0 && (
+        <section className="py-10 sm:py-14">
+          <FeaturedCarousel items={featured} />
+        </section>
+      )}
 
       {/* Public front page */}
       <main id="main-content" className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">

@@ -99,7 +99,9 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     tags: [],
     selectedCommunityIds: [],
     isSensitive: false,
-    excludeFromPublic: false,
+    // Privacy-first default: posts are Members-only unless the author opts into
+    // Public via the Audience selector.
+    excludeFromPublic: true,
     contentWarning: "",
     publishMode: "now",
     scheduledDate: "",
