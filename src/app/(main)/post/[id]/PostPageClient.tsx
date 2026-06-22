@@ -1,14 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
+import { useAuth } from "@/hooks/useAuth";
 import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
 import { fadeUp } from "@/lib/motion";
 import type { VideoEmbedPlatform } from "@/types/database";
+
+/**
+ * For logged-out visitors: let them READ the post, but funnel every interactive
+ * affordance (like, reply, reblog, follow, profile/tag links, post menu) to the
+ * join page. Uses capture-phase handlers so the inner control's own handler
+ * never fires.
+ */
+function GuestInteractionGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
+  const interceptClick = useCallback(
+    (e: React.MouseEvent) => {
+      const el = (e.target as HTMLElement).closest("a, button, [role='button']");
+      if (!el) return; // plain text / reading — allow
+      e.preventDefault();
+      e.stopPropagation();
+      router.push("/signup");
+    },
+    [router]
+  );
+
+  const interceptFocus = useCallback(
+    (e: React.FocusEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.closest("input, textarea, [contenteditable='true']")) {
+        router.push("/signup");
+      }
+    },
+    [router]
+  );
+
+  return (
+    <div onClickCapture={interceptClick} onFocusCapture={interceptFocus}>
+      {children}
+    </div>
+  );
+}
 
 const POST_TYPE_KICKER: Record<string, string> = {
   text: "Note",
@@ -47,6 +85,8 @@ interface PostData {
 
 export function PostPageClient({ postId }: { postId: string }) {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const isGuest = !authLoading && !isAuthenticated;
 
   const [post, setPost] = useState<PostData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -203,36 +243,45 @@ export function PostPageClient({ postId }: { postId: string }) {
         <span className="mt-4 block h-px w-full bg-vocl-border" />
       </motion.div>
 
-      {/* Post */}
-      <InteractivePost
-        id={post.id}
-        author={{
-          username: post.author.username,
-          avatarUrl: post.author.avatarUrl || "",
-          role: post.author.role,
-        }}
-        authorId={post.authorId}
-        timestamp={post.createdAt}
-        contentType={post.postType as any}
-        initialStats={{
-          comments: post.commentCount,
-          likes: post.likeCount,
-          reblogs: post.reblogCount,
-        }}
-        initialInteractions={{
-          hasCommented: post.hasCommented,
-          hasLiked: post.hasLiked,
-          hasReblogged: post.hasReblogged,
-        }}
-        isSensitive={post.isSensitive}
-        excludeFromPublic={post.excludeFromPublic}
-        isOwn={post.isOwn}
-        isPinned={post.isPinned}
-        tags={post.tags}
-        content={post.content}
-      >
-        {renderContent()}
-      </InteractivePost>
+      {/* Post — guests can read it, but any interaction routes to join */}
+      {(() => {
+        const postEl = (
+          <InteractivePost
+            id={post.id}
+            author={{
+              username: post.author.username,
+              avatarUrl: post.author.avatarUrl || "",
+              role: post.author.role,
+            }}
+            authorId={post.authorId}
+            timestamp={post.createdAt}
+            contentType={post.postType as any}
+            initialStats={{
+              comments: post.commentCount,
+              likes: post.likeCount,
+              reblogs: post.reblogCount,
+            }}
+            initialInteractions={{
+              hasCommented: post.hasCommented,
+              hasLiked: post.hasLiked,
+              hasReblogged: post.hasReblogged,
+            }}
+            isSensitive={post.isSensitive}
+            excludeFromPublic={post.excludeFromPublic}
+            isOwn={post.isOwn}
+            isPinned={post.isPinned}
+            tags={post.tags}
+            content={post.content}
+          >
+            {renderContent()}
+          </InteractivePost>
+        );
+        return isGuest ? (
+          <GuestInteractionGuard>{postEl}</GuestInteractionGuard>
+        ) : (
+          postEl
+        );
+      })()}
     </div>
     </MotionConfig>
   );

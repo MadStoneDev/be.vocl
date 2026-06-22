@@ -56,7 +56,7 @@ export function FeaturedCarousel({ items }: { items: FeaturedItem[] }) {
         onFocusCapture={() => setPaused(true)}
         onBlurCapture={() => setPaused(false)}
       >
-        <div className="relative mx-auto max-w-3xl px-4">
+        <div className="relative mx-auto max-w-6xl px-4">
           {/* Peeking neighbours (wide screens only) */}
           {n > 1 && (
             <>
@@ -66,7 +66,7 @@ export function FeaturedCarousel({ items }: { items: FeaturedItem[] }) {
           )}
 
           {/* Center stage */}
-          <div className="relative aspect-[16/11] sm:aspect-[16/9] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-accent/30">
+          <div className="relative aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-accent/30">
             <AnimatePresence initial={false} custom={dir} mode="popLayout">
               <motion.article
                 key={current.slug}
