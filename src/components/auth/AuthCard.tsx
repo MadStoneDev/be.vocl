@@ -19,7 +19,6 @@ import {
 import { validateUsernameFormat } from "@/lib/validation";
 import { checkUsernameAvailability } from "@/actions/profile";
 import { validateInviteCode } from "@/actions/invites";
-import Logo from "@/components/logo";
 
 type AuthMode = "login" | "signup" | "forgot";
 
@@ -293,56 +292,73 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     }
   };
 
+  const dateline = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* Logo and tagline */}
-      <div className="text-center mb-8">
-        <Logo className="mx-auto w-60" />
-        <p className="-mt-8 text-foreground/60 font-light">Share your voice freely</p>
-      </div>
+      {/* Masthead */}
+      <header className="text-center mb-7 border-b-4 border-double border-vocl-border pb-5">
+        <div className="flex items-center justify-center gap-3 type-meta uppercase tracking-[0.25em] text-foreground/45">
+          <span className="h-px w-8 bg-vocl-border" />
+          Est. 2026
+          <span className="h-px w-8 bg-vocl-border" />
+        </div>
+        <h1 className="type-display text-5xl sm:text-6xl font-bold text-vocl-primary mt-2 leading-none">
+          be.vocl
+        </h1>
+        <p className="type-meta uppercase tracking-[0.3em] text-foreground/55 mt-3">
+          Your daily voice
+        </p>
+        <p className="type-meta text-foreground/40 mt-1">{dateline}</p>
+      </header>
 
-      {/* Auth Card */}
-      <div className="bg-vocl-surface-dark/80 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/5">
-        {/* Tab Switcher - Only show for login/signup */}
-        {mode !== "forgot" ? (
-          <div className="flex rounded-full bg-background/50 p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("login");
-                setError(null);
-                setSuccess(null);
-              }}
-              className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
-                mode === "login"
-                  ? "bg-vocl-accent text-white shadow-lg"
-                  : "text-foreground/60 hover:text-foreground"
-              }`}
-            >
-              Log in
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signup");
-                setError(null);
-                setSuccess(null);
-              }}
-              className={`flex-1 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
-                mode === "signup"
-                  ? "bg-vocl-accent text-white shadow-lg"
-                  : "text-foreground/60 hover:text-foreground"
-              }`}
-            >
-              Sign up
-            </button>
-          </div>
-        ) : (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-foreground mb-2">Reset your password</h2>
-            <p className="text-sm text-foreground/60">
+      {/* Newspaper "edition" panel */}
+      <div className="border border-vocl-border bg-vocl-surface p-6 sm:p-8">
+        {/* Section kicker + headline */}
+        <div className="text-center mb-6">
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            {mode === "login" ? "Subscribers" : mode === "signup" ? "New readers" : "Account recovery"}
+          </span>
+          <h2 className="type-display text-2xl sm:text-3xl font-bold text-foreground mt-1">
+            {mode === "login"
+              ? "Sign in to read on"
+              : mode === "signup"
+              ? "Start your subscription"
+              : "Reset your password"}
+          </h2>
+          {mode === "forgot" && (
+            <p className="type-body text-sm text-foreground/60 mt-2">
               Enter your email and we&apos;ll send you a link to reset your password.
             </p>
+          )}
+        </div>
+
+        {/* Mode switch (login / signup) */}
+        {mode !== "forgot" && (
+          <div className="flex items-stretch border-y border-vocl-border mb-6">
+            {(["login", "signup"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => {
+                  setMode(m);
+                  setError(null);
+                  setSuccess(null);
+                }}
+                className={`flex-1 py-3 type-meta uppercase tracking-widest font-semibold transition-colors ${
+                  mode === m
+                    ? "text-vocl-primary border-b-2 border-vocl-primary -mb-px"
+                    : "text-foreground/50 hover:text-foreground"
+                } ${m === "signup" ? "border-l border-vocl-border" : ""}`}
+              >
+                {m === "login" ? "Sign in" : "Subscribe"}
+              </button>
+            ))}
           </div>
         )}
 
@@ -409,12 +425,12 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                       setInviteCode(val);
                     }}
                     disabled={isPending}
-                    className={`w-full py-3 pl-12 pr-12 rounded-xl bg-background/50 border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 font-mono tracking-wider ${
+                    className={`w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-hover border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 font-mono tracking-wider ${
                       inviteCodeError
                         ? "border-vocl-like focus:border-vocl-like focus:ring-vocl-like"
                         : inviteCodeValid
                         ? "border-green-500 focus:border-green-500 focus:ring-green-500"
-                        : "border-white/10 focus:border-vocl-accent focus:ring-vocl-accent"
+                        : "border-vocl-border focus:border-vocl-primary focus:ring-vocl-primary"
                     }`}
                     required
                     maxLength={14}
@@ -459,12 +475,12 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                     disabled={isPending}
-                    className={`w-full py-3 pl-12 pr-12 rounded-xl bg-background/50 border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 ${
+                    className={`w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-hover border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 ${
                       usernameError
                         ? "border-vocl-like focus:border-vocl-like focus:ring-vocl-like"
                         : usernameAvailable
                         ? "border-green-500 focus:border-green-500 focus:ring-green-500"
-                        : "border-white/10 focus:border-vocl-accent focus:ring-vocl-accent"
+                        : "border-vocl-border focus:border-vocl-primary focus:ring-vocl-primary"
                     }`}
                     required
                     minLength={3}
@@ -512,7 +528,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isPending}
-              className="w-full py-3 pl-12 pr-4 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+              className="w-full py-3 pl-12 pr-4 rounded-sm bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
               required
             />
           </div>
@@ -530,7 +546,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-12 rounded-xl bg-background/50 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-accent focus:ring-1 focus:ring-vocl-accent transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />
@@ -561,7 +577,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                   setError(null);
                   setSuccess(null);
                 }}
-                className="text-xs text-vocl-accent hover:text-vocl-accent-hover transition-all"
+                className="text-xs text-vocl-primary hover:text-vocl-primary-hover transition-all"
               >
                 Forgot password?
               </button>
@@ -570,14 +586,14 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+            <div className="p-3 rounded-sm bg-vocl-like/15 border border-vocl-like/30 text-vocl-like text-sm">
               {error}
             </div>
           )}
 
           {/* Success Message */}
           {success && (
-            <div className="p-3 rounded-xl bg-vocl-accent/20 border border-vocl-accent/30 text-vocl-accent text-sm">
+            <div className="p-3 rounded-sm bg-vocl-primary/15 border border-vocl-primary/30 text-vocl-primary text-sm">
               {success}
             </div>
           )}
@@ -585,7 +601,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
           <button
             type="submit"
             disabled={isPending}
-            className="mt-6 w-full py-3.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="mt-6 w-full py-3.5 rounded-sm bg-vocl-primary text-white type-meta uppercase tracking-widest font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isPending ? (
               <>
@@ -625,11 +641,11 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
         {mode === "signup" && (
           <p className="text-xs text-foreground/40 text-center mt-4">
             By creating an account, you agree to our{" "}
-            <a href="/terms" className="text-vocl-accent hover:underline">
+            <a href="/terms" className="text-vocl-primary hover:underline">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="/privacy" className="text-vocl-accent hover:underline">
+            <a href="/privacy" className="text-vocl-primary hover:underline">
               Privacy Policy
             </a>
           </p>
