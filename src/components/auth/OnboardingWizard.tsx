@@ -253,7 +253,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
               <IconSparkles size={48} className="text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">
+              <h2 className="type-display text-2xl font-bold text-foreground mb-2">
                 Welcome to be.vocl!
               </h2>
               <p className="text-foreground/60">
@@ -270,7 +270,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-2">
+              <h2 className="type-display text-xl font-bold text-foreground mb-2">
                 Tell us about yourself
               </h2>
               <p className="text-sm text-foreground/60">
@@ -289,7 +289,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
                   maxLength={50}
-                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+                  className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
                   autoFocus
                 />
                 <p className="text-xs text-foreground/40 mt-1">
@@ -307,7 +307,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   placeholder="Tell the world a little about yourself..."
                   maxLength={160}
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
+                  className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
                 />
                 <p className="text-xs text-foreground/40 mt-1 text-right">
                   {bio.length}/160
@@ -321,7 +321,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-2">
+              <h2 className="type-display text-xl font-bold text-foreground mb-2">
                 Add a profile photo
               </h2>
               <p className="text-sm text-foreground/60">
@@ -363,7 +363,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   onChange={handleAvatarSelect}
                   className="hidden"
                 />
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5 transition-colors">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5 transition-colors">
                   <IconUpload size={18} />
                   {avatarUrl ? "Change photo" : "Upload photo"}
                 </span>
@@ -383,7 +383,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-2">
+              <h2 className="type-display text-xl font-bold text-foreground mb-2">
                 Content preferences
               </h2>
               <p className="text-sm text-foreground/60">
@@ -392,7 +392,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/10">
+              <div className="p-4 rounded-sm bg-vocl-surface-dark border border-white/10">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -425,7 +425,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
               </div>
 
               {showSensitivePosts && (
-                <div className="p-4 rounded-xl bg-vocl-surface-dark border border-white/10">
+                <div className="p-4 rounded-sm bg-vocl-surface-dark border border-white/10">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <span className="font-medium text-foreground block mb-1">
@@ -462,7 +462,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-2">
+              <h2 className="type-display text-xl font-bold text-foreground mb-2">
                 What are you interested in?
               </h2>
               <p className="text-sm text-foreground/60">
@@ -480,7 +480,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                   <button
                     key={tag.id}
                     onClick={() => toggleTag(tag.name)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-sm text-sm font-medium transition-all ${
                       selectedTags.has(tag.name)
                         ? "bg-vocl-primary text-white"
                         : "bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5"
@@ -519,7 +519,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground mb-2">
+              <h2 className="type-display text-xl font-bold text-foreground mb-2">
                 Find people to follow
               </h2>
               <p className="text-sm text-foreground/60">
@@ -536,7 +536,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                 {suggestedUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark"
+                    className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark"
                   >
                     <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                       {user.avatarUrl ? (
@@ -618,7 +618,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         </div>
 
         {/* Step content */}
-        <div className="bg-vocl-surface-dark rounded-2xl border border-white/10 p-6">
+        <div className="bg-vocl-surface-dark rounded-sm border border-white/10 p-6">
           {renderStep()}
         </div>
 
@@ -640,7 +640,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
             <button
               onClick={handleComplete}
               disabled={isSubmitting || isUploadingAvatar}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
             >
               {isSubmitting || isUploadingAvatar ? (
                 <>
@@ -657,7 +657,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
           ) : (
             <button
               onClick={handleNext}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
             >
               Continue
               <IconArrowRight size={18} />
