@@ -355,7 +355,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <IconLoader2 size={40} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={40} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -375,7 +375,7 @@ export default function ProfilePage() {
         </p>
         <button
           onClick={() => router.push("/feed")}
-          className="px-6 py-2.5 rounded-xl bg-vocl-accent text-white font-semibold hover:bg-vocl-accent-hover transition-colors"
+          className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
         >
           Go to feed
         </button>
@@ -483,7 +483,7 @@ export default function ProfilePage() {
             <>
               {postsLoading ? (
                 <div className="flex justify-center py-12">
-                  <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+                  <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
                 </div>
               ) : likedPosts.length > 0 ? (
                 likedPosts.map((post) => renderPost(post))
@@ -499,7 +499,7 @@ export default function ProfilePage() {
             <>
               {postsLoading ? (
                 <div className="flex justify-center py-12">
-                  <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+                  <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
                 </div>
               ) : commentedPosts.length > 0 ? (
                 commentedPosts.map((post) => renderPost(post))
@@ -633,7 +633,7 @@ function FollowersListTab({
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
       </div>
     );
   }
@@ -708,7 +708,7 @@ function FollowerCard({
   return (
     <Link
       href={`/profile/${user.username}`}
-      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+      className="flex items-center gap-3 p-3 rounded-sm bg-white/5 hover:bg-white/10 transition-colors"
     >
       <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
         {user.avatarUrl ? (
@@ -719,7 +719,7 @@ function FollowerCard({
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
             <span className="text-lg font-bold text-white">
               {user.username.charAt(0).toUpperCase()}
             </span>
@@ -746,7 +746,7 @@ function FollowerCard({
           className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
             isFollowingUser
               ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-              : "bg-vocl-accent text-white hover:bg-vocl-accent-hover"
+              : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
           }`}
         >
           {isLoadingFollow ? (

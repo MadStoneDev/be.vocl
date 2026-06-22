@@ -131,11 +131,11 @@ export function ProfileTabs({
               onKeyDown={(e) => handleKeyDown(e, index)}
               disabled={tab.isPrivate}
               aria-disabled={tab.isPrivate}
-              className={`relative flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-colors ${
+              className={`relative flex-1 flex items-center justify-center gap-2 py-4 type-meta uppercase tracking-widest font-semibold transition-colors ${
                 tab.isPrivate
                   ? "text-foreground/20 cursor-not-allowed"
                   : isActive
-                  ? "text-vocl-accent"
+                  ? "text-vocl-primary"
                   : "text-foreground/50 hover:text-foreground/70"
               }`}
             >
@@ -150,7 +150,7 @@ export function ProfileTabs({
                 <span
                   className={`text-xs px-1.5 py-0.5 rounded-full ${
                     isActive
-                      ? "bg-vocl-accent/20 text-vocl-accent"
+                      ? "bg-vocl-primary/20 text-vocl-primary"
                       : "bg-vocl-hover-strong text-foreground/50"
                   }`}
                   aria-label={`${count} ${tab.label.toLowerCase()}`}
@@ -164,7 +164,7 @@ export function ProfileTabs({
 
         {/* Animated indicator */}
         <div
-          className="absolute bottom-0 h-0.5 bg-vocl-accent rounded-full transition-all duration-300 ease-out"
+          className="absolute -bottom-px h-0.5 bg-vocl-primary transition-all duration-300 ease-out"
           style={{
             left: indicatorStyle.left,
             width: indicatorStyle.width,

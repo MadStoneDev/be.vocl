@@ -140,7 +140,7 @@ export function ProfileHeader({
               <div className="relative">
                 <button
                   onClick={onAvatarClick}
-                  className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-background shadow-xl cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:ring-offset-2 focus:ring-offset-background"
+                  className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-background shadow-xl cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:ring-offset-2 focus:ring-offset-background"
                   aria-label="View profile picture"
                 >
                   {avatarUrl ? (
@@ -152,7 +152,7 @@ export function ProfileHeader({
                       priority
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                       <span className="text-3xl sm:text-4xl font-bold text-white">
                         {username.charAt(0).toUpperCase()}
                       </span>
@@ -184,7 +184,7 @@ export function ProfileHeader({
                 <motion.button
                   whileTap={tapScale}
                   onClick={onSettings}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-sm bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover transition-colors"
                 >
                   <IconSettings size={18} />
                   <span>Edit profile</span>
@@ -197,7 +197,7 @@ export function ProfileHeader({
                     transition={spring}
                     onClick={handleFollowToggle}
                     disabled={isLoading}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all disabled:opacity-50 ${
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-sm font-semibold transition-all disabled:opacity-50 ${
                       isFollowing
                         ? "bg-vocl-hover-strong text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
                         : "bg-vocl-primary text-white hover:bg-vocl-primary-hover shadow-lg shadow-vocl-primary/25"
@@ -218,7 +218,7 @@ export function ProfileHeader({
                     <motion.button
                       whileTap={tapScale}
                       onClick={onTip}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-yellow-500 font-medium hover:from-yellow-500/20 hover:to-orange-500/20 transition-all border border-yellow-500/20"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-yellow-500 font-medium hover:from-yellow-500/20 hover:to-orange-500/20 transition-all border border-yellow-500/20"
                       title="Send a tip"
                     >
                       <IconCoin size={18} />
@@ -231,7 +231,7 @@ export function ProfileHeader({
                     <motion.button
                       whileTap={tapScale}
                       onClick={onAsk}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover transition-colors"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover transition-colors"
                       title="Send an ask"
                     >
                       <IconMessageQuestion size={18} />
@@ -243,7 +243,7 @@ export function ProfileHeader({
                   <div className="relative">
                     <button
                       onClick={() => setShowMenu(!showMenu)}
-                      className="p-2.5 rounded-xl bg-vocl-hover-strong text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                      className="p-2.5 rounded-sm bg-vocl-hover-strong text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
                     >
                       <IconDots size={20} />
                     </button>
@@ -254,7 +254,7 @@ export function ProfileHeader({
                           className="fixed inset-0 z-[110]"
                           onClick={() => setShowMenu(false)}
                         />
-                        <div className="absolute right-0 mt-2 w-48 py-2 rounded-xl bg-background border border-vocl-border shadow-xl z-[120]">
+                        <div className="absolute right-0 mt-2 w-48 py-2 rounded-sm bg-background border border-vocl-border shadow-xl z-[120]">
                           {onMessage && (
                             <button
                               onClick={() => {
@@ -316,19 +316,26 @@ export function ProfileHeader({
             </div>
           </div>
 
-          {/* Stat row — social proof above the fold */}
+          {/* Bio — confident body type / standfirst */}
+          {bio && (
+            <p className="mt-4 type-body text-foreground/90 max-w-xl">
+              {bio}
+            </p>
+          )}
+
+          {/* "By the numbers" — ruled editorial stat bar */}
           {stats && (
-            <div className="mt-4 flex items-center gap-5 sm:gap-7">
+            <div className="mt-5 flex items-stretch border-y border-vocl-border divide-x divide-vocl-border">
               {statItems.map((item) => (
                 <button
                   key={item.key}
                   onClick={() => onStatClick?.(item.key)}
-                  className="group flex items-baseline gap-1.5 text-left transition-colors"
+                  className="group flex flex-1 flex-col items-center py-3 transition-colors hover:bg-vocl-hover"
                 >
-                  <span className="text-foreground font-semibold tabular-nums group-hover:text-vocl-accent transition-colors">
+                  <span className="type-heading text-foreground tabular-nums group-hover:text-vocl-primary transition-colors">
                     {formatCount(stats[item.key])}
                   </span>
-                  <span className="text-foreground/50 text-sm group-hover:text-foreground/70 transition-colors">
+                  <span className="type-meta uppercase tracking-widest text-foreground/50 mt-0.5">
                     {item.label}
                   </span>
                 </button>
@@ -336,12 +343,8 @@ export function ProfileHeader({
             </div>
           )}
 
-          {/* Bio — confident body type */}
-          {bio && (
-            <p className="mt-4 type-body text-foreground/90 max-w-xl">
-              {bio}
-            </p>
-          )}
+          {/* Masthead closing rule */}
+          <div className="mt-5 border-b-4 border-double border-vocl-border" />
         </div>
       </motion.div>
     </MotionConfig>
