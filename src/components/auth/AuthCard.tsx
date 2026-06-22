@@ -318,7 +318,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
       </header>
 
       {/* Newspaper "edition" panel */}
-      <div className="border border-vocl-border bg-vocl-surface p-6 sm:p-8">
+      <div className="border border-vocl-border bg-vocl-surface-dark p-6 sm:p-8">
         {/* Section kicker + headline */}
         <div className="text-center mb-6">
           <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">

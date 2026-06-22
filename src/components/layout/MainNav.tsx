@@ -137,7 +137,7 @@ export function MainNav({
                   className="fixed inset-0 z-40"
                   onClick={() => setShowMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 py-2 rounded-sm bg-vocl-surface border border-vocl-border shadow-xl z-50">
+                <div className="absolute right-0 mt-2 w-48 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border shadow-xl z-50">
                   {/* Admin - only for staff */}
                   {role >= 5 && (
                     <Link
