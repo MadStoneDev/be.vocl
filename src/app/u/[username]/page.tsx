@@ -220,37 +220,37 @@ export default async function PublicProfilePage({ params }: Props) {
         </div>
 
         <div className="mt-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
+            be.vocl
+          </span>
+          <h1 className="type-display-lg text-foreground mt-1 leading-none">
             {displayName}
           </h1>
-          <p className="text-foreground/50 text-lg">@{profile.username}</p>
+          <p className="type-meta text-foreground/50 mt-1">
+            @{profile.username} · {postCount} {postCount === 1 ? "post" : "posts"}
+          </p>
         </div>
 
         {profile.bio && (
-          <p className="mt-3 text-foreground/80 whitespace-pre-wrap leading-relaxed max-w-xl">
+          <p className="mt-4 type-body text-foreground/80 whitespace-pre-wrap leading-relaxed max-w-xl">
             {profile.bio}
           </p>
         )}
 
-        {/* Stats */}
-        <div className="mt-4 flex items-center gap-6 text-sm text-foreground/50">
-          <span>
-            <span className="font-semibold text-foreground">{postCount}</span>{" "}
-            {postCount === 1 ? "post" : "posts"}
-          </span>
-        </div>
+        {/* Masthead closing rule */}
+        <div className="mt-5 border-b-4 border-double border-vocl-border" />
 
         {/* CTA Buttons */}
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={`/profile/${profile.username}`}
-            className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
+            className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
           >
             View on be.vocl
           </Link>
           <Link
             href="/signup"
-            className="px-6 py-2.5 rounded-xl bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
+            className="px-6 py-2.5 rounded-sm bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
           >
             Join be.vocl
           </Link>
@@ -267,7 +267,7 @@ export default async function PublicProfilePage({ params }: Props) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-sm text-foreground/80 hover:bg-white/10 hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-white/5 border border-white/5 text-sm text-foreground/80 hover:bg-white/10 hover:text-foreground transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -313,7 +313,7 @@ export default async function PublicProfilePage({ params }: Props) {
             {posts.map((post) => renderPublicPost(post, profile))}
           </div>
         ) : (
-          <div className="text-center py-12 rounded-2xl bg-white/5 border border-white/5">
+          <div className="text-center py-12 rounded-sm bg-white/5 border border-white/5">
             <p className="text-foreground/50">No posts yet</p>
           </div>
         )}
@@ -321,7 +321,7 @@ export default async function PublicProfilePage({ params }: Props) {
 
       {/* Bottom CTA */}
       <div className="mt-12 px-4 sm:px-6">
-        <div className="rounded-2xl bg-white/5 border border-white/5 p-6 text-center">
+        <div className="rounded-sm bg-white/5 border border-white/5 p-6 text-center">
           <p className="text-foreground/70 mb-4">
             Want to see more from{" "}
             <span className="font-semibold text-foreground">{displayName}</span>
@@ -330,13 +330,13 @@ export default async function PublicProfilePage({ params }: Props) {
           <div className="flex justify-center gap-3">
             <Link
               href={`/profile/${profile.username}`}
-              className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
+              className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
             >
               View Full Profile
             </Link>
             <Link
               href="/signup"
-              className="px-6 py-2.5 rounded-xl bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
+              className="px-6 py-2.5 rounded-sm bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
             >
               Join be.vocl
             </Link>
