@@ -130,6 +130,10 @@ export interface PostProps {
   threadId?: string;
   threadPosition?: number;
   threadLength?: number;
+  // Article (broadsheet) mode — used on the single-post page. Drops the feed-card
+  // chrome and the byline header so a bespoke article masthead can sit above.
+  hideHeader?: boolean;
+  bare?: boolean;
 }
 
 // =============================================================================
@@ -940,6 +944,8 @@ export const Post = memo(function Post({
   threadId,
   threadPosition,
   threadLength,
+  hideHeader = false,
+  bare = false,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
@@ -1055,24 +1061,26 @@ export const Post = memo(function Post({
   }, []);
 
   return (
-    <div className="w-full max-w-full sm:max-w-xl">
+    <div className={`w-full max-w-full ${bare ? "" : "sm:max-w-xl"}`}>
       <article
-        className="relative shadow-xl overflow-hidden rounded-br-[40px]"
+        className={`relative overflow-hidden ${bare ? "" : "shadow-xl rounded-br-[40px]"}`}
         data-post-id={id}
         data-content-type={contentType}
       >
         {/* Header — always shows the post author (reblogger for reblogs) */}
-        <PostHeader
-          author={author}
-          timestamp={timestamp}
-          onMenuClick={onMenuClick}
-          reblogFrom={
-            isReblog && originalAuthor ? originalAuthor.username : null
-          }
-          threadId={threadId}
-          threadPosition={threadPosition}
-          threadLength={threadLength}
-        />
+        {!hideHeader && (
+          <PostHeader
+            author={author}
+            timestamp={timestamp}
+            onMenuClick={onMenuClick}
+            reblogFrom={
+              isReblog && originalAuthor ? originalAuthor.username : null
+            }
+            threadId={threadId}
+            threadPosition={threadPosition}
+            threadLength={threadLength}
+          />
+        )}
 
         {/* Content area with overlay */}
         <div
@@ -1260,12 +1268,14 @@ export const Post = memo(function Post({
         />
 
         {/* Fake Border */}
-        <div
-          className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-vocl-surface-muted z-40`}
-          style={{
-            borderRadius: articleBorderRadius,
-          }}
-        ></div>
+        {!bare && (
+          <div
+            className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-vocl-surface-muted z-40`}
+            style={{
+              borderRadius: articleBorderRadius,
+            }}
+          ></div>
+        )}
       </article>
 
       {/* Expanded Panel - OUTSIDE article, below action bar */}

@@ -53,6 +53,8 @@ interface InteractivePostProps {
   initialInteractions: PostInteractions;
   isSensitive?: boolean;
   excludeFromPublic?: boolean;
+  /** Broadsheet article layout (single-post page): drops the feed-card chrome. */
+  articleMode?: boolean;
   isOwn?: boolean;
   isFollowingAuthor?: boolean;
   isReblog?: boolean;
@@ -93,6 +95,7 @@ function InteractivePostComponent({
   initialInteractions,
   isSensitive = false,
   excludeFromPublic = false,
+  articleMode = false,
   isOwn = false,
   isFollowingAuthor = false,
   isReblog = false,
@@ -605,6 +608,8 @@ function InteractivePostComponent({
         threadId={threadId}
         threadPosition={threadPosition}
         threadLength={threadLength}
+        hideHeader={articleMode}
+        bare={articleMode}
       >
         {renderContent()}
       </Post>

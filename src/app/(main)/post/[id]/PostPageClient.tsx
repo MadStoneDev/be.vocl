@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
 import { useAuth } from "@/hooks/useAuth";
+import { Avatar } from "@/components/ui";
 import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
@@ -212,36 +213,69 @@ export function PostPageClient({ postId }: { postId: string }) {
   const essayTitle = isEssay ? (content.essay_title as string | undefined) : undefined;
   const kicker = isEssay ? "Essay" : POST_TYPE_KICKER[post.postType] || "Note";
 
+  // Broadsheet headline: only where there's a real title (essay) or a question
+  // (ask/poll). Plain notes & media lead with their content — no synthetic title.
+  const articleHeadline =
+    essayTitle ||
+    (post.postType === "ask" || post.postType === "poll"
+      ? (content.question as string | undefined)
+      : undefined);
+  const readingTime = isEssay ? (content.reading_time_minutes as number | undefined) : undefined;
+  const dateline = new Date(post.createdAt).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
   return (
     <MotionConfig reducedMotion="user">
-    <div className="max-w-xl mx-auto py-6 px-4">
-      {/* Back-to-feed affordance */}
+    <article className="max-w-2xl mx-auto py-6 px-4">
+      {/* Back affordance */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-5 transition-colors"
+        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-6 transition-colors"
       >
         <IconArrowLeft size={15} />
         Back
       </button>
 
-      {/* Editorial dateline + headline framing for essays */}
-      <motion.div
-        className="mb-4"
+      {/* Broadsheet masthead: kicker · headline · byline · double rule */}
+      <motion.header
+        className="mb-6"
         initial="hidden"
         animate="show"
         variants={fadeUp}
       >
-        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+        <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
           {kicker}
-          {isEssay && content.reading_time_minutes
-            ? ` · ${content.reading_time_minutes} min read`
-            : ""}
+          {readingTime ? ` · ${readingTime} min read` : ""}
         </span>
-        {essayTitle && (
-          <h1 className="type-display-lg text-foreground mt-1">{essayTitle}</h1>
+
+        {articleHeadline && (
+          <h1 className="type-display-lg text-foreground mt-2 leading-[1.05]">
+            {articleHeadline}
+          </h1>
         )}
-        <span className="mt-4 block h-px w-full bg-vocl-border" />
-      </motion.div>
+
+        {/* Byline */}
+        <div className="mt-4 flex items-center gap-3">
+          <Avatar
+            src={post.author.avatarUrl || ""}
+            username={post.author.username}
+            size="md"
+          />
+          <div className="flex flex-col">
+            <span className="type-body font-medium text-foreground leading-tight">
+              {post.author.displayName || post.author.username}
+            </span>
+            <span className="type-meta text-foreground/50">
+              @{post.author.username} · {dateline}
+            </span>
+          </div>
+        </div>
+
+        <span className="mt-5 block border-b-4 border-double border-vocl-border" />
+      </motion.header>
 
       {/* Post — guests can read it, but any interaction routes to join */}
       {(() => {
@@ -268,6 +302,7 @@ export function PostPageClient({ postId }: { postId: string }) {
             }}
             isSensitive={post.isSensitive}
             excludeFromPublic={post.excludeFromPublic}
+            articleMode
             isOwn={post.isOwn}
             isPinned={post.isPinned}
             tags={post.tags}
@@ -282,7 +317,7 @@ export function PostPageClient({ postId }: { postId: string }) {
           postEl
         );
       })()}
-    </div>
+    </article>
     </MotionConfig>
   );
 }
