@@ -116,7 +116,7 @@ export function GetVerifiedModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export function GetVerifiedModal({
               {BENEFITS.map((benefit, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-vocl-hover"
+                  className="flex items-start gap-3 p-3 rounded-sm bg-vocl-hover"
                 >
                   <div className="mt-0.5">{benefit.icon}</div>
                   <div>
@@ -193,7 +193,7 @@ export function GetVerifiedModal({
               <button
                 onClick={handleVerify}
                 disabled={isProcessing}
-                className="w-full py-3 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>

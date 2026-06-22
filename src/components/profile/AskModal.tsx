@@ -100,7 +100,7 @@ export function AskModal({
       <div className="fixed inset-0 bg-black/70 z-50" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-vocl-surface-dark rounded-2xl z-50 flex flex-col max-h-[90vh]">
+      <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-vocl-surface-dark rounded-sm z-50 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export function AskModal({
                   placeholder="What would you like to ask?"
                   rows={4}
                   maxLength={500}
-                  className="w-full py-3 px-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary resize-none"
+                  className="w-full py-3 px-4 rounded-sm bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary resize-none"
                 />
                 <div className="mt-1 text-xs text-foreground/40 text-right">
                   {question.length}/500
@@ -188,7 +188,7 @@ export function AskModal({
 
               {/* Anonymous toggle */}
               {allowsAnonymous && (
-                <label className="flex items-center gap-3 p-3 rounded-xl bg-background/30 cursor-pointer">
+                <label className="flex items-center gap-3 p-3 rounded-sm bg-background/30 cursor-pointer">
                   <div
                     className={`relative w-11 h-6 rounded-full transition-colors ${
                       isAnonymous ? "bg-vocl-primary" : "bg-vocl-hover-strong"
@@ -229,7 +229,7 @@ export function AskModal({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                className="px-4 py-2 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
               >
                 Cancel
               </button>
@@ -237,7 +237,7 @@ export function AskModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting || (!question.trim() && !audioUrl)}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

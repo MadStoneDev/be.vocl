@@ -104,7 +104,7 @@ export default function AccountSettingsPage() {
           <IconDownload size={20} className="text-vocl-primary" />
           Export your data
         </h2>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-3">
+        <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border space-y-3">
           <p className="text-sm text-foreground/70">
             Download a copy of all your posts, messages, and account data.
             We'll email you when it's ready (usually within a few minutes).
@@ -116,7 +116,7 @@ export default function AccountSettingsPage() {
                 href={exportStatus.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
               >
                 Download export <IconExternalLink size={14} />
               </a>
@@ -135,7 +135,7 @@ export default function AccountSettingsPage() {
             <button
               onClick={handleRequestExport}
               disabled={requestingExport}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
             >
               {requestingExport ? (
                 <IconLoader2 size={14} className="animate-spin" />
@@ -154,7 +154,7 @@ export default function AccountSettingsPage() {
           <IconAlertOctagon size={20} />
           Danger zone
         </h2>
-        <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-4">
+        <div className="p-4 rounded-sm bg-rose-500/5 border border-rose-500/20 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-1">Delete account</h3>
             <p className="text-sm text-foreground/70">
@@ -170,7 +170,7 @@ export default function AccountSettingsPage() {
           {deleteStep === "idle" && (
             <button
               onClick={() => setDeleteStep("warning")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/20 text-rose-400 text-sm font-medium hover:bg-rose-500/30"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-rose-500/20 text-rose-400 text-sm font-medium hover:bg-rose-500/30"
             >
               <IconTrash size={14} /> Delete my account
             </button>
@@ -191,13 +191,13 @@ export default function AccountSettingsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setDeleteStep("type-username")}
-                  className="px-3 py-2 rounded-xl bg-rose-500/30 text-rose-300 text-sm font-medium"
+                  className="px-3 py-2 rounded-sm bg-rose-500/30 text-rose-300 text-sm font-medium"
                 >
                   Continue
                 </button>
                 <button
                   onClick={() => setDeleteStep("idle")}
-                  className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
+                  className="px-3 py-2 rounded-sm bg-vocl-hover-strong text-foreground text-sm"
                 >
                   Cancel
                 </button>
@@ -217,13 +217,13 @@ export default function AccountSettingsPage() {
                 value={deleteUsernameInput}
                 onChange={(e) => setDeleteUsernameInput(e.target.value)}
                 placeholder={profile.username}
-                className="w-full px-3 py-2 rounded-xl bg-background/50 border border-rose-500/30 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-rose-500/30 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="flex gap-2">
                 <button
                   onClick={() => setDeleteStep("final")}
                   disabled={deleteUsernameInput !== profile.username}
-                  className="px-3 py-2 rounded-xl bg-rose-500/30 text-rose-300 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-3 py-2 rounded-sm bg-rose-500/30 text-rose-300 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Continue
                 </button>
@@ -232,7 +232,7 @@ export default function AccountSettingsPage() {
                     setDeleteStep("idle");
                     setDeleteUsernameInput("");
                   }}
-                  className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
+                  className="px-3 py-2 rounded-sm bg-vocl-hover-strong text-foreground text-sm"
                 >
                   Cancel
                 </button>
@@ -250,7 +250,7 @@ export default function AccountSettingsPage() {
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 disabled:opacity-50"
                 >
                   {deleting ? (
                     <IconLoader2 size={14} className="animate-spin" />
@@ -264,7 +264,7 @@ export default function AccountSettingsPage() {
                     setDeleteStep("idle");
                     setDeleteUsernameInput("");
                   }}
-                  className="px-3 py-2 rounded-xl bg-vocl-hover-strong text-foreground text-sm"
+                  className="px-3 py-2 rounded-sm bg-vocl-hover-strong text-foreground text-sm"
                 >
                   Cancel
                 </button>

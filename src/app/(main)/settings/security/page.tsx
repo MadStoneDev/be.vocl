@@ -185,7 +185,7 @@ export default function SecuritySettingsPage() {
         {/* 2FA Enrolled State */}
         {enrolledFactor && !enrolling && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-vocl-primary/10 border border-vocl-primary/20 flex items-center gap-3">
+            <div className="p-4 rounded-sm bg-vocl-primary/10 border border-vocl-primary/20 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
                 <IconCheck className="w-5 h-5 text-vocl-primary" />
               </div>
@@ -214,13 +214,13 @@ export default function SecuritySettingsPage() {
               <button
                 type="button"
                 onClick={() => setConfirmDisable(true)}
-                className="w-full py-3 rounded-xl bg-vocl-like/10 text-vocl-like font-medium hover:bg-vocl-like/20 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-sm bg-vocl-like/10 text-vocl-like font-medium hover:bg-vocl-like/20 transition-colors flex items-center justify-center gap-2"
               >
                 <IconTrash className="w-4 h-4" />
                 Disable 2FA
               </button>
             ) : (
-              <div className="p-4 rounded-xl bg-vocl-like/10 border border-vocl-like/20 space-y-3">
+              <div className="p-4 rounded-sm bg-vocl-like/10 border border-vocl-like/20 space-y-3">
                 <p className="text-sm text-foreground">
                   Are you sure you want to disable two-factor authentication?
                   This will make your account less secure.
@@ -230,7 +230,7 @@ export default function SecuritySettingsPage() {
                     type="button"
                     onClick={handleDisable}
                     disabled={disabling}
-                    className="flex-1 py-2.5 rounded-xl bg-vocl-like text-white font-medium hover:bg-vocl-like/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 rounded-sm bg-vocl-like text-white font-medium hover:bg-vocl-like/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {disabling ? (
                       <>
@@ -245,7 +245,7 @@ export default function SecuritySettingsPage() {
                     type="button"
                     onClick={() => setConfirmDisable(false)}
                     disabled={disabling}
-                    className="flex-1 py-2.5 rounded-xl bg-vocl-hover text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
+                    className="flex-1 py-2.5 rounded-sm bg-vocl-hover text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -258,9 +258,9 @@ export default function SecuritySettingsPage() {
         {/* 2FA Not Enrolled - Initial State */}
         {!enrolledFactor && !enrolling && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center">
+                <div className="w-10 h-10 rounded-sm bg-vocl-hover flex items-center justify-center">
                   <IconShieldLock className="w-5 h-5 text-foreground/70" />
                 </div>
                 <div>
@@ -280,7 +280,7 @@ export default function SecuritySettingsPage() {
               <button
                 type="button"
                 onClick={handleStartEnroll}
-                className="w-full py-3 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
+                className="w-full py-3 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
               >
                 Enable 2FA
               </button>
@@ -292,7 +292,7 @@ export default function SecuritySettingsPage() {
         {enrolling && qrCode && (
           <div className="space-y-4">
             {/* Step 1: QR Code */}
-            <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
               <span className="type-meta uppercase tracking-widest text-foreground/45 font-semibold">
                 Step 1
               </span>
@@ -303,7 +303,7 @@ export default function SecuritySettingsPage() {
                 Open your authenticator app and scan this QR code.
               </p>
               <div className="flex justify-center mb-4">
-                <div className="bg-white p-3 rounded-xl">
+                <div className="bg-white p-3 rounded-sm">
                   <Image
                     src={qrCode}
                     alt="2FA QR Code"
@@ -337,7 +337,7 @@ export default function SecuritySettingsPage() {
             {/* Step 2: Verify */}
             <form
               onSubmit={handleVerify}
-              className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-3"
+              className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border space-y-3"
             >
               <span className="type-meta uppercase tracking-widest text-foreground/45 font-semibold">
                 Step 2
@@ -358,12 +358,12 @@ export default function SecuritySettingsPage() {
                   setVerifyCode(e.target.value.replace(/\D/g, ""))
                 }
                 placeholder="000000"
-                className="w-full py-3 px-4 rounded-xl bg-vocl-hover border border-vocl-border text-foreground text-center text-2xl font-mono tracking-[0.5em] placeholder:text-foreground/20 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all"
+                className="w-full py-3 px-4 rounded-sm bg-vocl-hover border border-vocl-border text-foreground text-center text-2xl font-mono tracking-[0.5em] placeholder:text-foreground/20 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all"
                 autoFocus
               />
 
               {error && (
-                <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+                <div className="p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
                   {error}
                 </div>
               )}
@@ -372,7 +372,7 @@ export default function SecuritySettingsPage() {
                 <button
                   type="submit"
                   disabled={verifying || verifyCode.length !== 6}
-                  className="flex-1 py-3 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {verifying ? (
                     <>
@@ -387,7 +387,7 @@ export default function SecuritySettingsPage() {
                   type="button"
                   onClick={handleCancelEnroll}
                   disabled={verifying}
-                  className="py-3 px-4 rounded-xl bg-vocl-hover text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
+                  className="py-3 px-4 rounded-sm bg-vocl-hover text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

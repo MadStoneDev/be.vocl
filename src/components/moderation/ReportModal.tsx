@@ -143,7 +143,7 @@ export function ReportModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 bg-background border border-vocl-border rounded-2xl shadow-2xl">
+      <div className="relative w-full max-w-md mx-4 bg-background border border-vocl-border rounded-sm shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ export function ReportModal({
                   <button
                     key={subject.value}
                     onClick={() => setSelectedSubject(subject.value)}
-                    className={`w-full text-left p-3 rounded-xl border transition-colors ${
+                    className={`w-full text-left p-3 rounded-sm border transition-colors ${
                       selectedSubject === subject.value
                         ? "border-vocl-primary bg-vocl-primary/10"
                         : "border-vocl-border hover:border-vocl-hover-strong"
@@ -228,7 +228,7 @@ export function ReportModal({
                   onChange={(e) => setComments(e.target.value)}
                   placeholder="Provide any additional context..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                  className="w-full px-4 py-3 rounded-sm bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                 />
               </div>
 
@@ -244,14 +244,14 @@ export function ReportModal({
           <div className="flex gap-3 p-4 border-t border-vocl-border">
             <button
               onClick={handleClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-vocl-border text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="flex-1 py-2.5 px-4 rounded-sm border border-vocl-border text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!selectedSubject || isSubmitting}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-vocl-like text-white font-medium hover:bg-vocl-like/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 px-4 rounded-sm bg-vocl-like text-white font-medium hover:bg-vocl-like/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Submitting..." : "Submit Report"}
             </button>

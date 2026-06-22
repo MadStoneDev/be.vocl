@@ -229,7 +229,7 @@ export default function PrivacySettingsPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`px-4 py-2 rounded-sm text-sm font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? "bg-vocl-primary text-white"
                 : "bg-vocl-hover text-foreground/60 hover:bg-vocl-hover-strong"
@@ -243,7 +243,7 @@ export default function PrivacySettingsPage() {
       {/* Privacy Tab */}
       {activeTab === "privacy" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconEye size={20} />
               Profile Visibility
@@ -292,7 +292,7 @@ export default function PrivacySettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
               <IconSearch size={20} />
               Finding you on be.vocl
@@ -315,7 +315,7 @@ export default function PrivacySettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
               <IconWorld size={20} />
               Public web
@@ -356,7 +356,7 @@ export default function PrivacySettingsPage() {
       {/* Content Tab */}
       {activeTab === "content" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconEyeOff size={20} />
               Sensitive Content
@@ -385,7 +385,7 @@ export default function PrivacySettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <div className="p-4 rounded-sm bg-amber-500/10 border border-amber-500/20">
             <div className="flex gap-3">
               <IconAlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
               <div>
@@ -403,7 +403,7 @@ export default function PrivacySettingsPage() {
       {/* Asks Tab */}
       {activeTab === "asks" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconMessageQuestion size={20} />
               Ask Box Settings
@@ -441,7 +441,7 @@ export default function PrivacySettingsPage() {
       {/* Blocked Tab */}
       {activeTab === "blocked" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconUserX size={20} />
               Blocked Users
@@ -473,7 +473,7 @@ export default function PrivacySettingsPage() {
       {/* Muted Tab */}
       {activeTab === "muted" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconVolume3 size={20} />
               Muted Users
@@ -505,7 +505,7 @@ export default function PrivacySettingsPage() {
       {/* Muted Tags Tab */}
       {activeTab === "muted_tags" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconHash size={20} />
               Muted Tags
@@ -517,7 +517,7 @@ export default function PrivacySettingsPage() {
             ) : (
               <div className="space-y-2">
                 {mutedTags.map((tag) => (
-                  <div key={tag.id} className="flex items-center gap-3 p-3 rounded-xl bg-vocl-hover">
+                  <div key={tag.id} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-hover">
                     <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
                       <IconHash size={18} className="text-vocl-primary" />
                     </div>
@@ -601,7 +601,7 @@ function UserListItem({
   onAction: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-vocl-hover">
+    <div className="flex items-center gap-3 p-3 rounded-sm bg-vocl-hover">
       <div className="relative w-10 h-10 rounded-full overflow-hidden">
         {user.avatarUrl ? (
           <Image

@@ -274,7 +274,7 @@ export default function ProfileSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2 rounded-sm hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
@@ -288,7 +288,7 @@ export default function ProfileSettingsPage() {
 
       {/* Header Image */}
       <div className="relative mb-16">
-        <div className="relative h-32 sm:h-40 w-full rounded-xl overflow-hidden">
+        <div className="relative h-32 sm:h-40 w-full rounded-sm overflow-hidden">
           {headerUrl ? (
             <Image
               src={headerUrl}
@@ -308,7 +308,7 @@ export default function ProfileSettingsPage() {
               onClick={() => headerInputRef.current?.click()}
               className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
             >
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 backdrop-blur text-white">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-sm bg-white/20 backdrop-blur text-white">
                 <IconCamera size={20} />
                 <span className="text-sm font-medium">Change header</span>
               </div>
@@ -378,7 +378,7 @@ export default function ProfileSettingsPage() {
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={username}
             maxLength={50}
-            className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+            className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
           />
           <p className="mt-1 text-xs text-foreground/50">
             {displayName.length}/50 characters
@@ -390,7 +390,7 @@ export default function ProfileSettingsPage() {
           <label className="block text-sm font-medium text-foreground/70 mb-2">
             Username
           </label>
-          <div className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark/50 border border-vocl-border text-foreground/50">
+          <div className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark/50 border border-vocl-border text-foreground/50">
             @{username}
           </div>
           <p className="mt-1 text-xs text-foreground/50">
@@ -409,7 +409,7 @@ export default function ProfileSettingsPage() {
             placeholder="Tell the world about yourself..."
             maxLength={160}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
+            className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
           />
           <p className="mt-1 text-xs text-foreground/50">
             {bio.length}/160 characters
@@ -421,7 +421,7 @@ export default function ProfileSettingsPage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full py-3 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <IconLoader2 size={20} className="animate-spin" />
@@ -450,7 +450,7 @@ export default function ProfileSettingsPage() {
               {links.map((link, index) => (
                 <div
                   key={link.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-vocl-surface-dark"
+                  className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark"
                 >
                   <div className="flex flex-col gap-0.5">
                     <button
@@ -510,7 +510,7 @@ export default function ProfileSettingsPage() {
           )}
 
           {/* Add New Link */}
-          <div className="space-y-3 p-4 rounded-xl bg-vocl-surface-dark/50 border border-vocl-border">
+          <div className="space-y-3 p-4 rounded-sm bg-vocl-surface-dark/50 border border-vocl-border">
             <input
               type="text"
               value={newLinkTitle}

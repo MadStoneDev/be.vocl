@@ -116,7 +116,7 @@ export function ReblogDialog({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Original Post Preview */}
-          <div className="p-3 rounded-xl bg-background/50 border border-vocl-border">
+          <div className="p-3 rounded-sm bg-background/50 border border-vocl-border">
             <div className="flex gap-3">
               {originalPost.imageUrl && (
                 <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
@@ -168,7 +168,7 @@ export function ReblogDialog({
             <label className="block text-sm text-foreground/60 mb-2">
               When to post
             </label>
-            <div className="flex rounded-xl bg-background/50 p-1">
+            <div className="flex rounded-sm bg-background/50 p-1">
               {modes.map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
@@ -197,7 +197,7 @@ export function ReblogDialog({
 
           {/* Queue info */}
           {mode === "queue" && (
-            <p className="text-sm text-foreground/50 p-3 rounded-xl bg-background/30">
+            <p className="text-sm text-foreground/50 p-3 rounded-sm bg-background/30">
               This will be added to your queue and posted automatically based on
               your queue settings.
             </p>
@@ -205,7 +205,7 @@ export function ReblogDialog({
 
           {/* Error */}
           {error && (
-            <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+            <div className="p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
               {error}
             </div>
           )}
@@ -218,7 +218,7 @@ export function ReblogDialog({
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-5 py-2.5 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors font-medium"
+              className="px-5 py-2.5 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors font-medium"
             >
               Cancel
             </button>
@@ -226,7 +226,7 @@ export function ReblogDialog({
               type="button"
               onClick={handleSubmit}
               disabled={isPending}
-              className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isPending ? (
                 <>

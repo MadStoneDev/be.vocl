@@ -144,7 +144,7 @@ export default function InviteSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} />
         </Link>
@@ -159,9 +159,9 @@ export default function InviteSettingsPage() {
       {/* Info Card */}
       {!isLoading && !canGenerateCodes ? (
         // Not a Trusted User - show locked message
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 mb-6">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-sm p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-sm bg-amber-500/20 flex items-center justify-center flex-shrink-0">
               <IconLock size={24} className="text-amber-500" />
             </div>
             <div>
@@ -180,7 +180,7 @@ export default function InviteSettingsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-vocl-primary/10 border border-vocl-primary/20 rounded-2xl p-4 mb-6">
+          <div className="bg-vocl-primary/10 border border-vocl-primary/20 rounded-sm p-4 mb-6">
             <div className="flex items-start gap-3">
               <IconTicket size={24} className="text-vocl-primary flex-shrink-0 mt-0.5" />
               <div>
@@ -196,7 +196,7 @@ export default function InviteSettingsPage() {
           </div>
 
           {/* Generate Section */}
-          <div className="bg-vocl-surface-dark rounded-2xl border border-vocl-border p-4 mb-6">
+          <div className="bg-vocl-surface-dark rounded-sm border border-vocl-border p-4 mb-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-foreground">
@@ -217,7 +217,7 @@ export default function InviteSettingsPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generating || !canGenerate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
               >
                 {generating ? (
                   <>
@@ -263,7 +263,7 @@ export default function InviteSettingsPage() {
             return (
               <div
                 key={code.id}
-                className="bg-vocl-surface-dark rounded-2xl border border-vocl-border overflow-hidden"
+                className="bg-vocl-surface-dark rounded-sm border border-vocl-border overflow-hidden"
               >
                 {/* Code Header */}
                 <div className="p-4">
@@ -368,7 +368,7 @@ export default function InviteSettingsPage() {
                           <Link
                             key={use.id}
                             href={`/@${use.username}`}
-                            className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-vocl-hover transition-colors"
+                            className="flex items-center gap-3 p-2 -mx-2 rounded-sm hover:bg-vocl-hover transition-colors"
                           >
                             <Avatar
                               src={use.avatarUrl}

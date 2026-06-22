@@ -142,7 +142,7 @@ export function ReportDialog({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
+                className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
               >
                 Done
               </button>
@@ -162,7 +162,7 @@ export function ReportDialog({
                     key={reason.value}
                     type="button"
                     onClick={() => setSelectedReason(reason.value)}
-                    className={`w-full p-3 rounded-xl text-left transition-all ${
+                    className={`w-full p-3 rounded-sm text-left transition-all ${
                       selectedReason === reason.value
                         ? "bg-vocl-primary/20 border-2 border-vocl-primary"
                         : "bg-vocl-hover border-2 border-transparent hover:bg-vocl-hover-strong"
@@ -189,14 +189,14 @@ export function ReportDialog({
                     onChange={(e) => setDetails(e.target.value)}
                     placeholder="Provide any additional context..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none text-sm"
+                    className="w-full px-4 py-3 rounded-sm bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none text-sm"
                   />
                 </div>
               )}
 
               {/* Error */}
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+                <div className="flex items-center gap-2 p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
                   <IconAlertTriangle size={18} />
                   {error}
                 </div>
@@ -213,7 +213,7 @@ export function ReportDialog({
                 type="button"
                 onClick={handleClose}
                 disabled={isPending}
-                className="px-5 py-2.5 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors font-medium"
+                className="px-5 py-2.5 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors font-medium"
               >
                 Cancel
               </button>
@@ -221,7 +221,7 @@ export function ReportDialog({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isPending || !selectedReason}
-                className="px-6 py-2.5 rounded-xl bg-vocl-like text-white font-semibold hover:bg-vocl-like/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-sm bg-vocl-like text-white font-semibold hover:bg-vocl-like/90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isPending ? (
                   <>

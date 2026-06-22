@@ -66,7 +66,7 @@ function NotificationRow({
 }: NotificationRowProps) {
   return (
     <div className="flex items-start gap-4 py-4 border-b border-vocl-border last:border-0">
-      <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center shrink-0">
+      <div className="w-10 h-10 rounded-sm bg-vocl-hover flex items-center justify-center shrink-0">
         <Icon size={20} className="text-foreground/70" />
       </div>
       <div className="flex-1 min-w-0">
@@ -157,7 +157,7 @@ export default function NotificationsSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2 rounded-sm hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
@@ -176,7 +176,7 @@ export default function NotificationsSettingsPage() {
       </div>
 
       {/* Email Frequency */}
-      <div className="rounded-xl bg-vocl-surface-dark border border-vocl-border p-4 mb-6">
+      <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-4 mb-6">
         <h2 className="type-heading font-display text-foreground mb-1">Email Frequency</h2>
         <p className="text-sm text-foreground/50 mb-4">
           How often do you want to receive notification emails?
@@ -185,7 +185,7 @@ export default function NotificationsSettingsPage() {
           {frequencyOptions.map((option) => (
             <label
               key={option.value}
-              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
+              className={`flex items-center gap-3 p-3 rounded-sm cursor-pointer transition-colors ${
                 settings.emailFrequency === option.value
                   ? "bg-vocl-primary/20 border border-vocl-primary/40"
                   : "bg-vocl-hover border border-transparent hover:bg-vocl-hover-strong"
@@ -220,7 +220,7 @@ export default function NotificationsSettingsPage() {
       </div>
 
       {/* Notification Types */}
-      <div className={`rounded-xl bg-vocl-surface-dark border border-vocl-border p-4 ${isEmailDisabled ? "opacity-50" : ""}`}>
+      <div className={`rounded-sm bg-vocl-surface-dark border border-vocl-border p-4 ${isEmailDisabled ? "opacity-50" : ""}`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="type-heading font-display text-foreground">Notification Types</h2>
           <div className="flex items-center gap-1 text-sm text-foreground/50">

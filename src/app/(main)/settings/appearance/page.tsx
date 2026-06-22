@@ -136,7 +136,7 @@ export default function AppearanceSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-xl hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2 rounded-sm hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
@@ -164,7 +164,7 @@ export default function AppearanceSettingsPage() {
               <button
                 key={option.value}
                 onClick={() => updateSetting("theme", option.value)}
-                className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                className={`relative flex flex-col items-center gap-2 p-4 rounded-sm border transition-all ${
                   isSelected
                     ? "border-vocl-primary bg-vocl-primary/10"
                     : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
@@ -210,7 +210,7 @@ export default function AppearanceSettingsPage() {
               <button
                 key={option.value}
                 onClick={() => updateSetting("fontSize", option.value)}
-                className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                className={`relative flex flex-col items-center gap-2 p-4 rounded-sm border transition-all ${
                   isSelected
                     ? "border-vocl-primary bg-vocl-primary/10"
                     : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
@@ -337,7 +337,7 @@ export default function AppearanceSettingsPage() {
 
       {/* Reduced Motion */}
       <section className="mb-8">
-        <div className="flex items-center justify-between p-4 rounded-xl bg-vocl-surface-dark">
+        <div className="flex items-center justify-between p-4 rounded-sm bg-vocl-surface-dark">
           <div>
             <h3 className="font-medium text-foreground">Reduce Motion</h3>
             <p className="text-sm text-foreground/50">

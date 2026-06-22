@@ -108,7 +108,7 @@ export function NewChatModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export function NewChatModal({
               placeholder="Search for a user..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-3 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+              className="w-full py-3 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
               autoFocus
             />
           </div>
@@ -161,7 +161,7 @@ export function NewChatModal({
                   key={user.id}
                   onClick={() => handleStartConversation(user.id)}
                   disabled={isCreating === user.id}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-vocl-hover transition-colors disabled:opacity-50"
+                  className="w-full flex items-center gap-3 p-3 rounded-sm hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                     {user.avatarUrl ? (

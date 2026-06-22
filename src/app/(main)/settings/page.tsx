@@ -119,7 +119,7 @@ function SettingsContent() {
       </header>
 
       {showSuccess && (
-        <div className="mb-6 p-4 rounded-xl bg-vocl-primary/10 border border-vocl-primary/20 flex items-center gap-3">
+        <div className="mb-6 p-4 rounded-sm bg-vocl-primary/10 border border-vocl-primary/20 flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-vocl-primary/20 flex items-center justify-center">
             <IconCheck className="w-4 h-4 text-vocl-primary" />
           </div>
@@ -127,14 +127,14 @@ function SettingsContent() {
         </div>
       )}
 
-      <nav className="rounded-2xl border border-vocl-border bg-vocl-surface-dark overflow-hidden divide-y divide-vocl-border">
+      <nav className="rounded-sm border border-vocl-border bg-vocl-surface-dark overflow-hidden divide-y divide-vocl-border">
         {settingsLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             className="group flex items-center gap-4 px-4 py-4 hover:bg-vocl-hover transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-vocl-hover flex items-center justify-center">
+            <div className="w-10 h-10 rounded-sm bg-vocl-hover flex items-center justify-center">
               <link.icon className={`w-5 h-5 ${link.color}`} />
             </div>
             <div className="flex-1 min-w-0">
@@ -154,9 +154,9 @@ function SettingsContent() {
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="flex items-center gap-4 p-4 w-full rounded-xl bg-vocl-like/10 hover:bg-vocl-like/20 transition-colors disabled:opacity-50"
+          className="flex items-center gap-4 p-4 w-full rounded-sm bg-vocl-like/10 hover:bg-vocl-like/20 transition-colors disabled:opacity-50"
         >
-          <div className="w-10 h-10 rounded-xl bg-vocl-like/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-sm bg-vocl-like/20 flex items-center justify-center">
             <IconLogout className="w-5 h-5 text-vocl-like" />
           </div>
           <div className="flex-1 text-left">

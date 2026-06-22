@@ -87,7 +87,7 @@ function PasswordSettingsContent() {
           </p>
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-sm transition-colors"
           >
             Back to Settings
           </Link>
@@ -140,7 +140,7 @@ function PasswordSettingsContent() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   disabled={isPending}
-                  className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
+                  className="w-full py-3 pl-12 pr-4 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                   required={!isReset}
                 />
               </div>
@@ -162,7 +162,7 @@ function PasswordSettingsContent() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-12 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />
@@ -191,7 +191,7 @@ function PasswordSettingsContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isPending}
-                className="w-full py-3 pl-12 pr-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-4 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
                 required
                 minLength={6}
               />
@@ -200,7 +200,7 @@ function PasswordSettingsContent() {
 
           {/* Error */}
           {error && (
-            <div className="p-3 rounded-xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+            <div className="p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
               {error}
             </div>
           )}
@@ -209,7 +209,7 @@ function PasswordSettingsContent() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-3.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isPending ? (
               <>

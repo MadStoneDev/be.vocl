@@ -133,7 +133,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-sm bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                     key={tier.id}
                     onClick={() => setSelectedTier(tier.id)}
                     disabled={isProcessing}
-                    className={`p-4 rounded-xl border transition-all ${
+                    className={`p-4 rounded-sm border transition-all ${
                       selectedTier === tier.id
                         ? "border-vocl-primary bg-vocl-primary/10"
                         : "border-vocl-border hover:border-vocl-hover-strong bg-vocl-surface"
@@ -236,7 +236,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                 maxLength={280}
                 rows={2}
                 disabled={isProcessing}
-                className="w-full px-3 py-2 rounded-xl bg-vocl-surface border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none disabled:opacity-50"
+                className="w-full px-3 py-2 rounded-sm bg-vocl-surface border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none disabled:opacity-50"
               />
             </div>
 
@@ -245,7 +245,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
               <button
                 onClick={handleTip}
                 disabled={!selectedTier || isProcessing}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-sm bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>

@@ -42,7 +42,7 @@ export function SecurityWarningModal({ isAuthenticated }: SecurityWarningModalPr
         onClick={handleClose}
       />
 
-      <div className="relative w-full max-w-sm bg-vocl-surface-dark rounded-xl border border-white/10 overflow-hidden">
+      <div className="relative w-full max-w-sm bg-vocl-surface-dark rounded-sm border border-white/10 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <h2 className="text-base font-semibold text-foreground">Stay Safe</h2>
