@@ -62,8 +62,8 @@ const notificationConfig: Record<
 > = {
   follow: {
     icon: IconUserPlus,
-    color: "text-vocl-accent",
-    bgColor: "bg-vocl-accent/20",
+    color: "text-vocl-primary",
+    bgColor: "bg-vocl-primary/20",
     getText: (username) => `${username} started following you`,
   },
   like: {
@@ -131,7 +131,7 @@ export function NotificationItem({
   const baseClassName = `group flex items-start gap-3 p-4 rounded-2xl transition-all cursor-pointer ${
     isRead
       ? "bg-transparent hover:bg-vocl-hover"
-      : "bg-vocl-accent/5 hover:bg-vocl-accent/10"
+      : "bg-vocl-primary/5 hover:bg-vocl-primary/10"
   }`;
 
   const innerContent = (
@@ -149,7 +149,7 @@ export function NotificationItem({
                 {a.avatarUrl ? (
                   <Image src={a.avatarUrl} alt={a.username} fill className="object-cover" />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                     <span className="text-sm font-bold text-white">
                       {a.username.charAt(0).toUpperCase()}
                     </span>
@@ -175,7 +175,7 @@ export function NotificationItem({
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-lg font-bold text-white">
                     {actor.username.charAt(0).toUpperCase()}
                   </span>
@@ -226,7 +226,7 @@ export function NotificationItem({
 
       {/* Unread indicator */}
       {!isRead && (
-        <div className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-vocl-accent mt-1.5" />
+        <div className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-vocl-primary mt-1.5" />
       )}
     </>
   );

@@ -93,20 +93,20 @@ export default function NotificationsPage() {
     <PullToRefresh onRefresh={fetchNotifications}>
       <title>Notifications | be.vocl</title>
     <div className="max-w-2xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-vocl-accent/20 flex items-center justify-center">
-            <IconBell size={24} className="text-vocl-accent" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-            {unreadCount > 0 && (
-              <p className="text-sm text-foreground/50">
-                {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
-              </p>
-            )}
-          </div>
+      {/* Header — editorial masthead */}
+      <div className="flex items-end justify-between mb-5 border-b-4 border-double border-vocl-border pb-4">
+        <div>
+          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
+            be.vocl
+          </span>
+          <h1 className="type-display text-3xl font-bold text-foreground leading-none mt-1">
+            Notices
+          </h1>
+          {unreadCount > 0 && (
+            <p className="type-meta uppercase tracking-widest text-foreground/50 mt-1.5">
+              {unreadCount} unread
+            </p>
+          )}
         </div>
 
         {/* Actions */}
@@ -115,7 +115,7 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-sm text-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
               >
                 <IconCheck size={16} />
                 <span className="hidden sm:inline">Mark all read</span>
@@ -124,7 +124,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => setShowClearConfirm(true)}
               disabled={isClearing}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-vocl-like/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-sm text-sm text-vocl-like/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
             >
               {isClearing ? (
                 <IconLoader2 size={16} className="animate-spin" />
@@ -147,9 +147,9 @@ export default function NotificationsPage() {
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveFilter(tab.id)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-sm text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? "bg-vocl-accent text-white"
+                  ? "bg-vocl-primary text-white"
                   : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong hover:text-foreground"
               }`}
             >
@@ -162,7 +162,7 @@ export default function NotificationsPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <IconLoader2 size={32} className="animate-spin text-vocl-accent" />
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
         </div>
       ) : (
         <NotificationList
