@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel } from "@/components/Post";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent, AskContent } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/ui";
@@ -210,6 +210,12 @@ export function PostPageClient({ postId }: { postId: string }) {
             isVoiceNote={content.is_voice_note}
           />
         );
+
+      case "poll":
+        return <PollContent postId={post.id} content={post.content} />;
+
+      case "ask":
+        return <AskContent content={post.content} />;
 
       default:
         return null;
