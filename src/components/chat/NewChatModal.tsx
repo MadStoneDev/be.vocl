@@ -112,7 +112,7 @@ export function NewChatModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
-            <IconMessagePlus size={20} className="text-vocl-accent" />
+            <IconMessagePlus size={20} className="text-vocl-primary" />
             <h2 className="font-semibold text-foreground">New Message</h2>
           </div>
           <button
@@ -135,7 +135,7 @@ export function NewChatModal({
               placeholder="Search for a user..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-3 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-vocl-accent focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+              className="w-full py-3 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
               autoFocus
             />
           </div>
@@ -152,7 +152,7 @@ export function NewChatModal({
         <div className="max-h-80 overflow-y-auto">
           {isSearching ? (
             <div className="flex items-center justify-center py-8">
-              <IconLoader2 size={24} className="animate-spin text-vocl-accent" />
+              <IconLoader2 size={24} className="animate-spin text-vocl-primary" />
             </div>
           ) : users.length > 0 ? (
             <div className="p-2">
@@ -172,7 +172,7 @@ export function NewChatModal({
                         className="object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                         <span className="text-lg font-bold text-white">
                           {user.username.charAt(0).toUpperCase()}
                         </span>
@@ -190,12 +190,12 @@ export function NewChatModal({
                   {isCreating === user.id ? (
                     <IconLoader2
                       size={20}
-                      className="animate-spin text-vocl-accent"
+                      className="animate-spin text-vocl-primary"
                     />
                   ) : (
                     <IconMessagePlus
                       size={20}
-                      className="text-foreground/30 group-hover:text-vocl-accent"
+                      className="text-foreground/30 group-hover:text-vocl-primary"
                     />
                   )}
                 </button>

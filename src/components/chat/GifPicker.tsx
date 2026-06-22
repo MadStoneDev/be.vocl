@@ -98,7 +98,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-vocl-border">
         <div className="flex items-center gap-2">
-          <IconGif size={20} className="text-vocl-accent" />
+          <IconGif size={20} className="text-vocl-primary" />
           <span className="font-medium text-foreground text-sm">GIFs</span>
         </div>
         <button
@@ -121,7 +121,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search GIFs..."
-            className="w-full py-2 pl-9 pr-3 rounded-lg bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-vocl-accent text-sm"
+            className="w-full py-2 pl-9 pr-3 rounded-lg bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-vocl-primary text-sm"
             autoFocus
           />
         </div>
@@ -139,7 +139,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
               <button
                 key={gif.id}
                 onClick={() => handleSelect(gif)}
-                className="relative aspect-square rounded-lg overflow-hidden bg-vocl-hover hover:ring-2 hover:ring-vocl-accent transition-all"
+                className="relative aspect-square rounded-lg overflow-hidden bg-vocl-hover hover:ring-2 hover:ring-vocl-primary transition-all"
               >
                 <Image
                   src={gif.previewUrl}
@@ -153,7 +153,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
           </div>
         ) : isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <IconLoader2 size={24} className="animate-spin text-vocl-accent" />
+            <IconLoader2 size={24} className="animate-spin text-vocl-primary" />
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-foreground/50 text-sm">
@@ -164,7 +164,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
         {/* Loading more indicator */}
         {isLoading && gifs.length > 0 && (
           <div className="flex justify-center py-4">
-            <IconLoader2 size={20} className="animate-spin text-vocl-accent" />
+            <IconLoader2 size={20} className="animate-spin text-vocl-primary" />
           </div>
         )}
       </div>

@@ -388,9 +388,14 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   // header — only the mobile/desktop list header needs it.
   const listPanel = (
     <div className="flex flex-col h-full min-h-0">
-      {/* Header */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-vocl-border flex-shrink-0">
-        <h2 className="font-semibold text-foreground">Messages</h2>
+      {/* Header — editorial masthead */}
+      <div className="flex items-center justify-between h-16 px-4 border-b-4 border-double border-vocl-border flex-shrink-0">
+        <div className="flex flex-col leading-none">
+          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
+            be.vocl
+          </span>
+          <h2 className="type-display text-xl font-bold text-foreground">Correspondence</h2>
+        </div>
         <button
           type="button"
           onClick={onClose}
@@ -413,7 +418,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
             placeholder="Search messages..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-accent transition-colors text-sm dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+            className="w-full py-2.5 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-primary transition-colors text-sm dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
           />
         </div>
       </div>
@@ -422,14 +427,14 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       <div className="flex-1 overflow-y-auto min-h-0">
         {conversationsLoading ? (
           <div className="flex items-center justify-center py-16">
-            <IconLoader2 size={28} className="animate-spin text-vocl-accent" />
+            <IconLoader2 size={28} className="animate-spin text-vocl-primary" />
           </div>
         ) : conversationsError ? (
           <div className="text-center py-16 px-4">
             <p className="text-foreground/50 text-sm">{conversationsError}</p>
             <button
               onClick={refreshConversations}
-              className="mt-4 px-4 py-2 rounded-xl bg-vocl-accent text-white text-sm"
+              className="mt-4 px-4 py-2 rounded-xl bg-vocl-primary text-white text-sm"
             >
               Try again
             </button>
@@ -480,8 +485,8 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   // Desktop empty state shown in the right pane when nothing is selected.
   const desktopEmptyState = (
     <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-vocl-accent/10 flex items-center justify-center mb-4">
-        <IconMessagePlus size={28} className="text-vocl-accent" />
+      <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
+        <IconMessagePlus size={28} className="text-vocl-primary" />
       </div>
       <h3 className="text-lg font-medium text-foreground mb-2">
         Select a conversation
@@ -491,7 +496,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       </p>
       <button
         onClick={handleNewChat}
-        className="px-5 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+        className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
       >
         New message
       </button>

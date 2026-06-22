@@ -185,9 +185,9 @@ export function ChatInput({
     <div className="border-t border-vocl-border p-3">
       {/* Replying-to banner */}
       {replyingTo && (
-        <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-vocl-surface-muted border-l-2 border-vocl-accent dark:bg-vocl-surface-dark">
+        <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-sm bg-vocl-surface-muted border-l-2 border-vocl-primary dark:bg-vocl-surface-dark">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-vocl-accent">
+            <p className="text-xs font-medium text-vocl-primary">
               Replying to {replyingTo.senderName}
             </p>
             <p className="text-xs text-foreground/60 truncate">
@@ -220,7 +220,7 @@ export function ChatInput({
       {/* Media preview */}
       {mediaPreview && (
         <div className="relative inline-block mb-3">
-          <div className="relative w-20 h-20 rounded-xl overflow-hidden">
+          <div className="relative w-20 h-20 rounded-sm overflow-hidden">
             <Image
               src={mediaPreview}
               alt="Preview"
@@ -257,7 +257,7 @@ export function ChatInput({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isSending}
-            className="flex-shrink-0 p-2.5 rounded-xl text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-50"
+            className="flex-shrink-0 p-2.5 rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-50"
             title="Upload image or video"
           >
             <IconPhoto size={20} />
@@ -271,9 +271,9 @@ export function ChatInput({
               setShowEmojiPicker(false);
             }}
             disabled={disabled || isSending}
-            className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+            className={`flex-shrink-0 p-2.5 rounded-sm transition-colors disabled:opacity-50 ${
               showGifPicker
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
             }`}
             title="Send a GIF"
@@ -290,9 +290,9 @@ export function ChatInput({
               setShowEmojiPicker(false);
             }}
             disabled={disabled || isSending}
-            className={`flex-shrink-0 p-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+            className={`flex-shrink-0 p-2.5 rounded-sm transition-colors disabled:opacity-50 ${
               showVoiceRecorder
-                ? "bg-vocl-accent text-white"
+                ? "bg-vocl-primary text-white"
                 : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
             }`}
             title="Record a voice note"
@@ -320,7 +320,7 @@ export function ChatInput({
             placeholder={placeholder}
             disabled={disabled || isSending}
             rows={1}
-            className="w-full py-2.5 px-4 pr-10 rounded-xl bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-accent transition-colors text-sm resize-none disabled:opacity-50 dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+            className="w-full py-2.5 px-4 pr-10 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-primary transition-colors text-sm resize-none disabled:opacity-50 dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
             style={{ maxHeight: "120px" }}
           />
           {/* Emoji button and picker */}
@@ -338,7 +338,7 @@ export function ChatInput({
               }}
               className={`transition-colors ${
                 showEmojiPicker
-                  ? "text-vocl-accent"
+                  ? "text-vocl-primary"
                   : "text-foreground/40 hover:text-foreground"
               }`}
             >
@@ -352,7 +352,7 @@ export function ChatInput({
           type="button"
           onClick={handleSend}
           disabled={(!message.trim() && !mediaFile) || disabled || isSending}
-          className="flex-shrink-0 p-2.5 rounded-xl bg-vocl-primary text-white hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-shrink-0 p-2.5 rounded-sm bg-vocl-primary text-white hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSending ? (
             <IconLoader2 size={20} className="animate-spin" />

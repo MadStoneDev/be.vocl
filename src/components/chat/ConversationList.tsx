@@ -92,8 +92,8 @@ export function ConversationList({
   if (filteredConversations.length === 0 && !searchQuery) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-vocl-accent/10 flex items-center justify-center mb-4">
-          <IconMessagePlus size={28} className="text-vocl-accent" />
+        <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
+          <IconMessagePlus size={28} className="text-vocl-primary" />
         </div>
         <h3 className="text-lg font-medium text-foreground mb-2">No messages yet</h3>
         <p className="text-sm text-foreground/50 mb-6">
@@ -101,7 +101,7 @@ export function ConversationList({
         </p>
         <button
           onClick={onNewChat}
-          className="px-5 py-2.5 rounded-xl bg-vocl-accent text-white font-medium hover:bg-vocl-accent-hover transition-colors"
+          className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
         >
           Start chatting
         </button>
@@ -129,7 +129,7 @@ export function ConversationList({
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-[70] w-52 py-1 rounded-xl bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
+            className="fixed z-[70] w-52 py-1 rounded-sm bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
               top: Math.min(contextMenu.y, window.innerHeight - 280),
@@ -216,7 +216,7 @@ export function ConversationList({
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-lg font-bold text-white">
                     {conversation.participant.username.charAt(0).toUpperCase()}
                   </span>
@@ -256,7 +256,7 @@ export function ConversationList({
 
           {/* Unread badge */}
           {conversation.unreadCount > 0 && (
-            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-full bg-vocl-accent flex items-center justify-center">
+            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-sm bg-vocl-primary flex items-center justify-center">
               <span className="text-xs font-bold text-white">
                 {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
               </span>

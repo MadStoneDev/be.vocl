@@ -246,7 +246,7 @@ export function ActiveChat({
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-sm font-bold text-white">
                     {participant.username.charAt(0).toUpperCase()}
                   </span>
@@ -259,10 +259,10 @@ export function ActiveChat({
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground truncate">
+            <p className="type-heading text-foreground truncate leading-tight">
               @{participant.username}
             </p>
-            <p className="text-xs text-foreground/40">
+            <p className="type-meta uppercase tracking-widest text-foreground/40">
               {participant.isOnline ? "Online" : "Offline"}
             </p>
           </div>
@@ -363,7 +363,7 @@ export function ActiveChat({
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-2xl font-bold text-white">
                     {participant.username.charAt(0).toUpperCase()}
                   </span>

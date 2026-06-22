@@ -94,10 +94,10 @@ function VoiceMessagePlayer({
   };
 
   const trackBg = isOwn ? "bg-white/30" : "bg-foreground/15";
-  const fillBg = isOwn ? "bg-white" : "bg-vocl-accent";
+  const fillBg = isOwn ? "bg-white" : "bg-vocl-primary";
   const btnBg = isOwn
     ? "bg-white/25 text-white hover:bg-white/35"
-    : "bg-vocl-accent text-white hover:bg-vocl-accent-hover";
+    : "bg-vocl-primary text-white hover:bg-vocl-primary-hover";
   const labelColor = isOwn ? "text-white/80" : "text-foreground/70";
 
   return (
@@ -224,7 +224,7 @@ export function MessageBubble({
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-accent to-vocl-accent-hover flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                   <span className="text-xs font-bold text-white">
                     {(senderName || "?").charAt(0).toUpperCase()}
                   </span>
@@ -247,7 +247,7 @@ export function MessageBubble({
         <div
           className={`relative px-4 py-2.5 rounded-2xl ${tail} ${
             isOwn
-              ? "bg-vocl-accent text-white"
+              ? "bg-vocl-primary text-white"
               : "bg-vocl-surface-muted text-neutral-800 dark:bg-vocl-surface-dark dark:text-foreground"
           }`}
         >
@@ -289,12 +289,12 @@ export function MessageBubble({
               className={`mb-1.5 pl-2 border-l-2 rounded-r text-xs ${
                 isOwn
                   ? "border-white/50 bg-white/10"
-                  : "border-vocl-accent bg-vocl-accent/10"
+                  : "border-vocl-primary bg-vocl-primary/10"
               } py-1 pr-2`}
             >
               <span
                 className={`block font-medium ${
-                  isOwn ? "text-white/80" : "text-vocl-accent"
+                  isOwn ? "text-white/80" : "text-vocl-primary"
                 }`}
               >
                 {replyTo.senderName}
@@ -390,7 +390,7 @@ export function MessageBubble({
                 aria-pressed={r.reactedByMe}
                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors ${
                   r.reactedByMe
-                    ? "bg-vocl-accent/20 border-vocl-accent/50 text-foreground"
+                    ? "bg-vocl-primary/20 border-vocl-primary/50 text-foreground"
                     : "bg-vocl-surface-muted border-vocl-border text-foreground/70 hover:bg-vocl-hover dark:bg-vocl-surface-dark"
                 }`}
               >
