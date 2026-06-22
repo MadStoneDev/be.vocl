@@ -92,7 +92,7 @@ export function MainNav({
               <IconArrowLeft size={20} />
             </button>
           )}
-          <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors">
+          <Link href="/feed" className="font-display text-xl text-foreground hover:text-vocl-primary transition-colors">
             <Logo className={`min-h-12.5`} />
           </Link>
         </div>
@@ -103,7 +103,7 @@ export function MainNav({
           <Link
             href="/create"
             aria-label="Create post"
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-vocl-accent text-white hover:bg-vocl-accent-hover transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-sm bg-vocl-primary text-white hover:bg-vocl-primary-hover transition-colors"
           >
             <IconPlus size={18} aria-hidden="true" />
           </Link>
@@ -112,7 +112,7 @@ export function MainNav({
           <Link
             href={username ? `/profile/${username}` : "/settings"}
             aria-label="Your profile"
-            className="ml-2 ring ring-white hover:ring-2 hover:ring-vocl-accent transition-all rounded-full"
+            className="ml-2 ring ring-white hover:ring-2 hover:ring-vocl-primary transition-all rounded-full"
           >
             <Avatar
               src={avatarUrl}
@@ -137,7 +137,7 @@ export function MainNav({
                   className="fixed inset-0 z-40"
                   onClick={() => setShowMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 shadow-xl z-50">
+                <div className="absolute right-0 mt-2 w-48 py-2 rounded-sm bg-vocl-surface border border-vocl-border shadow-xl z-50">
                   {/* Admin - only for staff */}
                   {role >= 5 && (
                     <Link
@@ -172,7 +172,7 @@ export function MainNav({
                     onClick={() => setShowMenu(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
-                    <IconUsersGroup size={18} className="text-emerald-400" />
+                    <IconUsersGroup size={18} className="text-foreground/55" />
                     Communities
                   </Link>
 
@@ -182,7 +182,7 @@ export function MainNav({
                     onClick={() => setShowMenu(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
-                    <IconStack2 size={18} className="text-indigo-400" />
+                    <IconStack2 size={18} className="text-foreground/55" />
                     Queue & Schedule
                   </Link>
 
@@ -192,7 +192,7 @@ export function MainNav({
                     onClick={() => setShowMenu(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
-                    <IconCoin size={18} className="text-amber-400" />
+                    <IconCoin size={18} className="text-foreground/55" />
                     Tips
                   </Link>
 

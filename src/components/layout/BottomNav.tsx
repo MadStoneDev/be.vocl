@@ -85,7 +85,7 @@ export function BottomNav({
                 type="button"
                 onClick={item.action}
                 aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
-                className={`relative flex items-center justify-center w-12 h-12 transition-colors hover:opacity-80 ${item.color || "text-foreground/60"}`}
+                className="relative flex items-center justify-center w-12 h-12 transition-colors text-foreground/60 hover:text-vocl-primary"
               >
                 <span className="relative inline-flex">
                   <Icon size={26} aria-hidden="true" />
@@ -108,7 +108,7 @@ export function BottomNav({
                 key={item.href}
                 href={item.href!}
                 aria-label="Create post"
-                className="flex items-center justify-center w-12 h-12 rounded-full bg-vocl-accent text-white shadow-lg shadow-vocl-accent/30"
+                className="flex items-center justify-center w-12 h-12 rounded-sm bg-vocl-primary text-white shadow-lg shadow-vocl-primary/30"
               >
                 <Icon size={26} aria-hidden="true" />
               </Link>
@@ -123,8 +123,8 @@ export function BottomNav({
               aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
               className={`relative flex items-center justify-center w-12 h-12 transition-all ${
                 isActive
-                  ? `${item.color || "text-vocl-accent"} scale-110`
-                  : `${item.color || "text-foreground/60"} opacity-70 hover:opacity-100`
+                  ? "text-vocl-primary scale-110"
+                  : "text-foreground/60 opacity-80 hover:opacity-100 hover:text-vocl-primary"
               }`}
             >
               <span className="relative inline-flex">

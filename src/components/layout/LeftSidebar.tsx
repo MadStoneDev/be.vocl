@@ -106,7 +106,7 @@ export function LeftSidebar({
     window.dispatchEvent(new CustomEvent(OPEN_COMMAND_PALETTE_EVENT));
 
   const navItems = [
-    { href: "/feed", icon: IconHome, iconActive: IconHomeFilled, label: "Home", color: "text-vocl-accent" },
+    { href: "/feed", icon: IconHome, iconActive: IconHomeFilled, label: "Home", color: "text-vocl-primary" },
     { href: "/explore", icon: IconCompass, iconActive: IconCompassFilled, label: "Explore", color: "text-orange-400" },
     { action: openCommandPalette, icon: IconSearch, iconActive: IconSearch, label: "Search", color: "text-fuchsia-400", hint: "⌘K" },
     {
@@ -135,11 +135,11 @@ export function LeftSidebar({
         collapsed ? "w-16" : "w-52 lg:w-56"
       }`}
     >
-      {/* Logo */}
-      <div className={`h-16 flex items-center overflow-hidden transition-all duration-300 ${collapsed ? "px-3 justify-center" : "px-5"}`}>
+      {/* Masthead */}
+      <div className={`h-16 flex items-center overflow-hidden border-b border-vocl-border transition-all duration-300 ${collapsed ? "px-3 justify-center" : "px-5"}`}>
         <Link
           href="/feed"
-          className="font-display text-xl text-foreground hover:text-vocl-accent transition-colors flex-shrink-0"
+          className="font-display text-xl text-foreground hover:text-vocl-primary transition-colors flex-shrink-0"
         >
           {collapsed ? (
             <Image
@@ -157,6 +157,11 @@ export function LeftSidebar({
 
       {/* Navigation */}
       <nav className={`flex-1 py-4 transition-all duration-300 ${collapsed ? "px-2" : "px-3"}`}>
+        {!collapsed && (
+          <p className="px-3 mb-2 type-meta uppercase tracking-[0.2em] text-foreground/40 font-semibold">
+            Sections
+          </p>
+        )}
         <ul className="space-y-1">
           {navItems.map((item, index) => {
             const isActive = item.href
@@ -178,11 +183,11 @@ export function LeftSidebar({
                         ? `${item.label}, ${badgeCount} unread`
                         : item.label
                     }
-                    className={`relative w-full flex items-center rounded-xl hover:bg-vocl-hover transition-all duration-300 ${
+                    className={`relative w-full flex items-center rounded-sm hover:bg-vocl-hover transition-all duration-300 ${
                       collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
                     }`}
                   >
-                    <span className={`relative inline-flex flex-shrink-0 ${(item as any).color || "text-foreground/70"}`}>
+                    <span className="relative inline-flex flex-shrink-0 text-foreground/70">
                       <Icon size={22} aria-hidden="true" />
                       {showBadge && (
                         <span
@@ -212,15 +217,15 @@ export function LeftSidebar({
                   href={item.href!}
                   title={collapsed ? item.label : undefined}
                   aria-current={isActive ? "page" : undefined}
-                  className={`relative flex items-center rounded-xl transition-all duration-300 ${
+                  className={`relative flex items-center rounded-sm transition-all duration-300 ${
                     collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
                   } ${
                     isActive
-                      ? "bg-vocl-hover-strong font-semibold"
-                      : "hover:bg-vocl-hover"
+                      ? "bg-vocl-hover font-semibold text-vocl-primary"
+                      : "text-foreground/80 hover:bg-vocl-hover"
                   }`}
                 >
-                  <span className={`relative inline-flex flex-shrink-0 ${(item as any).color || "text-foreground/70"}`}>
+                  <span className={`relative inline-flex flex-shrink-0 ${isActive ? "text-vocl-primary" : "text-foreground/70"}`}>
                     <Icon size={22} aria-hidden="true" />
                     {showBadge && (
                       <span
@@ -249,7 +254,7 @@ export function LeftSidebar({
             href="/admin"
             title={collapsed ? "Admin" : undefined}
             aria-current={pathname.startsWith("/admin") ? "page" : undefined}
-            className={`flex items-center rounded-xl transition-all duration-300 ${
+            className={`flex items-center rounded-sm transition-all duration-300 ${
               collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
             } ${
               pathname.startsWith("/admin")
@@ -269,11 +274,11 @@ export function LeftSidebar({
           href="/settings"
           title={collapsed ? "Settings" : undefined}
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
-          className={`flex items-center rounded-xl transition-all duration-300 ${
+          className={`flex items-center rounded-sm transition-all duration-300 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           } ${role >= 5 ? "mt-1" : ""} ${
             pathname.startsWith("/settings")
-              ? "bg-vocl-accent/10 text-vocl-accent"
+              ? "bg-vocl-primary/10 text-vocl-primary"
               : "text-foreground/70 hover:text-foreground hover:bg-vocl-hover"
           }`}
         >
@@ -289,11 +294,11 @@ export function LeftSidebar({
             href={`/profile/${username}`}
             title={collapsed ? `@${username}` : undefined}
             aria-label="Your profile"
-            className={`flex items-center mt-1 rounded-xl transition-all duration-300 ${
+            className={`flex items-center mt-1 rounded-sm transition-all duration-300 ${
               collapsed ? "justify-center px-0 py-2.5" : "gap-3 pl-1 pr-3 py-2.5"
             } ${
               pathname === `/profile/${username}`
-                ? "bg-vocl-accent/10 text-vocl-accent"
+                ? "bg-vocl-primary/10 text-vocl-primary"
                 : "text-foreground/70 hover:text-foreground hover:bg-vocl-hover"
             }`}
           >
@@ -307,7 +312,7 @@ export function LeftSidebar({
             </span>
           </Link>
         ) : (
-          <div className={`flex items-center mt-1 rounded-xl text-foreground/70 transition-all duration-300 ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
+          <div className={`flex items-center mt-1 rounded-sm text-foreground/70 transition-all duration-300 ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
             <div className="w-8 h-8 rounded-full bg-vocl-hover-strong animate-pulse flex-shrink-0" />
             <span className={`h-4 w-20 bg-vocl-hover-strong rounded animate-pulse transition-all duration-300 ${collapsed ? "hidden" : ""}`} />
           </div>
@@ -319,7 +324,7 @@ export function LeftSidebar({
           onClick={toggleTheme}
           title={collapsed ? (showDark ? "Light mode" : "Dark mode") : undefined}
           aria-label={showDark ? "Switch to light mode" : "Switch to dark mode"}
-          className={`flex items-center mt-1 w-full rounded-xl text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
+          className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           }`}
         >
@@ -338,7 +343,7 @@ export function LeftSidebar({
           type="button"
           onClick={toggleFullscreen}
           title={collapsed ? (isFullscreen ? "Exit Fullscreen" : "Fullscreen") : undefined}
-          className={`flex items-center mt-1 w-full rounded-xl text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
+          className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           }`}
         >
@@ -354,7 +359,7 @@ export function LeftSidebar({
             type="button"
             onClick={handleLogout}
             title={collapsed ? "Logout" : undefined}
-            className={`flex items-center mt-1 w-full rounded-xl text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-all duration-300 ${
+            className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-all duration-300 ${
               collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
             }`}
           >
