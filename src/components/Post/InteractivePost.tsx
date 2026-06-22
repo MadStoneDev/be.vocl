@@ -7,7 +7,6 @@ import { VideoContent } from "./content/VideoContent";
 import { AudioContent } from "./content/AudioContent";
 import { AskContent } from "./content/AskContent";
 import { GalleryContent } from "./content/GalleryContent";
-import { PostAudioReactions } from "./PostAudioReactions";
 import { LinkPreviewCarousel } from "./content/LinkPreviewCarousel";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
 import type { VideoEmbedPlatform } from "@/types/database";
@@ -610,14 +609,10 @@ function InteractivePostComponent({
         threadLength={threadLength}
         hideHeader={articleMode}
         bare={articleMode}
+        isLoggedIn={isAuthenticated}
       >
         {renderContent()}
       </Post>
-
-      {/* Spoken (voice) reactions — VOCL signature feature */}
-      {!isReblog && (
-        <PostAudioReactions postId={id} isLoggedIn={isAuthenticated} />
-      )}
 
       {/* Post Menu */}
       <PostMenu

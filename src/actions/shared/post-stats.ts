@@ -22,6 +22,7 @@ export async function batchFetchPostStats(
       userCommentSet: new Set<string>(),
       userReblogSet: new Set<string>(),
       userBookmarkSet: new Set<string>(),
+      voiceCountMap: new Map<string, number>(),
       tagsMap: new Map<string, Array<{ id: string; name: string }>>(),
     };
   }
@@ -45,6 +46,8 @@ export async function batchFetchPostStats(
     userId
       ? supabase.from("posts").select("reblogged_from_id").eq("author_id", userId).in("reblogged_from_id", postIds).neq("status", "deleted")
       : Promise.resolve({ data: [] }),
+    // Voice ("spoken") reaction counts — one row per reactor per post.
+    supabase.from("post_audio_reactions").select("post_id").in("post_id", postIds),
   ];
 
   if (options?.includeTags) {
@@ -77,9 +80,15 @@ export async function batchFetchPostStats(
   const userCommentsData = results[2];
   const userReblogsData = results[3];
 
+  // Parse voice reaction counts (fixed query index 4)
+  const voiceCountMap = new Map<string, number>();
+  for (const row of results[4]?.data || []) {
+    voiceCountMap.set(row.post_id, (voiceCountMap.get(row.post_id) || 0) + 1);
+  }
+
   // Parse optional results
   const tagsMap = new Map<string, Array<{ id: string; name: string }>>();
-  let optIdx = 4;
+  let optIdx = 5;
   if (options?.includeTags) {
     const postTagsData = results[optIdx];
     for (const pt of postTagsData?.data || []) {
@@ -106,6 +115,7 @@ export async function batchFetchPostStats(
     userCommentSet: new Set((userCommentsData.data || []).map((c: any) => c.post_id)),
     userReblogSet: new Set((userReblogsData.data || []).map((r: any) => r.reblogged_from_id)),
     userBookmarkSet,
+    voiceCountMap,
     tagsMap,
   };
 }

@@ -526,6 +526,7 @@ interface PostWithDetails {
   likeCount: number;
   commentCount: number;
   reblogCount: number;
+  voiceReactionCount?: number;
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
@@ -620,6 +621,7 @@ export async function getPostById(postId: string): Promise<{
       likeCount: stats.likeCountMap.get(postId) || 0,
       commentCount: stats.commentCountMap.get(postId) || 0,
       reblogCount: stats.reblogCountMap.get(postId) || 0,
+      voiceReactionCount: stats.voiceCountMap.get(postId) || 0,
       hasLiked: stats.userLikeSet.has(postId),
       hasCommented: stats.userCommentSet.has(postId),
       hasReblogged: stats.userReblogSet.has(postId),
@@ -1356,6 +1358,7 @@ export async function getFeedPosts(options?: {
         likeCount: stats.likeCountMap.get(post.id) || 0,
         commentCount: stats.commentCountMap.get(post.id) || 0,
         reblogCount: stats.reblogCountMap.get(post.id) || 0,
+        voiceReactionCount: stats.voiceCountMap.get(post.id) || 0,
         hasLiked: stats.userLikeSet.has(post.id),
         hasCommented: stats.userCommentSet.has(post.id),
         hasReblogged: stats.userReblogSet.has(post.id),

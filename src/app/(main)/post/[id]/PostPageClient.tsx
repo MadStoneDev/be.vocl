@@ -78,6 +78,7 @@ interface PostData {
   likeCount: number;
   commentCount: number;
   reblogCount: number;
+  voiceReactionCount?: number;
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
@@ -294,6 +295,7 @@ export function PostPageClient({ postId }: { postId: string }) {
               comments: post.commentCount,
               likes: post.likeCount,
               reblogs: post.reblogCount,
+              voiceReactions: post.voiceReactionCount,
             }}
             initialInteractions={{
               hasCommented: post.hasCommented,

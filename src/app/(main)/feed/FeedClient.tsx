@@ -37,6 +37,7 @@ interface PostWithDetails {
   likeCount: number;
   commentCount: number;
   reblogCount: number;
+  voiceReactionCount?: number;
   hasLiked: boolean;
   hasCommented: boolean;
   hasReblogged: boolean;
@@ -156,6 +157,7 @@ function transformPost(post: PostWithDetails) {
       comments: post.commentCount,
       likes: post.likeCount,
       reblogs: post.reblogCount,
+      voiceReactions: post.voiceReactionCount,
     },
     interactions: {
       hasCommented: post.hasCommented,

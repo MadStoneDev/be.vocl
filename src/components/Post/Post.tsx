@@ -36,9 +36,10 @@ import { NSFWOverlay } from "./NSFWOverlay";
 import { ImageLightbox } from "./content/ImageLightbox";
 import { StaffBadge, Avatar, TimeAgo } from "@/components/ui";
 import { CommentVoiceRecorder } from "./create/CommentVoiceRecorder";
+import { VoiceReactionsPanel } from "./VoiceReactionsPanel";
 
 // Panel types for expanded view
-type ExpandedPanel = "comments" | "likes" | "reblogs" | null;
+type ExpandedPanel = "comments" | "likes" | "reblogs" | "voice" | null;
 
 // =============================================================================
 // Types
@@ -60,6 +61,7 @@ export interface PostStats {
   comments: number;
   likes: number;
   reblogs: number;
+  voiceReactions?: number;
 }
 export interface PostInteractions {
   hasCommented: boolean;
@@ -134,6 +136,8 @@ export interface PostProps {
   // chrome and the byline header so a bespoke article masthead can sit above.
   hideHeader?: boolean;
   bare?: boolean;
+  /** Whether the viewer is signed in (gates voice-reaction recording). */
+  isLoggedIn?: boolean;
 }
 
 // =============================================================================
@@ -266,9 +270,11 @@ interface PostActionBarProps {
   interactions: PostInteractions;
   isReblogMenuOpen: boolean;
   expandedPanel: ExpandedPanel;
+  voiceCount: number;
   onCommentClick: () => void;
   onLike?: () => void;
   onLikesClick: () => void;
+  onVoiceClick: () => void;
   onReblogsClick: () => void;
   onReblogClick: () => void;
 }
@@ -278,9 +284,11 @@ function PostActionBar({
   interactions,
   isReblogMenuOpen,
   expandedPanel,
+  voiceCount,
   onCommentClick,
   onLike,
   onLikesClick,
+  onVoiceClick,
   onReblogsClick,
   onReblogClick,
 }: PostActionBarProps) {
@@ -364,6 +372,21 @@ function PostActionBar({
           {stats.likes}
         </button>
       </div>
+
+      {/* Voice react - mic + count, opens the voice reactions panel */}
+      <button
+        onClick={onVoiceClick}
+        className={`flex items-center gap-1 sm:gap-2 cursor-pointer transition-colors ${
+          expandedPanel === "voice" ? "text-vocl-primary" : "text-neutral-500 hover:text-vocl-primary"
+        }`}
+        aria-label={`${voiceCount} voice reaction${voiceCount === 1 ? "" : "s"}`}
+        aria-expanded={expandedPanel === "voice"}
+      >
+        <IconMicrophone size={23} aria-hidden="true" />
+        <span className="font-sans text-sm" aria-hidden="true">
+          {voiceCount}
+        </span>
+      </button>
 
       {/* Reblog count - clickable to show reblogs list */}
       <button
@@ -763,6 +786,7 @@ function ExpandedPanel({
     comments: "Comments",
     likes: "Liked by",
     reblogs: "Echoed by",
+    voice: "Voice reactions",
   };
 
   return (
@@ -946,8 +970,10 @@ export const Post = memo(function Post({
   threadLength,
   hideHeader = false,
   bare = false,
+  isLoggedIn = true,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [voiceCountOverride, setVoiceCountOverride] = useState<number | null>(null);
   const [isReblogMenuOpen, setIsReblogMenuOpen] = useState(false);
   const [isContentRevealed, setIsContentRevealed] =
     useState(autoRevealSensitive);
@@ -1050,6 +1076,19 @@ export const Post = memo(function Post({
     },
     [onComment],
   );
+
+  const handleVoiceClick = useCallback(() => {
+    if (expandedPanel === "voice") {
+      setExpandedPanel(null);
+      setTimeout(() => setLastPanel(null), 300);
+    } else {
+      setLastPanel("voice");
+      setExpandedPanel("voice");
+    }
+    setIsReblogMenuOpen(false);
+  }, [expandedPanel]);
+
+  const voiceCount = voiceCountOverride ?? stats.voiceReactions ?? 0;
 
   const handleClosePanel = useCallback(() => {
     setExpandedPanel(null);
@@ -1260,9 +1299,11 @@ export const Post = memo(function Post({
           interactions={interactions}
           isReblogMenuOpen={isReblogMenuOpen}
           expandedPanel={expandedPanel}
+          voiceCount={voiceCount}
           onCommentClick={handleCommentClick}
           onLike={onLike}
           onLikesClick={handleLikesClick}
+          onVoiceClick={handleVoiceClick}
           onReblogsClick={handleReblogsClick}
           onReblogClick={handleReblogClick}
         />
@@ -1291,21 +1332,29 @@ export const Post = memo(function Post({
           zIndex: 1,
         }}
       >
-        {displayPanel && (
-          <ExpandedPanel
-            type={displayPanel}
+        {displayPanel === "voice" ? (
+          <VoiceReactionsPanel
             postId={id}
-            comments={comments}
-            likedBy={likedBy}
-            rebloggedBy={rebloggedBy}
-            onCommentSubmit={handleCommentSubmit}
-            onClose={handleClosePanel}
-            isLoading={
-              (displayPanel === "comments" && isCommentsLoading) ||
-              (displayPanel === "likes" && isLikesLoading) ||
-              (displayPanel === "reblogs" && isReblogsLoading)
-            }
+            isLoggedIn={isLoggedIn}
+            onCountChange={setVoiceCountOverride}
           />
+        ) : (
+          displayPanel && (
+            <ExpandedPanel
+              type={displayPanel}
+              postId={id}
+              comments={comments}
+              likedBy={likedBy}
+              rebloggedBy={rebloggedBy}
+              onCommentSubmit={handleCommentSubmit}
+              onClose={handleClosePanel}
+              isLoading={
+                (displayPanel === "comments" && isCommentsLoading) ||
+                (displayPanel === "likes" && isLikesLoading) ||
+                (displayPanel === "reblogs" && isReblogsLoading)
+              }
+            />
+          )
         )}
       </div>
     </div>
