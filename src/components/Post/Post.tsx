@@ -877,8 +877,27 @@ function TagsOverlay({ tags, isVisible }: TagsOverlayProps) {
 }
 
 // Tags strip shown below content on mobile/tablet for image/video/gallery posts
-function MobileTagsStrip({ tags }: { tags: PostTag[] }) {
+function MobileTagsStrip({ tags, bare }: { tags: PostTag[]; bare?: boolean }) {
   if (tags.length === 0) return null;
+
+  if (bare) {
+    return (
+      <div className="sm:hidden pt-3">
+        <div className="flex flex-row flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Link
+              key={tag.id}
+              href={`/tag/${encodeURIComponent(tag.name)}`}
+              className="px-2.5 py-1 text-xs font-medium rounded-sm border border-vocl-border text-foreground/60 hover:text-vocl-primary hover:border-vocl-primary/50 transition-colors truncate"
+              style={{ maxWidth: "150px" }}
+            >
+              #{tag.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="sm:hidden bg-[#EBEBEB] px-2.5 pt-2 pb-1">
@@ -902,11 +921,34 @@ function MobileTagsStrip({ tags }: { tags: PostTag[] }) {
 function TextPostTags({
   tags,
   isHovered,
+  bare,
 }: {
   tags: PostTag[];
   isHovered: boolean;
+  bare?: boolean;
 }) {
   if (tags.length === 0) return null;
+
+  // Article mode: a quiet, always-visible tag line on the page (no gray box,
+  // no hover-reveal), with a hairline rule above.
+  if (bare) {
+    return (
+      <div className="mt-5 pt-4 border-t border-vocl-border">
+        <div className="flex flex-row flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Link
+              key={tag.id}
+              href={`/tag/${encodeURIComponent(tag.name)}`}
+              className="px-2.5 py-1 text-xs font-medium rounded-sm border border-vocl-border text-foreground/60 hover:text-vocl-primary hover:border-vocl-primary/50 transition-colors truncate"
+              style={{ maxWidth: "180px" }}
+            >
+              #{tag.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#EBEBEB] px-2.5 sm:px-4 pb-2.5 sm:pb-4">
@@ -1194,13 +1236,13 @@ export const Post = memo(function Post({
                 contentType === "video" ||
                 contentType === "gallery") &&
                 tags &&
-                tags.length > 0 && <MobileTagsStrip tags={tags} />}
+                tags.length > 0 && <MobileTagsStrip tags={tags} bare={bare} />}
               {(contentType === "text" ||
                 contentType === "poll" ||
                 contentType === "ask") &&
                 tags &&
                 tags.length > 0 && (
-                  <TextPostTags tags={tags} isHovered={isHovered} />
+                  <TextPostTags tags={tags} isHovered={isHovered} bare={bare} />
                 )}
             </div>
           )}
@@ -1283,9 +1325,9 @@ export const Post = memo(function Post({
                 contentType === "video" ||
                 contentType === "gallery") &&
                 tags &&
-                tags.length > 0 && <MobileTagsStrip tags={tags} />}
+                tags.length > 0 && <MobileTagsStrip tags={tags} bare={bare} />}
               {tags && tags.length > 0 && (
-                <TextPostTags tags={tags} isHovered={isHovered} />
+                <TextPostTags tags={tags} isHovered={isHovered} bare={bare} />
               )}
             </PostTagsContext.Provider>
           )}
