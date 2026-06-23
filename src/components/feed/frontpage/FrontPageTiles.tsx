@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink } from "@tabler/icons-react";
+import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart } from "@tabler/icons-react";
 import { Avatar, TimeAgo } from "@/components/ui";
 import { ImageLightbox } from "@/components/Post/content/ImageLightbox";
 import type { FeedPost } from "../FeedList";
@@ -365,6 +365,36 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
       </div>
       <Byline post={post} />
     </TileShell>
+  );
+}
+
+/**
+ * Compact, editorial quick-actions row for a front-page tile: comment · like ·
+ * voice react · reblog, as line icons + tabular counts. Sits outside the tile's
+ * link (so it's separately clickable) and leads to the post to engage.
+ */
+export function TileActions({ post }: { post: FeedPost }) {
+  const href = hrefOf(post);
+  const items = [
+    { Icon: IconMessage, n: post.stats?.comments ?? 0, label: "Comment" },
+    { Icon: IconHeart, n: post.stats?.likes ?? 0, label: "Like" },
+    { Icon: IconMicrophone, n: post.stats?.voiceReactions ?? 0, label: "Voice react" },
+    { Icon: IconRefresh, n: post.stats?.reblogs ?? 0, label: "Reblog" },
+  ];
+  return (
+    <div className="mt-3 pt-3 border-t border-vocl-border flex items-center gap-5">
+      {items.map(({ Icon, n, label }) => (
+        <Link
+          key={label}
+          href={href}
+          aria-label={label}
+          className="inline-flex items-center gap-1.5 type-meta text-foreground/45 hover:text-vocl-primary transition-colors"
+        >
+          <Icon size={16} aria-hidden="true" />
+          <span className="tabular-nums">{n}</span>
+        </Link>
+      ))}
+    </div>
   );
 }
 

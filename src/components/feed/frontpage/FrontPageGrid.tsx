@@ -6,7 +6,7 @@ import { FeedSkeleton } from "@/components/ui";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { FeedPost } from "../FeedList";
 import { useFeedLayout } from "./useFeedLayout";
-import { FrontPageTile } from "./FrontPageTiles";
+import { FrontPageTile, TileActions } from "./FrontPageTiles";
 
 interface FrontPageGridProps {
   posts: FeedPost[];
@@ -50,6 +50,7 @@ export function FrontPageGrid({
         {lead && (
           <motion.div className="lg:col-span-8" initial="hidden" animate="show" variants={fadeUp}>
             <FrontPageTile post={lead} prominence="lead" />
+            <TileActions post={lead} />
           </motion.div>
         )}
         {features.length > 0 && (
@@ -62,6 +63,7 @@ export function FrontPageGrid({
             {features.map((p) => (
               <motion.div key={p.id} className="py-6 first:pt-0 last:pb-0" variants={fadeUp}>
                 <FrontPageTile post={p} prominence="feature" />
+                <TileActions post={p} />
               </motion.div>
             ))}
           </motion.div>
@@ -88,6 +90,7 @@ export function FrontPageGrid({
             {standards.map((p) => (
               <motion.div key={p.id} className="cv-tile border-t border-vocl-border pt-5" variants={fadeUp}>
                 <FrontPageTile post={p} prominence="standard" />
+                <TileActions post={p} />
               </motion.div>
             ))}
           </motion.section>
