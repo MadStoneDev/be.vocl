@@ -305,7 +305,7 @@ function PostActionBar({
   return (
     <div
       className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5 border-t ${
-        bare ? "bg-transparent border-vocl-border mt-6 mx-auto w-full max-w-[680px]" : "bg-white border-neutral-200"
+        bare ? "bg-transparent border-vocl-border mt-6" : "bg-white border-neutral-200"
       }`}
     >
       {/* Comment button - icon AND count open panel */}
@@ -1368,7 +1368,7 @@ export const Post = memo(function Post({
 
       {/* Expanded Panel - OUTSIDE article, below action bar */}
       <div
-        className={`overflow-hidden ${bare ? "mx-auto w-full max-w-[680px]" : "bg-vocl-surface shadow-lg"}`}
+        className={`overflow-hidden ${bare ? "" : "bg-vocl-surface shadow-lg"}`}
         style={{
           maxHeight: expandedPanel ? "384px" : "0px",
           opacity: expandedPanel ? 1 : 0,
