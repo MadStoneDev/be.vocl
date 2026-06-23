@@ -20,6 +20,8 @@ interface VoiceReactionsPanelProps {
   onCountChange?: (count: number) => void;
   /** Called when a logged-out viewer tries to add a reaction (→ join). */
   onRequireAuth?: () => void;
+  /** Drop the panel's own padding (when the container already pads it). */
+  flush?: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export function VoiceReactionsPanel({
   isLoggedIn = true,
   onCountChange,
   onRequireAuth,
+  flush = false,
 }: VoiceReactionsPanelProps) {
   const [loading, setLoading] = useState(true);
   const [reactions, setReactions] = useState<PostAudioReaction[]>([]);
@@ -88,7 +91,7 @@ export function VoiceReactionsPanel({
   }, [postId, load]);
 
   return (
-    <div className="px-4 py-3">
+    <div className={flush ? "" : "px-4 py-3"}>
       {/* Add Voice Reaction — pinned at the top, matching the Like/Reblog pills */}
       {!recording && (
         <button

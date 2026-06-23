@@ -306,7 +306,7 @@ export function TileEngagement({
           {panel === "likes" && <LikesPanel postId={postId} isLiked={isLiked} onLike={guardedLike} />}
           {panel === "reblogs" && <RebloggersPanel postId={postId} reblogged={reblogged} onReblog={onReblog} />}
           {panel === "comments" && <CommentsPanel postId={postId} canPost={isAuthenticated} onJoin={goJoin} />}
-          {panel === "voice" && <VoiceReactionsPanel postId={postId} isLoggedIn={isAuthenticated} onRequireAuth={goJoin} />}
+          {panel === "voice" && <VoiceReactionsPanel postId={postId} isLoggedIn={isAuthenticated} onRequireAuth={goJoin} flush />}
         </div>
       )}
     </div>
