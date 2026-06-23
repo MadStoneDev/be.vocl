@@ -244,7 +244,10 @@ export function PostPageClient({ postId }: { postId: string }) {
 
   return (
     <MotionConfig reducedMotion="user">
+    {/* Wide canvas; text/masthead/engagement sit in a ~680px reading column,
+        media breaks out wider (full-bleed for the logged-out reading view). */}
     <article className="max-w-5xl mx-auto py-6 px-4">
+      <div className="mx-auto max-w-[680px]">
       {/* Back affordance */}
       <button
         onClick={() => router.back()}
@@ -333,6 +336,7 @@ export function PostPageClient({ postId }: { postId: string }) {
           </button>
         </div>
       </motion.header>
+      </div>
 
       {/* Post — guests can read it, but any interaction routes to join */}
       {(() => {
@@ -366,7 +370,11 @@ export function PostPageClient({ postId }: { postId: string }) {
             tags={post.tags}
             content={post.content}
           >
-            {renderContent()}
+            {["image", "gallery", "video"].includes(post.postType) ? (
+              renderContent()
+            ) : (
+              <div className="mx-auto max-w-[680px]">{renderContent()}</div>
+            )}
           </InteractivePost>
         );
         return (

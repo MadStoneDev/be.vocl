@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart } from "@tabler/icons-react";
-import { Avatar, TimeAgo } from "@/components/ui";
+import { useRouter } from "next/navigation";
+import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { Avatar, TimeAgo, toast } from "@/components/ui";
+import { useAuth } from "@/hooks/useAuth";
+import { useLike } from "@/hooks/useLike";
+import { reblogPost } from "@/actions/reblogs";
 import { ImageLightbox } from "@/components/Post/content/ImageLightbox";
 import type { FeedPost } from "../FeedList";
 import type { Prominence } from "./useFeedLayout";
@@ -374,26 +378,75 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
  * link (so it's separately clickable) and leads to the post to engage.
  */
 export function TileActions({ post }: { post: FeedPost }) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const href = hrefOf(post);
-  const items = [
-    { Icon: IconMessage, n: post.stats?.comments ?? 0, label: "Comment" },
-    { Icon: IconHeart, n: post.stats?.likes ?? 0, label: "Like" },
-    { Icon: IconMicrophone, n: post.stats?.voiceReactions ?? 0, label: "Voice react" },
-    { Icon: IconRefresh, n: post.stats?.reblogs ?? 0, label: "Reblog" },
-  ];
+
+  // Inline like (optimistic). Comment + voice lead to the post to engage.
+  const { isLiked, likeCount, handleLike } = useLike({
+    postId: post.id,
+    initialLiked: post.interactions?.hasLiked,
+    initialCount: post.stats?.likes ?? 0,
+  });
+  const [reblogged, setReblogged] = useState(!!post.interactions?.hasReblogged);
+  const [reblogCount, setReblogCount] = useState(post.stats?.reblogs ?? 0);
+  const [, startReblog] = useTransition();
+
+  const requireAuth = (fn: () => void) => {
+    if (!isAuthenticated) {
+      router.push("/signup");
+      return;
+    }
+    fn();
+  };
+
+  const onReblog = () =>
+    requireAuth(() => {
+      if (reblogged) return;
+      setReblogged(true);
+      setReblogCount((c) => c + 1);
+      startReblog(async () => {
+        const res = await reblogPost(post.id, "instant");
+        if (!res.success) {
+          setReblogged(false);
+          setReblogCount((c) => c - 1);
+          toast.error(res.error || "Failed to reblog");
+        } else {
+          toast.success("Reblogged");
+        }
+      });
+    });
+
+  const base = "inline-flex items-center gap-1.5 type-meta transition-colors";
+
   return (
     <div className="mt-3 pt-3 border-t border-vocl-border flex items-center gap-5">
-      {items.map(({ Icon, n, label }) => (
-        <Link
-          key={label}
-          href={href}
-          aria-label={label}
-          className="inline-flex items-center gap-1.5 type-meta text-foreground/45 hover:text-vocl-primary transition-colors"
-        >
-          <Icon size={16} aria-hidden="true" />
-          <span className="tabular-nums">{n}</span>
-        </Link>
-      ))}
+      <Link href={href} aria-label="Comment" className={`${base} text-foreground/45 hover:text-vocl-primary`}>
+        <IconMessage size={16} aria-hidden="true" />
+        <span className="tabular-nums">{post.stats?.comments ?? 0}</span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => requireAuth(handleLike)}
+        aria-label="Like"
+        className={`${base} ${isLiked ? "text-vocl-like" : "text-foreground/45 hover:text-vocl-like"}`}
+      >
+        {isLiked ? <IconHeartFilled size={16} aria-hidden="true" /> : <IconHeart size={16} aria-hidden="true" />}
+        <span className="tabular-nums">{likeCount}</span>
+      </button>
+      <Link href={href} aria-label="Voice react" className={`${base} text-foreground/45 hover:text-vocl-primary`}>
+        <IconMicrophone size={16} aria-hidden="true" />
+        <span className="tabular-nums">{post.stats?.voiceReactions ?? 0}</span>
+      </Link>
+      <button
+        type="button"
+        onClick={onReblog}
+        aria-label="Reblog"
+        className={`${base} ${reblogged ? "text-vocl-primary" : "text-foreground/45 hover:text-vocl-primary"}`}
+      >
+        <IconRefresh size={16} aria-hidden="true" />
+        <span className="tabular-nums">{reblogCount}</span>
+      </button>
     </div>
   );
 }
