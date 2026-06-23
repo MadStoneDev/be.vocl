@@ -29,6 +29,8 @@ interface AudioContentProps {
   caption?: string;
   transcript?: string;
   isVoiceNote?: boolean;
+  /** Broadsheet article mode: drop the gradient card box, sit on the page. */
+  article?: boolean;
 }
 
 export function AudioContent({
@@ -38,7 +40,10 @@ export function AudioContent({
   caption,
   transcript,
   isVoiceNote,
+  article,
 }: AudioContentProps) {
+  // Container styling: a gradient "card" in the feed, boxless on the article page.
+  const shell = article ? "py-2" : "bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 ";
   const [showTranscript, setShowTranscript] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -124,7 +129,7 @@ export function AudioContent({
   // Spotify embed iframe
   if (isSpotifyEmbed) {
     return (
-      <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 ">
+      <div className={shell}>
         <div className="rounded-xl overflow-hidden">
           <iframe
             src={`https://open.spotify.com/embed/track/${spotifyData.track_id}?utm_source=oembed&theme=0`}
@@ -193,7 +198,7 @@ export function AudioContent({
 
   // File upload audio player (original)
   return (
-    <div className="bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 ">
+    <div className={shell}>
       {src && <audio ref={audioRef} src={src} preload="metadata" />}
 
       <div className="flex gap-4">

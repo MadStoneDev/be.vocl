@@ -9,16 +9,20 @@ interface LinkPreviewCarouselProps {
   editable?: boolean;
   onDismiss?: (url: string) => void;
   isLoading?: boolean;
+  /** Broadsheet article mode: theme-aware card (no fixed light gray). */
+  article?: boolean;
 }
 
 function PreviewCard({
   preview,
   editable,
   onDismiss,
+  article,
 }: {
   preview: LinkPreviewData;
   editable?: boolean;
   onDismiss?: (url: string) => void;
+  article?: boolean;
 }) {
   let hostname = "";
   try {
@@ -27,8 +31,12 @@ function PreviewCard({
     hostname = preview.url;
   }
 
+  const c = article
+    ? { card: "border-vocl-border bg-vocl-hover", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/40" }
+    : { card: "border-neutral-300/50 bg-neutral-200/60", img: "bg-neutral-300/50", site: "text-neutral-500", title: "text-neutral-800", desc: "text-neutral-500", icon: "text-neutral-400" };
+
   const card = (
-    <div className="relative rounded-xl overflow-hidden border border-neutral-300/50 bg-neutral-200/60">
+    <div className={`relative rounded-sm overflow-hidden border ${c.card}`}>
       {/* Dismiss button */}
       {editable && onDismiss && (
         <button
@@ -47,7 +55,7 @@ function PreviewCard({
 
       {/* OG Image */}
       {preview.image && (
-        <div className="relative w-full aspect-video bg-neutral-300/50">
+        <div className={`relative w-full aspect-video ${c.img}`}>
           <Image
             src={preview.image}
             alt=""
@@ -72,29 +80,29 @@ function PreviewCard({
               unoptimized
             />
           ) : (
-            <IconLink size={14} className="text-neutral-400 flex-shrink-0" />
+            <IconLink size={14} className={`${c.icon} flex-shrink-0`} />
           )}
-          <span className="text-xs text-neutral-500 truncate">
+          <span className={`text-xs ${c.site} truncate`}>
             {preview.siteName || hostname}
           </span>
           {!editable && (
             <IconExternalLink
               size={12}
-              className="text-neutral-400 ml-auto flex-shrink-0"
+              className={`${c.icon} ml-auto flex-shrink-0`}
             />
           )}
         </div>
 
         {/* Title */}
         {preview.title && (
-          <p className="text-sm font-medium text-neutral-800 line-clamp-2">
+          <p className={`text-sm font-medium ${c.title} line-clamp-2`}>
             {preview.title}
           </p>
         )}
 
         {/* Description */}
         {preview.description && (
-          <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+          <p className={`text-xs ${c.desc} mt-1 line-clamp-2`}>
             {preview.description}
           </p>
         )}
@@ -134,13 +142,14 @@ export function LinkPreviewCarousel({
   editable = false,
   onDismiss,
   isLoading = false,
+  article = false,
 }: LinkPreviewCarouselProps) {
   if (previews.length === 0 && !isLoading) return null;
 
   const isSingle = previews.length === 1 && !isLoading;
 
   return (
-    <div className="px-3 sm:px-4 pb-3">
+    <div className={article ? "" : "px-3 sm:px-4 pb-3"}>
       <div
         className={`flex gap-3 ${
           isSingle
@@ -160,6 +169,7 @@ export function LinkPreviewCarousel({
               preview={preview}
               editable={editable}
               onDismiss={onDismiss}
+              article={article}
             />
           </div>
         ))}

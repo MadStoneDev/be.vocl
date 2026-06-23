@@ -160,7 +160,7 @@ export function PostPageClient({ postId }: { postId: string }) {
             </TextContent>
             {content.link_previews && content.link_previews.length > 0 && (
               <div className="mt-6">
-                <LinkPreviewCarousel previews={content.link_previews} />
+                <LinkPreviewCarousel previews={content.link_previews} article />
               </div>
             )}
           </>
@@ -208,6 +208,7 @@ export function PostPageClient({ postId }: { postId: string }) {
             caption={content.caption_html}
             transcript={content.transcript}
             isVoiceNote={content.is_voice_note}
+            article
           />
         );
 
@@ -215,7 +216,7 @@ export function PostPageClient({ postId }: { postId: string }) {
         return <PollContent postId={post.id} content={post.content} article />;
 
       case "ask":
-        return <AskContent content={post.content} />;
+        return <AskContent content={post.content} article />;
 
       default:
         return null;
