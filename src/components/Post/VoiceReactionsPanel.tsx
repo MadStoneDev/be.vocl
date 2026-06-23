@@ -18,6 +18,8 @@ interface VoiceReactionsPanelProps {
   isLoggedIn?: boolean;
   /** Reports the live count up so the action-bar counter stays in sync. */
   onCountChange?: (count: number) => void;
+  /** Called when a logged-out viewer tries to add a reaction (→ join). */
+  onRequireAuth?: () => void;
 }
 
 /**
@@ -29,6 +31,7 @@ export function VoiceReactionsPanel({
   postId,
   isLoggedIn = true,
   onCountChange,
+  onRequireAuth,
 }: VoiceReactionsPanelProps) {
   const [loading, setLoading] = useState(true);
   const [reactions, setReactions] = useState<PostAudioReaction[]>([]);
@@ -86,22 +89,17 @@ export function VoiceReactionsPanel({
 
   return (
     <div className="px-4 py-3">
-      {/* Header: Add Voice Reaction (mic = add) pinned at the top */}
-      <div className="flex items-center justify-between border-b border-vocl-border pb-2.5 mb-3">
-        <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
-          Voice reactions
-        </span>
-        {isLoggedIn && !recording && (
-          <button
-            type="button"
-            onClick={() => setRecording(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-vocl-primary/10 text-vocl-primary text-xs font-semibold hover:bg-vocl-primary/20 transition-colors"
-          >
-            <IconMicrophone size={15} />
-            {myReactionId ? "Re-record" : "Add Voice Reaction"}
-          </button>
-        )}
-      </div>
+      {/* Add Voice Reaction — pinned at the top, matching the Like/Reblog pills */}
+      {!recording && (
+        <button
+          type="button"
+          onClick={() => (isLoggedIn ? setRecording(true) : onRequireAuth?.())}
+          className="mb-3 inline-flex items-center gap-1.5 rounded-sm border px-3 py-1.5 type-meta uppercase tracking-widest font-semibold transition-colors border-vocl-border text-foreground/60 hover:border-vocl-primary hover:text-vocl-primary"
+        >
+          <IconMicrophone size={14} />
+          {myReactionId ? "Re-record" : "Add Voice Reaction"}
+        </button>
+      )}
 
       {/* Recorder */}
       {recording && isLoggedIn && (

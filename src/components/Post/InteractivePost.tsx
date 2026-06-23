@@ -54,6 +54,8 @@ interface InteractivePostProps {
   excludeFromPublic?: boolean;
   /** Broadsheet article layout (single-post page): drops the feed-card chrome. */
   articleMode?: boolean;
+  /** Hide the built-in action bar + comments (engagement lives elsewhere). */
+  hideActions?: boolean;
   isOwn?: boolean;
   isFollowingAuthor?: boolean;
   isReblog?: boolean;
@@ -95,6 +97,7 @@ function InteractivePostComponent({
   isSensitive = false,
   excludeFromPublic = false,
   articleMode = false,
+  hideActions = false,
   isOwn = false,
   isFollowingAuthor = false,
   isReblog = false,
@@ -609,6 +612,7 @@ function InteractivePostComponent({
         threadLength={threadLength}
         hideHeader={articleMode}
         bare={articleMode}
+        hideActions={hideActions}
         isLoggedIn={isAuthenticated}
       >
         {renderContent()}

@@ -51,7 +51,7 @@ export function FrontPageGrid({
         {lead && (
           <motion.div className="lg:col-span-8" initial="hidden" animate="show" variants={fadeUp}>
             <FrontPageTile post={lead} prominence="lead" />
-            <TileEngagement post={lead} />
+            <TileEngagement postId={lead.id} comments={lead.stats?.comments} likes={lead.stats?.likes} voice={lead.stats?.voiceReactions} reblogs={lead.stats?.reblogs} hasLiked={lead.interactions?.hasLiked} hasReblogged={lead.interactions?.hasReblogged} />
           </motion.div>
         )}
         {features.length > 0 && (
@@ -64,7 +64,7 @@ export function FrontPageGrid({
             {features.map((p) => (
               <motion.div key={p.id} className="py-6 first:pt-0 last:pb-0" variants={fadeUp}>
                 <FrontPageTile post={p} prominence="feature" />
-                <TileEngagement post={p} />
+                <TileEngagement postId={p.id} comments={p.stats?.comments} likes={p.stats?.likes} voice={p.stats?.voiceReactions} reblogs={p.stats?.reblogs} hasLiked={p.interactions?.hasLiked} hasReblogged={p.interactions?.hasReblogged} />
               </motion.div>
             ))}
           </motion.div>
@@ -91,7 +91,7 @@ export function FrontPageGrid({
             {standards.map((p) => (
               <motion.div key={p.id} className="cv-tile border-t border-vocl-border pt-5" variants={fadeUp}>
                 <FrontPageTile post={p} prominence="standard" />
-                <TileEngagement post={p} />
+                <TileEngagement postId={p.id} comments={p.stats?.comments} likes={p.stats?.likes} voice={p.stats?.voiceReactions} reblogs={p.stats?.reblogs} hasLiked={p.interactions?.hasLiked} hasReblogged={p.interactions?.hasReblogged} />
               </motion.div>
             ))}
           </motion.section>

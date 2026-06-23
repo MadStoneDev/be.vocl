@@ -11,6 +11,7 @@ import {
   IconRefresh,
   IconLoader2,
   IconSend,
+  IconShare,
 } from "@tabler/icons-react";
 import { Avatar, toast } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,7 +20,6 @@ import { reblogPost, getRebloggedBy } from "@/actions/reblogs";
 import { getLikesByPost } from "@/actions/likes";
 import { getCommentsByPost, createComment } from "@/actions/comments";
 import { VoiceReactionsPanel } from "@/components/Post/VoiceReactionsPanel";
-import type { FeedPost } from "../FeedList";
 
 type Panel = "comments" | "likes" | "voice" | "reblogs" | null;
 
@@ -210,18 +210,37 @@ function CommentsPanel({ postId, canPost, onJoin }: { postId: string; canPost: b
  * let you act — like, reblog, comment, voice-react — without leaving the feed.
  * Logged-out visitors are routed to /signup on any write.
  */
-export function TileEngagement({ post }: { post: FeedPost }) {
+export function TileEngagement({
+  postId,
+  comments = 0,
+  likes = 0,
+  voice = 0,
+  reblogs = 0,
+  hasLiked = false,
+  hasReblogged = false,
+  share = false,
+}: {
+  postId: string;
+  comments?: number;
+  likes?: number;
+  voice?: number;
+  reblogs?: number;
+  hasLiked?: boolean;
+  hasReblogged?: boolean;
+  /** Show a Share button (copies the current URL) — used on the post page. */
+  share?: boolean;
+}) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
   const [panel, setPanel] = useState<Panel>(null);
   const { isLiked, likeCount, handleLike } = useLike({
-    postId: post.id,
-    initialLiked: post.interactions?.hasLiked,
-    initialCount: post.stats?.likes ?? 0,
+    postId,
+    initialLiked: hasLiked,
+    initialCount: likes,
   });
-  const [reblogged, setReblogged] = useState(!!post.interactions?.hasReblogged);
-  const [reblogCount, setReblogCount] = useState(post.stats?.reblogs ?? 0);
+  const [reblogged, setReblogged] = useState(hasReblogged);
+  const [reblogCount, setReblogCount] = useState(reblogs);
   const [, startReblog] = useTransition();
 
   const goJoin = () => router.push("/signup");
@@ -232,7 +251,7 @@ export function TileEngagement({ post }: { post: FeedPost }) {
     setReblogged(true);
     setReblogCount((c) => c + 1);
     startReblog(async () => {
-      const res = await reblogPost(post.id, "instant");
+      const res = await reblogPost(postId, "instant");
       if (!res.success) {
         setReblogged(false);
         setReblogCount((c) => c - 1);
@@ -252,7 +271,7 @@ export function TileEngagement({ post }: { post: FeedPost }) {
       <div className="flex items-center gap-5">
         <button type="button" onClick={() => toggle("comments")} aria-label="Comments" className={btn(panel === "comments", "text-vocl-primary")}>
           <IconMessage size={16} />
-          <span className="tabular-nums">{post.stats?.comments ?? 0}</span>
+          <span className="tabular-nums">{comments}</span>
         </button>
         <button type="button" onClick={() => toggle("likes")} aria-label="Likes" className={btn(panel === "likes" || isLiked, "text-vocl-like")}>
           {isLiked ? <IconHeartFilled size={16} /> : <IconHeart size={16} />}
@@ -260,20 +279,34 @@ export function TileEngagement({ post }: { post: FeedPost }) {
         </button>
         <button type="button" onClick={() => toggle("voice")} aria-label="Voice reactions" className={btn(panel === "voice", "text-vocl-primary")}>
           <IconMicrophone size={16} />
-          <span className="tabular-nums">{post.stats?.voiceReactions ?? 0}</span>
+          <span className="tabular-nums">{voice}</span>
         </button>
         <button type="button" onClick={() => toggle("reblogs")} aria-label="Reblogs" className={btn(panel === "reblogs" || reblogged, "text-vocl-primary")}>
           <IconRefresh size={16} />
           <span className="tabular-nums">{reblogCount}</span>
         </button>
+        {share && (
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success("Link copied");
+            }}
+            aria-label="Share"
+            className="ml-auto inline-flex items-center gap-1.5 type-meta uppercase tracking-widest text-foreground/45 hover:text-vocl-primary transition-colors"
+          >
+            <IconShare size={15} />
+            Share
+          </button>
+        )}
       </div>
 
       {panel && (
         <div className="mt-3 border-t border-vocl-border pt-3">
-          {panel === "likes" && <LikesPanel postId={post.id} isLiked={isLiked} onLike={guardedLike} />}
-          {panel === "reblogs" && <RebloggersPanel postId={post.id} reblogged={reblogged} onReblog={onReblog} />}
-          {panel === "comments" && <CommentsPanel postId={post.id} canPost={isAuthenticated} onJoin={goJoin} />}
-          {panel === "voice" && <VoiceReactionsPanel postId={post.id} isLoggedIn={isAuthenticated} />}
+          {panel === "likes" && <LikesPanel postId={postId} isLiked={isLiked} onLike={guardedLike} />}
+          {panel === "reblogs" && <RebloggersPanel postId={postId} reblogged={reblogged} onReblog={onReblog} />}
+          {panel === "comments" && <CommentsPanel postId={postId} canPost={isAuthenticated} onJoin={goJoin} />}
+          {panel === "voice" && <VoiceReactionsPanel postId={postId} isLoggedIn={isAuthenticated} onRequireAuth={goJoin} />}
         </div>
       )}
     </div>

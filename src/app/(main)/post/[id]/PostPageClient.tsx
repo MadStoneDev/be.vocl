@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent, AskContent } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
 import { useAuth } from "@/hooks/useAuth";
-import { Avatar, toast } from "@/components/ui";
-import { IconLoader2, IconArrowLeft, IconMessage, IconHeart, IconMicrophone, IconShare } from "@tabler/icons-react";
+import { Avatar } from "@/components/ui";
+import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
+import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
 import { fadeUp } from "@/lib/motion";
@@ -290,49 +291,17 @@ export function PostPageClient({ postId }: { postId: string }) {
           </div>
         </div>
 
-        <span className="mt-5 block h-px w-full bg-vocl-border" />
-
-        {/* Compact engagement — sits under the byline; leads to the full bar below */}
-        <div className="flex items-center gap-6 py-3 type-meta text-foreground/55 border-b border-vocl-border">
-          <button
-            type="button"
-            onClick={() => document.getElementById("post-engagement")?.scrollIntoView({ behavior: "smooth", block: "end" })}
-            className="inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors"
-            aria-label="Comments"
-          >
-            <IconMessage size={17} />
-            <span className="tabular-nums">{post.commentCount}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => document.getElementById("post-engagement")?.scrollIntoView({ behavior: "smooth", block: "end" })}
-            className="inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors"
-            aria-label="Likes"
-          >
-            <IconHeart size={17} />
-            <span className="tabular-nums">{post.likeCount}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => document.getElementById("post-engagement")?.scrollIntoView({ behavior: "smooth", block: "end" })}
-            className="inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors"
-            aria-label="Voice reactions"
-          >
-            <IconMicrophone size={17} />
-            <span className="tabular-nums">{post.voiceReactionCount ?? 0}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              toast.success("Link copied");
-            }}
-            className="ml-auto inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors uppercase tracking-widest"
-          >
-            <IconShare size={15} />
-            Share
-          </button>
-        </div>
+        {/* Inline quick-view engagement under the byline (see who + act in place) */}
+        <TileEngagement
+          postId={post.id}
+          comments={post.commentCount}
+          likes={post.likeCount}
+          voice={post.voiceReactionCount}
+          reblogs={post.reblogCount}
+          hasLiked={post.hasLiked}
+          hasReblogged={post.hasReblogged}
+          share
+        />
       </motion.header>
 
       {/* Post — guests can read it, but any interaction routes to join */}
@@ -362,6 +331,7 @@ export function PostPageClient({ postId }: { postId: string }) {
             isSensitive={post.isSensitive}
             excludeFromPublic={post.excludeFromPublic}
             articleMode
+            hideActions
             isOwn={post.isOwn}
             isPinned={post.isPinned}
             tags={post.tags}

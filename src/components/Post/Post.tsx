@@ -138,6 +138,9 @@ export interface PostProps {
   bare?: boolean;
   /** Whether the viewer is signed in (gates voice-reaction recording). */
   isLoggedIn?: boolean;
+  /** Hide the built-in action bar + reblog FAB + expanded panel (engagement
+   *  is rendered elsewhere, e.g. the post page's top quick-view). */
+  hideActions?: boolean;
 }
 
 // =============================================================================
@@ -1017,6 +1020,7 @@ export const Post = memo(function Post({
   hideHeader = false,
   bare = false,
   isLoggedIn = true,
+  hideActions = false,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [voiceCountOverride, setVoiceCountOverride] = useState<number | null>(null);
@@ -1333,27 +1337,31 @@ export const Post = memo(function Post({
           )}
         </div>
 
-        {/* Radial FAB Menu - positioned relative to article (around reblog button) */}
-        <ReblogFabMenu
-          isOpen={isReblogMenuOpen}
-          onSelect={handleReblogSelect}
-        />
+        {/* Radial FAB Menu + action bar — hidden when engagement is rendered elsewhere */}
+        {!hideActions && (
+          <>
+            <ReblogFabMenu
+              isOpen={isReblogMenuOpen}
+              onSelect={handleReblogSelect}
+            />
 
-        {/* Action bar - always visible, never dimmed */}
-        <PostActionBar
-          stats={stats}
-          interactions={interactions}
-          isReblogMenuOpen={isReblogMenuOpen}
-          expandedPanel={expandedPanel}
-          voiceCount={voiceCount}
-          bare={bare}
-          onCommentClick={handleCommentClick}
-          onLike={onLike}
-          onLikesClick={handleLikesClick}
-          onVoiceClick={handleVoiceClick}
-          onReblogsClick={handleReblogsClick}
-          onReblogClick={handleReblogClick}
-        />
+            {/* Action bar - always visible, never dimmed */}
+            <PostActionBar
+              stats={stats}
+              interactions={interactions}
+              isReblogMenuOpen={isReblogMenuOpen}
+              expandedPanel={expandedPanel}
+              voiceCount={voiceCount}
+              bare={bare}
+              onCommentClick={handleCommentClick}
+              onLike={onLike}
+              onLikesClick={handleLikesClick}
+              onVoiceClick={handleVoiceClick}
+              onReblogsClick={handleReblogsClick}
+              onReblogClick={handleReblogClick}
+            />
+          </>
+        )}
 
         {/* Fake Border */}
         {!bare && (
@@ -1367,6 +1375,7 @@ export const Post = memo(function Post({
       </article>
 
       {/* Expanded Panel - OUTSIDE article, below action bar */}
+      {!hideActions && (
       <div
         className={`overflow-hidden ${bare ? "" : "bg-vocl-surface shadow-lg"}`}
         style={{
@@ -1404,6 +1413,7 @@ export const Post = memo(function Post({
           )
         )}
       </div>
+      )}
     </div>
   );
 });
