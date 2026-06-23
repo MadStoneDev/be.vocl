@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent, AskContent } from "@/components/Post";
 import { getPostById } from "@/actions/posts";
 import { useAuth } from "@/hooks/useAuth";
-import { Avatar } from "@/components/ui";
+import { Avatar, toast } from "@/components/ui";
 import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
-import { IconLoader2, IconArrowLeft } from "@tabler/icons-react";
+import { IconLoader2, IconArrowLeft, IconMessage, IconHeart, IconMicrophone, IconRefresh, IconShare } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
 import { fadeUp } from "@/lib/motion";
@@ -291,20 +291,45 @@ export function PostPageClient({ postId }: { postId: string }) {
           </div>
         </div>
 
-        {/* Inline quick-view engagement under the byline (see who + act in place) */}
-        <TileEngagement
-          postId={post.id}
-          comments={post.commentCount}
-          likes={post.likeCount}
-          voice={post.voiceReactionCount}
-          reblogs={post.reblogCount}
-          hasLiked={post.hasLiked}
-          hasReblogged={post.hasReblogged}
-          share
-        />
+        {/* Compact summary under the byline — counts + share. Does NOT expand
+            (so it never pushes the article down); it scrolls to the full
+            engagement below the post. */}
+        <span className="mt-5 block h-px w-full bg-vocl-border" />
+        <div className="flex items-center gap-6 py-3 type-meta text-foreground/55">
+          {[
+            { Icon: IconMessage, n: post.commentCount, label: "Comments" },
+            { Icon: IconHeart, n: post.likeCount, label: "Likes" },
+            { Icon: IconMicrophone, n: post.voiceReactionCount ?? 0, label: "Voice reactions" },
+            { Icon: IconRefresh, n: post.reblogCount, label: "Reblogs" },
+          ].map(({ Icon, n, label }) => (
+            <button
+              key={label}
+              type="button"
+              aria-label={label}
+              onClick={() => document.getElementById("post-engagement")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors"
+            >
+              <Icon size={16} />
+              <span className="tabular-nums">{n}</span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success("Link copied");
+            }}
+            className="ml-auto inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors uppercase tracking-widest"
+          >
+            <IconShare size={15} />
+            Share
+          </button>
+        </div>
       </motion.header>
 
-      {/* Post — guests can read it, but any interaction routes to join */}
+      {/* Article body — guests can read it, but any interaction routes to join.
+          Engagement lives BELOW the post (never above), so expanding lists never
+          pushes the article down. */}
       {(() => {
         const postEl = (
           <InteractivePost
@@ -340,12 +365,21 @@ export function PostPageClient({ postId }: { postId: string }) {
             {renderContent()}
           </InteractivePost>
         );
-        return (
-          <div id="post-engagement" className="mt-2 scroll-mt-20">
-            {isGuest ? <GuestInteractionGuard>{postEl}</GuestInteractionGuard> : postEl}
-          </div>
-        );
+        return isGuest ? <GuestInteractionGuard>{postEl}</GuestInteractionGuard> : postEl;
       })()}
+
+      {/* Full engagement — below the article. Expanding pushes nothing important. */}
+      <div id="post-engagement" className="mt-8 scroll-mt-20">
+        <TileEngagement
+          postId={post.id}
+          comments={post.commentCount}
+          likes={post.likeCount}
+          voice={post.voiceReactionCount}
+          reblogs={post.reblogCount}
+          hasLiked={post.hasLiked}
+          hasReblogged={post.hasReblogged}
+        />
+      </div>
     </article>
     </MotionConfig>
   );
