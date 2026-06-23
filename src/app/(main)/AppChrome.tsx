@@ -168,7 +168,7 @@ export function AppChrome({
         }`}
         tabIndex={-1}
       >
-        <div className="max-w-2xl mx-auto sm:px-4 pb-4">
+        <div className="max-w-[1400px] mx-auto sm:px-4 pb-4">
           {children}
         </div>
       </main>

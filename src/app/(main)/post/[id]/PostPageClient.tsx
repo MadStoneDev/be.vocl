@@ -212,7 +212,7 @@ export function PostPageClient({ postId }: { postId: string }) {
         );
 
       case "poll":
-        return <PollContent postId={post.id} content={post.content} />;
+        return <PollContent postId={post.id} content={post.content} article />;
 
       case "ask":
         return <AskContent content={post.content} />;
@@ -243,7 +243,7 @@ export function PostPageClient({ postId }: { postId: string }) {
 
   return (
     <MotionConfig reducedMotion="user">
-    <article className="max-w-2xl mx-auto py-6 px-4">
+    <article className="max-w-4xl mx-auto py-6 px-4">
       {/* Back affordance */}
       <button
         onClick={() => router.back()}

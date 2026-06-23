@@ -48,7 +48,7 @@ export default async function MainLayout({
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1">
-        <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">{children}</div>
+        <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">{children}</div>
       </main>
 
       <footer className="border-t border-vocl-border">

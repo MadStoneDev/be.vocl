@@ -8,9 +8,11 @@ import type { PollPostContent } from "@/types/database";
 interface PollContentProps {
   postId: string;
   content: PollPostContent;
+  /** Broadsheet article mode: boxless + theme-aware colors (no gray card). */
+  article?: boolean;
 }
 
-export function PollContent({ postId, content }: PollContentProps) {
+export function PollContent({ postId, content, article }: PollContentProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,10 +79,37 @@ export function PollContent({ postId, content }: PollContentProps) {
     return `${minutes} minute${minutes > 1 ? "s" : ""} left`;
   };
 
+  // Theme-aware tokens for the article (boxless) variant vs the feed card (light).
+  const t = article
+    ? {
+        wrap: "py-2",
+        question: "type-heading text-foreground mb-4",
+        optionBg: "bg-vocl-hover",
+        optionHover: "hover:bg-vocl-hover-strong",
+        barOther: "bg-vocl-hover-strong",
+        indicator: "border-vocl-border",
+        optionText: "text-foreground/80",
+        optionTextWinner: "text-foreground",
+        meta: "text-foreground/50",
+        metaStrong: "text-foreground/70",
+      }
+    : {
+        wrap: "p-4 bg-[#EBEBEB]",
+        question: "font-semibold text-neutral-800 mb-4",
+        optionBg: "bg-white",
+        optionHover: "hover:bg-neutral-200",
+        barOther: "bg-neutral-200",
+        indicator: "border-neutral-300",
+        optionText: "text-neutral-700",
+        optionTextWinner: "text-neutral-900",
+        meta: "text-neutral-500",
+        metaStrong: "text-neutral-600",
+      };
+
   return (
-    <div className="p-4 bg-[#EBEBEB]">
+    <div className={t.wrap}>
       {/* Question */}
-      <h3 className="font-semibold text-neutral-800 mb-4">{content.question}</h3>
+      <h3 className={t.question}>{content.question}</h3>
 
       {/* Options */}
       <div className="space-y-2">
@@ -99,21 +128,21 @@ export function PollContent({ postId, content }: PollContentProps) {
               key={index}
               onClick={() => !hasVoted && !isExpired && setSelectedOption(index)}
               disabled={hasVoted || isExpired || isLoading}
-              className={`relative w-full text-left p-3 rounded-xl transition-all overflow-hidden ${
+              className={`relative w-full text-left p-3 rounded-sm transition-all overflow-hidden ${
                 hasVoted || isExpired
                   ? "cursor-default"
-                  : "cursor-pointer hover:bg-neutral-200"
+                  : `cursor-pointer ${t.optionHover}`
               } ${
                 isSelected && !hasVoted
                   ? "ring-2 ring-vocl-primary bg-vocl-primary/10"
-                  : "bg-white"
+                  : t.optionBg
               }`}
             >
               {/* Progress bar background */}
               {showResults && (
                 <div
                   className={`absolute inset-y-0 left-0 transition-all duration-500 ${
-                    isWinner ? "bg-vocl-primary/20" : "bg-neutral-200"
+                    isWinner ? "bg-vocl-primary/20" : t.barOther
                   }`}
                   style={{ width: `${percentage}%` }}
                 />
@@ -127,7 +156,7 @@ export function PollContent({ postId, content }: PollContentProps) {
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                       isSelected
                         ? "border-vocl-primary bg-vocl-primary"
-                        : "border-neutral-300"
+                        : t.indicator
                     }`}
                   >
                     {isSelected && (
@@ -137,7 +166,7 @@ export function PollContent({ postId, content }: PollContentProps) {
 
                   <span
                     className={`font-medium ${
-                      isWinner ? "text-neutral-900" : "text-neutral-700"
+                      isWinner ? t.optionTextWinner : t.optionText
                     }`}
                   >
                     {option}
@@ -146,10 +175,10 @@ export function PollContent({ postId, content }: PollContentProps) {
 
                 {showResults && (
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-neutral-500">{voteCount}</span>
+                    <span className={t.meta}>{voteCount}</span>
                     <span
                       className={`font-semibold ${
-                        isWinner ? "text-vocl-primary" : "text-neutral-600"
+                        isWinner ? "text-vocl-primary" : t.metaStrong
                       }`}
                     >
                       {percentage}%
@@ -168,7 +197,7 @@ export function PollContent({ postId, content }: PollContentProps) {
           <button
             onClick={handleVote}
             disabled={selectedOption === null || isLoading}
-            className="px-4 py-2 bg-vocl-primary text-white rounded-full font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-primary/90 transition-colors"
+            className="px-4 py-2 bg-vocl-primary text-white rounded-sm font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-primary/90 transition-colors"
           >
             {isLoading ? "Voting..." : "Vote"}
           </button>
@@ -176,7 +205,7 @@ export function PollContent({ postId, content }: PollContentProps) {
           <span />
         )}
 
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className={`flex items-center gap-2 text-sm ${t.meta}`}>
           {results && (
             <span>
               {results.totalVotes} vote{results.totalVotes !== 1 ? "s" : ""}
