@@ -1179,7 +1179,7 @@ export const Post = memo(function Post({
         >
           {/* For reblogs: original author header + green border wrapper */}
           {isReblog && originalAuthor && (
-            <div className="bg-white overflow-hidden">
+            <div className={`overflow-hidden ${bare ? "" : "bg-white"}`}>
               {/* Original author mini-header */}
               <div className="flex items-center gap-2 px-3 py-1.5 bg-vocl-overlay">
                 <Link
@@ -1297,17 +1297,25 @@ export const Post = memo(function Post({
 
           {/* Reblog caption — shown below original content */}
           {isReblog && reblogCommentHtml && (
-            <div className="bg-[#EBEBEB] px-2 pt-2.5 pb-2.5 sm:p-2 sm:pb-4">
+            <div className={bare ? "mt-4" : "bg-[#EBEBEB] px-2 pt-2.5 pb-2.5 sm:p-2 sm:pb-4"}>
               <div
-                className={`bg-vocl-overlay p-2 font-display text-sm text-neutral-50`}
+                className={
+                  bare
+                    ? "type-meta uppercase tracking-widest text-vocl-primary font-semibold mb-1"
+                    : "bg-vocl-overlay p-2 font-display text-sm text-neutral-50"
+                }
               >
                 {author.username}{" "}
-                <span className={`font-sans text-xs text-neutral-400`}>
+                <span className={bare ? "text-foreground/45" : "font-sans text-xs text-neutral-400"}>
                   commented:
                 </span>
               </div>
               <div
-                className="font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+                className={
+                  bare
+                    ? "font-serif text-lg leading-relaxed text-foreground/90 max-w-none [&_p]:my-2 [&_a]:text-vocl-primary [&_a]:underline"
+                    : "font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+                }
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml),
                 }}
