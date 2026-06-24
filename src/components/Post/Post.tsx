@@ -182,10 +182,7 @@ function PostHeader({
   threadLength,
 }: PostHeaderProps) {
   return (
-    <div
-      className="flex items-center justify-between p-1.5 sm:p-2 border-b border-vocl-overlay/20 z-50"
-      style={{ backgroundColor: "var(--vocl-surface-muted)" }}
-    >
+    <div className="flex items-center justify-between px-1 sm:px-1.5 pt-1 pb-2.5 border-b border-vocl-border z-50">
       <div className="flex items-center gap-3">
         <Link
           href={`/profile/${author.username}`}
@@ -197,7 +194,7 @@ function PostHeader({
           <div className="flex items-center gap-1">
             <Link
               href={`/profile/${author.username}`}
-              className="font-display text-base sm:text-lg font-normal text-neutral-900 hover:text-vocl-primary transition-colors"
+              className="font-display text-base sm:text-lg font-normal text-foreground hover:text-vocl-primary transition-colors"
             >
               {author.username}
             </Link>
@@ -205,7 +202,7 @@ function PostHeader({
               <StaffBadge role={author.role} size={16} />
             )}
           </div>
-          <span className="-mt-1 font-sans text-xs sm:text-xs text-neutral-400">
+          <span className="-mt-1 font-sans text-xs sm:text-xs text-foreground/45">
             {reblogFrom && reblogChainFrom ? (
               <>
                 echoed from{" "}
