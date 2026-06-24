@@ -43,7 +43,7 @@ export function AudioContent({
   article,
 }: AudioContentProps) {
   // Container styling: a gradient "card" in the feed, boxless on the article page.
-  const shell = article ? "py-2" : "bg-gradient-to-br from-vocl-surface-dark to-background p-4 sm:p-6 ";
+  const shell = article ? "py-2" : "bg-vocl-hover p-4 sm:p-6 ";
   const [showTranscript, setShowTranscript] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);

@@ -69,14 +69,14 @@ export function AskContent({ content, article }: AskContentProps) {
   }
 
   return (
-    <div className="bg-[#EBEBEB]">
+    <div>
       {/* Question section */}
-      <div className="p-4 bg-neutral-100 border-b border-neutral-200">
+      <div className="p-4 bg-vocl-hover border-b border-vocl-border">
         <div className="flex items-start gap-3">
           {/* Asker avatar or anonymous icon */}
           {content.is_anonymous ? (
-            <div className="w-10 h-10 rounded-full bg-neutral-300 flex items-center justify-center flex-shrink-0">
-              <IconUserQuestion size={20} className="text-neutral-500" />
+            <div className="w-10 h-10 rounded-full bg-vocl-hover flex items-center justify-center flex-shrink-0">
+              <IconUserQuestion size={20} className="text-foreground/55" />
             </div>
           ) : content.asker_id ? (
             <Link
@@ -91,8 +91,8 @@ export function AskContent({ content, article }: AskContentProps) {
               />
             </Link>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-neutral-300 flex items-center justify-center flex-shrink-0">
-              <IconUserQuestion size={20} className="text-neutral-500" />
+            <div className="w-10 h-10 rounded-full bg-vocl-hover flex items-center justify-center flex-shrink-0">
+              <IconUserQuestion size={20} className="text-foreground/55" />
             </div>
           )}
 
@@ -100,18 +100,18 @@ export function AskContent({ content, article }: AskContentProps) {
             {/* Asker name */}
             <div className="flex items-center gap-1 mb-1">
               {content.is_anonymous ? (
-                <span className="text-sm font-medium text-neutral-500">
+                <span className="text-sm font-medium text-foreground/55">
                   Anonymous asked:
                 </span>
               ) : content.asker_username ? (
                 <Link
                   href={`/profile/${content.asker_username}`}
-                  className="text-sm font-medium text-neutral-700 hover:text-vocl-primary transition-colors"
+                  className="text-sm font-medium text-foreground/75 hover:text-vocl-primary transition-colors"
                 >
                   {content.asker_username} asked:
                 </Link>
               ) : (
-                <span className="text-sm font-medium text-neutral-500">
+                <span className="text-sm font-medium text-foreground/55">
                   Someone asked:
                 </span>
               )}
@@ -120,13 +120,13 @@ export function AskContent({ content, article }: AskContentProps) {
             {/* Question (text — only render when there is text) */}
             {content.question_html ? (
               <div
-                className="text-neutral-800 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+                className="text-foreground/90 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtmlWithSafeLinks(content.question_html),
                 }}
               />
             ) : content.question ? (
-              <p className="text-neutral-800">{content.question}</p>
+              <p className="text-foreground/90">{content.question}</p>
             ) : null}
 
             {/* Question voice clip */}
@@ -139,7 +139,7 @@ export function AskContent({ content, article }: AskContentProps) {
                   label="Voice"
                 />
                 {content.question_audio_transcript && (
-                  <p className="mt-1.5 text-sm text-neutral-500 italic whitespace-pre-wrap leading-relaxed">
+                  <p className="mt-1.5 text-sm text-foreground/55 italic whitespace-pre-wrap leading-relaxed">
                     &ldquo;{content.question_audio_transcript}&rdquo;
                   </p>
                 )}
@@ -154,7 +154,7 @@ export function AskContent({ content, article }: AskContentProps) {
         {/* Answer text — only render when present */}
         {content.answer_html && content.answer_html.trim() && (
           <div
-            className="font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+            className="font-sans text-base leading-relaxed text-foreground/90 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtmlWithSafeLinks(content.answer_html),
             }}
@@ -171,7 +171,7 @@ export function AskContent({ content, article }: AskContentProps) {
               label="Voice answer"
             />
             {content.answer_audio_transcript && (
-              <p className="mt-1.5 text-sm text-neutral-500 italic whitespace-pre-wrap leading-relaxed">
+              <p className="mt-1.5 text-sm text-foreground/55 italic whitespace-pre-wrap leading-relaxed">
                 &ldquo;{content.answer_audio_transcript}&rdquo;
               </p>
             )}

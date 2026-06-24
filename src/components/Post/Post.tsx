@@ -259,7 +259,7 @@ function PostHeader({
         className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-neutral-300/50"
         aria-label="Post menu"
       >
-        <IconDots size={24} className="text-neutral-600" />
+        <IconDots size={24} className="text-foreground/55" />
       </button>
     </div>
   );
@@ -305,7 +305,7 @@ function PostActionBar({
   return (
     <div
       className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5 border-t ${
-        bare ? "bg-transparent border-vocl-border mt-6" : "bg-white border-neutral-200"
+        bare ? "bg-transparent border-vocl-border mt-6" : "bg-transparent border-vocl-border"
       }`}
     >
       {/* Comment button - icon AND count open panel */}
@@ -324,13 +324,13 @@ function PostActionBar({
         ) : (
           <IconMessage
             size={24}
-            className="text-neutral-500"
+            className="text-foreground/55"
             aria-hidden="true"
           />
         )}
         <span
           className={`font-sans text-sm ${
-            interactions.hasCommented ? "text-vocl-comment" : "text-neutral-500"
+            interactions.hasCommented ? "text-vocl-comment" : "text-foreground/55"
           }`}
           aria-hidden="true"
         >
@@ -361,7 +361,7 @@ function PostActionBar({
           ) : (
             <IconHeart
               size={24}
-              className="text-neutral-500"
+              className="text-foreground/55"
               aria-hidden="true"
             />
           )}
@@ -369,7 +369,7 @@ function PostActionBar({
         <button
           onClick={onLikesClick}
           className={`cursor-pointer font-sans text-sm transition-colors ${
-            interactions.hasLiked ? "text-vocl-like" : "text-neutral-500"
+            interactions.hasLiked ? "text-vocl-like" : "text-foreground/55"
           }`}
           aria-label="View likes"
         >
@@ -381,7 +381,7 @@ function PostActionBar({
       <button
         onClick={onVoiceClick}
         className={`flex items-center gap-1 sm:gap-2 cursor-pointer transition-colors ${
-          expandedPanel === "voice" ? "text-vocl-primary" : "text-neutral-500 hover:text-vocl-primary"
+          expandedPanel === "voice" ? "text-vocl-primary" : "text-foreground/55 hover:text-vocl-primary"
         }`}
         aria-label={`${voiceCount} voice reaction${voiceCount === 1 ? "" : "s"}`}
         aria-expanded={expandedPanel === "voice"}
@@ -396,7 +396,7 @@ function PostActionBar({
       <button
         onClick={onReblogsClick}
         className={`font-sans text-sm font-medium cursor-pointer transition-colors ${
-          interactions.hasReblogged ? "text-vocl-reblog" : "text-neutral-500"
+          interactions.hasReblogged ? "text-vocl-reblog" : "text-foreground/55"
         }`}
         aria-label="View echoes"
       >
@@ -544,7 +544,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
       {/* Comment input */}
       <form
         onSubmit={handleSubmit}
-        className="flex gap-2 p-3 border-b border-neutral-200 items-center"
+        className="flex gap-2 p-3 border-b border-vocl-border items-center"
       >
         {!recordingMode && !recordedAudioUrl && (
           <>
@@ -555,13 +555,13 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
               maxLength={2000}
-              className={`flex-1 px-3 py-2 text-sm bg-neutral-100 rounded-full text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-primary"}`}
+              className={`flex-1 px-3 py-2 text-sm bg-vocl-hover rounded-full text-foreground/90 placeholder:text-foreground/45 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-primary"}`}
             />
             {postId && (
               <button
                 type="button"
                 onClick={() => setRecordingMode(true)}
-                className="p-2 rounded-full bg-neutral-100 text-neutral-600 hover:bg-vocl-primary/10 hover:text-vocl-primary transition-colors"
+                className="p-2 rounded-full bg-vocl-hover text-foreground/65 hover:bg-vocl-primary/10 hover:text-vocl-primary transition-colors"
                 aria-label="Record voice reply"
               >
                 <IconMicrophone size={18} />
@@ -592,7 +592,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
         {recordedAudioUrl && (
           <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-vocl-primary/10 rounded-full">
             <IconMicrophone size={16} className="text-vocl-primary" />
-            <span className="text-xs text-neutral-700">
+            <span className="text-xs text-foreground/75">
               Voice reply ({recordedDuration}s)
             </span>
             <button
@@ -625,14 +625,14 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
       {/* Comments list */}
       <div className="max-h-64 overflow-y-auto">
         {comments.length === 0 ? (
-          <p className="text-center text-neutral-400 text-sm py-6">
+          <p className="text-center text-foreground/45 text-sm py-6">
             No comments yet. Be the first!
           </p>
         ) : (
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="flex gap-3 p-3 border-b border-neutral-100 last:border-0"
+              className="flex gap-3 p-3 border-b border-vocl-border last:border-0"
             >
               <Link
                 href={`/profile/${comment.author.username}`}
@@ -648,17 +648,17 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/profile/${comment.author.username}`}
-                    className="font-medium text-sm text-neutral-800 hover:text-vocl-primary transition-colors"
+                    className="font-medium text-sm text-foreground/90 hover:text-vocl-primary transition-colors"
                   >
                     {comment.author.username}
                   </Link>
                   {comment.author.role !== undefined && (
                     <StaffBadge role={comment.author.role} size={14} />
                   )}
-                  <TimeAgo iso={comment.timestamp} className="text-xs text-neutral-400" />
+                  <TimeAgo iso={comment.timestamp} className="text-xs text-foreground/45" />
                 </div>
                 {comment.content && (
-                  <p className="text-sm text-neutral-600 mt-0.5">
+                  <p className="text-sm text-foreground/65 mt-0.5">
                     {comment.content}
                   </p>
                 )}
@@ -683,7 +683,7 @@ function CommentAudioPlayer({ src, duration }: { src: string; duration?: number 
   const [progress, setProgress] = useState(0);
 
   return (
-    <div className="mt-1.5 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-neutral-100">
+    <div className="mt-1.5 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-vocl-hover">
       <button
         type="button"
         onClick={() => {
@@ -700,10 +700,10 @@ function CommentAudioPlayer({ src, duration }: { src: string; duration?: number 
       >
         {playing ? <IconPlayerPause size={14} /> : <IconPlayerPlay size={14} />}
       </button>
-      <span className="text-xs text-neutral-600 font-mono">
+      <span className="text-xs text-foreground/65 font-mono">
         {duration ? `${duration}s` : "Voice"}
       </span>
-      <div className="w-24 h-1 rounded-full bg-neutral-300 overflow-hidden">
+      <div className="w-24 h-1 rounded-full bg-vocl-hover overflow-hidden">
         <div className="h-full bg-vocl-primary" style={{ width: `${progress}%` }} />
       </div>
       <audio
@@ -733,7 +733,7 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
   return (
     <div className="max-h-64 overflow-y-auto">
       {users.length === 0 ? (
-        <p className="text-center text-neutral-400 text-sm py-6">
+        <p className="text-center text-foreground/45 text-sm py-6">
           {emptyMessage}
         </p>
       ) : (
@@ -741,19 +741,19 @@ function UsersList({ users, emptyMessage, actionColor }: UsersListProps) {
           <Link
             key={user.id}
             href={`/profile/${user.username}`}
-            className="flex items-center gap-3 p-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors"
+            className="flex items-center gap-3 p-3 border-b border-vocl-border last:border-0 hover:bg-vocl-hover transition-colors"
           >
             <Avatar src={user.avatarUrl} username={user.username} size="md" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <span className="font-medium text-sm text-neutral-800 hover:text-vocl-primary transition-colors">
+                <span className="font-medium text-sm text-foreground/90 hover:text-vocl-primary transition-colors">
                   {user.displayName || user.username}
                 </span>
                 {user.role !== undefined && (
                   <StaffBadge role={user.role} size={14} />
                 )}
               </div>
-              <span className="text-xs text-neutral-400">@{user.username}</span>
+              <span className="text-xs text-foreground/45">@{user.username}</span>
             </div>
             <div className={`w-2 h-2 rounded-full ${actionColor}`} />
           </Link>
@@ -795,25 +795,25 @@ function ExpandedPanel({
 
   return (
     <div
-      className="bg-vocl-surface overflow-hidden transition-all duration-300 ease-out"
+      className="bg-vocl-surface-dark overflow-hidden transition-all duration-300 ease-out"
       style={{ borderRadius: "0 0 20px 20px" }}
     >
       {/* Panel header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 border-b border-neutral-200">
-        <h3 className="font-medium text-sm text-neutral-700">{titles[type]}</h3>
+      <div className="flex items-center justify-between px-4 py-2 bg-vocl-hover border-b border-vocl-border">
+        <h3 className="font-medium text-sm text-foreground/75">{titles[type]}</h3>
         <button
           onClick={onClose}
-          className="p-1 rounded-full hover:bg-neutral-200 transition-colors"
+          className="p-1 rounded-full hover:bg-vocl-hover transition-colors"
           aria-label="Close panel"
         >
-          <IconX size={18} className="text-neutral-500" />
+          <IconX size={18} className="text-foreground/55" />
         </button>
       </div>
 
       {/* Panel content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <IconLoader2 size={24} className="animate-spin text-neutral-400" />
+          <IconLoader2 size={24} className="animate-spin text-foreground/45" />
         </div>
       ) : (
         <>
@@ -900,13 +900,13 @@ function MobileTagsStrip({ tags, bare }: { tags: PostTag[]; bare?: boolean }) {
   }
 
   return (
-    <div className="sm:hidden bg-[#EBEBEB] px-2.5 pt-2 pb-1">
+    <div className="sm:hidden px-2.5 pt-2 pb-1">
       <div className="flex flex-row flex-wrap gap-1.5">
         {tags.map((tag) => (
           <Link
             key={tag.id}
             href={`/tag/${encodeURIComponent(tag.name)}`}
-            className="px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate"
+            className="px-2 py-1 text-xs font-medium rounded bg-vocl-hover text-foreground/65 truncate"
             style={{ maxWidth: "150px" }}
           >
             #{tag.name}
@@ -951,18 +951,18 @@ function TextPostTags({
   }
 
   return (
-    <div className="bg-[#EBEBEB] px-2.5 sm:px-4 pb-2.5 sm:pb-4">
+    <div className="px-2.5 sm:px-4 pb-2.5 sm:pb-4">
       <div
         className={`overflow-hidden transition-all duration-150 ease-out ${
           isHovered ? "max-h-50" : "max-h-50 lg:max-h-0"
         }`}
       >
-        <div className="flex flex-row flex-wrap gap-1.5 pt-3 border-t border-neutral-300/50">
+        <div className="flex flex-row flex-wrap gap-1.5 pt-3 border-t border-vocl-border">
           {tags.map((tag) => (
             <Link
               key={tag.id}
               href={`/tag/${encodeURIComponent(tag.name)}`}
-              className={`px-2 py-1 text-xs font-medium rounded bg-neutral-300/80 text-neutral-600 truncate transition-opacity ${
+              className={`px-2 py-1 text-xs font-medium rounded bg-vocl-hover text-foreground/65 truncate transition-opacity ${
                 isHovered
                   ? "opacity-80 hover:opacity-100"
                   : "opacity-100 lg:opacity-0"
@@ -1149,7 +1149,7 @@ export const Post = memo(function Post({
   return (
     <div className={`w-full max-w-full ${bare ? "" : "sm:max-w-xl"}`}>
       <article
-        className={`relative ${bare ? "" : "shadow-xl overflow-hidden rounded-br-[40px]"}`}
+        className={`relative ${bare ? "" : "overflow-hidden border-b border-vocl-border pb-2"}`}
         data-post-id={id}
         data-content-type={contentType}
       >
@@ -1176,7 +1176,7 @@ export const Post = memo(function Post({
         >
           {/* For reblogs: original author header + green border wrapper */}
           {isReblog && originalAuthor && (
-            <div className={`overflow-hidden ${bare ? "" : "bg-white"}`}>
+            <div className={`overflow-hidden ${bare ? "" : "bg-transparent"}`}>
               {/* Original author mini-header */}
               <div className="flex items-center gap-2 px-3 py-1.5 bg-vocl-overlay">
                 <Link
@@ -1294,7 +1294,7 @@ export const Post = memo(function Post({
 
           {/* Reblog caption — shown below original content */}
           {isReblog && reblogCommentHtml && (
-            <div className={bare ? "mt-4" : "bg-[#EBEBEB] px-2 pt-2.5 pb-2.5 sm:p-2 sm:pb-4"}>
+            <div className={bare ? "mt-4" : "px-2 pt-2.5 pb-2.5 sm:p-2 sm:pb-4"}>
               <div
                 className={
                   bare
@@ -1311,7 +1311,7 @@ export const Post = memo(function Post({
                 className={
                   bare
                     ? "font-serif text-lg leading-relaxed text-foreground/90 max-w-none [&_p]:my-2 [&_a]:text-vocl-primary [&_a]:underline"
-                    : "font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\\00a0']"
+                    : "font-sans text-base leading-relaxed text-foreground/90 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\\00a0']"
                 }
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtmlWithSafeLinks(reblogCommentHtml),
@@ -1371,7 +1371,7 @@ export const Post = memo(function Post({
         {/* Fake Border */}
         {!bare && (
           <div
-            className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-vocl-surface-muted z-40`}
+            className={`pointer-events-none absolute top-0 right-0 bottom-0 left-0 border-0 md:border-6 border-transparent z-40`}
             style={{
               borderRadius: articleBorderRadius,
             }}
@@ -1382,7 +1382,7 @@ export const Post = memo(function Post({
       {/* Expanded Panel - OUTSIDE article, below action bar */}
       {!hideActions && (
       <div
-        className={`overflow-hidden ${bare ? "" : "bg-vocl-surface shadow-lg"}`}
+        className={`overflow-hidden ${bare ? "" : "bg-vocl-surface-dark shadow-lg"}`}
         style={{
           maxHeight: expandedPanel ? "384px" : "0px",
           opacity: expandedPanel ? 1 : 0,
@@ -1521,7 +1521,7 @@ export function ImageContent({ src, alt, caption, priority, article, fullBleed }
 
       {caption && (
         <div
-          className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB] text-neutral-700 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+          className="px-2.5 pt-2.5 pb-2.5 sm:p-4 text-foreground/75 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}
@@ -1582,15 +1582,15 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
 
   if (isEssay) {
     return (
-      <div className="px-3 pt-4 pb-4 sm:px-6 sm:py-6 bg-[#F5F1EB]">
+      <div className="px-3 pt-4 pb-4 sm:px-6 sm:py-6">
         {(essayTitle || readingTimeMinutes) && (
-          <div className="mb-4 pb-3 border-b border-neutral-300/60">
+          <div className="mb-4 pb-3 border-b border-vocl-border">
             {essayTitle && (
-              <h2 className="font-display text-2xl sm:text-3xl text-neutral-900 mb-1.5 leading-tight">
+              <h2 className="font-display text-2xl sm:text-3xl text-foreground mb-1.5 leading-tight">
                 {essayTitle}
               </h2>
             )}
-            <p className="text-xs text-neutral-500 inline-flex items-center gap-1.5">
+            <p className="text-xs text-foreground/55 inline-flex items-center gap-1.5">
               <span className="font-medium text-vocl-primary">Essay</span>
               {readingTimeMinutes ? <span>· {readingTimeMinutes} min read</span> : null}
             </p>
@@ -1598,11 +1598,11 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
         )}
         {html ? (
           <div
-            className="font-serif text-base sm:text-lg leading-relaxed text-neutral-800 prose prose-sm sm:prose-base max-w-none prose-p:my-3 prose-headings:font-serif [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+            className="font-serif text-base sm:text-lg leading-relaxed text-foreground/90 prose prose-sm sm:prose-base max-w-none prose-p:my-3 prose-headings:font-serif [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
           />
         ) : (
-          <div className="font-serif text-base sm:text-lg leading-relaxed text-neutral-800 whitespace-pre-wrap">
+          <div className="font-serif text-base sm:text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap">
             {children}
           </div>
         )}
@@ -1611,14 +1611,14 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
   }
 
   return (
-    <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB]">
+    <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4">
       {html ? (
         <div
-          className="font-sans text-base leading-relaxed text-neutral-800 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+          className="font-sans text-base leading-relaxed text-foreground/90 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
         />
       ) : (
-        <div className="font-sans text-base leading-relaxed text-neutral-800 whitespace-pre-wrap">
+        <div className="font-sans text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">
           {children}
         </div>
       )}

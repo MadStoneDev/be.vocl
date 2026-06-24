@@ -145,7 +145,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
             className={
               article
                 ? "px-4 pt-3 font-serif italic text-sm text-foreground/55 text-center [&_*]:inline"
-                : "px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB] text-neutral-700 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\\00a0']"
+                : "px-2.5 pt-2.5 pb-2.5 sm:p-4 text-foreground/75 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\\00a0']"
             }
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
           />

@@ -94,16 +94,16 @@ export function PollContent({ postId, content, article }: PollContentProps) {
         metaStrong: "text-foreground/70",
       }
     : {
-        wrap: "p-4 bg-[#EBEBEB]",
-        question: "font-semibold text-neutral-800 mb-4",
-        optionBg: "bg-white",
-        optionHover: "hover:bg-neutral-200",
-        barOther: "bg-neutral-200",
-        indicator: "border-neutral-300",
-        optionText: "text-neutral-700",
-        optionTextWinner: "text-neutral-900",
-        meta: "text-neutral-500",
-        metaStrong: "text-neutral-600",
+        wrap: "p-4",
+        question: "font-semibold text-foreground/90 mb-4",
+        optionBg: "bg-transparent",
+        optionHover: "hover:bg-vocl-hover",
+        barOther: "bg-vocl-hover",
+        indicator: "border-vocl-border",
+        optionText: "text-foreground/75",
+        optionTextWinner: "text-foreground",
+        meta: "text-foreground/55",
+        metaStrong: "text-foreground/65",
       };
 
   return (

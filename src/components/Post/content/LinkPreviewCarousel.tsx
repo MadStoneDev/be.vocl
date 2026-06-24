@@ -33,7 +33,7 @@ function PreviewCard({
 
   const c = article
     ? { card: "border-vocl-border bg-vocl-hover", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/40" }
-    : { card: "border-neutral-300/50 bg-neutral-200/60", img: "bg-neutral-300/50", site: "text-neutral-500", title: "text-neutral-800", desc: "text-neutral-500", icon: "text-neutral-400" };
+    : { card: "border-vocl-border bg-vocl-hover", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
 
   const card = (
     <div className={`relative rounded-sm overflow-hidden border ${c.card}`}>
@@ -126,12 +126,12 @@ function PreviewCard({
 
 function LoadingSkeleton() {
   return (
-    <div className="rounded-xl overflow-hidden border border-neutral-300/50 bg-neutral-200/60 animate-pulse">
-      <div className="w-full aspect-video bg-neutral-300/80" />
+    <div className="rounded-xl overflow-hidden border border-vocl-border bg-vocl-hover animate-pulse">
+      <div className="w-full aspect-video bg-vocl-hover" />
       <div className="p-3 space-y-2">
-        <div className="h-3 bg-neutral-300/80 rounded w-1/3" />
-        <div className="h-4 bg-neutral-300/80 rounded w-3/4" />
-        <div className="h-3 bg-neutral-300/80 rounded w-full" />
+        <div className="h-3 bg-vocl-hover rounded w-1/3" />
+        <div className="h-4 bg-vocl-hover rounded w-3/4" />
+        <div className="h-3 bg-vocl-hover rounded w-full" />
       </div>
     </div>
   );

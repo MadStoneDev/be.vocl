@@ -176,7 +176,7 @@ export function VideoContent({
       {/* Caption */}
       {caption && (
         <div
-          className="px-2.5 pt-2.5 pb-2.5 sm:p-4 bg-[#EBEBEB] text-neutral-700 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+          className="px-2.5 pt-2.5 pb-2.5 sm:p-4 text-foreground/75 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}
