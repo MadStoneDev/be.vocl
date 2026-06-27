@@ -121,6 +121,7 @@ function InteractivePostComponent({
 
   // Menu and dialog state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isDeleted, setIsDeleted] = useState(false);
@@ -308,7 +309,8 @@ function InteractivePostComponent({
   }, []);
 
   // Menu handlers
-  const handleMenuClick = useCallback(() => {
+  const handleMenuClick = useCallback((rect: DOMRect) => {
+    setMenuAnchor(rect);
     setIsMenuOpen(true);
   }, []);
 
@@ -621,6 +623,7 @@ function InteractivePostComponent({
       {/* Post Menu */}
       <PostMenu
         postId={id}
+        anchorRect={menuAnchor}
         isOpen={isMenuOpen}
         onClose={handleMenuClose}
         isOwn={isOwn}

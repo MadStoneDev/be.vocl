@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import {
   IconPencil,
   IconTrash,
@@ -47,6 +48,8 @@ interface PostMenuProps {
   tags?: Array<{ id: string; name: string }>;
   onMuteTag?: (tagId: string, tagName: string) => void;
   onContinueThread?: () => void;
+  /** Bounding rect of the trigger button, so the portaled menu can anchor to it. */
+  anchorRect?: DOMRect | null;
 }
 
 export function PostMenu({
@@ -72,6 +75,7 @@ export function PostMenu({
   tags = [],
   onMuteTag,
   onContinueThread,
+  anchorRect,
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -142,12 +146,23 @@ export function PostMenu({
   };
 
   if (!isOpen) return null;
+  if (typeof document === "undefined") return null;
 
-  return (
+  // Anchor the menu to the trigger button. Portaled to <body> so it escapes the
+  // feed item's content-visibility containment (which was clipping it).
+  const menuStyle: CSSProperties = anchorRect
+    ? {
+        position: "fixed",
+        top: anchorRect.bottom + 6,
+        right: Math.max(8, window.innerWidth - anchorRect.right),
+      }
+    : { position: "fixed", top: 64, right: 8 };
+
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40"
+        className="fixed inset-0 z-[60]"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -155,7 +170,8 @@ export function PostMenu({
       {/* Menu */}
       <div
         ref={menuRef}
-        className="absolute right-2 top-14 z-50 min-w-[200px] rounded-xl bg-vocl-surface-dark shadow-xl border border-vocl-border py-1 overflow-hidden"
+        style={menuStyle}
+        className="z-[61] min-w-[200px] max-h-[80vh] overflow-y-auto rounded-xl bg-vocl-surface-dark shadow-xl border border-vocl-border py-1"
         role="menu"
         aria-orientation="vertical"
       >
@@ -412,6 +428,7 @@ export function PostMenu({
           </>
         )}
       </div>
-    </>
+    </>,
+    document.body
   );
 }
