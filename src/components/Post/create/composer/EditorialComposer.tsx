@@ -11,6 +11,7 @@ import type {
   ImagePostContent,
   VideoPostContent,
   AudioPostContent,
+  GalleryPostContent,
   LinkPreviewData,
 } from "@/types/database";
 import {
@@ -89,12 +90,43 @@ function buildEditInitial(
     const c = post.content as
       | ImagePostContent
       | VideoPostContent
-      | AudioPostContent;
+      | AudioPostContent
+      | GalleryPostContent;
     const captionHtml = c.caption_html || "";
     base.content = {
       html: captionHtml,
       plain: captionHtml.replace(/<[^>]*>/g, ""),
     };
+
+    // Hydrate the media fields so the editor isn't empty on open (and so edits
+    // pass the "upload at least one …" validation on save).
+    if (post.postType === "image") {
+      const ic = post.content as ImagePostContent;
+      base.mediaUrls = ic.urls || [];
+      base.altTexts = ic.alt_texts || [];
+      base.imageMode = "upload";
+    } else if (post.postType === "gallery") {
+      const gc = post.content as GalleryPostContent;
+      base.mediaUrls = (gc.items || []).map((it) => it.url);
+      base.altTexts = (gc.items || []).map((it) => it.alt_text || "");
+      base.imageMode = "upload";
+    } else if (post.postType === "video") {
+      const vc = post.content as VideoPostContent;
+      if (vc.embed_url) {
+        base.videoMode = "embed";
+        base.videoEmbedUrl = vc.embed_url;
+      } else if (vc.url) {
+        base.videoMode = "upload";
+        base.mediaUrls = [vc.url];
+      }
+    } else if (post.postType === "audio") {
+      const ac = post.content as AudioPostContent;
+      if (ac.url) {
+        base.audioMode = "upload";
+        base.mediaUrls = [ac.url];
+      }
+      // Spotify-track audio is re-selected on edit (not hydrated here).
+    }
   }
   return base;
 }
