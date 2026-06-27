@@ -227,7 +227,7 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
         alt={alt}
         fill
         sizes="(max-width: 1024px) 100vw, 50vw"
-        unoptimized
+        priority={prominence === "lead"}
         className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
       />
       {isVideo && (
@@ -302,7 +302,7 @@ function AudioTile({ post }: { post: FeedPost; prominence: Prominence }) {
       <div className="flex items-center gap-3 border border-vocl-border p-3 transition-colors group-hover:border-vocl-primary/50">
         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden bg-vocl-hover">
           {art ? (
-            <Image src={art} alt={title} fill unoptimized className="object-cover" sizes="56px" />
+            <Image src={art} alt={title} fill className="object-cover" sizes="56px" />
           ) : (
             <span className="flex h-full w-full items-center justify-center text-foreground/40">
               <IconMicrophone size={22} />
@@ -339,7 +339,6 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
             alt={headline}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
-            unoptimized
             className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
           <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded bg-black/65 px-1.5 py-0.5 text-white type-meta">
