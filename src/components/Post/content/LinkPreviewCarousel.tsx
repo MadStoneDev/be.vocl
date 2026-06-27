@@ -151,6 +151,7 @@ export function LinkPreviewCarousel({
   return (
     <div className={article ? "" : "px-3 sm:px-4 pb-3"}>
       <div
+        data-no-swipe
         className={`flex gap-3 ${
           isSingle
             ? ""

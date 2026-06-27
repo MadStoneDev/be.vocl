@@ -16,12 +16,16 @@ import {
 import { Avatar, toast } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLike } from "@/hooks/useLike";
+import { useSwipe } from "@/hooks/useSwipe";
 import { reblogPost, getRebloggedBy } from "@/actions/reblogs";
 import { getLikesByPost } from "@/actions/likes";
 import { getCommentsByPost, createComment } from "@/actions/comments";
 import { VoiceReactionsPanel } from "@/components/Post/VoiceReactionsPanel";
 
 type Panel = "comments" | "likes" | "voice" | "reblogs" | null;
+
+// Swipe order through the open quick-view panels.
+const PANEL_ORDER: Exclude<Panel, null>[] = ["comments", "likes", "voice", "reblogs"];
 
 interface MiniUser {
   id: string;
@@ -263,6 +267,19 @@ export function TileEngagement({
   };
 
   const toggle = (p: Panel) => setPanel((cur) => (cur === p ? null : p));
+
+  // Swipe through the open panels: comments → likes → voice → echoes (and back).
+  const goPanel = (dir: 1 | -1) =>
+    setPanel((cur) => {
+      if (!cur) return cur;
+      const i = PANEL_ORDER.indexOf(cur);
+      return PANEL_ORDER[(i + dir + PANEL_ORDER.length) % PANEL_ORDER.length];
+    });
+  const panelSwipe = useSwipe({
+    onSwipeLeft: () => goPanel(1),
+    onSwipeRight: () => goPanel(-1),
+  });
+
   const btn = (active: boolean, activeColor: string) =>
     `inline-flex items-center gap-1.5 type-meta transition-colors ${active ? activeColor : `text-foreground/45 hover:${activeColor.replace("text-", "text-")}`}`;
 
@@ -302,7 +319,7 @@ export function TileEngagement({
       </div>
 
       {panel && (
-        <div className="mt-3 border-t border-vocl-border pt-3">
+        <div {...panelSwipe} className="mt-3 border-t border-vocl-border pt-3">
           {panel === "likes" && <LikesPanel postId={postId} isLiked={isLiked} onLike={guardedLike} />}
           {panel === "reblogs" && <RebloggersPanel postId={postId} reblogged={reblogged} onReblog={onReblog} />}
           {panel === "comments" && <CommentsPanel postId={postId} canPost={isAuthenticated} onJoin={goJoin} />}

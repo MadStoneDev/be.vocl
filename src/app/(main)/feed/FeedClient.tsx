@@ -16,7 +16,11 @@ import { getFeedPosts } from "@/actions/posts";
 import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations";
 import { updateFeedLayout } from "@/actions/profile";
 import { useAuth } from "@/hooks/useAuth";
+import { useSwipe } from "@/hooks/useSwipe";
 import type { VideoEmbedPlatform, PostType } from "@/types/database";
+
+// Tab order for swipe navigation (matches FeedTabs display order).
+const TAB_ORDER: FeedTab[] = ["chronological", "engagement", "trending"];
 
 interface PostWithDetails {
   id: string;
@@ -240,6 +244,17 @@ export default function FeedClient({
 
   const useFrontPage = layout === "frontpage" && isWide;
 
+  // Swipe between feed tabs (Latest ↔ For You ↔ Trending) on touch devices.
+  const goTab = (dir: 1 | -1) => {
+    const i = TAB_ORDER.indexOf(activeTab);
+    const next = TAB_ORDER[Math.min(TAB_ORDER.length - 1, Math.max(0, i + dir))];
+    if (next !== activeTab) setActiveTab(next);
+  };
+  const feedSwipe = useSwipe({
+    onSwipeLeft: () => goTab(1),
+    onSwipeRight: () => goTab(-1),
+  });
+
   const {
     data,
     fetchNextPage,
@@ -335,20 +350,22 @@ export default function FeedClient({
         </div>
       )}
 
-      {useFrontPage ? (
-        <FrontPageGrid
-          posts={feedListPosts}
-          isLoading={isLoading}
-          isLoadingMore={isFetchingNextPage}
-        />
-      ) : (
-        <FeedList
-          posts={feedListPosts}
-          isLoading={isLoading}
-          isLoadingMore={isFetchingNextPage}
-          showWhoToFollow={activeTab === "engagement"}
-        />
-      )}
+      <div {...feedSwipe}>
+        {useFrontPage ? (
+          <FrontPageGrid
+            posts={feedListPosts}
+            isLoading={isLoading}
+            isLoadingMore={isFetchingNextPage}
+          />
+        ) : (
+          <FeedList
+            posts={feedListPosts}
+            isLoading={isLoading}
+            isLoadingMore={isFetchingNextPage}
+            showWhoToFollow={activeTab === "engagement"}
+          />
+        )}
+      </div>
 
       {/* Load more button */}
       {!isLoading && !isError && hasNextPage && feedListPosts.length > 0 && (
