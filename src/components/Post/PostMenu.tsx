@@ -88,12 +88,23 @@ export function PostMenu({
       }
     }
 
+    // The menu is fixed-positioned (portaled), so it would otherwise float in
+    // place while the page scrolls underneath — close it instead.
+    function handleScroll() {
+      onClose();
+    }
+
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      window.addEventListener("scroll", handleScroll, {
+        capture: true,
+        passive: true,
+      });
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, { capture: true });
     };
   }, [isOpen, onClose]);
 

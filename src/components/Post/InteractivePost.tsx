@@ -593,6 +593,7 @@ function InteractivePostComponent({
         originalAuthor={originalAuthor}
         rebloggedFromAuthor={rebloggedFromAuthor}
         isSensitive={currentIsSensitive}
+        excludeFromPublic={currentExcludeFromPublic}
         autoRevealSensitive={autoRevealSensitive}
         tags={currentTags}
         comments={comments}

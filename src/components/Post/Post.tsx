@@ -31,6 +31,7 @@ import {
   IconMicrophone,
   IconPlayerPlay,
   IconPlayerPause,
+  IconWorld,
 } from "@tabler/icons-react";
 import { NSFWOverlay } from "./NSFWOverlay";
 import { ImageLightbox } from "./content/ImageLightbox";
@@ -96,6 +97,7 @@ export interface PostProps {
   stats: PostStats;
   interactions: PostInteractions;
   isSensitive?: boolean; // NSFW content flag
+  excludeFromPublic?: boolean; // Members-only when true; public (globe) when false
   autoRevealSensitive?: boolean; // When true, sensitive content is shown without overlay (user preference)
   tags?: PostTag[]; // Tags associated with this post
   comments?: CommentData[];
@@ -169,6 +171,7 @@ interface PostHeaderProps {
   threadId?: string;
   threadPosition?: number;
   threadLength?: number;
+  isPublic?: boolean;
 }
 
 function PostHeader({
@@ -180,6 +183,7 @@ function PostHeader({
   threadId,
   threadPosition,
   threadLength,
+  isPublic,
 }: PostHeaderProps) {
   return (
     <div className="flex items-center justify-between px-1 sm:px-1.5 pt-1 pb-2.5 border-b border-vocl-border z-50">
@@ -200,6 +204,14 @@ function PostHeader({
             </Link>
             {author.role !== undefined && (
               <StaffBadge role={author.role} size={16} />
+            )}
+            {isPublic && (
+              <span
+                className="inline-flex text-foreground/40"
+                title="Public — visible to everyone, including logged-out readers"
+              >
+                <IconWorld size={15} aria-label="Public post" />
+              </span>
             )}
           </div>
           <span className="-mt-1 font-sans text-xs sm:text-xs text-foreground/45">
@@ -978,6 +990,7 @@ export const Post = memo(function Post({
   stats,
   interactions,
   isSensitive = false,
+  excludeFromPublic = false,
   autoRevealSensitive = false,
   tags = [],
   comments = [],
@@ -1153,6 +1166,7 @@ export const Post = memo(function Post({
             threadId={threadId}
             threadPosition={threadPosition}
             threadLength={threadLength}
+            isPublic={!excludeFromPublic && !isSensitive}
           />
         )}
 

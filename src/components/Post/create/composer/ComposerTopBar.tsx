@@ -184,7 +184,9 @@ export function ComposerTopBar({
             type="button"
             onClick={onSubmit}
             disabled={isPending}
-            className="flex items-center gap-1.5 pl-4 pr-3 h-9 rounded-l-full text-sm font-semibold text-white transition-colors disabled:opacity-60"
+            className={`flex items-center gap-1.5 px-4 h-9 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${
+              mode === "create" ? "pr-3 rounded-l-full" : "rounded-full"
+            }`}
             style={{ backgroundColor: "var(--vocl-primary)" }}
           >
             {isPending ? (
