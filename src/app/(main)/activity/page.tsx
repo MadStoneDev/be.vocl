@@ -8,6 +8,7 @@ import {
   IconRepeat,
   IconUserPlus,
   IconAt,
+  IconActivity,
 } from "@tabler/icons-react";
 import { LoadingSpinner } from "@/components/ui";
 import { getActivityStats } from "@/actions/activity";
@@ -119,7 +120,10 @@ export default function ActivityPage() {
   if (error || !stats) {
     return (
       <div className="py-6">
-        <h1 className="type-display text-3xl font-bold text-foreground mb-6">Activity</h1>
+        <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <IconActivity size={28} className="text-vocl-primary flex-shrink-0" />
+        Activity
+      </h1>
         <div className="p-6 rounded-sm bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-foreground/50">{error || "Unable to load activity data."}</p>
         </div>
@@ -130,7 +134,10 @@ export default function ActivityPage() {
   return (
     <div className="py-6">
       <title>Activity | be.vocl</title>
-      <h1 className="type-display text-3xl font-bold text-foreground mb-6">Activity</h1>
+      <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <IconActivity size={28} className="text-vocl-primary flex-shrink-0" />
+        Activity
+      </h1>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 gap-3 mb-8">

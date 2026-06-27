@@ -99,7 +99,8 @@ export default function NotificationsPage() {
           <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
             Recent
           </span>
-          <h1 className="type-display text-3xl font-bold text-foreground leading-none mt-1">
+          <h1 className="type-display text-3xl font-bold text-foreground leading-none mt-1 flex items-center gap-3">
+            <IconBell size={28} className="text-vocl-primary flex-shrink-0" />
             Activity
           </h1>
           {unreadCount > 0 && (

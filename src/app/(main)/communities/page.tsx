@@ -10,6 +10,7 @@ import {
   IconCheck,
   IconUser,
   IconNotes,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import { listCommunities, joinCommunity, leaveCommunity, type CommunitySummary } from "@/actions/communities";
@@ -86,7 +87,10 @@ export default function CommunitiesPage() {
               <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
                 The Desks
               </span>
-              <h1 className="type-display-lg text-foreground mt-1">Communities</h1>
+              <h1 className="type-display-lg text-foreground mt-1 flex items-center gap-3">
+                <IconUsersGroup size={30} className="text-vocl-primary flex-shrink-0" />
+                Communities
+              </h1>
               <p className="type-body text-foreground/55 mt-1">
                 Sections of the publication, gathered around a shared subject.
               </p>

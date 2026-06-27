@@ -15,6 +15,7 @@ import {
   IconLogout,
   IconTicket,
   IconAlertOctagon,
+  IconSettings,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { toast, LoadingSpinner } from "@/components/ui";
@@ -112,7 +113,10 @@ function SettingsContent() {
         <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
           Your account
         </span>
-        <h1 className="type-display-lg font-display text-foreground mt-1">Settings</h1>
+        <h1 className="type-display-lg font-display text-foreground mt-1 flex items-center gap-3">
+          <IconSettings size={30} className="text-vocl-primary flex-shrink-0" />
+          Settings
+        </h1>
         <p className="type-body text-foreground/55 mt-1">
           Manage your profile, privacy, and how be.vocl works for you.
         </p>

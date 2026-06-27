@@ -357,7 +357,10 @@ function SearchContent() {
         <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
           The Index
         </span>
-        <h1 className="type-display-lg text-foreground mt-1">Search</h1>
+        <h1 className="type-display-lg text-foreground mt-1 flex items-center gap-3">
+          <IconSearch size={30} className="text-vocl-primary flex-shrink-0" />
+          Search
+        </h1>
       </header>
       {/* Search Input */}
       <div className="relative mb-8">

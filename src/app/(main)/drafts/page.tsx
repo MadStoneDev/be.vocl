@@ -16,6 +16,7 @@ import {
   IconTrash,
   IconEdit,
   IconFileOff,
+  IconPencil,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import {
@@ -183,7 +184,10 @@ export default function DraftsPage() {
   return (
     <div className="py-6">
       <title>Drafts | be.vocl</title>
-      <h1 className="type-display text-3xl font-bold text-foreground mb-6">Drafts & Scheduled</h1>
+      <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <IconPencil size={28} className="text-vocl-primary flex-shrink-0" />
+        Drafts & Scheduled
+      </h1>
 
       {/* Tabs */}
       <div className="flex sm:rounded-sm bg-vocl-surface-dark/50 p-1 mb-6">
