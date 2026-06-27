@@ -124,16 +124,35 @@ export async function GET(request: Request) {
         const startMinutes = hmsToMinutes(windowStart);
         const endMinutes = hmsToMinutes(windowEnd);
 
-        if (nowMinutes < startMinutes || nowMinutes >= endMinutes) {
-          continue; // Outside posting window in user's TZ
+        // Determine whether we're inside the posting window and how far through
+        // it we are. Supports a wrap-around window (e.g. 21:00 → 09:00).
+        let inWindow: boolean;
+        let windowDuration: number;
+        let elapsed: number;
+        if (endMinutes > startMinutes) {
+          inWindow = nowMinutes >= startMinutes && nowMinutes < endMinutes;
+          windowDuration = endMinutes - startMinutes;
+          elapsed = nowMinutes - startMinutes;
+        } else {
+          // Window crosses midnight.
+          inWindow = nowMinutes >= startMinutes || nowMinutes < endMinutes;
+          windowDuration = 1440 - startMinutes + endMinutes;
+          elapsed =
+            nowMinutes >= startMinutes
+              ? nowMinutes - startMinutes
+              : 1440 - startMinutes + nowMinutes;
+        }
+        if (!inWindow || windowDuration <= 0) {
+          continue; // Outside posting window in user's TZ (or misconfigured)
         }
 
-        const windowDuration = endMinutes - startMinutes;
-        const elapsed = nowMinutes - startMinutes;
         const progress = Math.min(elapsed / windowDuration, 1);
 
         const postsPerDay = user.queue_posts_per_day || 8;
-        const targetPostsSoFar = Math.floor(progress * postsPerDay);
+        // ceil (not floor) so a non-empty queue always targets at least one post
+        // once we're inside the window — floor starved small queues to zero early
+        // in the day, leaving posts stuck indefinitely.
+        const targetPostsSoFar = Math.ceil(progress * postsPerDay);
 
         // Count posts published from the queue today (in user TZ)
         const dayStartUtc = tzDayStartUtc(dayKey, tz);

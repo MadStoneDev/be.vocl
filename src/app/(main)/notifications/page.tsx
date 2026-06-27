@@ -91,16 +91,16 @@ export default function NotificationsPage() {
 
   return (
     <PullToRefresh onRefresh={fetchNotifications}>
-      <title>Notifications | be.vocl</title>
+      <title>Activity | be.vocl</title>
     <div className="max-w-2xl mx-auto px-4 py-6">
       {/* Header — editorial masthead */}
       <div className="flex items-end justify-between mb-5 border-b-4 border-double border-vocl-border pb-4">
         <div>
           <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
-            be.vocl
+            Recent
           </span>
           <h1 className="type-display text-3xl font-bold text-foreground leading-none mt-1">
-            Notices
+            Activity
           </h1>
           {unreadCount > 0 && (
             <p className="type-meta uppercase tracking-widest text-foreground/50 mt-1.5">

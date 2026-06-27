@@ -406,29 +406,17 @@ function PostActionBar({
       {/* Reblog button */}
       <button
         onClick={onReblogClick}
-        className={`group absolute right-0 bottom-0 w-18 sm:w-18 h-18 sm:h-18 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-primary/40"} bg-vocl-primary transition-all duration-300 ${
+        className={`group absolute right-0 bottom-0 w-14 h-14 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-primary/40"} bg-vocl-primary transition-all duration-300 ${
           isReblogMenuOpen ? "scale-105" : "hover:scale-105"
         } z-50`}
         aria-label="Echo options"
         aria-expanded={isReblogMenuOpen}
       >
-        <div className="hidden sm:flex items-center justify-center">
+        <div className="flex items-center justify-center">
           {isReblogMenuOpen ? (
-            <IconBolt size={55} stroke={1.5} className="text-white" />
+            <IconBolt size={32} stroke={1.5} className="text-white" />
           ) : (
-            <IconRefresh
-              size={55}
-              stroke={1.5}
-              className="text-white"
-            />
-          )}
-        </div>
-
-        <div className="flex sm:hidden items-center justify-center">
-          {isReblogMenuOpen ? (
-            <IconBolt size={50} stroke={1.5} className="text-white" />
-          ) : (
-            <IconRefresh size={50} stroke={1.5} className="text-white" />
+            <IconRefresh size={32} stroke={1.5} className="text-white" />
           )}
         </div>
       </button>
@@ -466,7 +454,7 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
   // Reblog button center offset from bottom-right corner
   // Mobile: w-18 (72px) / 2 = 36px, Desktop: w-20 (80px) / 2 = 40px
   // Using mobile value, desktop will be slightly off but acceptable
-  const buttonCenterOffset = 36;
+  const buttonCenterOffset = 28;
 
   return (
     <>
@@ -900,7 +888,7 @@ function MobileTagsStrip({ tags, bare }: { tags: PostTag[]; bare?: boolean }) {
   }
 
   return (
-    <div className="sm:hidden px-2.5 pt-2 pb-1">
+    <div className="sm:hidden pl-2.5 pr-16 pt-2 pb-1">
       <div className="flex flex-row flex-wrap gap-1.5">
         {tags.map((tag) => (
           <Link
@@ -951,7 +939,7 @@ function TextPostTags({
   }
 
   return (
-    <div className="px-2.5 sm:px-4 pb-2.5 sm:pb-4">
+    <div className="pl-2.5 sm:pl-4 pr-16 sm:pr-20 pb-2.5 sm:pb-4">
       <div
         className={`overflow-hidden transition-all duration-150 ease-out ${
           isHovered ? "max-h-50" : "max-h-50 lg:max-h-0"

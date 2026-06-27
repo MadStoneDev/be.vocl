@@ -124,7 +124,7 @@ export function BottomNav({
               className={`relative flex items-center justify-center w-12 h-12 transition-all ${
                 isActive
                   ? "text-vocl-primary scale-110"
-                  : "text-foreground/60 opacity-80 hover:opacity-100 hover:text-vocl-primary"
+                  : "text-foreground/70 hover:text-vocl-primary"
               }`}
             >
               <span className="relative inline-flex">

@@ -392,9 +392,9 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       <div className="flex items-center justify-between h-16 px-4 border-b-4 border-double border-vocl-border flex-shrink-0">
         <div className="flex flex-col leading-none">
           <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
-            be.vocl
+            Direct
           </span>
-          <h2 className="type-display text-xl font-bold text-foreground">Correspondence</h2>
+          <h2 className="type-display text-xl font-bold text-foreground">Messages</h2>
         </div>
         <button
           type="button"

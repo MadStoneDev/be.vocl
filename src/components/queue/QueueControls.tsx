@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconPlayerPlay,
   IconPlayerPause,
@@ -32,6 +32,12 @@ export function QueueControls({
   const [showSettings, setShowSettings] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
 
+  // Re-sync the editable copy whenever the saved settings load/change, so the
+  // dialog never shows (or saves) a stale default over the real saved value.
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
+
   const handleTogglePause = async () => {
     setIsUpdating(true);
     try {
@@ -55,11 +61,16 @@ export function QueueControls({
     }
   };
 
+  const handleCloseSettings = () => {
+    setLocalSettings(settings);
+    setShowSettings(false);
+  };
+
   // Calculate estimated time to empty queue
   const daysToEmpty = Math.ceil(queueCount / settings.postsPerDay);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {/* Main controls */}
       <div className="flex items-center justify-between p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
         <div className="flex items-center gap-4">
@@ -105,11 +116,13 @@ export function QueueControls({
         </button>
       </div>
 
-      {/* Queue info */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Queue info — order-3 so the settings panel can sit above it */}
+      <div className="order-3 grid grid-cols-3 gap-4">
         <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">{queueCount}</p>
-          <p className="text-sm text-foreground/50">Posts in queue</p>
+          <p className="text-sm text-foreground/50">
+            {queueCount === 1 ? "Post in queue" : "Posts in queue"}
+          </p>
         </div>
         <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">
@@ -125,9 +138,9 @@ export function QueueControls({
         </div>
       </div>
 
-      {/* Settings panel */}
+      {/* Settings panel — order-2 so it opens directly under the controls bar */}
       {showSettings && (
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-4">
+        <div className="order-2 p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-4">
           <h3 className="font-medium text-foreground flex items-center gap-2">
             <IconClock size={18} />
             Queue Settings
@@ -194,8 +207,16 @@ export function QueueControls({
             and {localSettings.windowEnd} in your timezone.
           </p>
 
-          {/* Save button */}
-          <div className="flex justify-end">
+          {/* Actions */}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseSettings}
+              disabled={isUpdating}
+              className="px-4 py-2 rounded-xl border border-vocl-border text-foreground/70 font-medium hover:bg-vocl-hover transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
             <button
               type="button"
               onClick={handleSaveSettings}
