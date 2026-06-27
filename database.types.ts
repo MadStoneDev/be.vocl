@@ -1268,6 +1268,7 @@ export type Database = {
           is_discoverable: boolean
           allow_search_indexing: boolean
           follower_count: number
+          is_searchable: boolean
         }
         Insert: {
           id: string
@@ -1318,6 +1319,7 @@ export type Database = {
           is_discoverable?: boolean
           allow_search_indexing?: boolean
           follower_count?: number
+          is_searchable?: boolean
         }
         Update: {
           id?: string
@@ -1368,6 +1370,7 @@ export type Database = {
           is_discoverable?: boolean
           allow_search_indexing?: boolean
           follower_count?: number
+          is_searchable?: boolean
         }
         Relationships: []
       }
@@ -1601,6 +1604,27 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      is_community_member: {
+        Args: {
+          p_community_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      is_community_moderator: {
+        Args: {
+          p_community_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      is_community_owner: {
+        Args: {
+          p_community_id: string
+          p_user_id: string
+        }
+        Returns: boolean
       }
       is_conversation_member: {
         Args: {
