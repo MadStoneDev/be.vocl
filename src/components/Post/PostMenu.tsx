@@ -88,23 +88,12 @@ export function PostMenu({
       }
     }
 
-    // The menu is fixed-positioned (portaled), so it would otherwise float in
-    // place while the page scrolls underneath — close it instead.
-    function handleScroll() {
-      onClose();
-    }
-
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      window.addEventListener("scroll", handleScroll, {
-        capture: true,
-        passive: true,
-      });
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, { capture: true });
     };
   }, [isOpen, onClose]);
 
@@ -159,21 +148,23 @@ export function PostMenu({
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
 
-  // Anchor the menu to the trigger button. Portaled to <body> so it escapes the
-  // feed item's content-visibility containment (which was clipping it).
+  // Anchor the menu to the trigger button, portaled to <body> so it escapes the
+  // feed item's content-visibility containment (which was clipping it). Uses
+  // absolute + document coordinates (scrollY/scrollX) so the menu scrolls WITH
+  // the page and stays pinned to the button instead of floating in the viewport.
   const menuStyle: CSSProperties = anchorRect
     ? {
-        position: "fixed",
-        top: anchorRect.bottom + 6,
-        right: Math.max(8, window.innerWidth - anchorRect.right),
+        position: "absolute",
+        top: anchorRect.bottom + window.scrollY + 6,
+        right: Math.max(8, window.innerWidth - anchorRect.right - window.scrollX),
       }
-    : { position: "fixed", top: 64, right: 8 };
+    : { position: "absolute", top: window.scrollY + 64, right: 8 };
 
   return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Backdrop — dim so the menu is clearly distinguishable */}
       <div
-        className="fixed inset-0 z-[60]"
+        className="fixed inset-0 z-[60] bg-black/20"
         onClick={onClose}
         aria-hidden="true"
       />

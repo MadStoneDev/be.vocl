@@ -203,7 +203,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                     className={`p-4 rounded-sm border transition-all ${
                       selectedTier === tier.id
                         ? "border-vocl-primary bg-vocl-primary/10"
-                        : "border-vocl-border hover:border-vocl-hover-strong bg-vocl-surface"
+                        : "border-vocl-border hover:border-vocl-hover-strong bg-vocl-hover"
                     } disabled:opacity-50`}
                   >
                     <div
@@ -236,7 +236,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                 maxLength={280}
                 rows={2}
                 disabled={isProcessing}
-                className="w-full px-3 py-2 rounded-sm bg-vocl-surface border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none disabled:opacity-50"
+                className="w-full px-3 py-2 rounded-sm bg-background border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none disabled:opacity-50"
               />
             </div>
 

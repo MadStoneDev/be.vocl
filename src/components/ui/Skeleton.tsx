@@ -15,7 +15,7 @@ export function Skeleton({ className = '', ...props }: SkeletonProps) {
 
 export function PostSkeleton() {
   return (
-    <div className="bg-vocl-surface rounded-sm overflow-hidden">
+    <div className="bg-vocl-surface-dark rounded-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 p-4">
         <Skeleton className="w-10 h-10 rounded-full" />
