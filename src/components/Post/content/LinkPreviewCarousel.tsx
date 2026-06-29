@@ -32,8 +32,8 @@ function PreviewCard({
   }
 
   const c = article
-    ? { card: "border-vocl-border bg-vocl-hover", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/40" }
-    : { card: "border-vocl-border bg-vocl-hover", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
+    ? { card: "border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/40" }
+    : { card: "border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
 
   const card = (
     <div className={`relative rounded-sm overflow-hidden border ${c.card}`}>
