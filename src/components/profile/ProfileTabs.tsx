@@ -148,7 +148,7 @@ export function ProfileTabs({
               <span className="sr-only sm:hidden">{tab.label}</span>
               {!tab.isPrivate && count > 0 && (
                 <span
-                  className={`text-xs px-1.5 py-0.5 rounded-full ${
+                  className={`text-xs px-1.5 py-0.5 rounded-sm tabular-nums ${
                     isActive
                       ? "bg-vocl-primary/20 text-vocl-primary"
                       : "bg-vocl-hover-strong text-foreground/50"

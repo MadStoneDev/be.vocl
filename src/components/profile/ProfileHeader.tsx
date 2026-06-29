@@ -104,6 +104,8 @@ export function ProfileHeader({
     { key: "following", label: "Following" },
   ];
 
+  const eyebrow = isOwnProfile ? "Your Profile" : "Profile";
+
   return (
     <MotionConfig reducedMotion="user">
       <motion.div
@@ -112,9 +114,9 @@ export function ProfileHeader({
         initial="hidden"
         animate="show"
       >
-        {/* Header/Banner Image — taller editorial hero */}
-        <div className="relative h-56 md:h-72 w-full overflow-hidden">
-          {headerUrl ? (
+        {/* Banner — editorial hero, only when the member has one */}
+        {headerUrl && (
+          <div className="relative h-40 md:h-56 w-full overflow-hidden border-b border-vocl-border">
             <Image
               src={headerUrl}
               alt=""
@@ -122,25 +124,23 @@ export function ProfileHeader({
               className="object-cover"
               priority
             />
-          ) : (
-            // Tasteful gradient fallback when there's no custom banner
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 via-vocl-primary/10 to-background" />
-          )}
-          {/* Thin bottom scrim only — keeps custom banners vivid while keeping
-              the avatar/name legible where they overlap. */}
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
-        </div>
+          </div>
+        )}
 
-        {/* Profile content */}
-        <div className="relative px-4 sm:px-6 -mt-16 sm:-mt-20">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            {/* Avatar and info */}
-            <div className="flex items-end gap-4">
-              {/* Avatar */}
+        {/* Masthead */}
+        <div className="relative px-4 sm:px-6 pt-6">
+          {/* Eyebrow */}
+          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
+            {eyebrow}
+          </span>
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            {/* Portrait and info */}
+            <div className="flex items-center gap-4">
+              {/* Portrait — squared, editorial */}
               <div className="relative">
                 <button
                   onClick={onAvatarClick}
-                  className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-background shadow-xl cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:ring-offset-2 focus:ring-offset-background"
+                  className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-sm overflow-hidden border border-vocl-border shadow-sm cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:ring-offset-2 focus:ring-offset-background"
                   aria-label="View profile picture"
                 >
                   {avatarUrl ? (
@@ -316,9 +316,9 @@ export function ProfileHeader({
             </div>
           </div>
 
-          {/* Bio — confident body type / standfirst */}
+          {/* Bio — serif standfirst / lead */}
           {bio && (
-            <p className="mt-4 type-body text-foreground/90 max-w-xl">
+            <p className="mt-5 font-serif text-lg leading-relaxed text-foreground/85 max-w-2xl">
               {bio}
             </p>
           )}
