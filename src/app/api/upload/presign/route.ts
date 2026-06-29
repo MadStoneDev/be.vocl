@@ -106,15 +106,30 @@ export async function POST(request: NextRequest) {
         }
         key = generateKeys.postAudio(user.id, postId, filename);
         break;
-      case "chat-media":
+      case "chat-media": {
         if (!conversationId || !messageId) {
           return NextResponse.json(
             { error: "conversationId and messageId required for chat uploads" },
             { status: 400 }
           );
         }
+        // Verify the caller is actually a participant before issuing an upload
+        // URL into this conversation's media namespace.
+        const { data: member } = await (supabase as any)
+          .from("conversation_participants")
+          .select("conversation_id")
+          .eq("conversation_id", conversationId)
+          .eq("profile_id", user.id)
+          .single();
+        if (!member) {
+          return NextResponse.json(
+            { error: "Not a participant of this conversation" },
+            { status: 403 }
+          );
+        }
         key = generateKeys.chatMedia(conversationId, messageId, filename);
         break;
+      }
       default:
         return NextResponse.json(
           { error: "Invalid upload type" },

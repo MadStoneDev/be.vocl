@@ -77,6 +77,8 @@ interface Conversation {
     isRead: boolean;
   };
   unreadCount: number;
+  /** Whether the current user has muted this conversation. */
+  isMuted?: boolean;
 }
 
 /**
@@ -105,6 +107,7 @@ export async function getConversations(): Promise<{
         `
         conversation_id,
         last_read_at,
+        is_muted,
         conversation:conversation_id (
           id,
           updated_at
@@ -215,6 +218,7 @@ export async function getConversations(): Promise<{
             }
           : undefined,
         unreadCount: unreadCountMap.get(part.conversation_id) || 0,
+        isMuted: part.is_muted ?? false,
       });
     }
 
@@ -422,6 +426,11 @@ export async function sendMessage(
       return { success: false, error: "Slow down! You're sending messages too quickly." };
     }
 
+    // Length cap — guard against storage abuse / oversized payloads.
+    if ((content?.length ?? 0) > 8000) {
+      return { success: false, error: "Message is too long (8000 characters max)." };
+    }
+
     // Verify user is participant
     const { data: isParticipant } = await (supabase as any)
       .from("conversation_participants")
@@ -483,15 +492,16 @@ export async function sendMessage(
       .update({ updated_at: new Date().toISOString() })
       .eq("id", conversationId);
 
-    // Create notification for other participant
+    // Create notification for the other participant — unless they've muted this
+    // conversation.
     const { data: otherParticipant } = await (supabase as any)
       .from("conversation_participants")
-      .select("profile_id")
+      .select("profile_id, is_muted")
       .eq("conversation_id", conversationId)
       .neq("profile_id", user.id)
       .single();
 
-    if (otherParticipant) {
+    if (otherParticipant && !otherParticipant.is_muted) {
       await (supabase as any).from("notifications").insert({
         recipient_id: otherParticipant.profile_id,
         actor_id: user.id,
@@ -707,6 +717,90 @@ export async function hideConversation(
   } catch (error) {
     console.error("Hide conversation error:", error);
     return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Mute / unmute a conversation for the current user (suppresses its
+ * new-message notifications + unread badge — per participant, not global).
+ */
+export async function setConversationMuted(
+  conversationId: string,
+  muted: boolean
+): Promise<MessageResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const { error } = await (supabase as any)
+      .from("conversation_participants")
+      .update({ is_muted: muted })
+      .eq("conversation_id", conversationId)
+      .eq("profile_id", user.id);
+
+    if (error) return { success: false, error: "Failed to update mute state" };
+    return { success: true, conversationId };
+  } catch {
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+export interface MessageSearchResult {
+  conversationId: string;
+  messageId: string;
+  content: string;
+  createdAt: string;
+  senderId: string;
+}
+
+/**
+ * Search the current user's message history by content. RLS + the explicit
+ * conversation scope keep results to conversations the user is in.
+ */
+export async function searchMessages(
+  rawQuery: string
+): Promise<{ success: boolean; results?: MessageSearchResult[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const term = sanitizeFilterTerm(rawQuery).trim();
+    if (term.length < 2) return { success: true, results: [] };
+
+    const { data: myConvos } = await (supabase as any)
+      .from("conversation_participants")
+      .select("conversation_id")
+      .eq("profile_id", user.id);
+    const convoIds = (myConvos || []).map((c: any) => c.conversation_id);
+    if (convoIds.length === 0) return { success: true, results: [] };
+
+    const { data: msgs } = await (supabase as any)
+      .from("messages")
+      .select("id, conversation_id, content, created_at, sender_id")
+      .in("conversation_id", convoIds)
+      .eq("is_deleted", false)
+      .ilike("content", `%${term}%`)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const results: MessageSearchResult[] = (msgs || []).map((m: any) => ({
+      conversationId: m.conversation_id,
+      messageId: m.id,
+      content: m.content || "",
+      createdAt: m.created_at,
+      senderId: m.sender_id,
+    }));
+
+    return { success: true, results };
+  } catch (error) {
+    console.error("Search messages error:", error);
+    return { success: false, error: "Failed to search messages" };
   }
 }
 

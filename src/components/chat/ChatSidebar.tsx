@@ -197,9 +197,14 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            uploadType: "chat-media",
+            conversationId: activeConversation.id,
+            // The key only needs to be unique; a random id namespaces the media
+            // (it doesn't have to equal the eventual message id).
+            messageId: crypto.randomUUID(),
             filename: mediaFile.name,
             contentType: mediaFile.type,
-            folder: `messages/${activeConversation.id}`,
+            fileSize: mediaFile.size,
           }),
         });
 
