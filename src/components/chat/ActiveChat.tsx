@@ -11,6 +11,7 @@ import {
   IconBellOff,
   IconBan,
   IconFlag,
+  IconLoader2,
 } from "@tabler/icons-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -132,6 +133,9 @@ interface ActiveChatProps {
   onBlockUser?: () => void;
   onReportUser?: () => void;
   onTyping: () => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 }
 
 export function ActiveChat({
@@ -153,8 +157,14 @@ export function ActiveChat({
   onBlockUser,
   onReportUser,
   onTyping,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false,
 }: ActiveChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isPrependingRef = useRef(false);
+  const prevScrollHeightRef = useRef(0);
   const [showMenu, setShowMenu] = useState(false);
   // The message currently being replied to (shown as a banner above the input).
   const [replyingTo, setReplyingTo] = useState<{
@@ -213,12 +223,31 @@ export function ActiveChat({
   }, [conversationId]);
   useEffect(() => {
     if (messages.length === 0) return;
+    const el = scrollContainerRef.current;
+    // After prepending older messages, keep the viewport where it was instead of
+    // jumping to the bottom.
+    if (isPrependingRef.current && el) {
+      el.scrollTop = el.scrollHeight - prevScrollHeightRef.current;
+      isPrependingRef.current = false;
+      return;
+    }
     messagesEndRef.current?.scrollIntoView({
       behavior: didInitialScroll.current ? "smooth" : "auto",
       block: "end",
     });
     didInitialScroll.current = true;
   }, [messages]);
+
+  // Load older messages when scrolled near the top.
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el || !onLoadMore || !hasMore || isLoadingMore) return;
+    if (el.scrollTop < 80) {
+      prevScrollHeightRef.current = el.scrollHeight;
+      isPrependingRef.current = true;
+      onLoadMore();
+    }
+  };
 
   return (
     <MotionConfig reducedMotion="user">
@@ -346,11 +375,18 @@ export function ActiveChat({
 
       {/* Messages */}
       <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-4"
         role="log"
         aria-live="polite"
         aria-label={`Conversation with @${participant.username}`}
       >
+        {isLoadingMore && (
+          <div className="flex justify-center py-2 text-foreground/40">
+            <IconLoader2 size={18} className="animate-spin" />
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 rounded-full overflow-hidden mb-4">

@@ -32,6 +32,7 @@ interface Conversation {
   participant: Participant;
   lastMessage?: LastMessage;
   unreadCount: number;
+  isMuted?: boolean;
 }
 
 interface MessageReaction {
@@ -87,6 +88,7 @@ interface UseMessagesReturn {
   toggleReaction: (messageId: string, emoji: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   hasMore: boolean;
+  isLoadingMore: boolean;
 }
 
 /**
@@ -161,7 +163,10 @@ export function useChat(currentUserId?: string): UseChatReturn {
     return null;
   }, [refreshConversations]);
 
-  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  const totalUnread = conversations.reduce(
+    (sum, c) => sum + (c.isMuted ? 0 : c.unreadCount),
+    0
+  );
 
   return {
     conversations,
@@ -184,6 +189,7 @@ export function useMessages(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Mirror of the loaded message ids so the reactions realtime handler (which
   // can't filter on conversation_id, since message_reactions has none) can
@@ -588,24 +594,28 @@ export function useMessages(
   }, []);
 
   const loadMoreMessages = useCallback(async () => {
-    if (!conversationId || !hasMore || isLoading) return;
+    if (!conversationId || !hasMore || isLoadingMore) return;
 
     const oldestMessage = messages[0];
     if (!oldestMessage) return;
 
-    setIsLoading(true);
+    setIsLoadingMore(true);
 
-    // Need to convert display time back to ISO or use a different approach
-    // For now, we'll refetch with increased limit
-    const result = await getMessages(conversationId, 100);
+    // Page backwards using the oldest loaded message's timestamp as the cursor.
+    const result = await getMessages(conversationId, 50, oldestMessage.createdAt);
 
     if (result.success && result.messages) {
-      setMessages(result.messages);
-      setHasMore(result.messages.length >= 100);
+      const older = result.messages;
+      setMessages((prev) => {
+        const existing = new Set(prev.map((m) => m.id));
+        const fresh = older.filter((m) => !existing.has(m.id));
+        return [...fresh, ...prev];
+      });
+      setHasMore(older.length >= 50);
     }
 
-    setIsLoading(false);
-  }, [conversationId, hasMore, isLoading, messages]);
+    setIsLoadingMore(false);
+  }, [conversationId, hasMore, isLoadingMore, messages]);
 
   return {
     messages,
@@ -617,5 +627,6 @@ export function useMessages(
     toggleReaction,
     loadMoreMessages,
     hasMore,
+    isLoadingMore,
   };
 }

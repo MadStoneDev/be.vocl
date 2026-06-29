@@ -11,7 +11,7 @@ import { useTypingPresence } from "@/hooks/useTypingPresence";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsOnline } from "@/hooks/useOnlineStatus";
 import { toast, ConfirmDialog } from "@/components/ui";
-import { hideConversation } from "@/actions/messages";
+import { hideConversation, setConversationMuted } from "@/actions/messages";
 import { blockUser } from "@/actions/follows";
 
 interface ChatSidebarProps {
@@ -70,6 +70,9 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     editExistingMessage,
     deleteExistingMessage,
     toggleReaction,
+    loadMoreMessages,
+    hasMore,
+    isLoadingMore,
   } = useMessages(activeConversation?.id || null, currentUserId);
 
   // Use typing presence hook
@@ -308,9 +311,20 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   }, [refreshConversations]);
 
   // Handle mute notifications
-  const handleMuteNotifications = useCallback((conversationId: string) => {
-    toast.success("Notifications muted");
-  }, []);
+  const handleMuteNotifications = useCallback(
+    async (conversationId: string) => {
+      const conv = conversations.find((c) => c.id === conversationId);
+      const next = !conv?.isMuted;
+      const res = await setConversationMuted(conversationId, next);
+      if (res.success) {
+        toast.success(next ? "Notifications muted" : "Notifications unmuted");
+        refreshConversations();
+      } else {
+        toast.error(res.error || "Failed to update notifications");
+      }
+    },
+    [conversations, refreshConversations]
+  );
 
   // Handle block user — confirm, then block the conversation's other user.
   const handleBlockUser = useCallback((conversationId: string) => {
@@ -472,6 +486,9 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       currentUserId={currentUserId || ""}
       isTyping={isParticipantTyping}
       isLoading={messagesLoading}
+      onLoadMore={loadMoreMessages}
+      hasMore={hasMore}
+      isLoadingMore={isLoadingMore}
       onBack={handleBack}
       onSendMessage={handleSendWithTypingStop}
       onSendVoice={handleSendVoice}
