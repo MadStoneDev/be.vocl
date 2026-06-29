@@ -122,7 +122,7 @@ interface ActiveChatProps {
   isTyping: boolean;
   isLoading?: boolean;
   onBack: () => void;
-  onSendMessage: (content: string, mediaFile?: File, replyToId?: string) => Promise<void>;
+  onSendMessage: (content: string, mediaFile?: File, replyToId?: string) => Promise<boolean | void>;
   onSendVoice: (url: string, duration: number, replyToId?: string) => Promise<void>;
   onEditMessage: (messageId: string, newContent: string) => void;
   onDeleteMessage: (messageId: string) => void;
@@ -203,7 +203,7 @@ export function ActiveChat({
   const handleSend = async (content: string, mediaFile?: File) => {
     const replyToId = replyingTo?.id;
     setReplyingTo(null);
-    await onSendMessage(content, mediaFile, replyToId);
+    return await onSendMessage(content, mediaFile, replyToId);
   };
 
   const handleVoice = async (url: string, duration: number) => {

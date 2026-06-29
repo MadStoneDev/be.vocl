@@ -25,7 +25,7 @@ interface ReplyingTo {
 interface ChatInputProps {
   /** Conversation id, used as the upload scope for voice notes. */
   conversationId: string;
-  onSend: (content: string, mediaFile?: File) => Promise<void>;
+  onSend: (content: string, mediaFile?: File) => Promise<boolean | void>;
   onSendGif?: (gifUrl: string) => Promise<void>;
   onSendVoice?: (url: string, duration: number) => Promise<void>;
   onTyping?: () => void;
@@ -163,7 +163,9 @@ export function ChatInput({
 
     setIsSending(true);
     try {
-      await onSend(message.trim(), mediaFile || undefined);
+      const ok = await onSend(message.trim(), mediaFile || undefined);
+      // Keep the typed text + media if the send failed, so it can be retried.
+      if (ok === false) return;
       setMessage("");
       handleClearMedia();
     } catch {

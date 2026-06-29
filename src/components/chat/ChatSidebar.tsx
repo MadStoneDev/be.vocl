@@ -246,6 +246,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     if (!success) {
       toast.error("Failed to send message");
     }
+    return success;
   }, [activeConversation, sendNewMessage]);
 
   // Handle send voice note (already uploaded; we have a URL + duration).
@@ -287,7 +288,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   // Stop typing when message is sent
   const handleSendWithTypingStop = useCallback(async (content: string, mediaFile?: File, replyToId?: string) => {
     stopTyping();
-    await handleSendMessage(content, mediaFile, replyToId);
+    return await handleSendMessage(content, mediaFile, replyToId);
   }, [stopTyping, handleSendMessage]);
 
   // Handle new chat
