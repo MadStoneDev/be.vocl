@@ -259,6 +259,15 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     }
   }, [activeConversation, sendNewMessage, stopTyping]);
 
+  // Send a GIF as an image message (not as URL-as-text).
+  const handleSendGif = useCallback(async (gifUrl: string) => {
+    if (!activeConversation) return;
+    const success = await sendNewMessage("", gifUrl, "image", undefined, undefined);
+    if (!success) {
+      toast.error("Failed to send GIF");
+    }
+  }, [activeConversation, sendNewMessage]);
+
   // Handle toggling a reaction on a message.
   const handleToggleReaction = useCallback((messageId: string, emoji: string) => {
     toggleReaction(messageId, emoji);
@@ -493,6 +502,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       onBack={handleBack}
       onSendMessage={handleSendWithTypingStop}
       onSendVoice={handleSendVoice}
+      onSendGif={handleSendGif}
       onEditMessage={handleEditMessage}
       onDeleteMessage={handleDeleteMessage}
       onToggleReaction={handleToggleReaction}

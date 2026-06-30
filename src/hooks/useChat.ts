@@ -306,6 +306,31 @@ export function useMessages(
           );
         }
       )
+      // Read receipts: when the OTHER participant's last_read_at advances, mark
+      // our sent messages up to that timestamp as read.
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversation_participants",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload: any) => {
+          const row = payload.new as any;
+          if (!row || row.profile_id === currentUserId || !row.last_read_at) return;
+          const readAt = new Date(row.last_read_at).getTime();
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.senderId === currentUserId &&
+              !m.isRead &&
+              new Date(m.createdAt).getTime() <= readAt
+                ? { ...m, isRead: true }
+                : m
+            )
+          );
+        }
+      )
       .subscribe();
 
     return () => {

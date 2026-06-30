@@ -376,6 +376,18 @@ export async function getMessages(
       }
     }
 
+    // The other participant's read cursor drives "seen" receipts on OUR sent
+    // messages (a real receipt, not a blanket true).
+    const { data: otherReaders } = await (supabase as any)
+      .from("conversation_participants")
+      .select("last_read_at")
+      .eq("conversation_id", conversationId)
+      .neq("profile_id", user.id)
+      .limit(1);
+    const otherReadAt = otherReaders?.[0]?.last_read_at
+      ? new Date(otherReaders[0].last_read_at).getTime()
+      : 0;
+
     const messages: Message[] = rows.map((msg: any) => ({
       id: msg.id,
       content: msg.content,
@@ -383,7 +395,12 @@ export async function getMessages(
       mediaType: msg.media_type,
       mediaDuration: msg.media_duration ?? undefined,
       senderId: msg.sender_id,
-      isRead: true, // Marked as read by fetching
+      // Our sent messages: read iff the peer's cursor has passed them.
+      // Received messages: we've read them by opening the conversation.
+      isRead:
+        msg.sender_id === user.id
+          ? otherReadAt >= new Date(msg.created_at).getTime()
+          : true,
       isEdited: msg.is_edited,
       isDeleted: msg.is_deleted,
       // Expose the raw ISO timestamp; the client formats it.

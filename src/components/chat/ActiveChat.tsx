@@ -124,6 +124,7 @@ interface ActiveChatProps {
   onBack: () => void;
   onSendMessage: (content: string, mediaFile?: File, replyToId?: string) => Promise<boolean | void>;
   onSendVoice: (url: string, duration: number, replyToId?: string) => Promise<void>;
+  onSendGif?: (gifUrl: string) => Promise<void>;
   onEditMessage: (messageId: string, newContent: string) => void;
   onDeleteMessage: (messageId: string) => void;
   onToggleReaction: (messageId: string, emoji: string) => void;
@@ -148,6 +149,7 @@ export function ActiveChat({
   onBack,
   onSendMessage,
   onSendVoice,
+  onSendGif,
   onEditMessage,
   onDeleteMessage,
   onToggleReaction,
@@ -472,6 +474,7 @@ export function ActiveChat({
       <ChatInput
         conversationId={conversationId}
         onSend={handleSend}
+        onSendGif={onSendGif}
         onSendVoice={handleVoice}
         onTyping={onTyping}
         placeholder={`Message @${participant.username}`}
