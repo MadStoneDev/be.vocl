@@ -10,8 +10,8 @@ import { useChat, useMessages } from "@/hooks/useChat";
 import { useTypingPresence } from "@/hooks/useTypingPresence";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsOnline } from "@/hooks/useOnlineStatus";
-import { toast, ConfirmDialog } from "@/components/ui";
-import { hideConversation, setConversationMuted } from "@/actions/messages";
+import { toast, ConfirmDialog, Avatar } from "@/components/ui";
+import { hideConversation, setConversationMuted, searchMessages, type MessageSearchResult } from "@/actions/messages";
 import { blockUser } from "@/actions/follows";
 
 interface ChatSidebarProps {
@@ -24,6 +24,25 @@ interface ChatSidebarProps {
 export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversationId }: ChatSidebarProps) {
   const [view, setView] = useState<"list" | "chat">("list");
   const [searchQuery, setSearchQuery] = useState("");
+  const [messageResults, setMessageResults] = useState<MessageSearchResult[]>([]);
+
+  // Debounced full-text search over the user's message history.
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setMessageResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const res = await searchMessages(q);
+      if (!cancelled && res.success) setMessageResults(res.results || []);
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [searchQuery]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -61,6 +80,12 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       isOnline: onlineStatus.get(conv.participant.id) || false,
     },
   }));
+
+  // Only surface message hits whose conversation is in the list — otherwise the
+  // row would render a blank participant and clicking it couldn't open anything.
+  const visibleMessageResults = messageResults.filter((r) =>
+    conversations.some((c) => c.id === r.conversationId)
+  );
 
   // Use messages hook for active conversation
   const {
@@ -469,17 +494,48 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
             </button>
           </div>
         ) : (
-          <ConversationList
-            conversations={conversations}
-            searchQuery={searchQuery}
-            onSelect={handleSelectConversation}
-            onNewChat={handleNewChat}
-            onDeleteConversation={handleDeleteConversation}
-            onMarkAsRead={handleMarkAsRead}
-            onMuteNotifications={handleMuteNotifications}
-            onBlockUser={handleBlockUser}
-            onReportUser={handleReportUser}
-          />
+          <>
+            {searchQuery.trim().length >= 2 && visibleMessageResults.length > 0 && (
+              <div className="border-b border-vocl-border">
+                <p className="px-4 pt-3 pb-1 type-meta uppercase tracking-widest text-foreground/45 font-semibold">
+                  In messages
+                </p>
+                {visibleMessageResults.map((r) => {
+                  const conv = conversations.find((c) => c.id === r.conversationId);
+                  return (
+                    <button
+                      key={r.messageId}
+                      onClick={() => handleSelectConversation(r.conversationId)}
+                      className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-vocl-hover transition-colors"
+                    >
+                      <Avatar
+                        src={conv?.participant.avatarUrl || ""}
+                        username={conv?.participant.username || "?"}
+                        size="sm"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {conv?.participant.username || "Conversation"}
+                        </p>
+                        <p className="text-sm text-foreground/60 truncate">{r.content}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <ConversationList
+              conversations={conversations}
+              searchQuery={searchQuery}
+              onSelect={handleSelectConversation}
+              onNewChat={handleNewChat}
+              onDeleteConversation={handleDeleteConversation}
+              onMarkAsRead={handleMarkAsRead}
+              onMuteNotifications={handleMuteNotifications}
+              onBlockUser={handleBlockUser}
+              onReportUser={handleReportUser}
+            />
+          </>
         )}
       </div>
     </div>
