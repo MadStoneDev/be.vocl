@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
 
+// SSR stays on so the broadsheet HTML is in the first paint (no blank frame
+// while the chunk loads); the skeleton only shows on a client-side switch.
 const FrontPageGrid = dynamic(
   () => import("@/components/feed/frontpage").then((m) => m.FrontPageGrid),
-  { ssr: false, loading: () => null },
+  { loading: () => <FeedSkeleton count={3} /> },
 );
 import { PromiseBanner, FlaggedContentBanner } from "@/components/moderation";
-import { PullToRefresh } from "@/components/ui";
+import { PullToRefresh, FeedSkeleton } from "@/components/ui";
 import { OnThisDayCard } from "@/components/feed/OnThisDayCard";
 import { getFeedPosts } from "@/actions/posts";
 import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations";
@@ -21,6 +23,22 @@ import type { VideoEmbedPlatform, PostType } from "@/types/database";
 
 // Tab order for swipe navigation (matches FeedTabs display order).
 const TAB_ORDER: FeedTab[] = ["chronological", "engagement", "trending"];
+
+// Viewport width as an external store: null during SSR + hydration (so the
+// first client render matches the server HTML and CSS picks the visible
+// layout), the real value immediately after.
+const WIDE_QUERY = "(min-width: 1024px)";
+function subscribeWide(onChange: () => void) {
+  const mql = window.matchMedia(WIDE_QUERY);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+const getWideSnapshot = () => window.matchMedia(WIDE_QUERY).matches;
+const getServerWideSnapshot = () => null;
+
+function persistLayoutCookie(next: "reader" | "frontpage") {
+  document.cookie = `feedLayout=${next}; path=/; max-age=31536000; samesite=lax`;
+}
 
 interface PostWithDetails {
   id: string;
@@ -72,6 +90,8 @@ interface FeedClientProps {
   initialHasMore: boolean;
   showPromiseBanner: boolean;
   showFlaggedBanner: boolean;
+  /** Layout preference from the feedLayout cookie, so SSR matches first paint. */
+  initialLayout: "reader" | "frontpage" | null;
 }
 
 /** Transform server action post data into the shape FeedList expects */
@@ -191,48 +211,43 @@ export default function FeedClient({
   initialHasMore,
   showPromiseBanner: initialShowPromise,
   showFlaggedBanner: initialShowFlagged,
+  initialLayout,
 }: FeedClientProps) {
   const [activeTab, setActiveTab] = useState<FeedTab>("chronological");
   const [showPromiseBanner, setShowPromiseBanner] = useState(initialShowPromise);
   const [showFlaggedBanner] = useState(initialShowFlagged);
 
   // Feed layout: Reader (single column) vs Front Page (broadsheet, wide screens only).
-  // Front Page is the default; users can switch to Reader via the layout toggle.
-  const [layout, setLayout] = useState<"reader" | "frontpage">("frontpage");
-  const [isWide, setIsWide] = useState(false);
+  // Precedence: explicit choice (cookie / localStorage / toggle) > profile
+  // preference > Front Page default. The cookie (via initialLayout) lets SSR
+  // render the chosen layout outright — no reader→front-page flip after
+  // hydration; while isWide is still null, CSS breakpoints pick the visible one.
+  const [explicitLayout, setExplicitLayout] = useState<"reader" | "frontpage" | null>(
+    initialLayout,
+  );
   const { profile } = useAuth();
-  // Whether localStorage already provided an explicit layout (instant-read source).
-  const hasLocalLayoutRef = useRef(false);
+  const layout = explicitLayout ?? profile?.feedLayout ?? "frontpage";
+  const isWide = useSyncExternalStore(subscribeWide, getWideSnapshot, getServerWideSnapshot);
 
+  // Migration: pre-cookie users kept the preference only in localStorage, which
+  // can't be read until after hydration (SSR HTML must match first paint).
   useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    const apply = () => {
-      setIsWide(mql.matches);
+    if (initialLayout !== null) return;
+    try {
       const stored = localStorage.getItem("feedLayout");
       if (stored === "frontpage" || stored === "reader") {
-        hasLocalLayoutRef.current = true;
-        setLayout(stored);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time post-hydration read of an external store
+        setExplicitLayout(stored);
+        persistLayoutCookie(stored);
       }
-    };
-    apply();
-    mql.addEventListener("change", apply);
-    return () => mql.removeEventListener("change", apply);
-  }, []);
-
-  // Reconcile with the user's saved profile preference once auth loads, but only
-  // when localStorage didn't already provide an explicit choice.
-  useEffect(() => {
-    const seedFromProfile = (next: "reader" | "frontpage") => {
-      setLayout(next);
-    };
-    if (!hasLocalLayoutRef.current && profile?.feedLayout) {
-      seedFromProfile(profile.feedLayout);
+    } catch {
+      // ignore storage failures (private mode, etc.)
     }
-  }, [profile?.feedLayout]);
+  }, [initialLayout]);
 
   const changeLayout = (next: "reader" | "frontpage") => {
-    setLayout(next);
-    hasLocalLayoutRef.current = true;
+    setExplicitLayout(next);
+    persistLayoutCookie(next);
     try {
       localStorage.setItem("feedLayout", next);
     } catch {
@@ -241,8 +256,6 @@ export default function FeedClient({
     // Persist to profile (fire-and-forget)
     void updateFeedLayout(next);
   };
-
-  const useFrontPage = layout === "frontpage" && isWide;
 
   // Swipe between feed tabs (Latest ↔ For You ↔ Trending) on touch devices.
   const goTab = (dir: 1 | -1) => {
@@ -324,12 +337,15 @@ export default function FeedClient({
       {/* Flagged Content Banner - show if user has pending reports */}
       {showFlaggedBanner && <FlaggedContentBanner />}
 
+      {/* Toggle is always in the markup; FeedTabs hides it below lg via CSS,
+          so it's in the SSR HTML and doesn't pop in (squeezing the sort tabs)
+          after hydration. */}
       <FeedTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}
         layout={layout}
         onLayoutChange={changeLayout}
-        showLayoutToggle={isWide}
+        showLayoutToggle
       />
 
       <OnThisDayCard />
@@ -351,7 +367,28 @@ export default function FeedClient({
       )}
 
       <div {...feedSwipe}>
-        {useFrontPage ? (
+        {layout === "frontpage" && isWide === null ? (
+          // SSR + first paint: the server can't know the viewport, so render
+          // both layouts and let the lg breakpoint pick — no post-hydration
+          // swap. Collapses to a single tree once isWide is measured.
+          <>
+            <div className="hidden lg:block">
+              <FrontPageGrid
+                posts={feedListPosts}
+                isLoading={isLoading}
+                isLoadingMore={isFetchingNextPage}
+              />
+            </div>
+            <div className="lg:hidden">
+              <FeedList
+                posts={feedListPosts}
+                isLoading={isLoading}
+                isLoadingMore={isFetchingNextPage}
+                showWhoToFollow={activeTab === "engagement"}
+              />
+            </div>
+          </>
+        ) : layout === "frontpage" && isWide ? (
           <FrontPageGrid
             posts={feedListPosts}
             isLoading={isLoading}
