@@ -1,5 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { FeedPost } from "../FeedList";
+
+// Hero candidates come from the first page of posts only, so load-more
+// appends can never crown a different lead and reshuffle the top of the page
+// while the reader is scrolled down the river.
+const HERO_POOL_SIZE = 20;
 
 export type Prominence = "lead" | "feature" | "standard";
 
@@ -9,10 +14,10 @@ export interface FeedLayout {
   standards: FeedPost[]; // the rest, in feed (recency) order
 }
 
-function hoursSince(ts: string): number {
+function hoursSince(ts: string, now: number): number {
   const t = Date.parse(ts);
   if (Number.isNaN(t)) return 24; // neutral if the timestamp isn't a parseable date
-  return Math.max(0, (Date.now() - t) / 3_600_000);
+  return Math.max(0, (now - t) / 3_600_000);
 }
 
 export function postHasMedia(p: FeedPost): boolean {
@@ -27,8 +32,8 @@ export function postHasMedia(p: FeedPost): boolean {
 }
 
 /** Prominence score — the "algorithmic editor". Higher = more prominent. */
-function score(p: FeedPost): number {
-  const recency = Math.exp(-hoursSince(p.timestamp) / 18); // decays over ~a day
+function score(p: FeedPost, now: number): number {
+  const recency = Math.exp(-hoursSince(p.timestamp, now) / 18); // decays over ~a day
   const engage = Math.log1p(
     p.stats.likes + 2 * p.stats.comments + 3 * p.stats.reblogs, // reblogs weighted highest
   );
@@ -49,14 +54,18 @@ function leadEligible(p: FeedPost): boolean {
 }
 
 /**
- * Curated top (lead + 2 features by score) over a recency-ordered river of
- * standards. Pure; memoized on the posts identity.
+ * Curated top (lead + 2 features by score, drawn from the first page) over a
+ * recency-ordered river of standards. Deterministic for a given posts array:
+ * the scoring clock is frozen per mount.
  */
 export function useFeedLayout(posts: FeedPost[]): FeedLayout {
+  // Scoring time is frozen per mount: recency decay drifting between renders
+  // (load more, refetch) must not change which posts anchor the page.
+  const [now] = useState(() => Date.now());
   return useMemo(() => {
     if (posts.length === 0) return { lead: null, features: [], standards: [] };
 
-    const byScore = [...posts].sort((a, b) => score(b) - score(a));
+    const byScore = posts.slice(0, HERO_POOL_SIZE).sort((a, b) => score(b, now) - score(a, now));
 
     const lead =
       byScore.find(leadEligible) ?? byScore[0] ?? null;
@@ -83,5 +92,5 @@ export function useFeedLayout(posts: FeedPost[]): FeedLayout {
     const standards = posts.filter((p) => !promoted.has(p.id)); // original (recency) order
 
     return { lead, features, standards };
-  }, [posts]);
+  }, [posts, now]);
 }
