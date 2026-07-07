@@ -259,7 +259,7 @@ function PostHeader({
                   href={`/thread/${threadId}`}
                   className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/60 text-xs hover:bg-white/20 transition-colors"
                 >
-                  Thread {threadPosition}/{threadLength}
+                  Collection {threadPosition}/{threadLength}
                 </Link>
               </>
             )}
@@ -1593,7 +1593,7 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
               </h2>
             )}
             <p className="text-xs text-foreground/55 inline-flex items-center gap-1.5">
-              <span className="font-medium text-vocl-primary">Essay</span>
+              <span className="font-medium text-vocl-primary">Story</span>
               {readingTimeMinutes ? <span>· {readingTimeMinutes} min read</span> : null}
             </p>
           </div>

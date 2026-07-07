@@ -135,7 +135,7 @@ export function ThreadPageClient({ threadId }: { threadId: string }) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">
         <h1 className="type-display text-foreground mb-4">
-          Thread Not Found
+          Collection Not Found
         </h1>
         <p className="type-body text-foreground/60 mb-6">{error}</p>
         <Link
@@ -163,9 +163,11 @@ export function ThreadPageClient({ threadId }: { threadId: string }) {
       {/* Editorial masthead */}
       <header className="border-b-4 border-double border-vocl-border pb-5 mb-6">
         <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
-          A Thread · {posts.length} {posts.length === 1 ? "part" : "parts"}
+          A Collection · {posts.length} {posts.length === 1 ? "part" : "parts"}
         </span>
-        <h1 className="type-display-lg text-foreground mt-1">Thread</h1>
+        <h1 className="type-display-lg text-foreground mt-1">
+          {(posts[0]?.content?.essay_title || "").trim() || "Untitled collection"}
+        </h1>
 
         {posts.length > 0 &&
           posts.every((p) => p.postType === "audio") &&
@@ -184,7 +186,7 @@ export function ThreadPageClient({ threadId }: { threadId: string }) {
       {/* Thread posts */}
       {posts.length === 0 ? (
         <div className="text-center py-12 text-foreground/40">
-          No posts found in this thread.
+          No posts found in this collection.
         </div>
       ) : (
         <div className="relative">

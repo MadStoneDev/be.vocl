@@ -65,7 +65,7 @@ export function ManuscriptColumn({
               placeholder={
                 isText
                   ? state.isEssay
-                    ? "Start writing your essay…"
+                    ? "Start writing your story…"
                     : "What's on your mind?"
                   : "Add a caption…"
               }
@@ -90,7 +90,7 @@ export function ManuscriptColumn({
                 }
               >
                 <IconBook size={14} />
-                {state.isEssay ? "Essay mode on" : "Write as essay"}
+                {state.isEssay ? "Story mode on" : "Write as story"}
               </button>
               {state.content.plain && (
                 <span className="text-foreground/45">

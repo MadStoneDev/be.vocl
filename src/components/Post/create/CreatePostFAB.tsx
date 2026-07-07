@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { IconPlus } from "@tabler/icons-react";
 
 interface CreatePostFABProps {
@@ -10,9 +10,13 @@ interface CreatePostFABProps {
 
 export function CreatePostFAB({ className = "", hidden = false }: CreatePostFABProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Don't show the "start a post" button while already in the composer.
+  const onComposer = pathname === "/create";
 
   return (
-    <article className={`hidden sm:flex ${hidden ? "!hidden" : ""}`}>
+    <article className={`hidden sm:flex ${hidden || onComposer ? "!hidden" : ""}`}>
       <button
         type="button"
         onClick={() => router.push("/create")}

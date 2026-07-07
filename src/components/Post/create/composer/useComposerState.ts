@@ -66,9 +66,13 @@ export interface ComposerState {
   selectedTrack: SpotifyTrack | null;
   isSearching: boolean;
 
-  // Essay
+  // Essay (a.k.a. "Story" in the UI)
   isEssay: boolean;
   essayTitle: string;
+
+  // Collection (story series, create mode only). Reuses the thread_id plumbing.
+  collectionMode: "none" | "new" | "existing";
+  collectionThreadId: string | null;
 
   // Unsplash
   unsplashQuery: string;
@@ -126,6 +130,8 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     isSearching: false,
     isEssay: false,
     essayTitle: "",
+    collectionMode: "none",
+    collectionThreadId: null,
     unsplashQuery: "",
     unsplashResults: [],
     isSearchingUnsplash: false,
@@ -200,6 +206,8 @@ const PERSISTED_KEYS: (keyof ComposerState)[] = [
   "selectedTrack",
   "isEssay",
   "essayTitle",
+  "collectionMode",
+  "collectionThreadId",
   "selectedUnsplash",
   "altTexts",
   "selectedGifUrl",
@@ -596,6 +604,10 @@ export function useComposerState(
         (postContent as any).content_warning = s.contentWarning.trim();
       }
 
+      // Collections are a story-only feature; ignore any stale collection state
+      // if the post isn't a text story (e.g. type was switched after toggling).
+      const storyCollection = s.postType === "text" && s.isEssay;
+
       const result = await createPost({
         postType: actualPostType,
         content: postContent,
@@ -607,7 +619,13 @@ export function useComposerState(
           s.publishMode === "schedule"
             ? new Date(`${s.scheduledDate}T${s.scheduledTime}`).toISOString()
             : undefined,
-        threadId: threadId || undefined,
+        // Collections only apply to stories. "existing" appends to the chosen
+        // collection; "new" starts one (the post becomes its own thread head).
+        threadId:
+          storyCollection && s.collectionMode === "existing"
+            ? s.collectionThreadId || undefined
+            : threadId || undefined,
+        startThread: storyCollection && s.collectionMode === "new",
         pendingCommunityIds:
           s.selectedCommunityIds.length > 0 && s.publishMode !== "now"
             ? s.selectedCommunityIds

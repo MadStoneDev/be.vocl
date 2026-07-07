@@ -15,6 +15,9 @@ function CreatePageInner() {
   const editId = searchParams.get("edit");
   const isEdit = !!editId;
 
+  // Deep link to add a new story to an existing collection (thread).
+  const collectionId = searchParams.get("collection");
+
   const [existingPost, setExistingPost] = useState<ExistingPostData | null>(null);
   const [loadingPost, setLoadingPost] = useState(isEdit);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -96,6 +99,7 @@ function CreatePageInner() {
       <title>{isEdit ? "Edit post | be.vocl" : "New post | be.vocl"}</title>
       <EditorialComposer
         mode={isEdit ? "edit" : "create"}
+        threadId={!isEdit ? collectionId || undefined : undefined}
         existingPost={existingPost || undefined}
         onSuccess={handleSuccess}
         onEditSuccess={handleEditSuccess}

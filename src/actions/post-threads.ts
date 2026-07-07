@@ -120,6 +120,79 @@ export async function getPostThread(threadId: string): Promise<{
   }
 }
 
+export interface MyCollection {
+  threadId: string;
+  title: string;
+  partCount: number;
+}
+
+/**
+ * List the current user's collection heads (the first post of each of their
+ * threads), newest first. Used to populate the composer's "add to an existing
+ * collection" picker. A collection's name is its head post's story title.
+ */
+export async function getMyCollections(): Promise<{
+  success: boolean;
+  collections?: MyCollection[];
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Collection heads = my published posts at thread_position 1.
+    const { data: heads, error } = await (supabase as any)
+      .from("posts")
+      .select("thread_id, content, created_at")
+      .eq("author_id", user.id)
+      .eq("thread_position", 1)
+      .not("thread_id", "is", null)
+      .eq("status", "published")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Get my collections error:", error);
+      return { success: false, error: "Failed to fetch collections" };
+    }
+
+    if (!heads || heads.length === 0) {
+      return { success: true, collections: [] };
+    }
+
+    const threadIds: string[] = heads.map((h: any) => h.thread_id);
+
+    // Count published parts per collection.
+    const { data: members } = await (supabase as any)
+      .from("posts")
+      .select("thread_id")
+      .in("thread_id", threadIds)
+      .eq("status", "published");
+
+    const countMap = new Map<string, number>();
+    for (const m of members || []) {
+      if (!m.thread_id) continue;
+      countMap.set(m.thread_id, (countMap.get(m.thread_id) || 0) + 1);
+    }
+
+    const collections: MyCollection[] = heads.map((h: any) => ({
+      threadId: h.thread_id,
+      title: (h.content?.essay_title || "").trim() || "Untitled collection",
+      partCount: countMap.get(h.thread_id) || 1,
+    }));
+
+    return { success: true, collections };
+  } catch (error) {
+    console.error("Get my collections error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
 interface ThreadInfo {
   threadId: string | null;
   threadPosition: number | null;

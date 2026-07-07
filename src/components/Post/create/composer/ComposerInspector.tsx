@@ -7,16 +7,19 @@ import {
   IconAlertTriangle,
   IconWorld,
   IconUsers,
+  IconBooks,
 } from "@tabler/icons-react";
 import { TagInput } from "../TagInput";
 import type { ComposerState } from "./useComposerState";
 import type { CommunitySummary } from "@/actions/communities";
+import type { MyCollection } from "@/actions/post-threads";
 
 interface ComposerInspectorProps {
   state: ComposerState;
   patch: (payload: Partial<ComposerState>) => void;
   mode: "create" | "edit";
   myCommunities: CommunitySummary[];
+  myCollections: MyCollection[];
 }
 
 const SCHEDULE_PRESETS = [
@@ -31,9 +34,119 @@ export function ComposerInspector({
   patch,
   mode,
   myCommunities,
+  myCollections,
 }: ComposerInspectorProps) {
+  // A collection only makes sense for a story (titled text post) being created.
+  const showCollection =
+    mode === "create" && state.postType === "text" && state.isEssay;
+  const inCollection = state.collectionMode !== "none";
+
   return (
     <div className="space-y-6 p-5">
+      {/* Collection (stories only) */}
+      {showCollection && (
+        <section>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={inCollection}
+            onClick={() =>
+              patch(
+                inCollection
+                  ? { collectionMode: "none", collectionThreadId: null }
+                  : { collectionMode: "new", collectionThreadId: null }
+              )
+            }
+            className="flex items-center gap-3 w-full text-left"
+          >
+            <div
+              className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+              style={{
+                backgroundColor: inCollection
+                  ? "var(--vocl-primary)"
+                  : "var(--vocl-border)",
+              }}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                  inCollection ? "left-6" : "left-1"
+                }`}
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 text-foreground text-sm font-medium">
+                <IconBooks size={16} />
+                Part of a collection
+              </div>
+              <p className="text-foreground/45 text-xs mt-0.5">
+                Group this story with others readers can follow in order
+              </p>
+            </div>
+          </button>
+
+          {inCollection && (
+            <div className="mt-3 space-y-2 pl-14">
+              <label className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
+                <input
+                  type="radio"
+                  name="collection-mode"
+                  checked={state.collectionMode === "new"}
+                  onChange={() =>
+                    patch({ collectionMode: "new", collectionThreadId: null })
+                  }
+                  className="accent-[var(--vocl-primary)]"
+                />
+                Start a new collection
+              </label>
+
+              <label
+                className={`flex items-center gap-2 text-sm cursor-pointer ${
+                  myCollections.length === 0
+                    ? "opacity-40 cursor-not-allowed"
+                    : "text-foreground/80"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="collection-mode"
+                  disabled={myCollections.length === 0}
+                  checked={state.collectionMode === "existing"}
+                  onChange={() =>
+                    patch({
+                      collectionMode: "existing",
+                      collectionThreadId: myCollections[0]?.threadId ?? null,
+                    })
+                  }
+                  className="accent-[var(--vocl-primary)]"
+                />
+                Add to an existing collection
+              </label>
+
+              {state.collectionMode === "existing" && myCollections.length > 0 && (
+                <select
+                  value={state.collectionThreadId ?? ""}
+                  onChange={(e) => patch({ collectionThreadId: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-xl border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--vocl-primary)]"
+                >
+                  {myCollections.map((c) => (
+                    <option key={c.threadId} value={c.threadId}>
+                      {c.title} · {c.partCount}{" "}
+                      {c.partCount === 1 ? "part" : "parts"}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {myCollections.length === 0 && (
+                <p className="text-xs text-foreground/40">
+                  You don't have any collections yet — start one here.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Tags */}
       <section>
         <h3 className="text-sm font-semibold text-foreground mb-2">Tags</h3>

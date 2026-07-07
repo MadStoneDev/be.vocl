@@ -45,6 +45,15 @@ export function KeyboardShortcuts() {
     }
 
     function handler(e: KeyboardEvent) {
+      // Ctrl/Cmd+J → new post. Handled before the typing/modifier guards so it
+      // works everywhere, and preventDefault overrides the browser's native
+      // "open Downloads" shortcut.
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        router.push("/create");
+        return;
+      }
+
       if (isTyping(e.target)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
@@ -124,6 +133,8 @@ export function KeyboardShortcuts() {
           {[
             { keys: ["J"], label: "Next post" },
             { keys: ["K"], label: "Previous post" },
+            { keys: ["Ctrl", "J"], label: "New post" },
+            { keys: ["Ctrl", "K"], label: "Search / command palette" },
             { keys: ["/"], label: "Focus search" },
             { keys: ["?"], label: "Toggle this help" },
             { keys: ["Esc"], label: "Close dialog" },

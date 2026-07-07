@@ -5,6 +5,7 @@ import { IconAdjustmentsHorizontal, IconX } from "@tabler/icons-react";
 import { Portal } from "@/components/ui";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { getMyCommunities, type CommunitySummary } from "@/actions/communities";
+import { getMyCollections, type MyCollection } from "@/actions/post-threads";
 import { readingTimeMinutes } from "@/lib/essay";
 import type {
   TextPostContent,
@@ -147,6 +148,15 @@ export function EditorialComposer({
     if (isEdit && existingPost) {
       return buildEditInitial(existingPost, isReblogEdit);
     }
+    // Deep-linked "add a story to this collection" — open in story mode with the
+    // collection pre-selected.
+    if (!isEdit && threadId) {
+      return {
+        isEssay: true,
+        collectionMode: "existing",
+        collectionThreadId: threadId,
+      } as Partial<ComposerState>;
+    }
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -158,6 +168,7 @@ export function EditorialComposer({
   const [showPreview, setShowPreview] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [myCommunities, setMyCommunities] = useState<CommunitySummary[]>([]);
+  const [myCollections, setMyCollections] = useState<MyCollection[]>([]);
   const draftHydrated = useRef(false);
 
   // Link previews (text posts).
@@ -199,11 +210,14 @@ export function EditorialComposer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load communities (create mode).
+  // Load communities + the author's collections (create mode).
   useEffect(() => {
     if (isEdit) return;
     getMyCommunities().then((r) => {
       if (r.success) setMyCommunities(r.communities || []);
+    });
+    getMyCollections().then((r) => {
+      if (r.success) setMyCollections(r.collections || []);
     });
   }, [isEdit]);
 
@@ -325,6 +339,7 @@ export function EditorialComposer({
               patch={patch}
               mode={mode}
               myCommunities={myCommunities}
+              myCollections={myCollections}
             />
           </aside>
         </div>
@@ -363,6 +378,7 @@ export function EditorialComposer({
               patch={patch}
               mode={mode}
               myCommunities={myCommunities}
+              myCollections={myCollections}
             />
           </div>
         </div>
