@@ -14,6 +14,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   sendAccountBannedEmail,
   sendAccountRestrictedEmail,
+  sendAppealDecisionEmail,
 } from "@/lib/email/send";
 
 /**
@@ -990,7 +991,23 @@ export async function reviewAppeal(
       details: { decision, notes },
     });
 
-    // TODO: Send email notification to user about decision
+    // Email the user about the decision. They may be locked out, so email — not
+    // an in-app notification — is the reliable channel here.
+    try {
+      const adminSupabase = createAdminClient();
+      const { data: authUser } = await adminSupabase.auth.admin.getUserById(appeal.user_id);
+      const email = authUser?.user?.email;
+      if (email && targetInfo?.username) {
+        await sendAppealDecisionEmail({
+          to: email,
+          username: targetInfo.username,
+          decision,
+          notes,
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send appeal decision email:", emailError);
+    }
 
     revalidatePath("/admin/appeals");
     return { success: true };

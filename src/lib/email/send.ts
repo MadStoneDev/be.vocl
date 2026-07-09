@@ -489,6 +489,64 @@ export async function sendAccountRestrictedEmail(
   }
 }
 
+export async function sendAppealDecisionEmail(
+  options: BaseEmailOptions & {
+    username: string;
+    decision: "approved" | "denied" | "blocked";
+    notes?: string;
+  }
+): Promise<SendEmailResult> {
+  if (!isEmailConfigured() || !resend) {
+    console.log("Email not configured. Would send appeal decision to:", options.to);
+    return { success: true, messageId: "mock" };
+  }
+
+  // Minimal HTML escaping for interpolated values.
+  const esc = (s: string) =>
+    s.replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] || c)
+    );
+
+  const { username, decision, notes } = options;
+  const headline =
+    decision === "approved"
+      ? "Your appeal was approved"
+      : decision === "blocked"
+      ? "Your appeal was reviewed"
+      : "Your appeal was denied";
+  const body =
+    decision === "approved"
+      ? "Good news — your appeal was approved and your account access has been restored."
+      : decision === "blocked"
+      ? "We've reviewed your appeal. The original decision stands, and further appeals for this action won't be accepted."
+      : "We've reviewed your appeal. After review, the original decision stands.";
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.default,
+      to: options.to,
+      subject: `${headline} — be.vocl`,
+      html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:0 auto;color:#111">
+        <h2 style="color:#111;margin:0 0 12px">${esc(headline)}</h2>
+        <p>Hi @${esc(username)},</p>
+        <p>${esc(body)}</p>
+        ${notes ? `<p style="color:#555"><strong>Moderator note:</strong> ${esc(notes)}</p>` : ""}
+        <p style="color:#888;font-size:13px;margin-top:24px">— The be.vocl team</p>
+      </div>`,
+    });
+
+    if (error) {
+      console.error("Failed to send appeal decision email:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error("Appeal decision email error:", error);
+    return { success: false, error: "Failed to send email" };
+  }
+}
+
 export async function sendDataExportReadyEmail(
   options: BaseEmailOptions & {
     username: string;
