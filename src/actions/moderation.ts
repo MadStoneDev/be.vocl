@@ -170,7 +170,7 @@ async function notifyStaffOfFlaggedContent(
     // Create in-app notification for each staff member
     const notifications = staff.map((s: any) => ({
       recipient_id: s.id,
-      notification_type: "mention", // Reusing mention type for moderation alerts
+      notification_type: "moderation",
       post_id: postId,
       is_read: false,
     }));

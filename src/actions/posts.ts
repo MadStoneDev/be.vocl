@@ -207,7 +207,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         const notifications = admins.map((admin: any) => ({
           recipient_id: admin.id,
           actor_id: user.id,
-          notification_type: "mention",
+          notification_type: "moderation",
           post_id: post.id,
           is_read: false,
         }));

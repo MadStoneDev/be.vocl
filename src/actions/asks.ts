@@ -132,7 +132,7 @@ export async function sendAsk(
     await (supabase as any).from("notifications").insert({
       recipient_id: recipient.id,
       actor_id: isAnonymous ? null : user.id,
-      notification_type: "mention", // Use 'mention' for now, can add 'ask' type later
+      notification_type: "ask",
       is_read: false,
     });
 
@@ -339,7 +339,7 @@ export async function answerAsk(
       await (supabase as any).from("notifications").insert({
         recipient_id: ask.sender_id,
         actor_id: user.id,
-        notification_type: "mention", // Can add 'ask_answered' type later
+        notification_type: "ask",
         post_id: post.id,
         is_read: false,
       });

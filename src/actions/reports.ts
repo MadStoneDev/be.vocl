@@ -477,7 +477,7 @@ async function notifyStaffOfReport(
     // Create in-app notifications
     const notifications = staff.map((s: any) => ({
       recipient_id: s.id,
-      notification_type: "mention",
+      notification_type: "moderation",
       is_read: false,
     }));
 

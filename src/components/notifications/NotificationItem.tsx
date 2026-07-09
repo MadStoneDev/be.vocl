@@ -9,9 +9,25 @@ import {
   IconRefresh,
   IconAt,
   IconMail,
+  IconQuestionMark,
+  IconFlag,
+  IconGavel,
+  IconCoin,
+  IconBell,
 } from "@tabler/icons-react";
 
-type NotificationType = "follow" | "like" | "comment" | "reblog" | "mention" | "message";
+type NotificationType =
+  | "follow"
+  | "like"
+  | "comment"
+  | "reblog"
+  | "mention"
+  | "message"
+  | "ask"
+  | "moderation"
+  | "appeal"
+  | "tip"
+  | "system";
 
 interface NotificationActor {
   username: string;
@@ -47,6 +63,11 @@ function buildGroupedText(
     reblog: "echoed your post",
     mention: "mentioned you",
     message: "sent you a message",
+    ask: "sent you an ask",
+    moderation: "flagged content for review",
+    appeal: "submitted an appeal",
+    tip: "sent you a tip",
+    system: "sent a notification",
   };
   const others =
     othersCount === 1 ? "1 other" : `${othersCount} others`;
@@ -95,6 +116,36 @@ const notificationConfig: Record<
     color: "text-blue-400",
     bgColor: "bg-blue-400/20",
     getText: (username) => `${username} sent you a message`,
+  },
+  ask: {
+    icon: IconQuestionMark,
+    color: "text-amber-400",
+    bgColor: "bg-amber-400/20",
+    getText: (username) => `${username} sent you an ask`,
+  },
+  moderation: {
+    icon: IconFlag,
+    color: "text-red-400",
+    bgColor: "bg-red-400/20",
+    getText: () => `Content flagged for review`,
+  },
+  appeal: {
+    icon: IconGavel,
+    color: "text-orange-400",
+    bgColor: "bg-orange-400/20",
+    getText: (username) => `${username} submitted an appeal`,
+  },
+  tip: {
+    icon: IconCoin,
+    color: "text-green-400",
+    bgColor: "bg-green-400/20",
+    getText: (username) => `${username} sent you a tip`,
+  },
+  system: {
+    icon: IconBell,
+    color: "text-foreground/60",
+    bgColor: "bg-white/10",
+    getText: () => `New notification`,
   },
 };
 
@@ -244,7 +295,31 @@ export function NotificationItem({
     );
   }
 
-  // Post-based notifications (like/comment/reblog/mention) open the post.
+  // Moderation + appeal alerts open the relevant admin queue.
+  if (type === "moderation") {
+    return (
+      <Link href="/admin/reports" onClick={handleClick} className={baseClassName}>
+        {innerContent}
+      </Link>
+    );
+  }
+  if (type === "appeal") {
+    return (
+      <Link href="/admin/appeals" onClick={handleClick} className={baseClassName}>
+        {innerContent}
+      </Link>
+    );
+  }
+  // Tips link to the sender's profile.
+  if (type === "tip") {
+    return (
+      <Link href={`/profile/${actor.username}`} onClick={handleClick} className={baseClassName}>
+        {innerContent}
+      </Link>
+    );
+  }
+
+  // Post-based notifications (like/comment/reblog/mention, answered asks) open the post.
   if (postId) {
     return (
       <Link
@@ -252,6 +327,15 @@ export function NotificationItem({
         onClick={handleClick}
         className={baseClassName}
       >
+        {innerContent}
+      </Link>
+    );
+  }
+
+  // A received ask with no answering post yet opens the asks inbox.
+  if (type === "ask") {
+    return (
+      <Link href="/asks" onClick={handleClick} className={baseClassName}>
         {innerContent}
       </Link>
     );

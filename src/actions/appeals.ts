@@ -67,8 +67,7 @@ export async function submitAppeal(reason: string): Promise<{
       return { success: false, error: "Failed to submit appeal" };
     }
 
-    // Notify admins via email (if email service is configured)
-    // For now we'll just create a notification
+    // Notify admins of the new appeal (in-app).
     try {
       const { data: admins } = await (supabase as any)
         .from("profiles")
@@ -78,13 +77,11 @@ export async function submitAppeal(reason: string): Promise<{
       if (admins && admins.length > 0) {
         const notifications = admins.map((admin: { id: string }) => ({
           recipient_id: admin.id,
-          notification_type: "system",
-          message: `New appeal submitted by user ${user.id}`,
-          created_at: new Date().toISOString(),
+          actor_id: user.id,
+          notification_type: "appeal",
+          is_read: false,
         }));
-
-        // Note: You might want to add a system notification type
-        // For now, this is a placeholder for admin notification logic
+        await (supabase as any).from("notifications").insert(notifications);
       }
     } catch (notifyError) {
       console.error("Admin notification error:", notifyError);
