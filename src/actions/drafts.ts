@@ -155,12 +155,25 @@ export async function publishDraft(postId: string): Promise<ActionResult> {
     // Verify ownership
     const { data: existingPost } = await (supabase as any)
       .from("posts")
-      .select("author_id, status")
+      .select("author_id, status, moderation_status")
       .eq("id", postId)
       .single();
 
     if (!existingPost || existingPost.author_id !== user.id) {
       return { success: false, error: "Post not found or unauthorized" };
+    }
+
+    // Drafts exist only because moderation held flagged content for review.
+    // The author must NOT be able to self-publish content that moderation flagged
+    // or rejected — that would bypass review entirely.
+    if (
+      existingPost.moderation_status === "flagged" ||
+      existingPost.moderation_status === "rejected"
+    ) {
+      return {
+        success: false,
+        error: "This post is under review and can't be published yet.",
+      };
     }
 
     const { error } = await (supabase as any)

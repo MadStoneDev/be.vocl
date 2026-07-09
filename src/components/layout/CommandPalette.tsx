@@ -147,7 +147,7 @@ export function CommandPalette({ username, onOpenChat }: CommandPaletteProps) {
       { id: "notifications", label: "Notifications", icon: <IconBell size={18} />, keywords: "alerts activity", run: () => go("/notifications") },
       { id: "messages", label: "Messages", icon: <IconMessage size={18} />, keywords: "chat dm inbox", run: openChat },
       { id: "bookmarks", label: "Bookmarks", icon: <IconBookmark size={18} />, keywords: "saved", run: () => go("/bookmarks") },
-      { id: "drafts", label: "Drafts", icon: <IconFileText size={18} />, run: () => go("/drafts") },
+      { id: "drafts", label: "Scheduled & queue", icon: <IconFileText size={18} />, run: () => go("/drafts") },
       { id: "queue", label: "Queue", icon: <IconStack2 size={18} />, keywords: "scheduled", run: () => go("/queue") },
       { id: "communities", label: "Communities", icon: <IconUsersGroup size={18} />, keywords: "groups", run: () => go("/communities") },
       { id: "settings", label: "Settings", icon: <IconSettings size={18} />, keywords: "preferences account", run: () => go("/settings") },

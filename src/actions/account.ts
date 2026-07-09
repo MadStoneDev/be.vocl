@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -248,16 +249,19 @@ export async function deleteAccount(): Promise<{
       .delete()
       .eq("recipient_id", user.id);
 
-    // Update auth user email (requires admin client)
-    // Note: This requires service role key
-    const supabaseAdmin = await createClient();
-    try {
-      await (supabaseAdmin as any).auth.admin.updateUserById(user.id, {
+    // Anonymize the auth user's email. This needs the service-role admin client —
+    // the anon/session client cannot call auth.admin.* (the old code used the wrong
+    // client, so this silently no-op'd and left the real email on auth.users).
+    const supabaseAdmin = createAdminClient();
+    const { error: authError } = await (supabaseAdmin as any).auth.admin.updateUserById(
+      user.id,
+      {
         email: deletedEmail,
         email_confirm: true,
-      });
-    } catch (authError) {
-      console.error("Auth update error (non-critical):", authError);
+      },
+    );
+    if (authError) {
+      console.error("Auth email anonymization error:", authError);
     }
 
     // Sign out the user

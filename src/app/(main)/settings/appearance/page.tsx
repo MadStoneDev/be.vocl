@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import {
   IconArrowLeft,
@@ -67,6 +68,9 @@ export default function AppearanceSettingsPage() {
   const [settings, setSettings] = useState<AppearanceSettings>(defaultSettings);
   const [profileAccent, setProfileAccent] = useState<string>("#F20D5E");
   const [savingAccent, setSavingAccent] = useState(false);
+  // Theme is owned by next-themes (same system as the sidebar toggle), so the
+  // selection actually persists and survives reloads.
+  const { theme: activeTheme, setTheme } = useTheme();
 
   useEffect(() => {
     // Load settings from localStorage
@@ -108,25 +112,7 @@ export default function AppearanceSettingsPage() {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     localStorage.setItem("appearance-settings", JSON.stringify(newSettings));
-
-    // Apply theme immediately
-    if (key === "theme") {
-      applyTheme(value as Theme);
-    }
-
     toast.success("Appearance updated");
-  };
-
-  const applyTheme = (theme: Theme) => {
-    const root = document.documentElement;
-    if (theme === "system") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      root.classList.toggle("dark", prefersDark);
-      root.classList.toggle("light", !prefersDark);
-    } else {
-      root.classList.toggle("dark", theme === "dark");
-      root.classList.toggle("light", theme === "light");
-    }
   };
 
   return (
@@ -158,12 +144,15 @@ export default function AppearanceSettingsPage() {
         <div className="grid grid-cols-3 gap-3">
           {themeOptions.map((option) => {
             const Icon = option.icon;
-            const isSelected = settings.theme === option.value;
+            const isSelected = (activeTheme ?? "dark") === option.value;
 
             return (
               <button
                 key={option.value}
-                onClick={() => updateSetting("theme", option.value)}
+                onClick={() => {
+                  setTheme(option.value);
+                  toast.success("Appearance updated");
+                }}
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-sm border transition-all ${
                   isSelected
                     ? "border-vocl-primary bg-vocl-primary/10"

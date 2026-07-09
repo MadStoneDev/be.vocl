@@ -429,3 +429,90 @@ export async function unmuteUser(targetUserId: string): Promise<FollowResult> {
     return { success: false, error: "An unexpected error occurred" };
   }
 }
+
+interface ListedUser {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+/**
+ * List the users the current user has blocked.
+ */
+export async function getBlockedUsers(): Promise<{
+  success: boolean;
+  users?: ListedUser[];
+  error?: string;
+}> {
+  try {
+    const { user, supabase } = await requireAuth();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { data, error } = await (supabase as any)
+      .from("blocks")
+      .select("blocked:blocked_id ( id, username, display_name, avatar_url )")
+      .eq("blocker_id", user.id);
+
+    if (error) {
+      return { success: false, error: "Failed to load blocked users" };
+    }
+
+    const users: ListedUser[] = (data || [])
+      .map((r: any) => r.blocked)
+      .filter((u: any) => u && u.id)
+      .map((u: any) => ({
+        id: u.id,
+        username: u.username,
+        displayName: u.display_name,
+        avatarUrl: u.avatar_url,
+      }));
+
+    return { success: true, users };
+  } catch (error) {
+    console.error("Get blocked users error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * List the users the current user has muted.
+ */
+export async function getMutedUsers(): Promise<{
+  success: boolean;
+  users?: ListedUser[];
+  error?: string;
+}> {
+  try {
+    const { user, supabase } = await requireAuth();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { data, error } = await (supabase as any)
+      .from("mutes")
+      .select("muted:muted_id ( id, username, display_name, avatar_url )")
+      .eq("muter_id", user.id);
+
+    if (error) {
+      return { success: false, error: "Failed to load muted users" };
+    }
+
+    const users: ListedUser[] = (data || [])
+      .map((r: any) => r.muted)
+      .filter((u: any) => u && u.id)
+      .map((u: any) => ({
+        id: u.id,
+        username: u.username,
+        displayName: u.display_name,
+        avatarUrl: u.avatar_url,
+      }));
+
+    return { success: true, users };
+  } catch (error) {
+    console.error("Get muted users error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}

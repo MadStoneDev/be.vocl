@@ -53,17 +53,23 @@ export default function CommunitiesPage() {
       ? await leaveCommunity(community.id)
       : await joinCommunity(community.id);
     if (result.success) {
-      setCommunities((prev) =>
-        prev.map((c) =>
-          c.id === community.id
-            ? {
-                ...c,
-                isMember: !community.isMember,
-                memberCount: c.memberCount + (community.isMember ? -1 : 1),
-              }
-            : c
-        )
-      );
+      // request/invite-only communities return { pending: true } — a join request
+      // was created, but the user is NOT a member yet. Don't fake membership.
+      if (!community.isMember && "pending" in result && result.pending) {
+        toast.success("Request sent — you'll join once it's approved.");
+      } else {
+        setCommunities((prev) =>
+          prev.map((c) =>
+            c.id === community.id
+              ? {
+                  ...c,
+                  isMember: !community.isMember,
+                  memberCount: c.memberCount + (community.isMember ? -1 : 1),
+                }
+              : c
+          )
+        );
+      }
     } else {
       toast.error(result.error || "Action failed");
     }

@@ -116,11 +116,12 @@ export async function getExploreData(): Promise<{
 
     // Parallel fetch all explore data
     const [trendingResult, popularResult, creatorsResult, trendingFeedResult] = await Promise.all([
-      // Trending tags: most used in last 24h
+      // Trending tags: most used in last 24h.
+      // post_tags has no created_at, so filter by the joined post's creation time.
       (supabase as any)
         .from("post_tags")
-        .select("tag_id, tags!inner(id, name)")
-        .gte("created_at", oneDayAgo.toISOString()),
+        .select("tag_id, tags!inner(id, name), posts!inner(created_at)")
+        .gte("posts.created_at", oneDayAgo.toISOString()),
 
       // Popular tags: highest total post count
       (supabase as any)

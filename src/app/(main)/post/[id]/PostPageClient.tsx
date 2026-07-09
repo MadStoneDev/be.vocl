@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent, AskContent } from "@/components/Post";
-import { getPostById } from "@/actions/posts";
+import { getPostById, deletePost } from "@/actions/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, toast } from "@/components/ui";
 import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
-import { IconLoader2, IconArrowLeft, IconMessage, IconHeart, IconMicrophone, IconRefresh, IconShare } from "@tabler/icons-react";
+import { IconLoader2, IconArrowLeft, IconMessage, IconHeart, IconMicrophone, IconRefresh, IconShare, IconPencil, IconTrash } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
 import { fadeUp } from "@/lib/motion";
@@ -115,6 +115,18 @@ export function PostPageClient({ postId }: { postId: string }) {
       fetchPost();
     }
   }, [postId]);
+
+  const handleDelete = useCallback(async () => {
+    if (!post) return;
+    if (!window.confirm("Delete this post? This can't be undone.")) return;
+    const res = await deletePost(post.id);
+    if (res.success) {
+      toast.success("Post deleted");
+      router.push(`/profile/${post.author.username}`);
+    } else {
+      toast.error(res.error || "Failed to delete post");
+    }
+  }, [post, router]);
 
   if (isLoading) {
     return (
@@ -289,6 +301,27 @@ export function PostPageClient({ postId }: { postId: string }) {
               @{post.author.username} · {dateline}
             </span>
           </div>
+
+          {post.isOwn && (
+            <div className="ml-auto flex items-center gap-1">
+              <Link
+                href={`/create?edit=${post.id}`}
+                aria-label="Edit post"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 type-meta text-foreground/60 hover:text-vocl-primary hover:bg-vocl-hover transition-colors"
+              >
+                <IconPencil size={16} />
+                Edit
+              </Link>
+              <button
+                type="button"
+                onClick={handleDelete}
+                aria-label="Delete post"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-foreground/50 hover:text-red-500 hover:bg-vocl-hover transition-colors"
+              >
+                <IconTrash size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Compact summary under the byline — counts + share. Does NOT expand

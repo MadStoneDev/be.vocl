@@ -113,7 +113,7 @@ export function PollContent({ postId, content, article }: PollContentProps) {
 
       {/* Options */}
       <div className="space-y-2">
-        {content.options.map((option, index) => {
+        {(Array.isArray(content.options) ? content.options : []).map((option, index) => {
           const isSelected = selectedOption === index;
           const percentage = results?.percentages[index] || 0;
           const voteCount = results?.votes[index] || 0;

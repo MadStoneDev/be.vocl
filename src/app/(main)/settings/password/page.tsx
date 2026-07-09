@@ -55,6 +55,26 @@ function PasswordSettingsContent() {
     }
 
     startTransition(async () => {
+      // For a normal change (not a reset-link flow), verify the current password
+      // by re-authenticating before allowing the update.
+      if (!isReset) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user?.email) {
+          setError("Couldn't verify your account. Please sign in again.");
+          return;
+        }
+        const { error: verifyError } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: currentPassword,
+        });
+        if (verifyError) {
+          setError("Your current password is incorrect");
+          return;
+        }
+      }
+
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });

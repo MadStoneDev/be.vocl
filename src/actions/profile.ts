@@ -719,7 +719,7 @@ export async function checkOnboardingStatus(): Promise<{
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("username, display_name, avatar_url, bio")
+      .select("username, display_name, avatar_url, bio, onboarding_completed")
       .eq("id", user.id)
       .single();
 
@@ -729,8 +729,9 @@ export async function checkOnboardingStatus(): Promise<{
       return { success: true, isComplete: true, error: "Profile not found" };
     }
 
-    // Onboarding is complete if user has a username (required) and display name
-    const isComplete = !!(data.username && data.display_name);
+    // Onboarding is complete once the wizard sets onboarding_completed. (display_name
+    // is populated at signup, so gating on it would skip the wizard entirely.)
+    const isComplete = !!data.onboarding_completed;
 
     return {
       success: true,

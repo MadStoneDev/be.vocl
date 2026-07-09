@@ -24,7 +24,7 @@ import {
   updateContentSettings,
   updateWebVisibilitySettings,
 } from "@/actions/profile";
-import { unblockUser, unmuteUser } from "@/actions/follows";
+import { unblockUser, unmuteUser, getBlockedUsers, getMutedUsers } from "@/actions/follows";
 import { updateAskSettings } from "@/actions/asks";
 import { getMutedTags, unmuteTag } from "@/actions/tags";
 
@@ -79,10 +79,13 @@ export default function PrivacySettingsPage() {
 
   useEffect(() => {
     async function loadSettings() {
-      const [profileResult, mutedTagsResult] = await Promise.all([
-        getCurrentProfile(),
-        getMutedTags(),
-      ]);
+      const [profileResult, mutedTagsResult, blockedResult, mutedUsersResult] =
+        await Promise.all([
+          getCurrentProfile(),
+          getMutedTags(),
+          getBlockedUsers(),
+          getMutedUsers(),
+        ]);
       if (profileResult.success && profileResult.profile) {
         setShowLikes(profileResult.profile.showLikes);
         setShowComments(profileResult.profile.showComments);
@@ -98,6 +101,12 @@ export default function PrivacySettingsPage() {
       }
       if (mutedTagsResult.success && mutedTagsResult.tags) {
         setMutedTags(mutedTagsResult.tags);
+      }
+      if (blockedResult.success && blockedResult.users) {
+        setBlockedUsers(blockedResult.users);
+      }
+      if (mutedUsersResult.success && mutedUsersResult.users) {
+        setMutedUsers(mutedUsersResult.users);
       }
       setIsLoading(false);
     }

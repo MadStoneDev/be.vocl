@@ -231,6 +231,20 @@ export function NotificationItem({
     </>
   );
 
+  // Follow notifications link to the actor's profile.
+  if (type === "follow") {
+    return (
+      <Link
+        href={`/profile/${actor.username}`}
+        onClick={handleClick}
+        className={baseClassName}
+      >
+        {innerContent}
+      </Link>
+    );
+  }
+
+  // Post-based notifications (like/comment/reblog/mention) open the post.
   if (postId) {
     return (
       <Link
@@ -240,6 +254,25 @@ export function NotificationItem({
       >
         {innerContent}
       </Link>
+    );
+  }
+
+  // Message notifications open the chat inbox. There's no per-conversation route,
+  // so we dispatch the same global event the command palette / sidebar listen for.
+  // (Keep in sync with OPEN_CHAT_EVENT in components/layout/CommandPalette.tsx.)
+  if (type === "message") {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          handleClick();
+          window.dispatchEvent(new CustomEvent("vocl:open-chat"));
+        }}
+        className={baseClassName}
+      >
+        {innerContent}
+      </div>
     );
   }
 

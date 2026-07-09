@@ -10,7 +10,7 @@ export default function ProfileError({
   reset: () => void;
 }) {
   return (
-    <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+    <div className="max-w-3xl mx-auto px-4 py-16 text-center">
       <div className="text-5xl mb-4">👤</div>
       <h2 className="text-xl font-semibold text-foreground mb-2">
         Profile not available

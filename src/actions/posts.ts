@@ -581,6 +581,7 @@ export async function getPostById(postId: string): Promise<{
         is_sensitive,
         exclude_from_public,
         is_pinned,
+        status,
         created_at,
         author:author_id (
           username,
@@ -591,11 +592,16 @@ export async function getPostById(postId: string): Promise<{
       `
       )
       .eq("id", postId)
-      .eq("status", "published")
       .single();
 
     if (error || !post) {
       console.error("Get post error:", error);
+      return { success: false, error: "Post not found" };
+    }
+
+    // Published posts are viewable by anyone; unpublished posts (draft, scheduled,
+    // queued) are only visible to their author — e.g. to edit a scheduled post.
+    if (post.status !== "published" && post.author_id !== user?.id) {
       return { success: false, error: "Post not found" };
     }
 

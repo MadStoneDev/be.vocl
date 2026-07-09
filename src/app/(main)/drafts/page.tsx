@@ -118,7 +118,7 @@ export default function DraftsPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const tabs = [
-    { id: "drafts" as const, label: "Drafts", icon: IconFileText },
+    { id: "drafts" as const, label: "Under review", icon: IconFileText },
     { id: "scheduled" as const, label: "Scheduled", icon: IconCalendarEvent },
     { id: "queue" as const, label: "Queue", icon: IconList },
   ];
@@ -186,7 +186,7 @@ export default function DraftsPage() {
       <title>Drafts | be.vocl</title>
       <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
         <IconPencil size={28} className="text-vocl-primary flex-shrink-0" />
-        Drafts & Scheduled
+        Unpublished posts
       </h1>
 
       {/* Tabs */}
@@ -224,12 +224,12 @@ export default function DraftsPage() {
             <IconFileOff size={32} />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            {activeTab === "drafts" && "No drafts"}
+            {activeTab === "drafts" && "Nothing under review"}
             {activeTab === "scheduled" && "No scheduled posts"}
             {activeTab === "queue" && "No queued posts"}
           </h3>
           <p className="text-sm text-foreground/60 max-w-sm">
-            {activeTab === "drafts" && "Posts you save as drafts will appear here."}
+            {activeTab === "drafts" && "Posts held for moderation review appear here. They publish automatically once approved."}
             {activeTab === "scheduled" && "Schedule posts to be published at a specific time."}
             {activeTab === "queue" && "Add posts to your queue to publish them in order."}
           </p>
@@ -292,15 +292,20 @@ export default function DraftsPage() {
                     <IconEdit size={18} />
                   </Link>
 
-                  <button
-                    type="button"
-                    onClick={() => handlePublish(post.id)}
-                    disabled={isActioning}
-                    className="p-2 rounded-lg text-foreground/40 hover:text-vocl-primary hover:bg-vocl-primary/10 transition-colors disabled:opacity-50"
-                    title="Publish now"
-                  >
-                    <IconSend size={18} />
-                  </button>
+                  {/* "Publish now" only applies to scheduled/queued posts. Items in
+                      the "Under review" tab are moderation-held and cannot be
+                      self-published. */}
+                  {activeTab !== "drafts" && (
+                    <button
+                      type="button"
+                      onClick={() => handlePublish(post.id)}
+                      disabled={isActioning}
+                      className="p-2 rounded-lg text-foreground/40 hover:text-vocl-primary hover:bg-vocl-primary/10 transition-colors disabled:opacity-50"
+                      title="Publish now"
+                    >
+                      <IconSend size={18} />
+                    </button>
+                  )}
 
                   <button
                     type="button"

@@ -107,9 +107,19 @@ function buildEditInitial(
       base.altTexts = ic.alt_texts || [];
       base.imageMode = "upload";
     } else if (post.postType === "gallery") {
-      const gc = post.content as GalleryPostContent;
-      base.mediaUrls = (gc.items || []).map((it) => it.url);
-      base.altTexts = (gc.items || []).map((it) => it.alt_text || "");
+      // Galleries are stored as { urls, alt_texts } (same shape as image posts),
+      // though the legacy type models them as items[]. Prefer urls, fall back to items.
+      const gc = post.content as GalleryPostContent & {
+        urls?: string[];
+        alt_texts?: string[];
+      };
+      if (gc.urls && gc.urls.length > 0) {
+        base.mediaUrls = gc.urls;
+        base.altTexts = gc.alt_texts || [];
+      } else {
+        base.mediaUrls = (gc.items || []).map((it) => it.url);
+        base.altTexts = (gc.items || []).map((it) => it.alt_text || "");
+      }
       base.imageMode = "upload";
     } else if (post.postType === "video") {
       const vc = post.content as VideoPostContent;

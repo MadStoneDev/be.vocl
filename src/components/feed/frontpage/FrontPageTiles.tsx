@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled, IconPencil } from "@tabler/icons-react";
 import { Avatar, TimeAgo, toast } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLike } from "@/hooks/useLike";
@@ -126,16 +126,35 @@ function domainOf(url: string): string {
 // Shared chrome
 // ---------------------------------------------------------------------------
 function Byline({ post }: { post: FeedPost }) {
+  // The tile itself is a link to the post; these nested links (author, edit) stop
+  // propagation so they navigate to their own target instead of the post.
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
   return (
     <div className="flex items-center gap-2 text-foreground/55 type-meta">
-      <Avatar src={post.author.avatarUrl} username={post.author.username} size="sm" />
-      <span className="font-medium text-foreground/75">{post.author.username}</span>
+      <Link
+        href={`/profile/${post.author.username}`}
+        onClick={stop}
+        className="flex items-center gap-2 hover:text-foreground/90 transition-colors"
+      >
+        <Avatar src={post.author.avatarUrl} username={post.author.username} size="sm" />
+        <span className="font-medium text-foreground/75">{post.author.username}</span>
+      </Link>
       <span aria-hidden="true">·</span>
       <TimeAgo iso={post.timestamp} />
       {post.isReblog && (
         <span className="inline-flex items-center gap-0.5 text-foreground/45">
           <IconRefresh size={13} /> echoed
         </span>
+      )}
+      {post.isOwn && (
+        <Link
+          href={`/create?edit=${post.id}`}
+          onClick={stop}
+          aria-label="Edit post"
+          className="ml-auto inline-flex items-center gap-1 text-foreground/45 hover:text-vocl-primary transition-colors"
+        >
+          <IconPencil size={13} /> Edit
+        </Link>
       )}
     </div>
   );

@@ -227,7 +227,10 @@ export async function getConversations(): Promise<{
       if (!a.lastMessage && !b.lastMessage) return 0;
       if (!a.lastMessage) return 1;
       if (!b.lastMessage) return -1;
-      return 0;
+      return (
+        new Date(b.lastMessage.createdAt).getTime() -
+        new Date(a.lastMessage.createdAt).getTime()
+      );
     });
 
     return { success: true, conversations };

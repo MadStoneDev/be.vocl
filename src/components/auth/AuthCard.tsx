@@ -265,11 +265,21 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
         email,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
+          // Beta is invite-only: a magic link must never create a new account.
+          // Unknown emails get an error instead of being silently provisioned.
+          shouldCreateUser: false,
         },
       });
 
       if (magicLinkError) {
-        setError(magicLinkError.message);
+        // Supabase returns "Signups not allowed for otp" for unknown emails.
+        if (/signups not allowed/i.test(magicLinkError.message)) {
+          setError(
+            "No account found for that email. Be.Vocl is invite-only during beta — sign up with an invite code first.",
+          );
+        } else {
+          setError(magicLinkError.message);
+        }
         return;
       }
 
