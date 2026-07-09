@@ -13,6 +13,7 @@ interface Notification {
   content?: string;
   postPreview?: string;
   postId?: string;
+  conversationId?: string;
   isRead: boolean;
   createdAt: string;
 }

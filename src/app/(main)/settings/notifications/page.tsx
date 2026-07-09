@@ -6,9 +6,6 @@ import {
   IconArrowLeft,
   IconLoader2,
   IconHeart,
-  IconMessage,
-  IconRefresh,
-  IconUserPlus,
   IconAt,
   IconMail,
 } from "@tabler/icons-react";
@@ -230,42 +227,6 @@ export default function NotificationsSettingsPage() {
         </div>
 
         <NotificationRow
-          icon={IconHeart}
-          title="Likes"
-          description="When someone likes your post"
-          emailEnabled={settings.emailLikes}
-          onEmailChange={(v) => updateSetting("emailLikes", v)}
-          disabled={isEmailDisabled}
-        />
-
-        <NotificationRow
-          icon={IconMessage}
-          title="Comments"
-          description="When someone comments on your post"
-          emailEnabled={settings.emailComments}
-          onEmailChange={(v) => updateSetting("emailComments", v)}
-          disabled={isEmailDisabled}
-        />
-
-        <NotificationRow
-          icon={IconRefresh}
-          title="Echoes"
-          description="When someone echoes your post"
-          emailEnabled={settings.emailReblogs}
-          onEmailChange={(v) => updateSetting("emailReblogs", v)}
-          disabled={isEmailDisabled}
-        />
-
-        <NotificationRow
-          icon={IconUserPlus}
-          title="New Followers"
-          description="When someone follows you"
-          emailEnabled={settings.emailFollows}
-          onEmailChange={(v) => updateSetting("emailFollows", v)}
-          disabled={isEmailDisabled}
-        />
-
-        <NotificationRow
           icon={IconAt}
           title="Mentions"
           description="When someone mentions you in a post or comment"
@@ -274,14 +235,10 @@ export default function NotificationsSettingsPage() {
           disabled={isEmailDisabled}
         />
 
-        <NotificationRow
-          icon={IconMail}
-          title="Direct Messages"
-          description="When you receive a new message (max 1 email per hour per person)"
-          emailEnabled={settings.emailMessages}
-          onEmailChange={(v) => updateSetting("emailMessages", v)}
-          disabled={isEmailDisabled}
-        />
+        <p className="text-xs text-foreground/45 mt-4 leading-relaxed">
+          Likes, comments, echoes, follows and messages appear in-app only for now.
+          Email notifications for those are coming soon.
+        </p>
       </div>
 
       {/* Note */}

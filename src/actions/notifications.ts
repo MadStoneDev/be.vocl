@@ -3,7 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-type NotificationType = "follow" | "like" | "comment" | "reblog" | "mention" | "message";
+type NotificationType =
+  | "follow"
+  | "like"
+  | "comment"
+  | "reblog"
+  | "mention"
+  | "message"
+  | "ask"
+  | "moderation"
+  | "appeal"
+  | "tip"
+  | "system";
 
 interface Notification {
   id: string;
@@ -16,6 +27,7 @@ interface Notification {
   postId?: string;
   postPreview?: string;
   commentId?: string;
+  conversationId?: string;
   content?: string;
   isRead: boolean;
   createdAt: string;
@@ -70,6 +82,9 @@ export async function getNotifications(
         ),
         comment:comment_id (
           content_html
+        ),
+        message:message_id (
+          conversation_id
         )
       `
       )
@@ -109,6 +124,7 @@ export async function getNotifications(
         postId: n.post_id,
         postPreview: undefined,
         commentId: n.comment_id,
+        conversationId: n.message?.conversation_id,
         content,
         isRead: n.is_read,
         createdAt: formatTimeAgo(n.created_at),

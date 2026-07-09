@@ -45,6 +45,7 @@ interface NotificationItemProps {
   content?: string;
   postPreview?: string;
   postId?: string;
+  conversationId?: string;
   isRead: boolean;
   createdAt: string;
   onMarkAsRead?: (id: string) => void;
@@ -158,6 +159,7 @@ export function NotificationItem({
   content,
   postPreview,
   postId,
+  conversationId,
   isRead,
   createdAt,
   onMarkAsRead,
@@ -341,9 +343,8 @@ export function NotificationItem({
     );
   }
 
-  // Message notifications open the chat inbox. There's no per-conversation route,
-  // so we dispatch the same global event the command palette / sidebar listen for.
-  // (Keep in sync with OPEN_CHAT_EVENT in components/layout/CommandPalette.tsx.)
+  // Message notifications open the chat: the specific conversation when we have
+  // its id, otherwise the generic inbox.
   if (type === "message") {
     return (
       <div
@@ -351,7 +352,15 @@ export function NotificationItem({
         tabIndex={0}
         onClick={() => {
           handleClick();
-          window.dispatchEvent(new CustomEvent("vocl:open-chat"));
+          if (conversationId) {
+            window.dispatchEvent(
+              new CustomEvent("vocl:open-conversation", {
+                detail: { conversationId },
+              })
+            );
+          } else {
+            window.dispatchEvent(new CustomEvent("vocl:open-chat"));
+          }
         }}
         className={baseClassName}
       >
