@@ -16,6 +16,63 @@ import {
   resolveReport,
   type ReportWithDetails,
 } from "@/actions/admin";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+
+/** Renders the reported post's body/media so moderators judge with eyes on the
+ *  actual content (critical for minor-safety flags). */
+function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["post"]> }) {
+  const c: any = post.content || {};
+  const type = post.postType;
+  const images: string[] =
+    c.urls ||
+    (c.items ? c.items.map((i: any) => i.url) : null) ||
+    c.imageUrls ||
+    ((type === "image" || type === "gallery") && c.url ? [c.url] : []) ||
+    [];
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-vocl-surface-dark p-3 space-y-3 max-h-80 overflow-y-auto">
+      {type === "text" && (c.html || c.plain) && (
+        <div
+          className="text-sm text-foreground/90 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5"
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtmlWithSafeLinks(c.html || `<p>${c.plain || ""}</p>`),
+          }}
+        />
+      )}
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          {images.map((url, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={i}
+              src={url}
+              alt="reported content"
+              className="w-full h-36 object-cover rounded-lg border border-white/10"
+            />
+          ))}
+        </div>
+      )}
+      {type === "video" && (c.embed_url || c.url) && (
+        <a
+          href={c.embed_url || c.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-vocl-primary text-sm underline break-all"
+        >
+          {c.embed_url || c.url}
+        </a>
+      )}
+      {type === "audio" && c.url && <audio controls src={c.url} className="w-full" />}
+      {c.caption_html && (
+        <div
+          className="text-xs text-foreground/60 border-t border-white/10 pt-2"
+          dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(c.caption_html) }}
+        />
+      )}
+    </div>
+  );
+}
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All" },
@@ -25,6 +82,7 @@ const STATUS_OPTIONS = [
   { value: "resolved_ban", label: "Resolved (Ban)" },
   { value: "resolved_restrict", label: "Resolved (Restrict)" },
   { value: "resolved_dismissed", label: "Dismissed" },
+  { value: "resolved_approved", label: "Approved" },
 ];
 
 const SUBJECT_LABELS: Record<string, string> = {
@@ -60,7 +118,9 @@ export default function AdminReportsPage() {
     loadReports();
   }, [statusFilter]);
 
-  const handleResolve = async (resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed") => {
+  const handleResolve = async (
+    resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed" | "resolved_approved"
+  ) => {
     if (!selectedReport) return;
 
     setResolving(true);
@@ -235,6 +295,15 @@ export default function AdminReportsPage() {
                   </div>
                 )}
 
+                {selectedReport.post && (
+                  <div>
+                    <label className="text-sm text-foreground/50 block mb-2">
+                      Reported content
+                    </label>
+                    <PostContentPreview post={selectedReport.post} />
+                  </div>
+                )}
+
                 <div>
                   <label className="text-sm text-foreground/50 block mb-2">
                     Resolution Notes
@@ -248,6 +317,17 @@ export default function AdminReportsPage() {
                   />
                 </div>
               </div>
+
+              {selectedReport.post && (
+                <button
+                  onClick={() => handleResolve("resolved_approved")}
+                  disabled={resolving}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-600/90 disabled:opacity-50"
+                >
+                  <IconCheck size={18} />
+                  Approve &amp; publish post
+                </button>
+              )}
 
               <div className="flex flex-wrap gap-3">
                 <button
