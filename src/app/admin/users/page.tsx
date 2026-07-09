@@ -17,6 +17,7 @@ import {
   restrictUser,
   unlockUser,
   setUserRole,
+  setUserNsfw,
   type UserWithDetails,
 } from "@/actions/admin";
 
@@ -95,6 +96,13 @@ export default function AdminUsersPage() {
   const handleSetRole = async (userId: string, role: number) => {
     setActionLoading(true);
     await setUserRole(userId, role);
+    loadUsers();
+    setActionLoading(false);
+  };
+
+  const handleToggleNsfw = async (userId: string, isNsfw: boolean) => {
+    setActionLoading(true);
+    await setUserNsfw(userId, isNsfw);
     loadUsers();
     setActionLoading(false);
   };
@@ -228,6 +236,18 @@ export default function AdminUsersPage() {
                       )}
                       {user.lockStatus}
                     </span>
+                    <button
+                      onClick={() => handleToggleNsfw(user.id, !user.isNsfw)}
+                      disabled={actionLoading}
+                      title="Toggle NSFW account flag"
+                      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
+                        user.isNsfw
+                          ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
+                          : "bg-white/5 text-foreground/40 hover:bg-white/10"
+                      }`}
+                    >
+                      NSFW
+                    </button>
                   </td>
                   <td className="px-4 py-3">
                     {user.reportCount > 0 ? (

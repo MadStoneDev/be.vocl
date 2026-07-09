@@ -66,6 +66,7 @@ export default function PrivacySettingsPage() {
   // Content settings
   const [showSensitivePosts, setShowSensitivePosts] = useState(false);
   const [blurSensitiveByDefault, setBlurSensitiveByDefault] = useState(true);
+  const [isNsfw, setIsNsfw] = useState(false);
 
   // Ask settings
   const [allowAsks, setAllowAsks] = useState(true);
@@ -96,6 +97,7 @@ export default function PrivacySettingsPage() {
         setIsSearchable(profileResult.profile.isSearchable ?? true);
         setShowSensitivePosts(profileResult.profile.showSensitivePosts);
         setBlurSensitiveByDefault(profileResult.profile.blurSensitiveByDefault);
+        setIsNsfw(profileResult.profile.isNsfw ?? false);
         setAllowAsks(profileResult.profile.allowAsks ?? true);
         setAllowAnonymousAsks(profileResult.profile.allowAnonymousAsks ?? true);
       }
@@ -143,6 +145,7 @@ export default function PrivacySettingsPage() {
       const settings: any = {};
       if (key === "showSensitivePosts") settings.showSensitivePosts = value;
       if (key === "blurSensitiveByDefault") settings.blurSensitiveByDefault = value;
+      if (key === "isNsfw") settings.isNsfw = value;
 
       const result = await updateContentSettings(settings);
       if (result.success) {
@@ -390,6 +393,16 @@ export default function PrivacySettingsPage() {
                   handleContentChange("blurSensitiveByDefault", checked);
                 }}
                 disabled={isPending || !showSensitivePosts}
+              />
+              <ToggleSetting
+                label="My account posts mature content"
+                description="Mark your account as NSFW. Keeps it out of follow suggestions and other discovery surfaces."
+                checked={isNsfw}
+                onChange={(checked) => {
+                  setIsNsfw(checked);
+                  handleContentChange("isNsfw", checked);
+                }}
+                disabled={isPending}
               />
             </div>
           </div>

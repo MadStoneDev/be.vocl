@@ -25,6 +25,7 @@ interface Profile {
   showFollowing: boolean;
   showSensitivePosts: boolean;
   blurSensitiveByDefault: boolean;
+  isNsfw: boolean;
   allowAsks: boolean;
   allowAnonymousAsks: boolean;
   isDiscoverable: boolean;
@@ -77,6 +78,7 @@ export async function getProfileByUsername(
         showFollowing: data.show_following,
         showSensitivePosts: data.show_sensitive_posts,
         blurSensitiveByDefault: data.blur_sensitive_by_default,
+        isNsfw: data.is_nsfw ?? false,
         allowAsks: data.allow_asks ?? true,
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
         isDiscoverable: data.is_discoverable ?? true,
@@ -137,6 +139,7 @@ export async function getCurrentProfile(): Promise<{
         showFollowing: data.show_following,
         showSensitivePosts: data.show_sensitive_posts,
         blurSensitiveByDefault: data.blur_sensitive_by_default,
+        isNsfw: data.is_nsfw ?? false,
         allowAsks: data.allow_asks ?? true,
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
         isDiscoverable: data.is_discoverable ?? true,
@@ -299,6 +302,8 @@ export async function updateWebVisibilitySettings(settings: {
 export async function updateContentSettings(settings: {
   showSensitivePosts?: boolean;
   blurSensitiveByDefault?: boolean;
+  /** Self-declare this account as posting NSFW/mature content. */
+  isNsfw?: boolean;
 }): Promise<ProfileResult> {
   try {
     const supabase = await createClient();
@@ -315,6 +320,8 @@ export async function updateContentSettings(settings: {
       updateData.show_sensitive_posts = settings.showSensitivePosts;
     if (settings.blurSensitiveByDefault !== undefined)
       updateData.blur_sensitive_by_default = settings.blurSensitiveByDefault;
+    if (settings.isNsfw !== undefined)
+      updateData.is_nsfw = settings.isNsfw;
 
     const { error } = await (supabase as any)
       .from("profiles")
@@ -1004,6 +1011,7 @@ export async function getFullProfile(
       showFollowing: data.show_following,
       showSensitivePosts: data.show_sensitive_posts,
       blurSensitiveByDefault: data.blur_sensitive_by_default,
+      isNsfw: data.is_nsfw ?? false,
       allowAsks: data.allow_asks ?? true,
       allowAnonymousAsks: data.allow_anonymous_asks ?? true,
       isDiscoverable: data.is_discoverable ?? true,

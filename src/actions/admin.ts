@@ -373,6 +373,7 @@ export interface UserWithDetails {
   email: string;
   role: number;
   lockStatus: string;
+  isNsfw: boolean;
   createdAt: string;
   reportCount: number;
 }
@@ -400,7 +401,7 @@ export async function getUsers(options?: {
 
     let query = (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, role, lock_status, created_at", {
+      .select("id, username, display_name, avatar_url, role, lock_status, is_nsfw, created_at", {
         count: "exact",
       })
       .order("created_at", { ascending: false })
@@ -441,6 +442,7 @@ export async function getUsers(options?: {
       email: "", // Not fetching email for privacy
       role: u.role || 0,
       lockStatus: u.lock_status || "unlocked",
+      isNsfw: u.is_nsfw ?? false,
       createdAt: u.created_at,
       reportCount: countMap.get(u.id) || 0,
     }));
@@ -740,6 +742,54 @@ export async function setUserRole(
     return { success: true };
   } catch (error) {
     console.error("Set role error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Admin override for a user's NSFW account flag. (Users can also self-set this in
+ * privacy settings via updateContentSettings.)
+ */
+export async function setUserNsfw(
+  userId: string,
+  isNsfw: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireRole(); // Moderator+
+  if (!auth.authorized || !auth.userId || !auth.role) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    // Admin client so a moderator can write another user's profile.
+    const adminSupabase = createAdminClient();
+    const { error } = await (adminSupabase as any)
+      .from("profiles")
+      .update({ is_nsfw: isNsfw, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Set user NSFW error:", error);
+      return { success: false, error: "Failed to update NSFW flag" };
+    }
+
+    const [actorInfo, targetInfo] = await Promise.all([
+      getActorInfo(auth.userId),
+      getTargetUserInfo(userId),
+    ]);
+    await logAuditEvent({
+      actorId: auth.userId,
+      actorUsername: actorInfo?.username || "unknown",
+      actorRole: auth.role,
+      action: "set_nsfw",
+      targetUserId: userId,
+      targetUserUsername: targetInfo?.username,
+      details: { is_nsfw: isNsfw },
+    });
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Set user NSFW error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }

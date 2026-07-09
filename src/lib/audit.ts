@@ -13,7 +13,8 @@ export type AuditAction =
   | "remove_post"
   | "restore_post"
   | "delete_post"
-  | "ip_ban";
+  | "ip_ban"
+  | "set_nsfw";
 
 interface AuditLogEntry {
   actorId: string;
