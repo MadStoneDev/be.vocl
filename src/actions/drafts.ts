@@ -163,12 +163,12 @@ export async function publishDraft(postId: string): Promise<ActionResult> {
       return { success: false, error: "Post not found or unauthorized" };
     }
 
-    // Drafts exist only because moderation held flagged content for review.
-    // The author must NOT be able to self-publish content that moderation flagged
-    // or rejected — that would bypass review entirely.
+    // Drafts exist only because moderation held content for review. The author
+    // must NOT be able to self-publish anything moderation hasn't approved
+    // (pending / flagged / removed) — that would bypass review entirely.
     if (
-      existingPost.moderation_status === "flagged" ||
-      existingPost.moderation_status === "rejected"
+      existingPost.moderation_status &&
+      existingPost.moderation_status !== "approved"
     ) {
       return {
         success: false,

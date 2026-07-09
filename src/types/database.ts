@@ -8,15 +8,15 @@ export type Json =
 
 export type PostType = "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
 export type PostStatus = "draft" | "published" | "queued" | "scheduled" | "deleted";
-export type NotificationType = "follow" | "like" | "comment" | "reblog" | "message" | "mention";
+export type NotificationType = "follow" | "like" | "comment" | "reblog" | "message" | "mention" | "ask" | "moderation" | "appeal" | "tip" | "system";
 export type LockStatus = "unlocked" | "restricted" | "banned";
 export type ReportSubject = "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "other";
 export type ReportSource = "user_report" | "auto_moderation" | "promise_declined";
-export type ReportStatus = "pending" | "reviewing" | "escalated" | "resolved_ban" | "resolved_restrict" | "resolved_dismissed";
+export type ReportStatus = "pending" | "reviewing" | "escalated" | "resolved_ban" | "resolved_restrict" | "resolved_dismissed" | "resolved_approved";
 export type FlagSubject = "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "copyright" | "misinformation" | "other";
 export type FlagStatus = "pending" | "reviewing" | "escalated" | "resolved_removed" | "resolved_flagged" | "resolved_dismissed";
 export type AppealStatus = "pending" | "approved" | "denied" | "blocked";
-export type ModerationStatus = "pending" | "approved" | "rejected";
+export type ModerationStatus = "pending" | "approved" | "flagged" | "removed";
 export type ExportStatus = "pending" | "processing" | "completed" | "failed";
 
 export interface Database {
