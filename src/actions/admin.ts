@@ -226,7 +226,7 @@ export async function assignReport(
 
 export async function resolveReport(
   reportId: string,
-  resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed",
+  resolution: "resolved_ban" | "resolved_restrict" | "resolved_dismissed" | "resolved_approved",
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
   const auth = await requireRole();
@@ -254,7 +254,18 @@ export async function resolveReport(
       getTargetUserInfo(report.reported_user_id),
     ]);
 
-    // Update report
+    // Apply the user sanction FIRST, so we don't mark the report resolved (or
+    // touch the post) if the sanction is rejected. banUser/restrictUser now
+    // surface auth/DB failures instead of silently no-opping.
+    if (resolution === "resolved_ban") {
+      const r = await banUser(report.reported_user_id, notes || "Banned due to report");
+      if (!r.success) return { success: false, error: r.error || "Failed to ban user" };
+    } else if (resolution === "resolved_restrict") {
+      const r = await restrictUser(report.reported_user_id);
+      if (!r.success) return { success: false, error: r.error || "Failed to restrict user" };
+    }
+
+    // Mark the report resolved.
     await (supabase as any)
       .from("reports")
       .update({
@@ -266,26 +277,34 @@ export async function resolveReport(
       })
       .eq("id", reportId);
 
-    // Apply action based on resolution
-    if (resolution === "resolved_ban") {
-      await banUser(report.reported_user_id, notes || "Banned due to report");
-    } else if (resolution === "resolved_restrict") {
-      await restrictUser(report.reported_user_id);
-    }
-
-    // If post was flagged, update its status
+    // Apply the post outcome (admin client so moderation writes always land).
     if (report.post_id) {
-      if (resolution === "resolved_dismissed") {
-        // Restore post
-        await (supabase as any)
+      const adminSupabase = createAdminClient();
+      const approve = resolution === "resolved_approved" || resolution === "resolved_dismissed";
+
+      if (approve) {
+        // Approve the post — and PUBLISH it if it was held (draft) for review,
+        // so approved content doesn't stay stranded and invisible.
+        const { data: heldPost } = await (supabase as any)
           .from("posts")
-          .update({
-            moderation_status: "approved",
-            moderation_reason: null,
-          })
+          .select("status")
+          .eq("id", report.post_id)
+          .single();
+
+        const postPatch: Record<string, any> = {
+          moderation_status: "approved",
+          moderation_reason: null,
+        };
+        if (heldPost?.status === "draft") {
+          postPatch.status = "published";
+          postPatch.published_at = new Date().toISOString();
+        }
+
+        await (adminSupabase as any)
+          .from("posts")
+          .update(postPatch)
           .eq("id", report.post_id);
 
-        // Log post restore
         await logAuditEvent({
           actorId: auth.userId,
           actorUsername: actorInfo?.username || "unknown",
@@ -297,8 +316,8 @@ export async function resolveReport(
           targetReportId: reportId,
         });
       } else {
-        // Remove post
-        await (supabase as any)
+        // resolved_ban / resolved_restrict → remove the post.
+        await (adminSupabase as any)
           .from("posts")
           .update({
             moderation_status: "removed",
@@ -308,7 +327,6 @@ export async function resolveReport(
           })
           .eq("id", report.post_id);
 
-        // Log post removal
         await logAuditEvent({
           actorId: auth.userId,
           actorUsername: actorInfo?.username || "unknown",
@@ -449,7 +467,10 @@ export async function banUser(
   }
 
   try {
-    const supabase = await createClient();
+    // Privileged profiles columns (lock_status/banned_at/…) can only be written
+    // by the service role — the security-hardening trigger rejects the session
+    // client. Use the admin client and surface failures instead of swallowing them.
+    const adminSupabase = createAdminClient();
 
     // Get actor and target info for audit log
     const [actorInfo, targetInfo] = await Promise.all([
@@ -458,7 +479,7 @@ export async function banUser(
     ]);
 
     // Update user profile
-    await (supabase as any)
+    const { error: updateError } = await (adminSupabase as any)
       .from("profiles")
       .update({
         lock_status: "banned",
@@ -467,9 +488,14 @@ export async function banUser(
       })
       .eq("id", userId);
 
+    if (updateError) {
+      console.error("Ban user update error:", updateError);
+      return { success: false, error: "Failed to ban user" };
+    }
+
     // Log IP if provided
     if (logIp) {
-      await (supabase as any).from("banned_ips").insert({
+      await (adminSupabase as any).from("banned_ips").insert({
         ip_address: logIp,
         user_id: userId,
         reason,
@@ -501,7 +527,6 @@ export async function banUser(
 
     // Send ban notification email
     try {
-      const adminSupabase = createAdminClient();
       const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId);
       const email = authUser?.user?.email;
       if (email && targetInfo?.username) {
@@ -532,7 +557,7 @@ export async function restrictUser(
   }
 
   try {
-    const supabase = await createClient();
+    const adminSupabase = createAdminClient();
 
     // Get actor and target info for audit log
     const [actorInfo, targetInfo] = await Promise.all([
@@ -540,12 +565,17 @@ export async function restrictUser(
       getTargetUserInfo(userId),
     ]);
 
-    await (supabase as any)
+    const { error: updateError } = await (adminSupabase as any)
       .from("profiles")
       .update({
         lock_status: "restricted",
       })
       .eq("id", userId);
+
+    if (updateError) {
+      console.error("Restrict user update error:", updateError);
+      return { success: false, error: "Failed to restrict user" };
+    }
 
     // Audit log
     await logAuditEvent({
@@ -559,7 +589,6 @@ export async function restrictUser(
 
     // Send restriction notification email
     try {
-      const adminSupabase = createAdminClient();
       const { data: authUser } = await adminSupabase.auth.admin.getUserById(userId);
       const email = authUser?.user?.email;
       if (email && targetInfo?.username) {
@@ -589,7 +618,7 @@ export async function unlockUser(
   }
 
   try {
-    const supabase = await createClient();
+    const adminSupabase = createAdminClient();
 
     // Get actor and target info for audit log
     const [actorInfo, targetInfo] = await Promise.all([
@@ -597,7 +626,7 @@ export async function unlockUser(
       getTargetUserInfo(userId),
     ]);
 
-    await (supabase as any)
+    const { error: updateError } = await (adminSupabase as any)
       .from("profiles")
       .update({
         lock_status: "unlocked",
@@ -605,6 +634,11 @@ export async function unlockUser(
         ban_reason: null,
       })
       .eq("id", userId);
+
+    if (updateError) {
+      console.error("Unlock user update error:", updateError);
+      return { success: false, error: "Failed to unlock user" };
+    }
 
     // Audit log
     await logAuditEvent({
@@ -672,10 +706,17 @@ export async function setUserRole(
       updateData.invite_codes_remaining = 3;
     }
 
-    await (supabase as any)
+    // Role is a service-role-only column (security-hardening trigger).
+    const adminSupabase = createAdminClient();
+    const { error: roleError } = await (adminSupabase as any)
       .from("profiles")
       .update(updateData)
       .eq("id", userId);
+
+    if (roleError) {
+      console.error("Set user role error:", roleError);
+      return { success: false, error: "Failed to change role" };
+    }
 
     // Audit log
     const actorInfo = await getActorInfo(auth.userId);
@@ -874,12 +915,17 @@ export async function reviewAppeal(
       await unlockUser(appeal.user_id);
     }
 
-    // If blocked, update profile to block future appeals
+    // If blocked, update profile to block future appeals (service-role column)
     if (decision === "blocked") {
-      await (supabase as any)
+      const adminSupabase = createAdminClient();
+      const { error: blockError } = await (adminSupabase as any)
         .from("profiles")
         .update({ appeals_blocked: true })
         .eq("id", appeal.user_id);
+      if (blockError) {
+        console.error("Block appeals error:", blockError);
+        return { success: false, error: "Failed to block future appeals" };
+      }
     }
 
     // Audit log

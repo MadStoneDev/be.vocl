@@ -61,24 +61,47 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
 
     // Extract media URLs for moderation
     const mediaUrls = extractMediaUrls(postType, content);
-    let moderationStatus: "approved" | "flagged" = "approved";
+    let moderationStatus: "approved" | "flagged" | "pending" = "approved";
     let moderationReason: string | null = null;
     let autoSensitive = false; // Auto-tag as sensitive if nudity/gore detected
+    let heldForReview = false; // Withhold from publishing until a human reviews
+    let reportSubject = "minor_safety"; // reports.subject for the review row
 
     // Moderate content if there are media URLs
     if (mediaUrls.length > 0) {
       for (const { url, type } of mediaUrls) {
         const result = await moderateContent(url, type);
 
-        // Check if should be flagged (child safety, extreme gore)
+        // Hard block: possible minor + sexual content, or extreme gore.
         if (result.flagged) {
           moderationStatus = "flagged";
           moderationReason = result.reason || "Content flagged by automated moderation";
+          reportSubject = result.sensitiveReason === "minor_safety" ? "minor_safety" : "other";
           autoSensitive = true;
+          heldForReview = true;
           break;
         }
 
-        // Check if should be auto-tagged as sensitive (nudity, erotica, moderate gore)
+        // Hold for manual review: possible minor with no nudity.
+        if (result.hold) {
+          moderationStatus = "pending";
+          moderationReason = result.holdReason || result.reason || "Held for manual review";
+          reportSubject = "minor_safety";
+          heldForReview = true;
+          break;
+        }
+
+        // Moderation was configured but failed — fail closed and hold, rather
+        // than publish unscreened content.
+        if (result.errored) {
+          moderationStatus = "pending";
+          moderationReason = "Automated moderation was unavailable; held for manual review";
+          reportSubject = "other";
+          heldForReview = true;
+          break;
+        }
+
+        // Auto-tag as sensitive (nudity, erotica, moderate gore).
         if (result.suggestSensitive) {
           autoSensitive = true;
         }
@@ -86,12 +109,12 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     }
 
     // Determine status and queue position
-    // IMPORTANT: If content is flagged, it goes to "draft" for review (not published)
+    // IMPORTANT: held content goes to "draft" for review (not published)
     let status: "draft" | "published" | "queued" | "scheduled" = "published";
     let queuePosition: number | null = null;
 
-    // Flagged content must be held for review - do NOT publish
-    if (moderationStatus === "flagged") {
+    // Held content (block or manual-review) must NOT publish
+    if (heldForReview) {
       status = "draft"; // Hold for staff review
     } else if (publishMode === "queue") {
       status = "queued";
@@ -141,7 +164,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         published_at: status === "published" ? new Date().toISOString() : null,
         moderation_status: moderationStatus,
         moderation_reason: moderationReason,
-        moderated_at: moderationStatus === "flagged" ? new Date().toISOString() : null,
+        moderated_at: heldForReview ? new Date().toISOString() : null,
         thread_id: threadId || null,
         thread_position: threadPosition,
       })
@@ -161,13 +184,14 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         .eq("id", post.id);
     }
 
-    // If content was flagged, create a report for staff review
-    if (moderationStatus === "flagged") {
+    // If content was held (blocked or flagged for manual review), create a
+    // report for staff and hold the post out of public view.
+    if (heldForReview) {
       await (supabase as any).from("reports").insert({
         reporter_id: null, // System report
         reported_user_id: user.id,
         post_id: post.id,
-        subject: "minor_safety",
+        subject: reportSubject,
         comments: moderationReason,
         source: "auto_moderation",
         status: "pending",
