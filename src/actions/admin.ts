@@ -1101,3 +1101,69 @@ export async function getAdminStats(): Promise<{
     return { success: false, error: "An unexpected error occurred" };
   }
 }
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+export interface AuditLogRow {
+  id: string;
+  actorUsername: string | null;
+  actorRole: number | null;
+  action: string;
+  targetUserUsername: string | null;
+  targetPostId: string | null;
+  details: any;
+  createdAt: string;
+}
+
+export async function getAuditLogs(options?: {
+  limit?: number;
+  offset?: number;
+}): Promise<{
+  success: boolean;
+  logs?: AuditLogRow[];
+  total?: number;
+  error?: string;
+}> {
+  const auth = await requireRole(ROLES.ADMIN); // Admin-only
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createClient();
+    const limit = options?.limit || 50;
+    const offset = options?.offset || 0;
+
+    const { data, count, error } = await (supabase as any)
+      .from("audit_logs")
+      .select(
+        "id, actor_username, actor_role, action, target_user_username, target_post_id, details, created_at",
+        { count: "exact" }
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error("Get audit logs error:", error);
+      return { success: false, error: "Failed to fetch audit logs" };
+    }
+
+    const logs: AuditLogRow[] = (data || []).map((r: any) => ({
+      id: r.id,
+      actorUsername: r.actor_username,
+      actorRole: r.actor_role,
+      action: r.action,
+      targetUserUsername: r.target_user_username,
+      targetPostId: r.target_post_id,
+      details: r.details,
+      createdAt: r.created_at,
+    }));
+
+    return { success: true, logs, total: count || 0 };
+  } catch (error) {
+    console.error("Get audit logs error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}

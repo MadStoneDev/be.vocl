@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type AuditAction =
   | "ban_user"
@@ -37,7 +38,9 @@ interface AuditLogEntry {
  */
 export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
   try {
-    const supabase = await createClient();
+    // Service-role client so audit rows always land regardless of the actor's
+    // role (moderators as well as admins), and can't be tampered with via RLS.
+    const supabase = createAdminClient();
 
     await (supabase as any).from("audit_logs").insert({
       actor_id: entry.actorId,
