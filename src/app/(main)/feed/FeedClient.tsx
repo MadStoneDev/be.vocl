@@ -328,7 +328,7 @@ export default function FeedClient({
 
   return (
     <PullToRefresh onRefresh={refetch}>
-    <div className="py-1 sm:py-3 mx-auto max-w-xl">
+    <div className="py-1 sm:py-3 mx-auto max-w-5xl">
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
         <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />

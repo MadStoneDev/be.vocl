@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,6 +16,7 @@ import {
   IconCrown,
   IconShield,
   IconUser,
+  IconPhoto,
 } from "@tabler/icons-react";
 import {
   getCommunity,
@@ -37,6 +38,7 @@ import {
 import { motion, MotionConfig } from "framer-motion";
 import { toast } from "@/components/ui";
 import { fadeUp } from "@/lib/motion";
+import { useUpload } from "@/hooks/useUpload";
 
 export default function CommunitySettingsPage() {
   const params = useParams();
@@ -56,6 +58,37 @@ export default function CommunitySettingsPage() {
   const [visibility, setVisibility] = useState<"public" | "restricted" | "private">("public");
   const [joinPolicy, setJoinPolicy] = useState<"open" | "request" | "invite_only">("open");
   const [savingMain, setSavingMain] = useState(false);
+
+  // Avatar / banner uploads (reuses the R2 presign flow via useUpload).
+  const { upload: uploadImage } = useUpload();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingField, setUploadingField] = useState<null | "avatar" | "banner">(null);
+
+  const handleImageUpload = async (
+    file: File,
+    uploadType: "avatar" | "header",
+    setUrl: (u: string) => void,
+    field: "avatar" | "banner"
+  ) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setUploadingField(field);
+    const result = await uploadImage(file, { uploadType });
+    setUploadingField(null);
+    if (result?.publicUrl) {
+      setUrl(result.publicUrl);
+      toast.success("Uploaded — remember to save your changes");
+    } else {
+      toast.error("Upload failed");
+    }
+  };
 
   const [members, setMembers] = useState<CommunityMember[]>([]);
   const [requests, setRequests] = useState<JoinRequest[]>([]);
@@ -300,25 +333,103 @@ export default function CommunitySettingsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Avatar */}
             <div>
-              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Icon URL</label>
-              <input
-                type="url"
-                value={iconUrl}
-                onChange={(e) => setIconUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
-              />
+              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Avatar</label>
+              <div className="flex items-center gap-3">
+                {iconUrl ? (
+                  <Image
+                    src={iconUrl}
+                    alt="Community avatar"
+                    width={56}
+                    height={56}
+                    className="w-14 h-14 rounded-sm object-cover border border-vocl-border flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-sm border border-dashed border-vocl-border flex items-center justify-center text-foreground/30 flex-shrink-0">
+                    <IconPhoto size={20} />
+                  </div>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingField === "avatar"}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-vocl-border text-foreground text-xs font-medium hover:bg-vocl-hover transition-colors disabled:opacity-50"
+                  >
+                    {uploadingField === "avatar" && <IconLoader2 size={14} className="animate-spin" />}
+                    {iconUrl ? "Change" : "Upload"}
+                  </button>
+                  {iconUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setIconUrl("")}
+                      className="text-xs text-foreground/50 hover:text-foreground text-left"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleImageUpload(f, "avatar", setIconUrl, "avatar");
+                    e.target.value = "";
+                  }}
+                />
+              </div>
             </div>
+            {/* Banner */}
             <div>
-              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Banner URL</label>
-              <input
-                type="url"
-                value={bannerUrl}
-                onChange={(e) => setBannerUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2 rounded-sm bg-background/50 border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
-              />
+              <label className="block type-meta uppercase tracking-widest text-foreground/55 font-semibold mb-1.5">Banner</label>
+              {bannerUrl ? (
+                <Image
+                  src={bannerUrl}
+                  alt="Community banner"
+                  width={480}
+                  height={120}
+                  className="w-full h-20 rounded-sm object-cover border border-vocl-border mb-2"
+                />
+              ) : (
+                <div className="w-full h-20 rounded-sm border border-dashed border-vocl-border flex items-center justify-center text-foreground/30 mb-2">
+                  <IconPhoto size={20} />
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => bannerInputRef.current?.click()}
+                  disabled={uploadingField === "banner"}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-vocl-border text-foreground text-xs font-medium hover:bg-vocl-hover transition-colors disabled:opacity-50"
+                >
+                  {uploadingField === "banner" && <IconLoader2 size={14} className="animate-spin" />}
+                  {bannerUrl ? "Change" : "Upload"}
+                </button>
+                {bannerUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setBannerUrl("")}
+                    className="text-xs text-foreground/50 hover:text-foreground"
+                  >
+                    Remove
+                  </button>
+                )}
+                <input
+                  ref={bannerInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleImageUpload(f, "header", setBannerUrl, "banner");
+                    e.target.value = "";
+                  }}
+                />
+              </div>
             </div>
           </div>
 

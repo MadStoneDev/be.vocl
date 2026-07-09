@@ -42,6 +42,10 @@ export function useComposerDraft({
   // Skip persisting on the very first render so loading a draft doesn't
   // immediately re-write it (and so a freshly reset editor stays clean).
   const isFirstRun = useRef(true);
+  // Once the draft is cleared (post published), stop all further writes for the
+  // life of this mount — otherwise an in-flight debounced save fires AFTER the
+  // clear and re-persists the just-published content (it reappears next open).
+  const stoppedRef = useRef(false);
 
   const loadDraft = useCallback((): Partial<ComposerState> | null => {
     if (typeof window === "undefined") return null;
@@ -55,6 +59,9 @@ export function useComposerDraft({
   }, [draftKey]);
 
   const clearDraft = useCallback(() => {
+    // Cancel any pending debounced save and block future ones, then remove.
+    stoppedRef.current = true;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     if (typeof window === "undefined") return;
     try {
       window.localStorage.removeItem(storageKey(draftKey));
@@ -65,7 +72,7 @@ export function useComposerDraft({
   }, [draftKey]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || stoppedRef.current) return;
     if (isFirstRun.current) {
       isFirstRun.current = false;
       return;

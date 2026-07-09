@@ -131,7 +131,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
         body: JSON.stringify({
           filename: avatarFile.name,
           contentType: avatarFile.type,
-          folder: "avatars",
+          uploadType: "avatar",
         }),
       });
 

@@ -258,7 +258,7 @@ export function PostPageClient({ postId }: { postId: string }) {
   return (
     <MotionConfig reducedMotion="user">
     {/* Uniform editorial column; media breaks out full-bleed for guests. */}
-    <article className="max-w-4xl mx-auto py-6 px-4">
+    <article className="max-w-5xl mx-auto py-6 px-4">
       {/* Back affordance */}
       <button
         onClick={() => router.back()}

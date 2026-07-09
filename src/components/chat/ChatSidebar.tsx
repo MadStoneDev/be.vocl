@@ -460,22 +460,24 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
         </button>
       </div>
 
-      {/* Search */}
-      <div className="p-4 border-b border-vocl-border flex-shrink-0">
-        <div className="relative">
-          <IconSearch
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
-          />
-          <input
-            type="text"
-            placeholder="Search messages..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-primary transition-colors text-sm dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
-          />
+      {/* Search — only useful once there are conversations to search */}
+      {conversations.length > 0 && (
+        <div className="p-4 border-b border-vocl-border flex-shrink-0">
+          <div className="relative">
+            <IconSearch
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
+            />
+            <input
+              type="text"
+              placeholder="Search messages..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full py-2.5 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-primary transition-colors text-sm dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -571,24 +573,40 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     />
   ) : null;
 
-  // Desktop empty state shown in the right pane when nothing is selected.
+  // Desktop right-pane placeholder. With zero conversations, "Select a
+  // conversation" is nonsensical and the CTA duplicates the list's "Start
+  // chatting" — so show a calm empty note and let the left pane own the CTA.
   const desktopEmptyState = (
     <div className="flex flex-col items-center justify-center h-full px-6 text-center">
       <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
         <IconMessagePlus size={28} className="text-vocl-primary" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">
-        Select a conversation
-      </h3>
-      <p className="text-sm text-foreground/50 mb-6 max-w-xs">
-        Choose a conversation from the list to start chatting, or begin a new one.
-      </p>
-      <button
-        onClick={handleNewChat}
-        className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
-      >
-        New message
-      </button>
+      {conversations.length > 0 ? (
+        <>
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            Select a conversation
+          </h3>
+          <p className="text-sm text-foreground/50 mb-6 max-w-xs">
+            Choose a conversation from the list, or start a new one.
+          </p>
+          <button
+            onClick={handleNewChat}
+            className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+          >
+            New message
+          </button>
+        </>
+      ) : (
+        <>
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            Welcome to Messages
+          </h3>
+          <p className="text-sm text-foreground/50 max-w-xs">
+            Start a conversation from the panel on the left, or from anyone&apos;s
+            profile. Your chats will appear here.
+          </p>
+        </>
+      )}
     </div>
   );
 

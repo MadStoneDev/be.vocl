@@ -680,7 +680,11 @@ export async function getSuggestedUsers(
         const { data: fofProfiles } = await supabase
           .from("profiles")
           .select("id, username, display_name, avatar_url, bio")
-          .in("id", friendsOfFriends);
+          .in("id", friendsOfFriends)
+          // Keep NSFW, banned, and non-discoverable accounts out of suggestions.
+          .eq("is_nsfw", false)
+          .eq("is_discoverable", true)
+          .is("banned_at", null);
 
         if (fofProfiles && fofProfiles.length > 0) {
           const fofProfileIds = (fofProfiles as ProfileResult[]).map((p) => p.id);
@@ -773,6 +777,10 @@ async function getFallbackSuggestions(
   let query = supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url, bio")
+    // Keep NSFW, banned, and non-discoverable accounts out of suggestions.
+    .eq("is_nsfw", false)
+    .eq("is_discoverable", true)
+    .is("banned_at", null)
     .limit(limit + alreadyFollowing.size + excludeIds.size + 10);
 
   if (userId) {

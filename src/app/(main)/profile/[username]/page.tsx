@@ -389,7 +389,7 @@ export default function ProfilePage() {
     <div className="min-h-screen pb-24">
       {profile && <title>{`@${profile.username} | be.vocl`}</title>}
       {/* Profile Header */}
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
       <ProfileHeader
         username={profile.username}
         displayName={profile.displayName}
@@ -434,12 +434,12 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Links */}
-      <div className="px-2 sm:px-6 max-w-3xl mx-auto">
+      <div className="px-2 sm:px-6 max-w-5xl mx-auto">
         <ProfileLinks links={links} />
       </div>
 
       {/* Profile Tabs */}
-      <div className="px-2 sm:px-6 max-w-3xl mx-auto">
+      <div className="px-2 sm:px-6 max-w-5xl mx-auto">
         <ProfileTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -459,7 +459,7 @@ export default function ProfilePage() {
 
       {/* Tab Content */}
       <div className="mt-4 sm:mt-6 px-2 sm:px-6">
-        <div className="max-w-3xl mx-auto space-y-2 sm:space-y-6">
+        <div className="max-w-5xl mx-auto space-y-2 sm:space-y-6">
           {activeTab === "posts" && (
             <>
               {/* Pinned Post */}

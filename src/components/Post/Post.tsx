@@ -1148,7 +1148,7 @@ export const Post = memo(function Post({
   }, []);
 
   return (
-    <div className={`w-full max-w-full ${bare ? "" : "sm:max-w-xl"}`}>
+    <div className={`w-full max-w-full ${bare ? "" : "sm:max-w-5xl"}`}>
       <article
         className={`relative ${bare ? "" : "overflow-hidden border-b border-vocl-border pb-2"}`}
         data-post-id={id}
@@ -1523,7 +1523,7 @@ export function ImageContent({ src, alt, caption, priority, article, fullBleed }
 
       {caption && (
         <div
-          className="px-2.5 pt-2.5 pb-2.5 sm:p-4 text-foreground/75 prose prose-sm max-w-none [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:before:content-['\00a0']"
+          className="px-2.5 pt-2.5 pb-2.5 sm:p-4 text-foreground/75 max-w-none [&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:my-2 [&_ol]:my-2 [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(caption) }}
         />
       )}
@@ -1600,7 +1600,7 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
         )}
         {html ? (
           <div
-            className="font-serif text-base sm:text-lg leading-relaxed text-foreground/90 prose prose-sm sm:prose-base max-w-none prose-p:my-3 prose-headings:font-serif [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+            className="font-serif text-base sm:text-lg leading-relaxed text-foreground/90 max-w-none [&_p]:my-4 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:my-4 [&_ol]:my-4 [&_li]:my-1.5 [&_blockquote]:border-l-4 [&_blockquote]:border-vocl-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
             dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
           />
         ) : (
@@ -1616,7 +1616,7 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
     <div className="px-2.5 pt-2.5 pb-2.5 sm:p-4">
       {html ? (
         <div
-          className="font-sans text-base leading-relaxed text-foreground/90 prose prose-sm max-w-none prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
+          className="font-sans text-base leading-relaxed text-foreground/90 max-w-none [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:my-3 [&_ol]:my-3 [&_li]:my-1 [&_p:empty]:min-h-[1em] [&_p:empty]:before:content-['\00a0']"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(html) }}
         />
       ) : (
