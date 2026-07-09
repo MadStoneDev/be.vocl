@@ -1,7 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
+import { logAuditEvent, getActorInfo } from "@/lib/audit";
 import type { FlagSubject, FlagStatus } from "@/types/database";
 
 interface FlagResult {
@@ -344,27 +346,81 @@ export async function resolveFlag(
       return { success: false, error: "Failed to resolve flag" };
     }
 
-    // If resolved_removed, update the post moderation status
-    if (resolution === "resolved_removed") {
-      await (supabase as any)
-        .from("posts")
-        .update({
-          moderation_status: "removed",
-          moderation_reason: notes || "Removed due to flag",
-          moderated_at: new Date().toISOString(),
-          moderated_by: user.id,
-        })
-        .eq("id", flag.post_id);
-    } else if (resolution === "resolved_flagged") {
-      await (supabase as any)
-        .from("posts")
-        .update({
-          moderation_status: "flagged",
-          moderation_reason: notes || "Content flagged",
-          moderated_at: new Date().toISOString(),
-          moderated_by: user.id,
-        })
-        .eq("id", flag.post_id);
+    // Apply the post outcome (admin client so moderation writes always land) and
+    // record it in the audit log — post removals are the most consequential action.
+    if (flag.post_id) {
+      const adminSupabase = createAdminClient();
+      const actorInfo = await getActorInfo(user.id);
+
+      if (resolution === "resolved_removed") {
+        await (adminSupabase as any)
+          .from("posts")
+          .update({
+            moderation_status: "removed",
+            moderation_reason: notes || "Removed due to flag",
+            moderated_at: new Date().toISOString(),
+            moderated_by: user.id,
+          })
+          .eq("id", flag.post_id);
+
+        await logAuditEvent({
+          actorId: user.id,
+          actorUsername: actorInfo?.username || "unknown",
+          actorRole: profile.role,
+          action: "remove_post",
+          targetPostId: flag.post_id,
+          targetFlagId: flagId,
+          details: { reason: notes, via: "flag" },
+        });
+      } else if (resolution === "resolved_dismissed") {
+        // Dismissing a flag must un-hide the post — otherwise a 'flagged' post
+        // stays invisible to everyone but the author/staff forever.
+        const { data: flaggedPost } = await (supabase as any)
+          .from("posts")
+          .select("status")
+          .eq("id", flag.post_id)
+          .single();
+
+        const patch: Record<string, any> = {
+          moderation_status: "approved",
+          moderation_reason: null,
+        };
+        if (flaggedPost?.status === "draft") {
+          patch.status = "published";
+          patch.published_at = new Date().toISOString();
+        }
+
+        await (adminSupabase as any).from("posts").update(patch).eq("id", flag.post_id);
+
+        await logAuditEvent({
+          actorId: user.id,
+          actorUsername: actorInfo?.username || "unknown",
+          actorRole: profile.role,
+          action: "restore_post",
+          targetPostId: flag.post_id,
+          targetFlagId: flagId,
+        });
+      } else if (resolution === "resolved_flagged") {
+        await (adminSupabase as any)
+          .from("posts")
+          .update({
+            moderation_status: "flagged",
+            moderation_reason: notes || "Content flagged",
+            moderated_at: new Date().toISOString(),
+            moderated_by: user.id,
+          })
+          .eq("id", flag.post_id);
+
+        await logAuditEvent({
+          actorId: user.id,
+          actorUsername: actorInfo?.username || "unknown",
+          actorRole: profile.role,
+          action: "resolve_flag",
+          targetPostId: flag.post_id,
+          targetFlagId: flagId,
+          details: { resolution },
+        });
+      }
     }
 
     return { success: true };
