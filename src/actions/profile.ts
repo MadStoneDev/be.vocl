@@ -961,7 +961,7 @@ export async function getFullProfile(
   profile?: Profile;
   currentUserId?: string;
   isOwnProfile?: boolean;
-  stats?: { posts: number; followers: number; following: number };
+  stats?: { posts: number; followers: number; following: number; likes: number; comments: number };
   links?: ProfileLink[];
   isFollowing?: boolean;
   canAsk?: boolean;
@@ -1090,10 +1090,32 @@ export async function getFullProfile(
 
     const stage2Results = await Promise.all(stage2);
 
+    // Likes/comments totals for the profile tab badges — computed upfront so the
+    // counts are right on first paint (they used to stay 0 until the tab was
+    // opened). Likes mirrors getLikedPosts (all like rows for the user);
+    // comments mirrors getCommentedPosts (distinct, non-deleted posts).
+    const [likesCountRes, commentRowsRes] = await Promise.all([
+      (supabase as any)
+        .from("likes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", data.id),
+      (supabase as any)
+        .from("comments")
+        .select("post_id, post:post_id(status)")
+        .eq("user_id", data.id),
+    ]);
+
+    const commentedPostIds = new Set<string>();
+    for (const c of (commentRowsRes.data || []) as any[]) {
+      if (c.post && c.post.status !== "deleted") commentedPostIds.add(c.post_id);
+    }
+
     const stats = {
       posts: stage2Results[0].count || 0,
       followers: stage2Results[1].count || 0,
       following: stage2Results[2].count || 0,
+      likes: likesCountRes.count || 0,
+      comments: commentedPostIds.size,
     };
 
     const links: ProfileLink[] = (stage2Results[3].data || []).map((link: any) => ({

@@ -76,7 +76,7 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0 });
+  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0, likes: 0, comments: 0 });
   const [links, setLinks] = useState<ProfileLink[]>([]);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
@@ -139,7 +139,11 @@ export default function ProfilePage() {
 
       setIsOwnProfile(result.isOwnProfile || false);
       setCurrentUserId(result.currentUserId);
-      setStats(result.stats || { posts: 0, followers: 0, following: 0 });
+      setStats(result.stats || { posts: 0, followers: 0, following: 0, likes: 0, comments: 0 });
+      // Seed the Likes/Comments badge counts upfront so they're correct before
+      // the tabs are opened; the lazy tab fetches still refresh them.
+      setLikesCount(result.stats?.likes || 0);
+      setCommentsCount(result.stats?.comments || 0);
       setLinks(result.links || []);
       setPosts(result.posts || []);
       setPinnedPost(result.pinnedPost || null);
