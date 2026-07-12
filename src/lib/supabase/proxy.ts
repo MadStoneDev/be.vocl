@@ -89,17 +89,29 @@ export async function updateSession(request: NextRequest) {
   if (user && !isPublicRoute && !isAccountStatusRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("lock_status")
+      .select("lock_status, role")
       .eq("id", user.id)
       .single();
 
-    const lockStatus = profile?.lock_status || "unlocked";
+    const lockStatus = (profile as { lock_status?: string } | null)?.lock_status || "unlocked";
 
     // Banned users can only access account-status page
     if (lockStatus === "banned") {
       const url = request.nextUrl.clone();
       url.pathname = "/account-status";
       return NextResponse.redirect(url);
+    }
+
+    // Admin surface requires moderator+ (role >= 5), enforced server-side here so
+    // an unauthorized user never receives an admin page.
+    if (request.nextUrl.pathname.startsWith("/admin")) {
+      const role = (profile as { role?: number | null } | null)?.role ?? 0;
+      if (role < 5) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/feed";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
     }
 
     // Restricted users can browse but cannot post (handled at action level)
