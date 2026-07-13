@@ -316,7 +316,7 @@ function PostActionBar({
   };
   return (
     <div
-      className={`relative flex items-center justify-between gap-5 sm:gap-8 pt-2 pr-18 sm:pr-20 pb-2 sm:pb-4 pl-2.5 sm:pl-5 border-t ${
+      className={`relative flex items-center justify-between gap-5 sm:gap-8 py-2 sm:py-3 pr-18 sm:pr-20 pl-2.5 sm:pl-5 border-t ${
         bare ? "bg-transparent border-vocl-border mt-6" : "bg-transparent border-vocl-border"
       }`}
     >
@@ -1150,7 +1150,7 @@ export const Post = memo(function Post({
   return (
     <div className={`w-full max-w-full ${bare ? "" : "sm:max-w-5xl"}`}>
       <article
-        className={`relative ${bare ? "" : "overflow-hidden border-b border-vocl-border pb-2"}`}
+        className={`relative ${bare ? "" : "overflow-hidden border-b border-vocl-border"}`}
         data-post-id={id}
         data-content-type={contentType}
       >

@@ -198,7 +198,7 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
     return (
       <TileShell post={post} className="flex flex-col gap-2">
         <Kicker post={post} />
-        <p className={`${headlineClass} ${clampClass} text-foreground group-hover:text-vocl-primary transition-colors`}>
+        <p className={`${headlineClass} ${clampClass} text-foreground hover:text-vocl-primary transition-colors`}>
           {standfirst}
         </p>
         <Byline post={post} />
@@ -211,7 +211,7 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
   return (
     <TileShell post={post} className="flex flex-col gap-2">
       <Kicker post={post} />
-      <h3 className={`${headlineClass} text-foreground group-hover:text-vocl-primary transition-colors`}>
+      <h3 className={`${headlineClass} text-foreground hover:text-vocl-primary transition-colors`}>
         {headline}
       </h3>
       {showStandfirst && (
@@ -287,7 +287,7 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
       {(caption || isVideo) && (
         <Link href={hrefOf(post)} className="block">
           <p
-            className={`${prominence === "lead" ? "type-body-lg" : "type-body"} text-foreground/85 group-hover:text-vocl-primary transition-colors`}
+            className={`${prominence === "lead" ? "type-body-lg" : "type-body"} text-foreground/85 hover:text-vocl-primary transition-colors`}
           >
             {displayText}
           </p>
@@ -364,7 +364,7 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
             <IconLink size={12} /> {domain}
           </span>
         </div>
-        <h3 className={`${prominence === "lead" ? "type-display" : "type-heading"} text-foreground group-hover:text-vocl-primary transition-colors`}>
+        <h3 className={`${prominence === "lead" ? "type-display" : "type-heading"} text-foreground hover:text-vocl-primary transition-colors`}>
           {headline}
         </h3>
         {showStandfirst && <p className="type-body text-foreground/65 line-clamp-2">{standfirst}</p>}
@@ -380,7 +380,7 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
         <IconLink size={13} /> {domain}
       </span>
       <div className="border border-vocl-border p-3 transition-colors group-hover:border-vocl-primary/50">
-        <h3 className={`${prominence === "lead" ? "type-display" : "type-heading"} text-foreground group-hover:text-vocl-primary transition-colors`}>
+        <h3 className={`${prominence === "lead" ? "type-display" : "type-heading"} text-foreground hover:text-vocl-primary transition-colors`}>
           {headline}
         </h3>
         {showStandfirst && <p className="type-body text-foreground/65 line-clamp-3 mt-1">{standfirst}</p>}
@@ -481,7 +481,7 @@ export function FrontPageTile({ post, prominence }: { post: FeedPost; prominence
       return (
         <TileShell post={post} className="flex flex-col gap-2">
           <Kicker post={post} />
-          <h3 className="type-heading text-foreground group-hover:text-vocl-primary transition-colors flex items-start gap-2">
+          <h3 className="type-heading text-foreground hover:text-vocl-primary transition-colors flex items-start gap-2">
             <IconChartBar size={20} className="mt-0.5 flex-shrink-0 text-vocl-primary" />
             {headlineOf(post)}
           </h3>

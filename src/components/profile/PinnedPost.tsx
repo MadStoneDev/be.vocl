@@ -16,8 +16,10 @@ export function PinnedPost({ children }: PinnedPostProps) {
         <span>Pinned</span>
       </div>
 
-      {/* Post wrapper with subtle highlight */}
-      <div className="ring-2 ring-vocl-primary/30 rounded-[50px]">
+      {/* Post wrapper with subtle highlight — square to match the editorial
+          post border, with just the bottom-right corner curved to echo the
+          reblog button that sits there. */}
+      <div className="ring-2 ring-vocl-primary/30 rounded-br-[50px]">
         {children}
       </div>
     </div>
