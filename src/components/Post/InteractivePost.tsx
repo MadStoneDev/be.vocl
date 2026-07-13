@@ -85,6 +85,29 @@ interface InteractivePostProps {
   threadLength?: number;
 }
 
+/** Editorial dateline label for a post (mirrors the Front Page kicker vocabulary). */
+function postKicker(contentType: PostContentType, content: any): string {
+  if (content?.is_essay) {
+    const rt = content.reading_time_minutes;
+    return `Story${rt ? ` · ${rt} min read` : ""}`;
+  }
+  switch (contentType) {
+    case "ask":
+      return "Ask";
+    case "poll":
+      return "Poll";
+    case "audio":
+      return "Listen";
+    case "image":
+    case "gallery":
+      return "Photo";
+    case "video":
+      return "Video";
+    default:
+      return "Note";
+  }
+}
+
 function InteractivePostComponent({
   id,
   author,
@@ -617,6 +640,7 @@ function InteractivePostComponent({
         bare={articleMode}
         hideActions={hideActions}
         isLoggedIn={isAuthenticated}
+        kicker={postKicker(contentType, currentContent)}
       >
         {renderContent()}
       </Post>

@@ -143,6 +143,9 @@ export interface PostProps {
   /** Hide the built-in action bar + reblog FAB + expanded panel (engagement
    *  is rendered elsewhere, e.g. the post page's top quick-view). */
   hideActions?: boolean;
+  /** Small uppercase dateline shown above the byline (e.g. "Story · 4 min read",
+   *  "Photo") — marks the start of each post in the single-column reader. */
+  kicker?: string;
 }
 
 // =============================================================================
@@ -1019,6 +1022,7 @@ export const Post = memo(function Post({
   bare = false,
   isLoggedIn = true,
   hideActions = false,
+  kicker,
 }: PostProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [voiceCountOverride, setVoiceCountOverride] = useState<number | null>(null);
@@ -1154,6 +1158,14 @@ export const Post = memo(function Post({
         data-post-id={id}
         data-content-type={contentType}
       >
+        {/* Editorial dateline — marks the start of each post in the single-column
+            reader so consecutive posts don't read as one continuous piece. */}
+        {!hideHeader && !bare && kicker && (
+          <div className="px-1 sm:px-1.5 pt-3 type-meta uppercase tracking-wide text-vocl-primary font-semibold">
+            {kicker}
+          </div>
+        )}
+
         {/* Header — always shows the post author (reblogger for reblogs) */}
         {!hideHeader && (
           <PostHeader

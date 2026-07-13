@@ -81,7 +81,7 @@ function standfirstOf(post: FeedPost): string {
 
 function metaOf(post: FeedPost): string {
   const c = post.content;
-  if (c.isEssay) return `Essay${c.readingTimeMinutes ? ` · ${c.readingTimeMinutes} min read` : ""}`;
+  if (c.isEssay) return `Story${c.readingTimeMinutes ? ` · ${c.readingTimeMinutes} min read` : ""}`;
   switch (post.contentType) {
     case "ask":
       return "Ask";
