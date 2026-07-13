@@ -108,10 +108,10 @@ export function FeaturedCarousel({ items }: { items: FeaturedItem[] }) {
                   </p>
                   <div className="mt-4 flex items-center gap-3">
                     <Link
-                      href="/signup"
+                      href={`/featured/${current.slug}`}
                       className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white/90"
                     >
-                      Join to read &amp; reply
+                      Read this story
                     </Link>
                     {current.author && (
                       <span className="type-meta text-white/70">by {current.author}</span>

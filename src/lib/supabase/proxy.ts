@@ -64,6 +64,7 @@ export async function updateSession(request: NextRequest) {
     "/u/",
     "/discover",
     "/post/",
+    "/featured/",
     "/login",
     "/email-templates",
     "/signup",

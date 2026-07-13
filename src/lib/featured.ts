@@ -73,3 +73,48 @@ export function getFeaturedPosts(): FeaturedPost[] {
 
   return posts.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 }
+
+/** Load a single featured post by slug (or null). */
+export function getFeaturedPost(slug: string): FeaturedPost | null {
+  // Guard against path traversal — slugs are single path segments.
+  if (!/^[a-z0-9-]+$/i.test(slug)) return null;
+  return getFeaturedPosts().find((p) => p.slug === slug) ?? null;
+}
+
+/**
+ * Minimal Markdown → HTML for the TRUSTED featured content (repo-authored, not
+ * user input). Handles paragraphs, headings, blockquotes, simple lists, and
+ * inline bold/italic/links.
+ */
+export function featuredBodyToHtml(md: string): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = (s: string) =>
+    esc(s)
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+      .replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
+
+  return md
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean)
+    .map((b) => {
+      if (b.startsWith("### ")) return `<h3>${inline(b.slice(4))}</h3>`;
+      if (b.startsWith("## ")) return `<h2>${inline(b.slice(3))}</h2>`;
+      if (b.startsWith("# ")) return `<h2>${inline(b.slice(2))}</h2>`;
+      if (b.startsWith("> ")) return `<blockquote>${inline(b.replace(/^> ?/gm, ""))}</blockquote>`;
+      if (/^[-*] /.test(b)) {
+        const items = b
+          .split("\n")
+          .map((l) => `<li>${inline(l.replace(/^[-*] /, ""))}</li>`)
+          .join("");
+        return `<ul>${items}</ul>`;
+      }
+      return `<p>${inline(b.replace(/\n/g, " "))}</p>`;
+    })
+    .join("\n");
+}
