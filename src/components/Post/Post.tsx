@@ -201,7 +201,7 @@ function PostHeader({
           <div className="flex items-center gap-1">
             <Link
               href={`/profile/${author.username}`}
-              className="font-display text-base sm:text-lg font-normal text-foreground hover:text-vocl-primary transition-colors"
+              className="font-display text-base sm:text-lg font-normal text-foreground hover:underline"
             >
               {author.username}
             </Link>
