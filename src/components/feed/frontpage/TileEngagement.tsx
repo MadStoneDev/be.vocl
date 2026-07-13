@@ -193,7 +193,7 @@ function CommentsPanel({ postId, canPost, onJoin }: { postId: string; canPost: b
                 <Avatar src={c.avatarUrl || ""} username={c.username} size="sm" />
               </Link>
               <div className="min-w-0">
-                <Link href={`/profile/${c.username}`} className="text-sm font-medium text-foreground hover:text-vocl-primary transition-colors">
+                <Link href={`/profile/${c.username}`} className="text-sm font-medium text-foreground hover:underline">
                   {c.displayName || c.username}
                 </Link>
                 <p className="text-sm text-foreground/75 whitespace-pre-wrap leading-relaxed">{c.content}</p>
