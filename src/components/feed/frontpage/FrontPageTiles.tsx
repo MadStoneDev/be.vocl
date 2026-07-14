@@ -168,15 +168,27 @@ function Kicker({ post }: { post: FeedPost }) {
   );
 }
 
-function TileShell({ post, children, className = "" }: { post: FeedPost; children: React.ReactNode; className?: string }) {
+function TileShell({
+  post,
+  children,
+  byline,
+  className = "",
+}: {
+  post: FeedPost;
+  children: React.ReactNode;
+  /** Rendered as a SIBLING of the content link, not inside it — the byline has
+   *  its own (author/edit) links, and nesting <a> in <a> is invalid HTML and
+   *  breaks hydration. */
+  byline?: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <Link
-      href={hrefOf(post)}
-      className={`group block ${className}`}
-      data-post-id={post.id}
-    >
-      {children}
-    </Link>
+    <div className="flex flex-col gap-2" data-post-id={post.id}>
+      <Link href={hrefOf(post)} className={`group block ${className}`}>
+        {children}
+      </Link>
+      {byline}
+    </div>
   );
 }
 
@@ -196,12 +208,11 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
   // synthetic heading + body duplication.
   if (!headline) {
     return (
-      <TileShell post={post} className="flex flex-col gap-2">
+      <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
         <Kicker post={post} />
         <p className={`${headlineClass} ${clampClass} text-foreground hover:text-vocl-primary transition-colors`}>
           {standfirst}
         </p>
-        <Byline post={post} />
       </TileShell>
     );
   }
@@ -209,7 +220,7 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
   const showStandfirst = prominence !== "standard" && standfirst;
 
   return (
-    <TileShell post={post} className="flex flex-col gap-2">
+    <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
       <Kicker post={post} />
       <h3 className={`${headlineClass} text-foreground hover:text-vocl-primary transition-colors`}>
         {headline}
@@ -217,7 +228,6 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
       {showStandfirst && (
         <p className="type-body text-foreground/65 line-clamp-3">{standfirst}</p>
       )}
-      <Byline post={post} />
     </TileShell>
   );
 }
@@ -351,7 +361,7 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
   if (preview.image) {
     const aspect = prominence === "lead" ? "aspect-[16/10]" : prominence === "feature" ? "aspect-[4/3]" : "aspect-[3/2]";
     return (
-      <TileShell post={post} className="flex flex-col gap-2.5">
+      <TileShell post={post} className="flex flex-col gap-2.5" byline={<Byline post={post} />}>
         <div className={`relative w-full ${aspect} overflow-hidden bg-vocl-hover`}>
           <Image
             src={preview.image}
@@ -368,14 +378,13 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
           {headline}
         </h3>
         {showStandfirst && <p className="type-body text-foreground/65 line-clamp-2">{standfirst}</p>}
-        <Byline post={post} />
       </TileShell>
     );
   }
 
   // No preview image — a bordered link card
   return (
-    <TileShell post={post} className="flex flex-col gap-2">
+    <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
       <span className="type-meta uppercase tracking-wide text-vocl-primary font-semibold inline-flex items-center gap-1">
         <IconLink size={13} /> {domain}
       </span>
@@ -385,7 +394,6 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
         </h3>
         {showStandfirst && <p className="type-body text-foreground/65 line-clamp-3 mt-1">{standfirst}</p>}
       </div>
-      <Byline post={post} />
     </TileShell>
   );
 }
@@ -479,13 +487,12 @@ export function FrontPageTile({ post, prominence }: { post: FeedPost; prominence
       return <AudioTile post={post} prominence={prominence} />;
     case "poll":
       return (
-        <TileShell post={post} className="flex flex-col gap-2">
+        <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
           <Kicker post={post} />
           <h3 className="type-heading text-foreground hover:text-vocl-primary transition-colors flex items-start gap-2">
             <IconChartBar size={20} className="mt-0.5 flex-shrink-0 text-vocl-primary" />
             {headlineOf(post)}
           </h3>
-          <Byline post={post} />
         </TileShell>
       );
     default: {
