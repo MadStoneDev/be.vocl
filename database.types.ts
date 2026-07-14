@@ -18,7 +18,7 @@ export type Database = {
           user_id: string
           report_id: string | null
           reason: string
-          status: string | null
+          status: Database["public"]["Enums"]["appeal_status"] | null
           reviewed_by: string | null
           review_notes: string | null
           reviewed_at: string | null
@@ -29,7 +29,7 @@ export type Database = {
           user_id: string
           report_id?: string | null
           reason: string
-          status?: string | null
+          status?: Database["public"]["Enums"]["appeal_status"] | null
           reviewed_by?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
@@ -40,13 +40,35 @@ export type Database = {
           user_id?: string
           report_id?: string | null
           reason?: string
-          status?: string | null
+          status?: Database["public"]["Enums"]["appeal_status"] | null
           reviewed_by?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "appeals_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appeals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appeals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       asks: {
         Row: {
@@ -94,7 +116,29 @@ export type Database = {
           answer_audio_url?: string | null
           answer_audio_duration?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "asks_answered_post_id_fkey"
+            columns: ["answered_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asks_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asks_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
@@ -145,7 +189,29 @@ export type Database = {
           ip_address?: string | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_target_post_id_fkey"
+            columns: ["target_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       banned_ips: {
         Row: {
@@ -172,7 +238,22 @@ export type Database = {
           banned_by?: string | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "banned_ips_banned_by_fkey"
+            columns: ["banned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "banned_ips_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blocks: {
         Row: {
@@ -190,31 +271,54 @@ export type Database = {
           blocked_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bookmark_collections: {
         Row: {
           id: string
           user_id: string
-          name: string | null
+          name: string
           description: string | null
           created_at: string | null
         }
         Insert: {
           id?: string
           user_id: string
-          name?: string | null
+          name: string
           description?: string | null
           created_at?: string | null
         }
         Update: {
           id?: string
           user_id?: string
-          name?: string | null
+          name?: string
           description?: string | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookmark_collections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bookmarks: {
         Row: {
@@ -238,7 +342,29 @@ export type Database = {
           created_at?: string
           collection_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "bookmark_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
@@ -274,7 +400,29 @@ export type Database = {
           audio_url?: string | null
           audio_duration?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       communities: {
         Row: {
@@ -284,8 +432,8 @@ export type Database = {
           description: string | null
           banner_url: string | null
           icon_url: string | null
-          visibility: string | null
-          join_policy: string | null
+          visibility: Database["public"]["Enums"]["community_visibility"]
+          join_policy: Database["public"]["Enums"]["community_join_policy"]
           nsfw: boolean
           created_by: string
           member_count: number
@@ -299,8 +447,8 @@ export type Database = {
           description?: string | null
           banner_url?: string | null
           icon_url?: string | null
-          visibility?: string | null
-          join_policy?: string | null
+          visibility?: Database["public"]["Enums"]["community_visibility"]
+          join_policy?: Database["public"]["Enums"]["community_join_policy"]
           nsfw?: boolean
           created_by: string
           member_count?: number
@@ -314,15 +462,23 @@ export type Database = {
           description?: string | null
           banner_url?: string | null
           icon_url?: string | null
-          visibility?: string | null
-          join_policy?: string | null
+          visibility?: Database["public"]["Enums"]["community_visibility"]
+          join_policy?: Database["public"]["Enums"]["community_join_policy"]
           nsfw?: boolean
           created_by?: string
           member_count?: number
           post_count?: number
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "communities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_join_requests: {
         Row: {
@@ -330,7 +486,7 @@ export type Database = {
           community_id: string
           user_id: string
           message: string | null
-          status: string | null
+          status: Database["public"]["Enums"]["community_join_request_status"]
           reviewed_by: string | null
           reviewed_at: string | null
           created_at: string
@@ -340,7 +496,7 @@ export type Database = {
           community_id: string
           user_id: string
           message?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["community_join_request_status"]
           reviewed_by?: string | null
           reviewed_at?: string | null
           created_at?: string
@@ -350,33 +506,70 @@ export type Database = {
           community_id?: string
           user_id?: string
           message?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["community_join_request_status"]
           reviewed_by?: string | null
           reviewed_at?: string | null
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_join_requests_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_join_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_join_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_members: {
         Row: {
           community_id: string
           user_id: string
-          role: string | null
+          role: Database["public"]["Enums"]["community_member_role"]
           joined_at: string
         }
         Insert: {
           community_id: string
           user_id: string
-          role?: string | null
+          role?: Database["public"]["Enums"]["community_member_role"]
           joined_at?: string
         }
         Update: {
           community_id?: string
           user_id?: string
-          role?: string | null
+          role?: Database["public"]["Enums"]["community_member_role"]
           joined_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_members_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_posts: {
         Row: {
@@ -400,7 +593,29 @@ export type Database = {
           pinned?: boolean
           added_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_rules: {
         Row: {
@@ -427,25 +642,51 @@ export type Database = {
           body?: string | null
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_rules_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_participants: {
         Row: {
           conversation_id: string
           profile_id: string
           last_read_at: string | null
+          is_muted: boolean
         }
         Insert: {
           conversation_id: string
           profile_id: string
           last_read_at?: string | null
+          is_muted?: boolean
         }
         Update: {
           conversation_id?: string
           profile_id?: string
           last_read_at?: string | null
+          is_muted?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_participants_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -469,7 +710,7 @@ export type Database = {
         Row: {
           id: string
           user_id: string
-          status: string | null
+          status: Database["public"]["Enums"]["export_status"] | null
           file_url: string | null
           file_size_bytes: number | null
           expires_at: string | null
@@ -479,7 +720,7 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
-          status?: string | null
+          status?: Database["public"]["Enums"]["export_status"] | null
           file_url?: string | null
           file_size_bytes?: number | null
           expires_at?: string | null
@@ -489,14 +730,22 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
-          status?: string | null
+          status?: Database["public"]["Enums"]["export_status"] | null
           file_url?: string | null
           file_size_bytes?: number | null
           expires_at?: string | null
           created_at?: string | null
           completed_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "data_export_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_send_recipients: {
         Row: {
@@ -526,12 +775,27 @@ export type Database = {
           sent_at?: string | null
           error?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "email_send_recipients_email_send_id_fkey"
+            columns: ["email_send_id"]
+            isOneToOne: false
+            referencedRelation: "email_sends"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_send_recipients_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_sends: {
         Row: {
           id: string
-          template_type: string | null
+          template_type: Database["public"]["Enums"]["email_template_type"]
           subject: string
           recipient_count: number
           sent_by: string | null
@@ -543,7 +807,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          template_type?: string | null
+          template_type: Database["public"]["Enums"]["email_template_type"]
           subject: string
           recipient_count?: number
           sent_by?: string | null
@@ -555,7 +819,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          template_type?: string | null
+          template_type?: Database["public"]["Enums"]["email_template_type"]
           subject?: string
           recipient_count?: number
           sent_by?: string | null
@@ -565,31 +829,47 @@ export type Database = {
           completed_at?: string | null
           status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_template_customizations: {
         Row: {
           id: string
-          template_type: string | null
+          template_type: Database["public"]["Enums"]["email_template_type"]
           customizations: Json
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
           id?: string
-          template_type?: string | null
+          template_type: Database["public"]["Enums"]["email_template_type"]
           customizations?: Json
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
           id?: string
-          template_type?: string | null
+          template_type?: Database["public"]["Enums"]["email_template_type"]
           customizations?: Json
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "email_template_customizations_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       escalation_history: {
         Row: {
@@ -622,16 +902,38 @@ export type Database = {
           reason?: string | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "escalation_history_escalated_by_fkey"
+            columns: ["escalated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_history_flag_id_fkey"
+            columns: ["flag_id"]
+            isOneToOne: false
+            referencedRelation: "flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       flags: {
         Row: {
           id: string
           flagger_id: string | null
           post_id: string
-          subject: string | null
+          subject: Database["public"]["Enums"]["flag_subject"]
           comments: string | null
-          status: string | null
+          status: Database["public"]["Enums"]["flag_status"] | null
           assigned_to: string | null
           assigned_role: number | null
           escalated_from: string | null
@@ -648,9 +950,9 @@ export type Database = {
           id?: string
           flagger_id?: string | null
           post_id: string
-          subject?: string | null
+          subject: Database["public"]["Enums"]["flag_subject"]
           comments?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["flag_status"] | null
           assigned_to?: string | null
           assigned_role?: number | null
           escalated_from?: string | null
@@ -667,9 +969,9 @@ export type Database = {
           id?: string
           flagger_id?: string | null
           post_id?: string
-          subject?: string | null
+          subject?: Database["public"]["Enums"]["flag_subject"]
           comments?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["flag_status"] | null
           assigned_to?: string | null
           assigned_role?: number | null
           escalated_from?: string | null
@@ -682,7 +984,50 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "flags_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flags_escalated_by_fkey"
+            columns: ["escalated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flags_escalated_from_fkey"
+            columns: ["escalated_from"]
+            isOneToOne: false
+            referencedRelation: "flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flags_flagger_id_fkey"
+            columns: ["flagger_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flags_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       followed_tags: {
         Row: {
@@ -700,7 +1045,22 @@ export type Database = {
           tag_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "followed_tags_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followed_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       follows: {
         Row: {
@@ -721,7 +1081,22 @@ export type Database = {
           following_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invite_code_uses: {
         Row: {
@@ -742,7 +1117,22 @@ export type Database = {
           user_id?: string
           used_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invite_code_uses_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "invite_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invite_code_uses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invite_codes: {
         Row: {
@@ -787,7 +1177,22 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invite_codes_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invite_codes_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       likes: {
         Row: {
@@ -808,7 +1213,22 @@ export type Database = {
           post_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_email_tracking: {
         Row: {
@@ -835,7 +1255,22 @@ export type Database = {
           last_email_sent_at?: string
           is_new_conversation?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "message_email_tracking_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_email_tracking_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_reactions: {
         Row: {
@@ -859,7 +1294,22 @@ export type Database = {
           emoji?: string
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -904,7 +1354,29 @@ export type Database = {
           reply_to_id?: string | null
           media_duration?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       muted_post_notifications: {
         Row: {
@@ -922,7 +1394,22 @@ export type Database = {
           post_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "muted_post_notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "muted_post_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       muted_tags: {
         Row: {
@@ -940,7 +1427,22 @@ export type Database = {
           tag_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "muted_tags_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "muted_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mutes: {
         Row: {
@@ -958,14 +1460,29 @@ export type Database = {
           muted_id?: string
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mutes_muted_id_fkey"
+            columns: ["muted_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mutes_muter_id_fkey"
+            columns: ["muter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
           id: string
           recipient_id: string
           actor_id: string | null
-          notification_type: string | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
           post_id: string | null
           comment_id: string | null
           message_id: string | null
@@ -976,7 +1493,7 @@ export type Database = {
           id?: string
           recipient_id: string
           actor_id?: string | null
-          notification_type?: string | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
           post_id?: string | null
           comment_id?: string | null
           message_id?: string | null
@@ -987,20 +1504,56 @@ export type Database = {
           id?: string
           recipient_id?: string
           actor_id?: string | null
-          notification_type?: string | null
+          notification_type?: Database["public"]["Enums"]["notification_type"]
           post_id?: string | null
           comment_id?: string | null
           message_id?: string | null
           is_read?: boolean | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pending_digest_notifications: {
         Row: {
           id: string
           recipient_id: string
-          notification_type: string | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
           actor_id: string | null
           post_id: string | null
           comment_id: string | null
@@ -1011,7 +1564,7 @@ export type Database = {
         Insert: {
           id?: string
           recipient_id: string
-          notification_type?: string | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
           actor_id?: string | null
           post_id?: string | null
           comment_id?: string | null
@@ -1022,7 +1575,7 @@ export type Database = {
         Update: {
           id?: string
           recipient_id?: string
-          notification_type?: string | null
+          notification_type?: Database["public"]["Enums"]["notification_type"]
           actor_id?: string | null
           post_id?: string | null
           comment_id?: string | null
@@ -1030,7 +1583,29 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pending_digest_notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_digest_notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_digest_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       poll_votes: {
         Row: {
@@ -1054,7 +1629,22 @@ export type Database = {
           option_index?: number
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_audio_reactions: {
         Row: {
@@ -1084,7 +1674,22 @@ export type Database = {
           transcript?: string | null
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_audio_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_audio_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_tags: {
         Row: {
@@ -1099,14 +1704,29 @@ export type Database = {
           post_id?: string
           tag_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_tags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
           id: string
           author_id: string
-          post_type: string | null
-          status: string | null
+          post_type: Database["public"]["Enums"]["post_type"]
+          status: Database["public"]["Enums"]["post_status"] | null
           content: Json
           is_sensitive: boolean | null
           original_post_id: string | null
@@ -1118,7 +1738,7 @@ export type Database = {
           created_at: string | null
           updated_at: string | null
           published_at: string | null
-          moderation_status: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"] | null
           moderation_reason: string | null
           moderated_at: string | null
           moderated_by: string | null
@@ -1134,8 +1754,8 @@ export type Database = {
         Insert: {
           id?: string
           author_id: string
-          post_type?: string | null
-          status?: string | null
+          post_type: Database["public"]["Enums"]["post_type"]
+          status?: Database["public"]["Enums"]["post_status"] | null
           content: Json
           is_sensitive?: boolean | null
           original_post_id?: string | null
@@ -1147,7 +1767,7 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
           published_at?: string | null
-          moderation_status?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"] | null
           moderation_reason?: string | null
           moderated_at?: string | null
           moderated_by?: string | null
@@ -1163,8 +1783,8 @@ export type Database = {
         Update: {
           id?: string
           author_id?: string
-          post_type?: string | null
-          status?: string | null
+          post_type?: Database["public"]["Enums"]["post_type"]
+          status?: Database["public"]["Enums"]["post_status"] | null
           content?: Json
           is_sensitive?: boolean | null
           original_post_id?: string | null
@@ -1176,7 +1796,7 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
           published_at?: string | null
-          moderation_status?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"] | null
           moderation_reason?: string | null
           moderated_at?: string | null
           moderated_by?: string | null
@@ -1189,7 +1809,43 @@ export type Database = {
           comment_count?: number
           reblog_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_original_post_id_fkey"
+            columns: ["original_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_reblogged_from_id_fkey"
+            columns: ["reblogged_from_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_links: {
         Row: {
@@ -1216,7 +1872,15 @@ export type Database = {
           sort_order?: number | null
           created_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profile_links_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1245,7 +1909,7 @@ export type Database = {
           is_verified: boolean | null
           verified_at: string | null
           role: number | null
-          lock_status: string | null
+          lock_status: Database["public"]["Enums"]["lock_status"] | null
           promise_accepted_at: string | null
           banned_at: string | null
           ban_reason: string | null
@@ -1256,7 +1920,7 @@ export type Database = {
           email_follows: boolean | null
           email_mentions: boolean | null
           email_messages: boolean | null
-          email_frequency: string | null
+          email_frequency: Database["public"]["Enums"]["email_frequency"] | null
           last_message_email_at: string | null
           allow_asks: boolean
           allow_anonymous_asks: boolean
@@ -1269,6 +1933,7 @@ export type Database = {
           allow_search_indexing: boolean
           follower_count: number
           is_searchable: boolean
+          is_nsfw: boolean
         }
         Insert: {
           id: string
@@ -1296,7 +1961,7 @@ export type Database = {
           is_verified?: boolean | null
           verified_at?: string | null
           role?: number | null
-          lock_status?: string | null
+          lock_status?: Database["public"]["Enums"]["lock_status"] | null
           promise_accepted_at?: string | null
           banned_at?: string | null
           ban_reason?: string | null
@@ -1307,7 +1972,7 @@ export type Database = {
           email_follows?: boolean | null
           email_mentions?: boolean | null
           email_messages?: boolean | null
-          email_frequency?: string | null
+          email_frequency?: Database["public"]["Enums"]["email_frequency"] | null
           last_message_email_at?: string | null
           allow_asks?: boolean
           allow_anonymous_asks?: boolean
@@ -1320,6 +1985,7 @@ export type Database = {
           allow_search_indexing?: boolean
           follower_count?: number
           is_searchable?: boolean
+          is_nsfw?: boolean
         }
         Update: {
           id?: string
@@ -1347,7 +2013,7 @@ export type Database = {
           is_verified?: boolean | null
           verified_at?: string | null
           role?: number | null
-          lock_status?: string | null
+          lock_status?: Database["public"]["Enums"]["lock_status"] | null
           promise_accepted_at?: string | null
           banned_at?: string | null
           ban_reason?: string | null
@@ -1358,7 +2024,7 @@ export type Database = {
           email_follows?: boolean | null
           email_mentions?: boolean | null
           email_messages?: boolean | null
-          email_frequency?: string | null
+          email_frequency?: Database["public"]["Enums"]["email_frequency"] | null
           last_message_email_at?: string | null
           allow_asks?: boolean
           allow_anonymous_asks?: boolean
@@ -1371,8 +2037,31 @@ export type Database = {
           allow_search_indexing?: boolean
           follower_count?: number
           is_searchable?: boolean
+          is_nsfw?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_invite_code_used_fkey"
+            columns: ["invite_code_used"]
+            isOneToOne: false
+            referencedRelation: "invite_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
@@ -1380,10 +2069,10 @@ export type Database = {
           reporter_id: string | null
           reported_user_id: string | null
           post_id: string | null
-          subject: string | null
+          subject: Database["public"]["Enums"]["report_subject"]
           comments: string | null
-          source: string | null
-          status: string | null
+          source: Database["public"]["Enums"]["report_source"] | null
+          status: Database["public"]["Enums"]["report_status"] | null
           assigned_to: string | null
           resolved_by: string | null
           resolution_notes: string | null
@@ -1401,10 +2090,10 @@ export type Database = {
           reporter_id?: string | null
           reported_user_id?: string | null
           post_id?: string | null
-          subject?: string | null
+          subject: Database["public"]["Enums"]["report_subject"]
           comments?: string | null
-          source?: string | null
-          status?: string | null
+          source?: Database["public"]["Enums"]["report_source"] | null
+          status?: Database["public"]["Enums"]["report_status"] | null
           assigned_to?: string | null
           resolved_by?: string | null
           resolution_notes?: string | null
@@ -1422,10 +2111,10 @@ export type Database = {
           reporter_id?: string | null
           reported_user_id?: string | null
           post_id?: string | null
-          subject?: string | null
+          subject?: Database["public"]["Enums"]["report_subject"]
           comments?: string | null
-          source?: string | null
-          status?: string | null
+          source?: Database["public"]["Enums"]["report_source"] | null
+          status?: Database["public"]["Enums"]["report_status"] | null
           assigned_to?: string | null
           resolved_by?: string | null
           resolution_notes?: string | null
@@ -1438,7 +2127,57 @@ export type Database = {
           escalated_at?: string | null
           escalation_reason?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_escalated_by_fkey"
+            columns: ["escalated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_escalated_from_fkey"
+            columns: ["escalated_from"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reported_user_id_fkey"
+            columns: ["reported_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tags: {
         Row: {
@@ -1495,7 +2234,22 @@ export type Database = {
           created_at?: string | null
           completed_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tips_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tips_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       typing_indicators: {
         Row: {
@@ -1513,7 +2267,22 @@ export type Database = {
           profile_id?: string
           started_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "typing_indicators_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_tag_assignments: {
         Row: {
@@ -1534,7 +2303,29 @@ export type Database = {
           assigned_at?: string | null
           assigned_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_tag_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "user_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_tag_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_tags: {
         Row: {
@@ -1588,15 +2379,22 @@ export type Database = {
           created_at?: string | null
           completed_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
     }
     Functions: {
       generate_invite_code: {
-        Args: {
-        }
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_next_queue_position: {
@@ -1641,7 +2439,24 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      appeal_status: "pending" | "approved" | "denied" | "blocked"
+      community_join_policy: "open" | "request" | "invite_only"
+      community_join_request_status: "pending" | "approved" | "rejected"
+      community_member_role: "member" | "moderator" | "owner"
+      community_visibility: "public" | "restricted" | "private"
+      email_frequency: "immediate" | "daily" | "off"
+      email_template_type: "announcement" | "founder_message" | "welcome" | "magic_link" | "password_reset" | "follow" | "like" | "comment" | "reblog" | "message" | "mention" | "digest"
+      export_status: "pending" | "processing" | "completed" | "failed" | "expired"
+      flag_status: "pending" | "reviewing" | "escalated" | "resolved_removed" | "resolved_flagged" | "resolved_dismissed"
+      flag_subject: "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "copyright" | "misinformation" | "other"
+      lock_status: "unlocked" | "restricted" | "banned"
+      moderation_status: "pending" | "approved" | "flagged" | "removed"
+      notification_type: "follow" | "like" | "comment" | "reblog" | "message" | "mention" | "ask" | "ask_answered" | "moderation" | "appeal" | "tip" | "system"
+      post_status: "draft" | "published" | "queued" | "scheduled" | "deleted"
+      post_type: "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask"
+      report_source: "user_report" | "auto_moderation" | "promise_declined"
+      report_status: "pending" | "reviewing" | "escalated" | "resolved_ban" | "resolved_restrict" | "resolved_dismissed" | "resolved_approved"
+      report_subject: "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1768,6 +2583,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      appeal_status: ["pending", "approved", "denied", "blocked"],
+      community_join_policy: ["open", "request", "invite_only"],
+      community_join_request_status: ["pending", "approved", "rejected"],
+      community_member_role: ["member", "moderator", "owner"],
+      community_visibility: ["public", "restricted", "private"],
+      email_frequency: ["immediate", "daily", "off"],
+      email_template_type: ["announcement", "founder_message", "welcome", "magic_link", "password_reset", "follow", "like", "comment", "reblog", "message", "mention", "digest"],
+      export_status: ["pending", "processing", "completed", "failed", "expired"],
+      flag_status: ["pending", "reviewing", "escalated", "resolved_removed", "resolved_flagged", "resolved_dismissed"],
+      flag_subject: ["minor_safety", "non_consensual", "harassment", "spam", "illegal", "copyright", "misinformation", "other"],
+      lock_status: ["unlocked", "restricted", "banned"],
+      moderation_status: ["pending", "approved", "flagged", "removed"],
+      notification_type: ["follow", "like", "comment", "reblog", "message", "mention", "ask", "ask_answered", "moderation", "appeal", "tip", "system"],
+      post_status: ["draft", "published", "queued", "scheduled", "deleted"],
+      post_type: ["text", "image", "video", "audio", "gallery", "poll", "ask"],
+      report_source: ["user_report", "auto_moderation", "promise_declined"],
+      report_status: ["pending", "reviewing", "escalated", "resolved_ban", "resolved_restrict", "resolved_dismissed", "resolved_approved"],
+      report_subject: ["minor_safety", "non_consensual", "harassment", "spam", "illegal", "other"],
+    },
   },
 } as const
