@@ -44,3 +44,9 @@ next-env.d.ts
 
 # SupaTypes config (contains server credentials)
 .supatypes.json
+
+# editor / IDE
+.idea/
+
+# local Claude Code settings
+.claude/settings.local.json
