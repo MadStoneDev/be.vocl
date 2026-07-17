@@ -31,7 +31,7 @@ export function ManuscriptColumn({
   const isMedia = postType === "image" || postType === "video" || postType === "audio" || postType === "gif";
 
   return (
-    <div className="mx-auto w-full max-w-[680px] px-5 py-10 md:py-12">
+    <div className="w-full px-5 md:px-8 py-10 md:py-12">
       {/* Media / poll hero block at the TOP of the column */}
       {(isMedia || isPoll) && (
         <div className="mb-8">

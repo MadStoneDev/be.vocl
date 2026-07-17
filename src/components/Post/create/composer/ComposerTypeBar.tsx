@@ -35,33 +35,30 @@ export function ComposerTypeBar({
     <div
       role="tablist"
       aria-label="Post type"
-      className="px-4 md:px-6 py-2.5 border-b border-[var(--vocl-border)] overflow-x-auto shrink-0"
+      className="flex items-center gap-1.5 px-4 md:px-6 py-2.5 border-b border-[var(--vocl-border)] overflow-x-auto shrink-0"
       style={{ scrollbarWidth: "none" }}
     >
-      {/* Centered when it fits; collapses to a left-aligned scroll strip when narrow. */}
-      <div className="mx-auto flex w-max items-center gap-1.5">
-        {POST_TYPES.map(({ type, icon: Icon, label }) => {
-          const active = postType === type;
-          return (
-            <button
-              key={type}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => onPostTypeChange(type)}
-              className={`flex items-center gap-2 px-3.5 h-9 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
-                active
-                  ? "text-white border-transparent"
-                  : "text-foreground/70 border-[var(--vocl-border)] hover:bg-[var(--vocl-hover)] hover:text-foreground"
-              }`}
-              style={active ? { backgroundColor: "var(--vocl-primary)" } : undefined}
-            >
-              <Icon size={16} />
-              {label}
-            </button>
-          );
-        })}
-      </div>
+      {POST_TYPES.map(({ type, icon: Icon, label }) => {
+        const active = postType === type;
+        return (
+          <button
+            key={type}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onPostTypeChange(type)}
+            className={`flex items-center gap-2 px-3.5 h-9 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
+              active
+                ? "text-white border-transparent"
+                : "text-foreground/70 border-[var(--vocl-border)] hover:bg-[var(--vocl-hover)] hover:text-foreground"
+            }`}
+            style={active ? { backgroundColor: "var(--vocl-primary)" } : undefined}
+          >
+            <Icon size={16} />
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
