@@ -1461,6 +1461,10 @@ export function ImageContent({ src, alt, caption, priority, article, fullBleed }
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
 
+  // Animated GIFs can't be optimized by Next (it would freeze them to a still),
+  // so serve them as-is to preserve the animation.
+  const isGif = /\.gif(?:$|\?)/i.test(src);
+
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     if (img.naturalWidth && img.naturalHeight) {
@@ -1489,6 +1493,7 @@ export function ImageContent({ src, alt, caption, priority, article, fullBleed }
             priority={!!priority}
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
+            unoptimized={isGif}
             className="object-cover"
             onLoad={handleImageLoad}
           />
@@ -1528,6 +1533,7 @@ export function ImageContent({ src, alt, caption, priority, article, fullBleed }
           priority={!!priority}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
+          unoptimized={isGif}
           className="object-cover hover:brightness-75 transition-all"
           onLoad={handleImageLoad}
         />

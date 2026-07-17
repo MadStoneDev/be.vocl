@@ -51,6 +51,20 @@ export function validateCsrf(request: NextRequest): NextResponse | null {
 
   // If we have an origin, validate it
   if (requestOrigin) {
+    // Always allow genuine same-origin requests: if the Origin host matches the
+    // host the app is actually served on, it is by definition not cross-site.
+    // This keeps CSRF working regardless of how NEXT_PUBLIC_APP_URL is set and
+    // survives domain changes / reverse proxies (Coolify forwards x-forwarded-host).
+    const selfHost =
+      request.headers.get("x-forwarded-host") || request.headers.get("host");
+    if (selfHost) {
+      try {
+        if (new URL(requestOrigin).host === selfHost) return null;
+      } catch {
+        // fall through to the allow-list check below
+      }
+    }
+
     const allowedOrigins = getAllowedOrigins();
 
     // Check if the origin is allowed

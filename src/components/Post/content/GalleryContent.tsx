@@ -106,6 +106,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
                   priority={!!priority && index === 0}
                   loading={priority && index === 0 ? "eager" : "lazy"}
                   fetchPriority={priority && index === 0 ? "high" : "auto"}
+                  unoptimized={/\.gif(?:$|\?)/i.test(src)}
                   className="object-cover hover:brightness-95 transition-all"
                   onLoad={(e) => handleImageLoad(index, e)}
                 />

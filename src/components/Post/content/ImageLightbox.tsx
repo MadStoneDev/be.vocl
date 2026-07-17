@@ -105,6 +105,7 @@ export function ImageLightbox({
           width={1200}
           height={800}
           onClick={(e) => e.stopPropagation()}
+          unoptimized={/\.gif(?:$|\?)/i.test(images[currentIndex] ?? "")}
           className="w-auto h-auto max-w-[90vw] max-h-[85vh] object-contain"
           priority
         />
