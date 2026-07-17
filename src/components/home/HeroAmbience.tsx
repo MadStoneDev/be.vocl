@@ -48,6 +48,11 @@ const GLYPHS: Glyph[] = [
   { Icon: IconMicrophone, color: "var(--vocl-pink)", path: 2, size: 18, op: 0.26, dur: "19s", delay: "-9s", at: "44%" },
 ];
 
+// Blow the whole composition up so it's unmistakable. The art is authored in a
+// 360×560 box; we scale that box from its inner edge (nearest the carousel) so
+// it grows outward into the gutter and up/down, staying pinned to the story.
+const SCALE = 2.2;
+
 function Stage({ side }: { side: "left" | "right" }) {
   const gradientId = `hero-line-${side}`;
   // Inner edge (nearest the carousel) is the right side of the box; fade the
@@ -58,14 +63,20 @@ function Stage({ side }: { side: "left" | "right" }) {
 
   const wrapper =
     side === "left"
-      ? "right-full mr-[-16px]"
-      : "left-full ml-[-16px] scale-x-[-1]";
+      ? "right-full mr-[-24px]"
+      : "left-full ml-[-24px] scale-x-[-1]";
 
   return (
-    <div
-      className={`absolute top-1/2 h-[560px] w-[360px] -translate-y-1/2 ${wrapper}`}
-      style={{ WebkitMaskImage: mask, maskImage: mask }}
-    >
+    <div className={`absolute top-1/2 -translate-y-1/2 ${wrapper}`}>
+      <div
+        className="relative h-[560px] w-[360px]"
+        style={{
+          transform: `scale(${SCALE})`,
+          transformOrigin: "100% 50%",
+          WebkitMaskImage: mask,
+          maskImage: mask,
+        }}
+      >
       {/* warm pink glow so the gutter never reads as flat empty space */}
       <div
         className="hero-glow absolute inset-0"
@@ -137,6 +148,7 @@ function Stage({ side }: { side: "left" | "right" }) {
           </span>
         );
       })}
+      </div>
     </div>
   );
 }
