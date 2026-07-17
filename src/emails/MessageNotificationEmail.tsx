@@ -65,7 +65,7 @@ export function MessageNotificationEmail({
 
       <Section style={emailStyles.buttonContainer}>
         <Button
-          href={`https://be.vocl.app/feed?conversation=${conversationId}`}
+          href={`https://bevocl.com/feed?conversation=${conversationId}`}
           style={emailStyles.button}
         >
           Reply to Message

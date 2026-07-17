@@ -5,7 +5,7 @@ import { getPublicFrontPagePosts } from "@/actions/posts";
 import { FrontPageGrid } from "@/components/feed/frontpage";
 import type { FeedPost } from "@/components/feed/FeedList";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 export const metadata: Metadata = {
   title: "Discover | be.vocl",

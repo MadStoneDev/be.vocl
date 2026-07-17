@@ -212,8 +212,8 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">12. Contact</h2>
             <p className="text-foreground/80">
               For questions about these Terms, please contact us at{" "}
-              <a href="mailto:hello@bevocl.app" className="text-vocl-primary hover:underline">
-                hello@bevocl.app
+              <a href="mailto:hello@bevocl.com" className="text-vocl-primary hover:underline">
+                hello@bevocl.com
               </a>
               .
             </p>
@@ -224,8 +224,8 @@ export default function TermsOfServicePage() {
             <p className="text-foreground/80">
               If you encounter content that violates these terms, please report it using the report
               function on the content or contact us at{" "}
-              <a href="mailto:hello@bevocl.app" className="text-vocl-primary hover:underline">
-                hello@bevocl.app
+              <a href="mailto:hello@bevocl.com" className="text-vocl-primary hover:underline">
+                hello@bevocl.com
               </a>
               . We take all reports seriously and review them promptly.
             </p>

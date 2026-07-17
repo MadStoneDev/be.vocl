@@ -77,7 +77,7 @@ export function ReblogNotificationEmail({
 
       <Section style={emailStyles.buttonContainer}>
         <Button
-          href={`https://be.vocl.app/post/${reblogPostId}`}
+          href={`https://bevocl.com/post/${reblogPostId}`}
           style={emailStyles.button}
         >
           View Reblog

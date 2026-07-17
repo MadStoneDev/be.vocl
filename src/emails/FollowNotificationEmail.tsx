@@ -57,7 +57,7 @@ export function FollowNotificationEmail({
 
       <Section style={emailStyles.buttonContainer}>
         <Button
-          href={`https://be.vocl.app/profile/${followerUsername}`}
+          href={`https://bevocl.com/profile/${followerUsername}`}
           style={emailStyles.button}
         >
           View Profile

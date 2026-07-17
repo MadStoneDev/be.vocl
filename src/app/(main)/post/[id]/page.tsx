@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { PostPageClient } from "./PostPageClient";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 interface Props {
   params: Promise<{ id: string }>;

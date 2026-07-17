@@ -9,7 +9,7 @@ import { getFeaturedPosts } from "@/lib/featured";
 import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
 import { HeroAmbience } from "@/components/home/HeroAmbience";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 export const metadata: Metadata = {
   title: "be.vocl — Share your voice freely",

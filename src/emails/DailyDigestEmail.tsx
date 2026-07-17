@@ -75,7 +75,7 @@ export function DailyDigestEmail({
 
       <Section style={emailStyles.buttonContainer}>
         <Button
-          href="https://be.vocl.app/notifications"
+          href="https://bevocl.com/notifications"
           style={emailStyles.button}
         >
           View All Notifications
@@ -86,7 +86,7 @@ export function DailyDigestEmail({
 
       <Text style={{ ...emailStyles.mutedText, textAlign: "center" }}>
         Want to change how often you receive these? Update your{" "}
-        <a href="https://be.vocl.app/settings/notifications" style={linkStyle}>
+        <a href="https://bevocl.com/settings/notifications" style={linkStyle}>
           notification settings
         </a>
         .

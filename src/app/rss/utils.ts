@@ -1,5 +1,5 @@
 const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+  process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 export function getAppUrl(): string {
   return APP_URL;

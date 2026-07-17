@@ -35,9 +35,9 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
         <Container style={container}>
           {/* Header with logo */}
           <Section style={header}>
-            <Link href="https://be.vocl.app" style={logoLink}>
+            <Link href="https://bevocl.com" style={logoLink}>
               <Img
-                src="https://be.vocl.app/bevocl%20logo.png"
+                src="https://bevocl.com/bevocl%20logo.png"
                 alt="be.vocl"
                 width="120"
                 height="auto"
@@ -55,15 +55,15 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
               You&apos;re receiving this email because you have an account on be.vocl.
             </Text>
             <Text style={footerLinks}>
-              <Link href="https://be.vocl.app/settings" style={footerLink}>
+              <Link href="https://bevocl.com/settings" style={footerLink}>
                 Email Settings
               </Link>
               {" • "}
-              <Link href="https://be.vocl.app/help" style={footerLink}>
+              <Link href="https://bevocl.com/help" style={footerLink}>
                 Help Center
               </Link>
               {" • "}
-              <Link href="https://be.vocl.app" style={footerLink}>
+              <Link href="https://bevocl.com" style={footerLink}>
                 Visit be.vocl
               </Link>
             </Text>

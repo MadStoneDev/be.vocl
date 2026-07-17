@@ -15,7 +15,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 async function getEmbeddablePost(id: string) {
   const supabase = createAdminClient();

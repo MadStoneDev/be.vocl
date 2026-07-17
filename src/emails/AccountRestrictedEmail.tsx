@@ -49,7 +49,7 @@ export function AccountRestrictedEmail({ username }: AccountRestrictedEmailProps
       </Text>
 
       <Section style={emailStyles.buttonContainer}>
-        <Button href="https://be.vocl.app/account-status" style={emailStyles.button}>
+        <Button href="https://bevocl.com/account-status" style={emailStyles.button}>
           View Account Status
         </Button>
       </Section>
@@ -62,7 +62,7 @@ export function AccountRestrictedEmail({ username }: AccountRestrictedEmailProps
 
       <Text style={{ ...emailStyles.mutedText, fontSize: "12px" }}>
         If you have questions, you can reach our support team at
-        support@be.vocl.app.
+        support@bevocl.com.
       </Text>
     </EmailLayout>
   );

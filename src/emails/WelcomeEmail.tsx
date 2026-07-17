@@ -31,7 +31,7 @@ export function WelcomeEmail({ username }: WelcomeEmailProps) {
       </Text>
 
       <Section style={emailStyles.buttonContainer}>
-        <Button href="https://be.vocl.app/feed" style={emailStyles.button}>
+        <Button href="https://bevocl.com/feed" style={emailStyles.button}>
           Start Exploring
         </Button>
       </Section>

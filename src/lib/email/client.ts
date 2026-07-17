@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { EMAIL_DOMAIN } from "@/lib/site";
 
 // Initialize Resend client
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -9,14 +10,16 @@ if (!resendApiKey) {
 
 export const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-// Email configuration
+// Email configuration. From-addresses track the canonical domain (EMAIL_DOMAIN)
+// so they stay in sync with NEXT_PUBLIC_APP_URL — this domain must be verified
+// in Resend or delivery fails.
 export const emailConfig = {
   from: {
-    default: "be.vocl <noreply@be.vocl.app>",
-    notifications: "be.vocl <notifications@be.vocl.app>",
-    support: "be.vocl Support <support@be.vocl.app>",
+    default: `be.vocl <noreply@${EMAIL_DOMAIN}>`,
+    notifications: `be.vocl <notifications@${EMAIL_DOMAIN}>`,
+    support: `be.vocl Support <support@${EMAIL_DOMAIN}>`,
   },
-  replyTo: "support@be.vocl.app",
+  replyTo: `support@${EMAIL_DOMAIN}`,
 };
 
 // Check if email is configured

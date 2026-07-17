@@ -31,7 +31,7 @@ function getSafeRedirectUrl(url: string | null): string {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const origin = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+  const origin = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
   // PKCE flow - OAuth providers
   const code = searchParams.get("code");

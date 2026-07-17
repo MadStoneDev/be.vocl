@@ -71,7 +71,7 @@ export function DataExportReadyEmail({
 
       <Text style={emailStyles.mutedText}>
         Your export is in JSON format. If you need help understanding the data
-        or have questions, visit our help center or contact support@be.vocl.app.
+        or have questions, visit our help center or contact support@bevocl.com.
       </Text>
     </EmailLayout>
   );

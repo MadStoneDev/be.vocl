@@ -57,7 +57,7 @@ export function MentionNotificationEmail({
 
       <Section style={emailStyles.buttonContainer}>
         <Button
-          href={`https://be.vocl.app/post/${postId}`}
+          href={`https://bevocl.com/post/${postId}`}
           style={emailStyles.button}
         >
           View Post

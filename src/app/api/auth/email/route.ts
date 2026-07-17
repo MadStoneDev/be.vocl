@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         { status: 429, headers: getRateLimitHeaders(rateLimit) }
       );
     }
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
     switch (payload.type) {
       case "signup": {

@@ -53,7 +53,15 @@
       "Bash(sed -n '50,62p' src/components/feed/FeedTabs.tsx)",
       "Bash(sed -n '96,104p' src/components/feed/WhoToFollow.tsx)",
       "Bash(awk *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git rev-list *)",
+      "Bash(git ls-remote *)",
+      "WebFetch(domain:sightengine.com)",
+      "Skill(artifact-design)",
+      "Artifact",
+      "Bash(git check-ignore *)"
     ]
   }
 }
