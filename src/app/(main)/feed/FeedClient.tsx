@@ -19,6 +19,7 @@ import { getPersonalizedFeed, getTrendingFeed } from "@/actions/recommendations"
 import { updateFeedLayout } from "@/actions/profile";
 import { useAuth } from "@/hooks/useAuth";
 import { useSwipe } from "@/hooks/useSwipe";
+import { useAutoHide } from "@/hooks/useAutoHide";
 import type { VideoEmbedPlatform, PostType } from "@/types/database";
 
 // Tab order for swipe navigation (matches FeedTabs display order).
@@ -214,6 +215,8 @@ export default function FeedClient({
   initialLayout,
 }: FeedClientProps) {
   const [activeTab, setActiveTab] = useState<FeedTab>("chronological");
+  // Auto-hiding feed nav: slides away as you read down, returns on scroll-up.
+  const navHidden = useAutoHide();
   const [showPromiseBanner, setShowPromiseBanner] = useState(initialShowPromise);
   const [showFlaggedBanner] = useState(initialShowFlagged);
 
@@ -337,16 +340,24 @@ export default function FeedClient({
       {/* Flagged Content Banner - show if user has pending reports */}
       {showFlaggedBanner && <FlaggedContentBanner />}
 
-      {/* Toggle is always in the markup; FeedTabs hides it below lg via CSS,
+      {/* Auto-hiding sticky nav: sticks under the mobile top bar (md: page top),
+          slides up while scrolling down, and drops back in on scroll-up.
+          Toggle is always in the markup; FeedTabs hides it below lg via CSS,
           so it's in the SSR HTML and doesn't pop in (squeezing the sort tabs)
           after hydration. */}
-      <FeedTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        layout={layout}
-        onLayoutChange={changeLayout}
-        showLayoutToggle
-      />
+      <div
+        className={`sticky top-12 md:top-0 z-30 bg-background transition-transform duration-300 ease-out ${
+          navHidden ? "-translate-y-[calc(100%+1rem)]" : "translate-y-0"
+        }`}
+      >
+        <FeedTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          layout={layout}
+          onLayoutChange={changeLayout}
+          showLayoutToggle
+        />
+      </div>
 
       <OnThisDayCard />
 

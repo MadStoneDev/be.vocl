@@ -368,6 +368,7 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
             alt={headline}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
+            unoptimized
             className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
           <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded bg-black/65 px-1.5 py-0.5 text-white type-meta">

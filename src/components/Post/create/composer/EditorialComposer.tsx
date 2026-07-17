@@ -24,6 +24,7 @@ import {
 } from "./useComposerState";
 import { useComposerDraft } from "./useComposerDraft";
 import { ComposerTopBar } from "./ComposerTopBar";
+import { ComposerTypeBar } from "./ComposerTypeBar";
 import { ManuscriptColumn } from "./ManuscriptColumn";
 import { ComposerInspector } from "./ComposerInspector";
 
@@ -296,8 +297,6 @@ export function EditorialComposer({
       <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-3xl border border-[var(--vocl-border)] bg-background shadow-2xl overflow-hidden">
         <ComposerTopBar
           mode={mode}
-          postType={state.postType}
-          onPostTypeChange={setPostType}
           publishMode={state.publishMode}
           onPublishModeChange={(m) => patch({ publishMode: m })}
           draftStatus={draftStatus}
@@ -306,9 +305,16 @@ export function EditorialComposer({
           onClose={handleClose}
           onSubmit={handleSubmit}
           isPending={isPending}
-          lockType={isEdit}
           submitLabel={submitLabel}
         />
+
+        {/* Prominent post-type selector (create only; edit locks the type). */}
+        {!isEdit && (
+          <ComposerTypeBar
+            postType={state.postType}
+            onPostTypeChange={setPostType}
+          />
+        )}
 
         {/* Thread banner */}
         {threadId && !isEdit && (

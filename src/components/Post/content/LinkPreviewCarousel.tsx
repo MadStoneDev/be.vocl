@@ -31,12 +31,15 @@ function PreviewCard({
     hostname = preview.url;
   }
 
+  // Article/reader mode uses a lighter, transparent editorial card that sits IN
+  // the reading column (no opaque white-on-white surface); the feed keeps the
+  // solid card. Both are theme-aware.
   const c = article
-    ? { card: "border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/40" }
-    : { card: "border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
+    ? { wrap: "rounded-lg border-vocl-border bg-transparent", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/60", icon: "text-foreground/40" }
+    : { wrap: "rounded-sm border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
 
   const card = (
-    <div className={`relative rounded-sm overflow-hidden border ${c.card}`}>
+    <div className={`relative overflow-hidden border ${c.wrap}`}>
       {/* Dismiss button */}
       {editable && onDismiss && (
         <button

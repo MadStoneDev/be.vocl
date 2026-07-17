@@ -10,29 +10,12 @@ import {
   IconLoader2,
   IconEye,
   IconEyeOff,
-  IconFileText,
-  IconPhoto,
-  IconVideo,
-  IconMusic,
-  IconGif,
-  IconChartBar,
 } from "@tabler/icons-react";
-import type { PostType, PublishMode } from "./useComposerState";
+import type { PublishMode } from "./useComposerState";
 import { type DraftStatus, formatDraftStatus } from "./useComposerDraft";
-
-const POST_TYPES: { type: PostType; icon: typeof IconFileText; label: string }[] = [
-  { type: "text", icon: IconFileText, label: "Text" },
-  { type: "image", icon: IconPhoto, label: "Image" },
-  { type: "video", icon: IconVideo, label: "Video" },
-  { type: "audio", icon: IconMusic, label: "Audio" },
-  { type: "gif", icon: IconGif, label: "GIF" },
-  { type: "poll", icon: IconChartBar, label: "Poll" },
-];
 
 interface ComposerTopBarProps {
   mode: "create" | "edit";
-  postType: PostType;
-  onPostTypeChange: (type: PostType) => void;
   publishMode: PublishMode;
   onPublishModeChange: (mode: PublishMode) => void;
   draftStatus: DraftStatus;
@@ -41,15 +24,11 @@ interface ComposerTopBarProps {
   onClose: () => void;
   onSubmit: () => void;
   isPending: boolean;
-  /** Disable type switching (edit mode locks the post type). */
-  lockType?: boolean;
   submitLabel?: string;
 }
 
 export function ComposerTopBar({
   mode,
-  postType,
-  onPostTypeChange,
   publishMode,
   onPublishModeChange,
   draftStatus,
@@ -58,11 +37,9 @@ export function ComposerTopBar({
   onClose,
   onSubmit,
   isPending,
-  lockType = false,
   submitLabel,
 }: ComposerTopBarProps) {
   const [now, setNow] = useState(() => Date.now());
-  const [typeMenuOpen, setTypeMenuOpen] = useState(false);
   const [publishMenuOpen, setPublishMenuOpen] = useState(false);
 
   // Tick so the "saved Ns ago" label stays fresh.
@@ -73,10 +50,6 @@ export function ComposerTopBar({
   }, [draftStatus]);
 
   const draftLabel = formatDraftStatus(draftStatus, now);
-  const ActiveTypeIcon =
-    POST_TYPES.find((t) => t.type === postType)?.icon || IconFileText;
-  const activeTypeLabel =
-    POST_TYPES.find((t) => t.type === postType)?.label || "Text";
 
   const publishVerb =
     publishMode === "queue"
@@ -118,52 +91,6 @@ export function ComposerTopBar({
 
       {/* Right: controls */}
       <div className="flex items-center gap-2">
-        {/* Post-type switcher (hidden / locked in edit mode) */}
-        {!lockType && (
-          <div className="relative hidden xs:block">
-            <button
-              type="button"
-              onClick={() => {
-                setTypeMenuOpen((v) => !v);
-                setPublishMenuOpen(false);
-              }}
-              className="flex items-center gap-1.5 px-3 h-9 rounded-full text-sm text-foreground/80 hover:bg-[var(--vocl-hover)] border border-[var(--vocl-border)] transition-colors"
-            >
-              <ActiveTypeIcon size={16} />
-              <span className="hidden md:inline">{activeTypeLabel}</span>
-              <IconChevronDown size={14} />
-            </button>
-            {typeMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setTypeMenuOpen(false)}
-                />
-                <div className="absolute right-0 top-11 z-50 w-44 rounded-xl border border-[var(--vocl-border)] bg-vocl-surface-dark shadow-xl overflow-hidden p-1">
-                  {POST_TYPES.map(({ type, icon: Icon, label }) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => {
-                        onPostTypeChange(type);
-                        setTypeMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        postType === type
-                          ? "bg-[var(--vocl-hover)] text-foreground"
-                          : "text-foreground/70 hover:bg-[var(--vocl-hover)]"
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
         {/* Preview toggle */}
         <button
           type="button"
@@ -199,10 +126,7 @@ export function ComposerTopBar({
           {mode === "create" && (
             <button
               type="button"
-              onClick={() => {
-                setPublishMenuOpen((v) => !v);
-                setTypeMenuOpen(false);
-              }}
+              onClick={() => setPublishMenuOpen((v) => !v)}
               disabled={isPending}
               className="flex items-center justify-center w-8 h-9 rounded-r-full text-white border-l border-white/20 transition-colors disabled:opacity-60"
               style={{ backgroundColor: "var(--vocl-primary)" }}

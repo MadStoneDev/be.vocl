@@ -7,6 +7,7 @@ import { FrontPageGrid } from "@/components/feed/frontpage";
 import type { FeedPost } from "@/components/feed/FeedList";
 import { getFeaturedPosts } from "@/lib/featured";
 import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
+import { HeroAmbience } from "@/components/home/HeroAmbience";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.app";
 
@@ -75,7 +76,8 @@ export default async function Home() {
 
       {/* Featured carousel hero */}
       {featured.length > 0 && (
-        <section className="py-10 sm:py-14">
+        <section className="relative isolate overflow-hidden py-10 sm:py-14">
+          <HeroAmbience />
           <FeaturedCarousel items={featured} />
         </section>
       )}

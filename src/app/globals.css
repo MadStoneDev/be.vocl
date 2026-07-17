@@ -204,6 +204,58 @@ html.theme-transition body {
   }
 }
 
+/* --- Landing hero ambience: post-type glyphs riding connection lines ---
+   Fills the empty gutters beside the featured carousel. Pure CSS motion
+   (no per-frame JS); everything below is gated behind no-preference so
+   reduced-motion users get a calm static composition instead. */
+@keyframes hero-glyph-ride {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  14%  { opacity: var(--glyph-op, 0.28); }
+  86%  { opacity: var(--glyph-op, 0.28); }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes hero-line-flow {
+  to { stroke-dashoffset: -280; }
+}
+@keyframes hero-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(5px, -12px, 0); }
+}
+@keyframes hero-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.07); }
+}
+
+.hero-glyph {
+  position: absolute;
+  top: 0;
+  left: 0;
+  offset-path: var(--glyph-path);
+  offset-distance: var(--glyph-static, 50%);
+  offset-rotate: 0deg; /* keep icons upright, don't rotate with the tangent */
+  opacity: var(--glyph-op, 0.28);
+  color: var(--glyph-color, var(--vocl-pink));
+  filter: blur(0.3px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-glyph {
+    opacity: 0;
+    animation: hero-glyph-ride var(--glyph-dur, 18s) linear infinite;
+    animation-delay: var(--glyph-delay, 0s);
+    will-change: offset-distance, opacity;
+  }
+  .hero-line {
+    animation: hero-line-flow var(--line-dur, 14s) linear infinite;
+  }
+  .hero-drift {
+    animation: hero-drift var(--drift-dur, 16s) ease-in-out infinite;
+  }
+  .hero-glow {
+    animation: hero-glow-pulse var(--glow-dur, 9s) ease-in-out infinite;
+  }
+}
+
 /* Screen reader only */
 .sr-only {
   position: absolute;
