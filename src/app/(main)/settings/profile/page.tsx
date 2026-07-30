@@ -23,6 +23,7 @@ import {
   removeProfileLink,
   reorderProfileLinks,
 } from "@/actions/profile";
+import { ImageCropModal } from "@/components/profile/ImageCropModal";
 
 interface ProfileLink {
   id: string;
@@ -66,6 +67,10 @@ export default function ProfileSettingsPage() {
   // Upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingHeader, setIsUploadingHeader] = useState(false);
+
+  // Crop modal state
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropKind, setCropKind] = useState<"avatar" | "header" | null>(null);
 
   // Track changes
   const [hasChanges, setHasChanges] = useState(false);
@@ -129,112 +134,80 @@ export default function ProfileSettingsPage() {
     setIsSaving(false);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Pick a file → validate → open the crop modal (no upload yet).
+  const handlePickFile = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    kind: "avatar" | "header",
+  ) => {
     const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-picking the same file
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
     }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
+    const maxMb = kind === "avatar" ? 5 : 10;
+    if (file.size > maxMb * 1024 * 1024) {
+      toast.error(`Image must be less than ${maxMb}MB`);
       return;
     }
 
-    setIsUploadingAvatar(true);
-    try {
-      // Get presigned URL
-      const presignRes = await fetch("/api/upload/presign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          uploadType: "avatar",
-        }),
-      });
-
-      if (!presignRes.ok) throw new Error("Failed to get upload URL");
-
-      const { uploadUrl, publicUrl } = await presignRes.json();
-
-      // Upload file
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
-      });
-
-      if (!uploadRes.ok) throw new Error("Failed to upload file");
-
-      // Update profile
-      const updateResult = await updateProfile({ avatarUrl: publicUrl });
-      if (updateResult.success) {
-        setAvatarUrl(publicUrl);
-        toast.success("Avatar updated!");
-      } else {
-        throw new Error(updateResult.error);
-      }
-    } catch (error) {
-      toast.error("Failed to upload avatar");
-    } finally {
-      setIsUploadingAvatar(false);
-    }
+    setCropSrc(URL.createObjectURL(file));
+    setCropKind(kind);
   };
 
-  const handleHeaderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const closeCrop = () => {
+    setCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setCropKind(null);
+  };
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
+  // Upload the cropped blob via the presign flow, then save it to the profile.
+  const handleCropConfirm = async (blob: Blob) => {
+    if (!cropKind) return;
+    const kind = cropKind;
+    const setUploading = kind === "avatar" ? setIsUploadingAvatar : setIsUploadingHeader;
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image must be less than 10MB");
-      return;
-    }
-
-    setIsUploadingHeader(true);
+    setUploading(true);
     try {
       const presignRes = await fetch("/api/upload/presign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          uploadType: "header",
+          filename: `${kind}.jpg`,
+          contentType: "image/jpeg",
+          uploadType: kind,
         }),
       });
-
       if (!presignRes.ok) throw new Error("Failed to get upload URL");
 
       const { uploadUrl, publicUrl } = await presignRes.json();
 
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
+        body: blob,
+        headers: { "Content-Type": "image/jpeg" },
       });
-
       if (!uploadRes.ok) throw new Error("Failed to upload file");
 
-      const updateResult = await updateProfile({ headerUrl: publicUrl });
-      if (updateResult.success) {
-        setHeaderUrl(publicUrl);
-        toast.success("Header updated!");
-      } else {
-        throw new Error(updateResult.error);
-      }
-    } catch (error) {
-      toast.error("Failed to upload header image");
+      const updateResult = await updateProfile(
+        kind === "avatar" ? { avatarUrl: publicUrl } : { headerUrl: publicUrl },
+      );
+      if (!updateResult.success) throw new Error(updateResult.error);
+
+      if (kind === "avatar") setAvatarUrl(publicUrl);
+      else setHeaderUrl(publicUrl);
+      toast.success(kind === "avatar" ? "Avatar updated!" : "Header updated!");
+      closeCrop();
+    } catch {
+      toast.error(
+        kind === "avatar" ? "Failed to upload avatar" : "Failed to upload header image",
+      );
     } finally {
-      setIsUploadingHeader(false);
+      setUploading(false);
     }
   };
 
@@ -336,7 +309,7 @@ export default function ProfileSettingsPage() {
           ref={headerInputRef}
           type="file"
           accept="image/*"
-          onChange={handleHeaderUpload}
+          onChange={(e) => handlePickFile(e, "header")}
           className="hidden"
         />
 
@@ -376,7 +349,7 @@ export default function ProfileSettingsPage() {
             ref={avatarInputRef}
             type="file"
             accept="image/*"
-            onChange={handleAvatarUpload}
+            onChange={(e) => handlePickFile(e, "avatar")}
             className="hidden"
           />
         </div>
@@ -588,6 +561,20 @@ export default function ProfileSettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Crop modal for avatar / header */}
+      {cropSrc && cropKind && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={cropKind === "avatar" ? 1 : 3}
+          round={cropKind === "avatar"}
+          title={cropKind === "avatar" ? "Adjust profile photo" : "Adjust header image"}
+          outputWidth={cropKind === "avatar" ? 512 : 1500}
+          busy={cropKind === "avatar" ? isUploadingAvatar : isUploadingHeader}
+          onCancel={closeCrop}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </div>
   );
 }
