@@ -60,7 +60,7 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
               </Link>
               {" • "}
               <Link href="https://bevocl.com/help" style={footerLink}>
-                Help Center
+                Help Centre
               </Link>
               {" • "}
               <Link href="https://bevocl.com" style={footerLink}>

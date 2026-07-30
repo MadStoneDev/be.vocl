@@ -131,10 +131,16 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="h-64 overflow-y-auto p-2"
+        className={`${inline ? "h-[60vh] min-h-80" : "h-72"} overflow-y-auto p-2`}
       >
         {gifs.length > 0 ? (
-          <div className={`grid gap-1.5 ${inline ? "grid-cols-3" : "grid-cols-2"}`}>
+          <div
+            className={`grid gap-1.5 ${
+              inline
+                ? "grid-cols-3 sm:grid-cols-4 lg:grid-cols-5"
+                : "grid-cols-2 sm:grid-cols-3"
+            }`}
+          >
             {gifs.map((gif) => (
               <button
                 key={gif.id}

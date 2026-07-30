@@ -75,7 +75,7 @@ export function WelcomeEmail({ username }: WelcomeEmailProps) {
       <Hr style={emailStyles.divider} />
 
       <Text style={emailStyles.mutedText}>
-        Have questions? Reply to this email or visit our help center. We&apos;re
+        Have questions? Reply to this email or visit our help centre. We&apos;re
         here to help you make the most of be.vocl.
       </Text>
 

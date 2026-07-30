@@ -368,7 +368,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 const value = e.target.value;
                 let error: string | null = null;
                 if (value.trim() && !parseVideoUrl(value)) {
-                  error = "URL not recognized. Supported: YouTube, Vimeo, Rumble, Dailymotion";
+                  error = "URL not recognised. Supported: YouTube, Vimeo, Rumble, Dailymotion";
                 }
                 patch({ videoEmbedUrl: value, videoEmbedError: error });
               }}

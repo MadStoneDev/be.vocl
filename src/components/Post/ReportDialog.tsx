@@ -27,7 +27,7 @@ const flagReasons: { value: FlagSubject; label: string; description: string }[] 
   {
     value: "harassment",
     label: "Harassment or bullying",
-    description: "Targeting someone with harmful behavior",
+    description: "Targeting someone with harmful behaviour",
   },
   {
     value: "minor_safety",

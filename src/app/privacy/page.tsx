@@ -87,11 +87,11 @@ export default function PrivacyPolicyPage() {
               <li>Provide, maintain, and improve the Service</li>
               <li>Create and manage your account</li>
               <li>Enable you to communicate with other users</li>
-              <li>Personalize your experience and content recommendations</li>
+              <li>Personalise your experience and content recommendations</li>
               <li>Send you updates, security alerts, and support messages</li>
               <li>Detect, prevent, and address fraud and security issues</li>
               <li>Comply with legal obligations</li>
-              <li>Analyze usage patterns to improve the Service</li>
+              <li>Analyse usage patterns to improve the Service</li>
             </ul>
           </section>
 
@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
                 make public are visible to all users
               </li>
               <li>
-                <strong>With Your Consent:</strong> When you explicitly authorize
+                <strong>With Your Consent:</strong> When you explicitly authorise
                 sharing
               </li>
               <li>
@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
             </h2>
             <p className="text-foreground/80 mb-4">
               We retain your personal data for as long as necessary to provide the
-              Service and fulfill the purposes described in this policy. When you
+              Service and fulfil the purposes described in this policy. When you
               delete your account, we will delete or anonymize your personal data
               within 30 days, except where we are required to retain it for legal
               purposes.

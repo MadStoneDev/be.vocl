@@ -75,7 +75,7 @@ export default function TermsOfServicePage() {
                 <li>Content that promotes or depicts harm to minors</li>
                 <li>Content that sexualizes minors in any way, including fictional depictions</li>
                 <li>Any content that could be considered child sexual abuse material (CSAM)</li>
-                <li>Solicitation or grooming behavior targeting minors</li>
+                <li>Solicitation or grooming behaviour targeting minors</li>
               </ul>
               <p className="font-semibold text-vocl-like">
                 Violation of this policy will result in immediate and permanent account termination,
@@ -97,12 +97,12 @@ export default function TermsOfServicePage() {
             <ul className="list-disc pl-6 space-y-2 text-foreground/80">
               <li>Non-consensual intimate imagery</li>
               <li>Content that promotes violence or terrorism</li>
-              <li>Harassment, bullying, or threatening behavior</li>
+              <li>Harassment, bullying, or threatening behaviour</li>
               <li>Hate speech targeting protected characteristics</li>
               <li>Spam, scams, or fraudulent content</li>
               <li>Copyright or trademark infringement</li>
               <li>Illegal activities or content</li>
-              <li>Impersonation of individuals or organizations</li>
+              <li>Impersonation of individuals or organisations</li>
               <li>Malware or malicious code</li>
             </ul>
           </section>
@@ -174,7 +174,7 @@ export default function TermsOfServicePage() {
             <div className="space-y-3 text-foreground/80">
               <p>
                 You retain ownership of content you post to BeVocl. By posting content, you grant us
-                a non-exclusive, worldwide, royalty-free license to display and distribute your
+                a non-exclusive, worldwide, royalty-free licence to display and distribute your
                 content within the Service.
               </p>
               <p>

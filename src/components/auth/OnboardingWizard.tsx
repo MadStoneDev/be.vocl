@@ -325,7 +325,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                 Add a profile photo
               </h2>
               <p className="text-sm text-foreground/60">
-                Help people recognize you
+                Help people recognise you
               </p>
             </div>
 
@@ -387,7 +387,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                 Content preferences
               </h2>
               <p className="text-sm text-foreground/60">
-                Customize what you see on be.vocl
+                Customise what you see on be.vocl
               </p>
             </div>
 

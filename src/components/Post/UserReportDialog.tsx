@@ -22,7 +22,7 @@ const reportReasons: { value: ReportSubject; label: string; description: string 
   {
     value: "harassment",
     label: "Harassment or bullying",
-    description: "Targeting someone with harmful behavior",
+    description: "Targeting someone with harmful behaviour",
   },
   {
     value: "spam",
@@ -32,7 +32,7 @@ const reportReasons: { value: ReportSubject; label: string; description: string 
   {
     value: "minor_safety",
     label: "Child safety concern",
-    description: "Content or behavior that may harm minors",
+    description: "Content or behaviour that may harm minors",
   },
   {
     value: "non_consensual",
@@ -42,7 +42,7 @@ const reportReasons: { value: ReportSubject; label: string; description: string 
   {
     value: "illegal",
     label: "Illegal activity",
-    description: "Threats, violence, or illegal behavior",
+    description: "Threats, violence, or illegal behaviour",
   },
   {
     value: "other",

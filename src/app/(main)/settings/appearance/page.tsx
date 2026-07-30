@@ -333,7 +333,7 @@ export default function AppearanceSettingsPage() {
           <div>
             <h3 className="font-medium text-foreground">Reduce Motion</h3>
             <p className="text-sm text-foreground/50">
-              Minimize animations throughout the app
+              Minimise animations throughout the app
             </p>
           </div>
           <button
