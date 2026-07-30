@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   IconGripVertical,
   IconTrash,
@@ -9,6 +10,7 @@ import {
   IconLoader2,
   IconRefresh,
   IconClock,
+  IconPencil,
 } from "@tabler/icons-react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import { formatQueueSlot } from "@/lib/queue-schedule";
@@ -43,8 +45,10 @@ interface QueuePost {
 
 interface QueueItemProps {
   post: QueuePost;
-  /** Projected publish time from the queue schedule. */
+  /** Projected publish time (queued) or fixed scheduled time (scheduled). */
   scheduledFor?: Date;
+  /** "queued" = auto-slotted + reorderable; "scheduled" = fixed date/time. */
+  variant?: "queued" | "scheduled";
   onPublishNow: (postId: string) => Promise<void>;
   onRemove: (postId: string) => Promise<void>;
   isDragging?: boolean;
@@ -103,10 +107,12 @@ function renderBody(postType: string, content: any) {
 export function QueueItem({
   post,
   scheduledFor,
+  variant = "queued",
   onPublishNow,
   onRemove,
   isDragging,
 }: QueueItemProps) {
+  const isScheduled = variant === "scheduled";
   const [isPublishing, setIsPublishing] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
@@ -141,12 +147,16 @@ export function QueueItem({
       {/* Header bar: drag handle + position + actions */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-vocl-border">
         <div className="flex items-center gap-2">
-          <span className="cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/50">
-            <IconGripVertical size={18} />
-          </span>
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 text-xs font-semibold text-vocl-primary">
-            {post.queuePosition}
-          </span>
+          {!isScheduled && (
+            <>
+              <span className="cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/50">
+                <IconGripVertical size={18} />
+              </span>
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 text-xs font-semibold text-vocl-primary">
+                {post.queuePosition}
+              </span>
+            </>
+          )}
           {scheduledFor && (
             <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/60">
               <IconClock size={13} className="text-foreground/40" />
@@ -161,6 +171,14 @@ export function QueueItem({
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          <Link
+            href={`/create?edit=${post.id}`}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-hover text-foreground/70 hover:text-foreground hover:bg-vocl-hover-strong text-xs font-medium transition-colors"
+            title="Edit"
+          >
+            <IconPencil size={14} />
+            Edit
+          </Link>
           <button
             type="button"
             onClick={handlePublishNow}

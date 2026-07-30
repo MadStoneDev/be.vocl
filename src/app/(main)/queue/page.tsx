@@ -8,7 +8,7 @@ import {
   IconList,
   IconCalendar,
 } from "@tabler/icons-react";
-import { QueueControls, QueueList, QueueCalendar } from "@/components/queue";
+import { QueueControls, QueueList, QueueCalendar, QueueItem } from "@/components/queue";
 import {
   getQueue,
   getQueueSettings,
@@ -17,7 +17,7 @@ import {
   publishNow,
   updateQueueSettings,
 } from "@/actions/reblogs";
-import { getScheduledPosts } from "@/actions/drafts";
+import { getScheduledPosts, publishDraft, deleteDraft } from "@/actions/drafts";
 
 interface QueueSettings {
   enabled: boolean;
@@ -150,6 +150,21 @@ export default function QueuePage() {
     }
   };
 
+  // Scheduled-post actions (fixed date/time posts, managed separately from the queue)
+  const handleScheduledPublish = async (postId: string) => {
+    const result = await publishDraft(postId);
+    if (result.success) {
+      setScheduledPosts((prev) => prev.filter((p) => p.id !== postId));
+    }
+  };
+
+  const handleScheduledDelete = async (postId: string) => {
+    const result = await deleteDraft(postId);
+    if (result.success) {
+      setScheduledPosts((prev) => prev.filter((p) => p.id !== postId));
+    }
+  };
+
   // Handle settings update
   const handleUpdateSettings = async (newSettings: Partial<QueueSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
@@ -207,6 +222,7 @@ export default function QueuePage() {
         <QueueControls
           settings={settings}
           queueCount={posts.length}
+          loading={isLoading}
           onUpdateSettings={handleUpdateSettings}
         />
       </div>
@@ -237,14 +253,56 @@ export default function QueuePage() {
           settings={settings}
         />
       ) : (
-        /* Queue list */
-        <QueueList
-          posts={posts}
-          settings={settings}
-          onReorder={handleReorder}
-          onPublishNow={handlePublishNow}
-          onRemove={handleRemove}
-        />
+        /* List view: the auto-slotted queue, then any fixed-time scheduled posts */
+        <div className="space-y-10">
+          <section>
+            {scheduledPosts.length > 0 && (
+              <div className="mb-4">
+                <h2 className="type-heading font-display text-foreground">Queue</h2>
+                <p className="text-sm text-foreground/50">
+                  Published automatically into your daily posting window.
+                </p>
+              </div>
+            )}
+            <QueueList
+              posts={posts}
+              settings={settings}
+              onReorder={handleReorder}
+              onPublishNow={handlePublishNow}
+              onRemove={handleRemove}
+            />
+          </section>
+
+          {scheduledPosts.length > 0 && (
+            <section>
+              <div className="mb-4">
+                <h2 className="type-heading font-display text-foreground">Scheduled</h2>
+                <p className="text-sm text-foreground/50">
+                  Set to publish at a specific date &amp; time you picked.
+                </p>
+              </div>
+              <div className="space-y-2">
+                {scheduledPosts.map((sp) => (
+                  <QueueItem
+                    key={sp.id}
+                    variant="scheduled"
+                    post={{
+                      id: sp.id,
+                      queuePosition: 0,
+                      postType: sp.post_type,
+                      content: sp.content,
+                      isSensitive: sp.is_sensitive ?? false,
+                      createdAt: sp.created_at,
+                    }}
+                    scheduledFor={new Date(sp.scheduled_for)}
+                    onPublishNow={handleScheduledPublish}
+                    onRemove={handleScheduledDelete}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       )}
     </div>
   );

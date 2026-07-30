@@ -20,12 +20,15 @@ interface QueueSettings {
 interface QueueControlsProps {
   settings: QueueSettings;
   queueCount: number;
+  /** True until the real settings/queue have loaded — stats show "—" meanwhile. */
+  loading?: boolean;
   onUpdateSettings: (settings: Partial<QueueSettings>) => Promise<void>;
 }
 
 export function QueueControls({
   settings,
   queueCount,
+  loading = false,
   onUpdateSettings,
 }: QueueControlsProps) {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -119,20 +122,22 @@ export function QueueControls({
       {/* Queue info — order-3 so the settings panel can sit above it */}
       <div className="order-3 grid grid-cols-3 gap-4">
         <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="text-2xl font-bold text-foreground">{queueCount}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {loading ? "—" : queueCount}
+          </p>
           <p className="text-sm text-foreground/50">
             {queueCount === 1 ? "Post in queue" : "Posts in queue"}
           </p>
         </div>
         <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">
-            {settings.postsPerDay}
+            {loading ? "—" : settings.postsPerDay}
           </p>
           <p className="text-sm text-foreground/50">Posts per day</p>
         </div>
         <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
           <p className="text-2xl font-bold text-foreground">
-            {daysToEmpty === 0 ? "-" : `~${daysToEmpty}d`}
+            {loading ? "—" : daysToEmpty === 0 ? "-" : `~${daysToEmpty}d`}
           </p>
           <p className="text-sm text-foreground/50">Until empty</p>
         </div>

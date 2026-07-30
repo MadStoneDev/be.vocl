@@ -29,12 +29,14 @@ import {
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
 import { OPEN_COMMAND_PALETTE_EVENT } from "./CommandPalette";
+import { useModKey } from "@/lib/platform";
 
 interface LeftSidebarProps {
   username?: string;
   avatarUrl?: string | null;
   notificationCount?: number;
   messageCount?: number;
+  queueCount?: number;
   onChatToggle?: () => void;
   isLoading?: boolean;
   role?: number;
@@ -46,6 +48,7 @@ export function LeftSidebar({
   avatarUrl,
   notificationCount = 0,
   messageCount = 0,
+  queueCount = 0,
   onChatToggle,
   isLoading = false,
   role = 0,
@@ -53,6 +56,7 @@ export function LeftSidebar({
 }: LeftSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { mod } = useModKey();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
@@ -108,13 +112,14 @@ export function LeftSidebar({
   const navItems = [
     { href: "/feed", icon: IconHome, iconActive: IconHomeFilled, label: "Home", color: "text-vocl-primary" },
     { href: "/explore", icon: IconCompass, iconActive: IconCompassFilled, label: "Explore", color: "text-orange-400" },
-    { action: openCommandPalette, icon: IconSearch, iconActive: IconSearch, label: "Search", color: "text-fuchsia-400", hint: "⌘K" },
+    { action: openCommandPalette, icon: IconSearch, iconActive: IconSearch, label: "Search", color: "text-fuchsia-400", hint: `${mod}K` },
     {
       href: "/notifications",
       icon: IconBell,
       iconActive: IconBellFilled,
       label: "Notifications",
       badge: notificationCount,
+      badgeTone: "alert" as const,
       color: "text-amber-400",
     },
     {
@@ -123,9 +128,18 @@ export function LeftSidebar({
       iconActive: IconMessageFilled,
       label: "Messages",
       badge: messageCount,
+      badgeTone: "alert" as const,
       color: "text-sky-400",
     },
-    { href: "/queue", icon: IconStack2, iconActive: IconStack2, label: "Queue", color: "text-indigo-400" },
+    {
+      href: "/queue",
+      icon: IconStack2,
+      iconActive: IconStack2,
+      label: "Queue",
+      badge: queueCount,
+      badgeTone: "count" as const,
+      color: "text-indigo-400",
+    },
     { href: "/communities", icon: IconUsersGroup, iconActive: IconUsersGroup, label: "Communities", color: "text-emerald-400" },
   ];
 
@@ -170,6 +184,12 @@ export function LeftSidebar({
             const Icon = isActive ? item.iconActive : item.icon;
             const badgeCount = item.badge ?? 0;
             const showBadge = badgeCount > 0;
+            const badgeTone = (item as { badgeTone?: "alert" | "count" }).badgeTone ?? "alert";
+            const badgeClass =
+              badgeTone === "count"
+                ? "bg-vocl-hover-strong text-foreground/80 border border-vocl-border"
+                : "bg-vocl-like text-white";
+            const badgeNoun = badgeTone === "count" ? "in queue" : "unread";
 
             if (item.action) {
               return (
@@ -180,7 +200,7 @@ export function LeftSidebar({
                     title={collapsed ? item.label : undefined}
                     aria-label={
                       showBadge
-                        ? `${item.label}, ${badgeCount} unread`
+                        ? `${item.label}, ${badgeCount} ${badgeNoun}`
                         : item.label
                     }
                     className={`relative w-full flex items-center rounded-sm hover:bg-vocl-hover transition-all duration-300 ${
@@ -191,7 +211,7 @@ export function LeftSidebar({
                       <Icon size={22} aria-hidden="true" />
                       {showBadge && (
                         <span
-                          className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold"
+                          className={`absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold ${badgeClass}`}
                           aria-hidden="true"
                         >
                           {badgeCount > 99 ? "99+" : badgeCount}
@@ -229,8 +249,8 @@ export function LeftSidebar({
                     <Icon size={22} aria-hidden="true" />
                     {showBadge && (
                       <span
-                        className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold"
-                        aria-label={`${badgeCount} unread`}
+                        className={`absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold ${badgeClass}`}
+                        aria-label={`${badgeCount} ${badgeNoun}`}
                       >
                         {badgeCount > 99 ? "99+" : badgeCount}
                       </span>

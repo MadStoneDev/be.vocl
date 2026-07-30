@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { getQueueCount } from "@/actions/reblogs";
 import { MainNav, BottomNav, LeftSidebar, CommandPalette, OPEN_CHAT_EVENT } from "@/components/layout";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
@@ -63,8 +64,10 @@ export function AppChrome({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
+  const [queueCount, setQueueCount] = useState(0);
 
   // All hooks run immediately - they return default/empty values while loading
   const { profile, user, isLoading: authLoading } = useAuth();
@@ -79,6 +82,13 @@ export function AppChrome({
   useEffect(() => {
     router.prefetch("/create");
   }, [router]);
+
+  // Queue count for the nav badge. Refetched on navigation (cheap head count)
+  // so it stays fresh after adding/removing/publishing queued posts.
+  useEffect(() => {
+    if (!profile?.id) return;
+    getQueueCount().then(setQueueCount);
+  }, [profile?.id, pathname]);
 
   // Update page title with unread count
   useEffect(() => {
@@ -153,6 +163,7 @@ export function AppChrome({
         avatarUrl={profile?.avatarUrl}
         notificationCount={notificationCount}
         messageCount={totalUnread}
+        queueCount={queueCount}
         onChatToggle={toggleChat}
         isLoading={authLoading}
         role={profile?.role}

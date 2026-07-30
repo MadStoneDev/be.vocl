@@ -110,6 +110,27 @@ export async function reblogPost(
 /**
  * Get user's queue
  */
+/** Lightweight count of the user's queued posts (for the nav badge). */
+export async function getQueueCount(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return 0;
+
+    const { count } = await (supabase as any)
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", user.id)
+      .eq("status", "queued");
+
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getQueue(): Promise<{ success: boolean; posts?: any[]; error?: string }> {
   try {
     const supabase = await createClient();

@@ -1,8 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { IconX, IconKeyboard } from "@tabler/icons-react";
+import { OPEN_CHAT_EVENT } from "./CommandPalette";
+import { useModKey } from "@/lib/platform";
+
+// "g then X" go-to targets. Messages opens the chat sidebar (an action, not a route).
+const GOTO_ROUTES: Record<string, string> = {
+  h: "/feed",
+  e: "/explore",
+  n: "/notifications",
+  q: "/queue",
+  c: "/communities",
+};
 
 const ACTIVE_CLASS = "ring-2 ring-vocl-primary ring-offset-2 ring-offset-background rounded-xl";
 
@@ -31,6 +42,10 @@ export function KeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
   const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const { mod } = useModKey();
+  // "g" was pressed and we're waiting for the second key of a go-to chord.
+  const gPending = useRef(false);
+  const gTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     function isTyping(target: EventTarget | null): boolean {
@@ -56,6 +71,36 @@ export function KeyboardShortcuts() {
 
       if (isTyping(e.target)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      // Second key of a "g then X" go-to chord.
+      if (gPending.current) {
+        gPending.current = false;
+        if (gTimer.current) clearTimeout(gTimer.current);
+        const key = e.key.toLowerCase();
+        if (key === "m") {
+          window.dispatchEvent(new CustomEvent(OPEN_CHAT_EVENT));
+          e.preventDefault();
+          return;
+        }
+        const dest = GOTO_ROUTES[key];
+        if (dest) {
+          router.push(dest);
+          e.preventDefault();
+          return;
+        }
+        // Not a go-to key — fall through to the normal shortcuts below.
+      }
+
+      // Start a go-to chord.
+      if (e.key.toLowerCase() === "g") {
+        gPending.current = true;
+        if (gTimer.current) clearTimeout(gTimer.current);
+        gTimer.current = setTimeout(() => {
+          gPending.current = false;
+        }, 1200);
+        e.preventDefault();
+        return;
+      }
 
       switch (e.key) {
         case "j": {
@@ -131,10 +176,16 @@ export function KeyboardShortcuts() {
 
         <ul className="space-y-2 text-sm">
           {[
+            { keys: ["G", "H"], label: "Go to Home" },
+            { keys: ["G", "E"], label: "Go to Explore" },
+            { keys: ["G", "N"], label: "Go to Notifications" },
+            { keys: ["G", "M"], label: "Go to Messages" },
+            { keys: ["G", "Q"], label: "Go to Queue" },
+            { keys: ["G", "C"], label: "Go to Communities" },
+            { keys: [mod, "K"], label: "Search / command palette" },
+            { keys: [mod, "J"], label: "New post" },
             { keys: ["J"], label: "Next post" },
             { keys: ["K"], label: "Previous post" },
-            { keys: ["Ctrl", "J"], label: "New post" },
-            { keys: ["Ctrl", "K"], label: "Search / command palette" },
             { keys: ["/"], label: "Focus search" },
             { keys: ["?"], label: "Toggle this help" },
             { keys: ["Esc"], label: "Close dialog" },
