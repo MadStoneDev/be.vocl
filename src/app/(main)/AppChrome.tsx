@@ -74,6 +74,12 @@ export function AppChrome({
   // Track online presence
   useOnlineStatus(profile?.id, profile?.username);
 
+  // Warm the heavy composer route once, so opening it (FAB, nav, ⌘K, shortcut)
+  // is instant rather than downloading the chunk on first tap.
+  useEffect(() => {
+    router.prefetch("/create");
+  }, [router]);
+
   // Update page title with unread count
   useEffect(() => {
     const total = (notificationCount || 0) + (totalUnread || 0);

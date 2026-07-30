@@ -4,7 +4,7 @@ import { useReducer, useCallback, useMemo } from "react";
 import { parseVideoUrl } from "@/lib/video-embeds";
 import type { SpotifyTrack } from "@/lib/spotify";
 import { readingTimeMinutes } from "@/lib/essay";
-import { createPost, updatePost, generatePostId } from "@/actions/posts";
+import { createPost, updatePost } from "@/actions/posts";
 import { crossPostToCommunities } from "@/actions/communities";
 import { transcribePostAudio } from "@/actions/transcribe";
 import type {
@@ -277,7 +277,8 @@ export function useComposerState(
 
   const ensurePostId = useCallback(async () => {
     if (!state.postId) {
-      const id = await generatePostId();
+      // Generate client-side — no need for a server round-trip just for a UUID.
+      const id = crypto.randomUUID();
       dispatch({ type: "PATCH", payload: { postId: id } });
     }
   }, [state.postId]);
