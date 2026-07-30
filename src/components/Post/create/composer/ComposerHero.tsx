@@ -150,9 +150,15 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
             existingUrls={state.mediaUrls}
             maxFiles={10}
             onUploadComplete={(urls) => {
-              const next = [...state.altTexts];
-              while (next.length < urls.length) next.push("");
-              patch({ mediaUrls: urls, altTexts: next.slice(0, urls.length) });
+              // Keep each image's alt text with its image across add/remove/reorder
+              // by matching on the URL rather than position.
+              const altByUrl = new Map(
+                state.mediaUrls.map((u, i) => [u, state.altTexts[i] ?? ""])
+              );
+              patch({
+                mediaUrls: urls,
+                altTexts: urls.map((u) => altByUrl.get(u) ?? ""),
+              });
             }}
           />
         )}

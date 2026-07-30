@@ -9,6 +9,7 @@ import {
   IconVideo,
   IconMusic,
   IconLoader2,
+  IconGripVertical,
 } from "@tabler/icons-react";
 import { useUpload } from "@/hooks/useUpload";
 
@@ -30,6 +31,25 @@ export function MediaUploader({
   const { upload, isUploading, progress, error } = useUpload();
   const [uploadedUrls, setUploadedUrls] = useState<string[]>(existingUrls);
   const [dragOver, setDragOver] = useState(false);
+  // Reorder-by-drag state for the gallery preview.
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const handleReorderEnd = () => {
+    if (
+      draggedIndex !== null &&
+      dragOverIndex !== null &&
+      draggedIndex !== dragOverIndex
+    ) {
+      const arr = [...uploadedUrls];
+      const [moved] = arr.splice(draggedIndex, 1);
+      arr.splice(dragOverIndex, 0, moved);
+      setUploadedUrls(arr);
+      onUploadComplete(arr);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   const acceptTypes = {
     image: "image/jpeg,image/png,image/gif,image/webp",
@@ -91,14 +111,52 @@ export function MediaUploader({
 
   return (
     <div className="space-y-4">
+      {/* Reorder hint (galleries only) */}
+      {mediaType === "image" && uploadedUrls.length > 1 && (
+        <p className="text-xs text-foreground/45">
+          Drag to reorder — the first image is the cover.
+        </p>
+      )}
+
       {/* Uploaded files preview */}
       {uploadedUrls.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {uploadedUrls.map((url, index) => (
-            <div key={url} className="relative group">
+          {uploadedUrls.map((url, index) => {
+            const reorderable = mediaType === "image" && uploadedUrls.length > 1;
+            return (
+            <div
+              key={url}
+              draggable={reorderable}
+              onDragStart={reorderable ? () => setDraggedIndex(index) : undefined}
+              onDragOver={
+                reorderable
+                  ? (e) => {
+                      e.preventDefault();
+                      if (draggedIndex !== null && draggedIndex !== index) {
+                        setDragOverIndex(index);
+                      }
+                    }
+                  : undefined
+              }
+              onDrop={reorderable ? (e) => e.preventDefault() : undefined}
+              onDragEnd={reorderable ? handleReorderEnd : undefined}
+              className={`relative group transition-all ${
+                draggedIndex === index ? "opacity-40" : ""
+              } ${dragOverIndex === index ? "ring-2 ring-vocl-primary rounded-xl" : ""}`}
+            >
               {mediaType === "image" && (
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-vocl-surface-dark">
-                  <Image src={url} alt="" fill className="object-cover" />
+                  <Image src={url} alt="" fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
+                  {reorderable && (
+                    <>
+                      <span className="absolute top-2 left-2 w-6 h-6 rounded-md bg-black/55 text-white flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
+                        <IconGripVertical size={15} />
+                      </span>
+                      <span className="absolute bottom-2 left-2 min-w-[20px] h-5 px-1 rounded-md bg-black/55 text-white text-[11px] font-semibold flex items-center justify-center">
+                        {index + 1}
+                      </span>
+                    </>
+                  )}
                 </div>
               )}
               {mediaType === "video" && (
@@ -122,7 +180,8 @@ export function MediaUploader({
                 <IconX size={14} />
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
