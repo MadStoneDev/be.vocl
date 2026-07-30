@@ -342,6 +342,7 @@ export default function ExplorePage() {
                         src={creator.avatarUrl}
                         alt={creator.username}
                         fill
+                        sizes="48px"
                         className="object-cover"
                       />
                     ) : (

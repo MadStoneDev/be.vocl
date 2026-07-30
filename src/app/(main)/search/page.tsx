@@ -867,6 +867,7 @@ function UserCard({
             src={user.avatarUrl}
             alt={user.username}
             fill
+            sizes="48px"
             className="object-cover"
           />
         ) : (

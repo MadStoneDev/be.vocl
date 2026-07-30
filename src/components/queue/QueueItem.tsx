@@ -223,6 +223,7 @@ export function QueueItem({
                 src={post.originalPost!.author.avatarUrl}
                 alt=""
                 fill
+                sizes="24px"
                 className="object-cover"
               />
             </div>

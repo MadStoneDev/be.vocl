@@ -138,6 +138,7 @@ export function ImageLightbox({
                 src={src}
                 alt={`Thumbnail ${index + 1}`}
                 fill
+                sizes="56px"
                 className="object-cover"
               />
             </button>

@@ -508,7 +508,7 @@ export default function CommunitySettingsPage() {
                 <div key={r.id} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border">
                   <Link href={`/profile/${r.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                     {r.avatarUrl ? (
-                      <Image src={r.avatarUrl} alt={r.username} fill className="object-cover" />
+                      <Image src={r.avatarUrl} alt={r.username} fill sizes="40px" className="object-cover" />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
                         {r.username.charAt(0).toUpperCase()}

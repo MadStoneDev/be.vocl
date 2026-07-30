@@ -200,7 +200,7 @@ export function NotificationItem({
                 style={{ zIndex: stackedActors.length - i }}
               >
                 {a.avatarUrl ? (
-                  <Image src={a.avatarUrl} alt={a.username} fill className="object-cover" />
+                  <Image src={a.avatarUrl} alt={a.username} fill sizes="40px" className="object-cover" />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                     <span className="text-sm font-bold text-white">
@@ -225,6 +225,7 @@ export function NotificationItem({
                   src={actor.avatarUrl}
                   alt={actor.username}
                   fill
+                  sizes="40px"
                   className="object-cover"
                 />
               ) : (

@@ -497,22 +497,8 @@ async function formatPosts(supabase: any, posts: any[]): Promise<SearchResult["p
     }
   });
 
-  // Batch fetch like and comment counts (avoids N+1)
-  const [likeData, commentData] = await Promise.all([
-    supabase.from("likes").select("post_id").in("post_id", postIds),
-    supabase.from("comments").select("post_id").in("post_id", postIds),
-  ]);
-
-  const likeCountMap = new Map<string, number>();
-  for (const l of (likeData.data || []) as any[]) {
-    likeCountMap.set(l.post_id, (likeCountMap.get(l.post_id) || 0) + 1);
-  }
-
-  const commentCountMap = new Map<string, number>();
-  for (const c of (commentData.data || []) as any[]) {
-    commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) || 0) + 1);
-  }
-
+  // Use the denormalized counters already selected on each post — no need to
+  // re-fetch and tally every like/comment row.
   return posts.map((post) => {
     const profile = post.profiles;
     return {
@@ -527,8 +513,8 @@ async function formatPosts(supabase: any, posts: any[]): Promise<SearchResult["p
       content: post.content,
       isSensitive: post.is_sensitive,
       createdAt: post.created_at,
-      likeCount: likeCountMap.get(post.id) || 0,
-      commentCount: commentCountMap.get(post.id) || 0,
+      likeCount: post.like_count ?? 0,
+      commentCount: post.comment_count ?? 0,
       tags: tagsMap.get(post.id) || [],
     };
   });

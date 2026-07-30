@@ -205,7 +205,7 @@ export function AudioContent({
         {/* Album Art */}
         <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-vocl-surface-dark flex-shrink-0">
           {resolvedAlbumArt ? (
-            <Image src={resolvedAlbumArt} alt="Album art" fill className="object-cover" />
+            <Image src={resolvedAlbumArt} alt="Album art" fill sizes="(max-width: 640px) 96px, 128px" className="object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <IconMusic size={40} className="text-foreground/20" />

@@ -148,6 +148,7 @@ export function ProfileHeader({
                       src={avatarUrl}
                       alt={username}
                       fill
+                      sizes="(max-width: 640px) 80px, 112px"
                       className="object-cover"
                       priority
                     />

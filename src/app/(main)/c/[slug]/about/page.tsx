@@ -179,7 +179,7 @@ export default function CommunityAboutPage() {
               >
                 <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
                   {m.avatarUrl ? (
-                    <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
+                    <Image src={m.avatarUrl} alt={m.username} fill sizes="40px" className="object-cover" />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
                       {m.username.charAt(0).toUpperCase()}
