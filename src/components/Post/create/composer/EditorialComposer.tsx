@@ -13,6 +13,7 @@ import type {
   VideoPostContent,
   AudioPostContent,
   GalleryPostContent,
+  PollPostContent,
   LinkPreviewData,
 } from "@/types/database";
 import {
@@ -69,8 +70,12 @@ function buildEditInitial(
   post: ExistingPostData,
   isReblogEdit: boolean
 ): Partial<ComposerState> {
+  // The composer has no separate "gallery" type — galleries edit through the
+  // image "upload" mode and are re-derived to a gallery on save (>1 image).
+  const editType: PostType =
+    post.postType === "gallery" ? "image" : ((post.postType as PostType) || "text");
   const base: Partial<ComposerState> = {
-    postType: (post.postType as PostType) || "text",
+    postType: editType,
     isSensitive: post.isSensitive,
     excludeFromPublic: post.excludeFromPublic ?? false,
     tags: tagsToNames(post.tags),
@@ -88,6 +93,19 @@ function buildEditInitial(
   if (post.postType === "text") {
     const c = post.content as TextPostContent;
     base.content = { html: c.html || "", plain: c.plain || "" };
+  } else if (post.postType === "poll") {
+    const pc = post.content as PollPostContent;
+    base.pollQuestion = pc.question || "";
+    const opts = Array.isArray(pc.options)
+      ? pc.options.map((o) =>
+          typeof o === "string" ? o : String((o as { text?: string })?.text ?? ""),
+        )
+      : [];
+    base.pollOptions =
+      opts.length >= 2 ? opts : [...opts, ...Array(Math.max(0, 2 - opts.length)).fill("")];
+    base.pollExpiresAt = pc.expires_at || "";
+    base.pollShowResultsBeforeVote = pc.show_results_before_vote ?? false;
+    base.pollAllowMultiple = pc.allow_multiple ?? false;
   } else {
     const c = post.content as
       | ImagePostContent
@@ -133,11 +151,22 @@ function buildEditInitial(
       }
     } else if (post.postType === "audio") {
       const ac = post.content as AudioPostContent;
-      if (ac.url) {
+      if (ac.spotify_data) {
+        base.audioMode = "spotify";
+        base.selectedTrack = {
+          id: ac.spotify_data.track_id,
+          name: ac.spotify_data.name,
+          artist: ac.spotify_data.artist,
+          album: ac.spotify_data.album,
+          albumArt: ac.spotify_data.album_art ?? ac.album_art_url ?? null,
+          previewUrl: null,
+          duration: 0,
+          externalUrl: ac.spotify_data.external_url ?? "",
+        };
+      } else if (ac.url) {
         base.audioMode = "upload";
         base.mediaUrls = [ac.url];
       }
-      // Spotify-track audio is re-selected on edit (not hydrated here).
     }
   }
   return base;

@@ -22,6 +22,7 @@ import {
   GalleryContent,
   LinkPreviewCarousel,
 } from "@/components/Post";
+import { PollContent, AskContent } from "@/components/Post/content";
 import type { VideoEmbedPlatform } from "@/types/database";
 
 interface QueuePost {
@@ -54,9 +55,13 @@ interface QueueItemProps {
   isDragging?: boolean;
 }
 
-function renderBody(postType: string, content: any) {
+function renderBody(postType: string, content: any, postId: string) {
   const c = content || {};
   switch (postType) {
+    case "poll":
+      return <PollContent postId={postId} content={c} />;
+    case "ask":
+      return <AskContent content={c} />;
     case "text":
       return (
         <>
@@ -229,7 +234,7 @@ export function QueueItem({
       )}
 
       {/* Body — same renderers the feed uses */}
-      <div>{renderBody(renderPostType, renderContent)}</div>
+      <div>{renderBody(renderPostType, renderContent, post.id)}</div>
     </div>
   );
 }
