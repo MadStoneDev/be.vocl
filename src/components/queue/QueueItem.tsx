@@ -8,8 +8,10 @@ import {
   IconSend,
   IconLoader2,
   IconRefresh,
+  IconClock,
 } from "@tabler/icons-react";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import { formatQueueSlot } from "@/lib/queue-schedule";
 import {
   ImageContent,
   TextContent,
@@ -41,6 +43,8 @@ interface QueuePost {
 
 interface QueueItemProps {
   post: QueuePost;
+  /** Projected publish time from the queue schedule. */
+  scheduledFor?: Date;
   onPublishNow: (postId: string) => Promise<void>;
   onRemove: (postId: string) => Promise<void>;
   isDragging?: boolean;
@@ -98,6 +102,7 @@ function renderBody(postType: string, content: any) {
 
 export function QueueItem({
   post,
+  scheduledFor,
   onPublishNow,
   onRemove,
   isDragging,
@@ -142,6 +147,12 @@ export function QueueItem({
           <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 text-xs font-semibold text-vocl-primary">
             {post.queuePosition}
           </span>
+          {scheduledFor && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/60">
+              <IconClock size={13} className="text-foreground/40" />
+              {formatQueueSlot(scheduledFor)}
+            </span>
+          )}
           {isReblog && (
             <span className="inline-flex items-center gap-1 text-xs text-foreground/50">
               <IconRefresh size={12} />

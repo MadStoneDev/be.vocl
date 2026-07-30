@@ -240,6 +240,7 @@ export default function QueuePage() {
         /* Queue list */
         <QueueList
           posts={posts}
+          settings={settings}
           onReorder={handleReorder}
           onPublishNow={handlePublishNow}
           onRemove={handleRemove}

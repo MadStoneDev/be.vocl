@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { IconMoodEmpty } from "@tabler/icons-react";
 import { QueueItem } from "./QueueItem";
+import { computeQueuedTimes, type QueueTimingSettings } from "@/lib/queue-schedule";
 
 interface QueuePost {
   id: string;
@@ -25,6 +26,7 @@ interface QueuePost {
 
 interface QueueListProps {
   posts: QueuePost[];
+  settings: QueueTimingSettings;
   onReorder: (postIds: string[]) => Promise<void>;
   onPublishNow: (postId: string) => Promise<void>;
   onRemove: (postId: string) => Promise<void>;
@@ -32,12 +34,16 @@ interface QueueListProps {
 
 export function QueueList({
   posts,
+  settings,
   onReorder,
   onPublishNow,
   onRemove,
 }: QueueListProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Projected publish time for each queued post (same maths as the calendar).
+  const times = useMemo(() => computeQueuedTimes(posts, settings), [posts, settings]);
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -93,6 +99,7 @@ export function QueueList({
         >
           <QueueItem
             post={post}
+            scheduledFor={times.get(post.id)}
             onPublishNow={onPublishNow}
             onRemove={onRemove}
             isDragging={draggedIndex === index}
