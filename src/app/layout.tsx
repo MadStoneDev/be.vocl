@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gloock, Lexend } from "next/font/google";
 import { QueryProvider, ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui";
+import { ACCENT_BOOT_SCRIPT } from "@/lib/accent";
 import "./globals.css";
 
 const gloock = Gloock({
@@ -34,6 +35,8 @@ export default function RootLayout({
       <body
         className={`${gloock.variable} ${lexend.variable} antialiased`}
       >
+        {/* Apply the saved UI accent before first paint (no colour flash). */}
+        <script dangerouslySetInnerHTML={{ __html: ACCENT_BOOT_SCRIPT }} />
         <ThemeProvider>
           <QueryProvider>
             <a href="#main-content" className="skip-link">

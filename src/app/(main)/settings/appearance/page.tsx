@@ -14,22 +14,22 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import { updateAccentColor, getCurrentProfile } from "@/actions/profile";
+import { ACCENTS, applyAccent } from "@/lib/accent";
 
 type Theme = "light" | "dark" | "system";
 type FontSize = "small" | "medium" | "large";
-type AccentColor = "purple" | "blue" | "green" | "orange" | "pink";
 
 interface AppearanceSettings {
   theme: Theme;
   fontSize: FontSize;
-  accentColor: AccentColor;
+  accentColor: string; // accent id from ACCENTS
   reducedMotion: boolean;
 }
 
 const defaultSettings: AppearanceSettings = {
   theme: "dark",
   fontSize: "medium",
-  accentColor: "purple",
+  accentColor: "pink",
   reducedMotion: false,
 };
 
@@ -43,14 +43,6 @@ const fontSizeOptions: { value: FontSize; label: string; sample: string }[] = [
   { value: "small", label: "Small", sample: "Aa" },
   { value: "medium", label: "Medium", sample: "Aa" },
   { value: "large", label: "Large", sample: "Aa" },
-];
-
-const accentColors: { value: AccentColor; label: string; color: string }[] = [
-  { value: "purple", label: "Purple", color: "bg-violet-500" },
-  { value: "blue", label: "Blue", color: "bg-blue-500" },
-  { value: "green", label: "Green", color: "bg-emerald-500" },
-  { value: "orange", label: "Orange", color: "bg-orange-500" },
-  { value: "pink", label: "Pink", color: "bg-pink-500" },
 ];
 
 // Per-profile blog accent presets (saved to the user's profile, not localStorage).
@@ -86,16 +78,26 @@ export default function AppearanceSettingsPage() {
   const { theme: activeTheme, setTheme } = useTheme();
 
   useEffect(() => {
-    // Load settings from localStorage
+    // Load settings from localStorage and apply the saved UI accent.
     const saved = localStorage.getItem("appearance-settings");
+    let next = defaultSettings;
     if (saved) {
       try {
-        setSettings({ ...defaultSettings, ...JSON.parse(saved) });
+        next = { ...defaultSettings, ...JSON.parse(saved) };
       } catch {
         // Use defaults
       }
     }
+    setSettings(next);
+    const opt = ACCENTS.find((a) => a.name === next.accentColor);
+    applyAccent(opt ? opt.color : null);
   }, []);
+
+  const selectAccent = (name: string) => {
+    const opt = ACCENTS.find((a) => a.name === name);
+    applyAccent(opt ? opt.color : null);
+    updateSetting("accentColor", name);
+  };
 
   useEffect(() => {
     // Load the saved per-profile accent color
@@ -247,27 +249,28 @@ export default function AppearanceSettingsPage() {
         </div>
       </section>
 
-      {/* Accent Color */}
+      {/* Accent Colour (site-wide UI accent, this device) */}
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-1">
           <IconPalette size={20} className="text-foreground/70" />
-          <h2 className="type-heading font-display text-foreground">Accent Color</h2>
+          <h2 className="type-heading font-display text-foreground">Accent Colour</h2>
         </div>
         <p className="text-sm text-foreground/50 mb-4">
-          Personalize buttons and highlights
+          Personalise buttons, links, and highlights across the app on this device.
         </p>
 
-        <div className="flex gap-3">
-          {accentColors.map((option) => {
-            const isSelected = settings.accentColor === option.value;
+        <div className="flex flex-wrap gap-3">
+          {ACCENTS.map((option) => {
+            const isSelected = settings.accentColor === option.name;
 
             return (
               <button
-                key={option.value}
-                onClick={() => updateSetting("accentColor", option.value)}
-                className={`relative w-12 h-12 rounded-full ${option.color} transition-all ${
+                key={option.name}
+                onClick={() => selectAccent(option.name)}
+                className={`relative w-12 h-12 rounded-full transition-all ${
                   isSelected ? "ring-2 ring-offset-2 ring-offset-background ring-foreground" : ""
                 }`}
+                style={{ backgroundColor: option.color }}
                 aria-label={option.label}
                 title={option.label}
               >
@@ -353,7 +356,7 @@ export default function AppearanceSettingsPage() {
 
       {/* Note */}
       <p className="text-sm text-foreground/40">
-        Some appearance settings are currently in preview and may not affect all
+        Font size and reduce motion are still in preview and may not affect all
         parts of the app yet.
       </p>
     </div>
