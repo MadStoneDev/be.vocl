@@ -30,6 +30,16 @@ interface ProfileLink {
   url: string;
 }
 
+// IANA timezone list (from the runtime); falls back to UTC if unavailable.
+const TIMEZONES: string[] = (() => {
+  try {
+    return (Intl as unknown as { supportedValuesOf: (k: string) => string[] })
+      .supportedValuesOf("timeZone");
+  } catch {
+    return ["UTC"];
+  }
+})();
+
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -41,6 +51,7 @@ export default function ProfileSettingsPage() {
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [headerUrl, setHeaderUrl] = useState<string | null>(null);
+  const [timezone, setTimezone] = useState("UTC");
   const [links, setLinks] = useState<ProfileLink[]>([]);
 
   // New link form
@@ -61,6 +72,7 @@ export default function ProfileSettingsPage() {
   const [originalData, setOriginalData] = useState({
     displayName: "",
     bio: "",
+    timezone: "UTC",
   });
 
   useEffect(() => {
@@ -72,9 +84,11 @@ export default function ProfileSettingsPage() {
         setBio(result.profile.bio || "");
         setAvatarUrl(result.profile.avatarUrl || null);
         setHeaderUrl(result.profile.headerUrl || null);
+        setTimezone(result.profile.timezone || "UTC");
         setOriginalData({
           displayName: result.profile.displayName || "",
           bio: result.profile.bio || "",
+          timezone: result.profile.timezone || "UTC",
         });
 
         // Fetch links
@@ -91,20 +105,23 @@ export default function ProfileSettingsPage() {
   // Check for changes
   useEffect(() => {
     const changed =
-      displayName !== originalData.displayName || bio !== originalData.bio;
+      displayName !== originalData.displayName ||
+      bio !== originalData.bio ||
+      timezone !== originalData.timezone;
     setHasChanges(changed);
-  }, [displayName, bio, originalData]);
+  }, [displayName, bio, timezone, originalData]);
 
   const handleSave = async () => {
     setIsSaving(true);
     const result = await updateProfile({
       displayName: displayName || undefined,
       bio: bio || undefined,
+      timezone,
     });
 
     if (result.success) {
       toast.success("Profile updated!");
-      setOriginalData({ displayName, bio });
+      setOriginalData({ displayName, bio, timezone });
       setHasChanges(false);
     } else {
       toast.error(result.error || "Failed to update profile");
@@ -288,7 +305,7 @@ export default function ProfileSettingsPage() {
 
       {/* Header Image */}
       <div className="relative mb-16">
-        <div className="relative h-32 sm:h-40 w-full rounded-sm overflow-hidden">
+        <div className="relative h-40 md:h-56 w-full rounded-sm overflow-hidden">
           {headerUrl ? (
             <Image
               src={headerUrl}
@@ -413,6 +430,30 @@ export default function ProfileSettingsPage() {
           />
           <p className="mt-1 text-xs text-foreground/50">
             {bio.length}/160 characters
+          </p>
+        </div>
+
+        {/* Timezone */}
+        <div id="timezone" className="scroll-mt-20">
+          <label className="block text-sm font-medium text-foreground/70 mb-2">
+            Timezone
+          </label>
+          <select
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+            className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+          >
+            {!TIMEZONES.includes(timezone) && (
+              <option value={timezone}>{timezone}</option>
+            )}
+            {TIMEZONES.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-foreground/50">
+            Used for scheduling, your posting queue, and daily digest emails.
           </p>
         </div>
 

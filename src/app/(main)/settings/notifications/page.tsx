@@ -8,6 +8,10 @@ import {
   IconHeart,
   IconAt,
   IconMail,
+  IconMessageCircle,
+  IconRefresh,
+  IconUserPlus,
+  IconMessage,
 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import {
@@ -234,20 +238,70 @@ export default function NotificationsSettingsPage() {
           onEmailChange={(v) => updateSetting("emailMentions", v)}
           disabled={isEmailDisabled}
         />
+        <NotificationRow
+          icon={IconMessageCircle}
+          title="Comments"
+          description="When someone comments on your post"
+          emailEnabled={settings.emailComments}
+          onEmailChange={(v) => updateSetting("emailComments", v)}
+          disabled={isEmailDisabled}
+        />
+        <NotificationRow
+          icon={IconUserPlus}
+          title="Follows"
+          description="When someone starts following you"
+          emailEnabled={settings.emailFollows}
+          onEmailChange={(v) => updateSetting("emailFollows", v)}
+          disabled={isEmailDisabled}
+        />
+        <NotificationRow
+          icon={IconMessage}
+          title="Messages"
+          description="When someone sends you a direct message"
+          emailEnabled={settings.emailMessages}
+          onEmailChange={(v) => updateSetting("emailMessages", v)}
+          disabled={isEmailDisabled}
+        />
+        <NotificationRow
+          icon={IconHeart}
+          title="Likes"
+          description="When someone likes your post"
+          emailEnabled={settings.emailLikes}
+          onEmailChange={(v) => updateSetting("emailLikes", v)}
+          disabled={isEmailDisabled}
+        />
+        <NotificationRow
+          icon={IconRefresh}
+          title="Echoes"
+          description="When someone reblogs (echoes) your post"
+          emailEnabled={settings.emailReblogs}
+          onEmailChange={(v) => updateSetting("emailReblogs", v)}
+          disabled={isEmailDisabled}
+        />
 
         <p className="text-xs text-foreground/45 mt-4 leading-relaxed">
-          Likes, comments, echoes, follows and messages appear in-app only for now.
-          Email notifications for those are coming soon.
+          Asks currently notify you in-app only.
         </p>
       </div>
 
       {/* Note */}
       <p className="mt-4 text-sm text-foreground/40">
-        {settings.emailFrequency === "daily"
-          ? "Daily digest emails are sent at 6 PM in your timezone."
-          : settings.emailFrequency === "off"
-          ? "You won't receive any email notifications."
-          : "Message notifications are limited to one email per hour per sender to reduce noise."}
+        {settings.emailFrequency === "daily" ? (
+          <>
+            Daily digest emails are sent at 6 PM in your{" "}
+            <Link
+              href="/settings/profile#timezone"
+              className="text-vocl-primary hover:underline"
+            >
+              timezone
+            </Link>
+            .
+          </>
+        ) : settings.emailFrequency === "off" ? (
+          "You won't receive any email notifications."
+        ) : (
+          "Message notifications are limited to one email per hour per sender to reduce noise."
+        )}
       </p>
     </div>
   );

@@ -54,14 +54,27 @@ const accentColors: { value: AccentColor; label: string; color: string }[] = [
 ];
 
 // Per-profile blog accent presets (saved to the user's profile, not localStorage).
-// Drives --vocl-primary / --vocl-primary within the profile page (Tumblr-style theming).
+// Drives --vocl-primary within the profile page (Tumblr-style theming).
 const profileAccentPresets: { label: string; color: string }[] = [
   { label: "Brand Pink", color: "#F20D5E" },
-  { label: "Teal", color: "#5B9A8B" },
-  { label: "Violet", color: "#8B5CF6" },
-  { label: "Blue", color: "#3B82F6" },
-  { label: "Amber", color: "#F59E0B" },
   { label: "Rose", color: "#F43F5E" },
+  { label: "Red", color: "#EF4444" },
+  { label: "Orange", color: "#F97316" },
+  { label: "Amber", color: "#F59E0B" },
+  { label: "Yellow", color: "#EAB308" },
+  { label: "Lime", color: "#84CC16" },
+  { label: "Green", color: "#22C55E" },
+  { label: "Emerald", color: "#10B981" },
+  { label: "Brand Teal", color: "#5B9A8B" },
+  { label: "Teal", color: "#14B8A6" },
+  { label: "Cyan", color: "#06B6D4" },
+  { label: "Sky", color: "#0EA5E9" },
+  { label: "Blue", color: "#3B82F6" },
+  { label: "Indigo", color: "#6366F1" },
+  { label: "Violet", color: "#8B5CF6" },
+  { label: "Purple", color: "#A855F7" },
+  { label: "Fuchsia", color: "#D946EF" },
+  { label: "Slate", color: "#64748B" },
 ];
 
 export default function AppearanceSettingsPage() {
@@ -277,7 +290,7 @@ export default function AppearanceSettingsPage() {
         </div>
         <p className="text-sm text-foreground/50 mb-4">
           Theme your profile page. Buttons, links, and highlights on your profile
-          use this color for everyone who visits.
+          use this colour for everyone who visits.
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -308,19 +321,6 @@ export default function AppearanceSettingsPage() {
               </button>
             );
           })}
-
-          <label className="flex items-center gap-2 ml-1 cursor-pointer">
-            <input
-              type="color"
-              value={profileAccent}
-              onChange={(e) => saveProfileAccent(e.target.value)}
-              disabled={savingAccent}
-              className="w-12 h-12 rounded-full border-0 bg-transparent cursor-pointer p-0"
-              aria-label="Custom accent color"
-              title="Custom color"
-            />
-            <span className="text-sm text-foreground/60">Custom</span>
-          </label>
         </div>
       </section>
 

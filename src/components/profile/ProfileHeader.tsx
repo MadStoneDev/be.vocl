@@ -136,11 +136,11 @@ export function ProfileHeader({
           <div className="mt-2 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             {/* Portrait and info */}
             <div className="flex items-center gap-4">
-              {/* Portrait — squared, editorial */}
+              {/* Portrait — circular, consistent with the Avatar used across the app */}
               <div className="relative">
                 <button
                   onClick={onAvatarClick}
-                  className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-sm overflow-hidden border border-vocl-border shadow-sm cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:ring-offset-2 focus:ring-offset-background"
+                  className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-full overflow-hidden border border-vocl-border shadow-sm cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:ring-offset-2 focus:ring-offset-background"
                   aria-label="View profile picture"
                 >
                   {avatarUrl ? (
