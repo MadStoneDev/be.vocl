@@ -54,7 +54,7 @@ export async function getProfileByUsername(
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
       .eq("username", username)
       .single();
 
@@ -115,7 +115,7 @@ export async function getCurrentProfile(): Promise<{
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
       .eq("id", user.id)
       .single();
 
@@ -983,7 +983,7 @@ export async function getFullProfile(
     const [profileResult, authResult] = await Promise.all([
       (supabase as any)
         .from("profiles")
-        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
+        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, accent_color, created_at, role")
         .eq("username", username)
         .single(),
       supabase.auth.getUser(),
