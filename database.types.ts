@@ -1934,6 +1934,7 @@ export type Database = {
           follower_count: number
           is_searchable: boolean
           is_nsfw: boolean
+          dm_privacy: string
         }
         Insert: {
           id: string
@@ -1986,6 +1987,7 @@ export type Database = {
           follower_count?: number
           is_searchable?: boolean
           is_nsfw?: boolean
+          dm_privacy?: string
         }
         Update: {
           id?: string
@@ -2038,6 +2040,7 @@ export type Database = {
           follower_count?: number
           is_searchable?: boolean
           is_nsfw?: boolean
+          dm_privacy?: string
         }
         Relationships: [
           {
