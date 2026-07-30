@@ -23,6 +23,7 @@ import {
   LinkPreviewCarousel,
 } from "@/components/Post";
 import { PollContent, AskContent } from "@/components/Post/content";
+import { LazyMount } from "@/components/ui/LazyMount";
 import type { VideoEmbedPlatform } from "@/types/database";
 
 interface QueuePost {
@@ -234,8 +235,11 @@ export function QueueItem({
         </div>
       )}
 
-      {/* Body — same renderers the feed uses */}
-      <div>{renderBody(renderPostType, renderContent, post.id)}</div>
+      {/* Body — same renderers the feed uses; lazy-mounted so a long queue
+          doesn't load every image/audio player/poll query up front. */}
+      <LazyMount minHeight={220}>
+        {renderBody(renderPostType, renderContent, post.id)}
+      </LazyMount>
     </div>
   );
 }
