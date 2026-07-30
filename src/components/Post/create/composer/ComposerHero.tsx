@@ -298,7 +298,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
               </>
             )}
             {!state.selectedUnsplash && state.unsplashResults.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 max-h-[65vh] overflow-y-auto">
                 {state.unsplashResults.map((photo: any) => (
                   <button
                     key={photo.id}

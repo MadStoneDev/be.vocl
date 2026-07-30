@@ -96,8 +96,11 @@ export function Avatar({
       <Image
         src={src}
         alt={`@${username}`}
-        width={sizePx[size]}
-        height={sizePx[size]}
+        // Request ~2× the display size and high quality so avatars stay crisp
+        // on high-DPI screens (the CSS box still shows them at their true size).
+        width={sizePx[size] * 2}
+        height={sizePx[size] * 2}
+        quality={90}
         className="object-cover w-full h-full"
         onError={() => setImageError(true)}
       />
