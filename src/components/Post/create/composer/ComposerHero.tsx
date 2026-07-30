@@ -538,6 +538,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                   )}
               </>
             ) : (
+              <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--vocl-hover)] border border-[#1DB954]/30">
                 <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-vocl-surface-dark flex-shrink-0">
                   {state.selectedTrack.albumArt ? (
@@ -572,6 +573,19 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 >
                   <IconX size={16} />
                 </button>
+              </div>
+
+              {/* Play the exact track before posting (Spotify embed — always
+                  works, unlike the deprecated 30s preview_url). */}
+              <iframe
+                title={`Preview: ${state.selectedTrack.name}`}
+                src={`https://open.spotify.com/embed/track/${state.selectedTrack.id}?utm_source=generator`}
+                width="100%"
+                height="152"
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                className="rounded-xl border-0"
+              />
               </div>
             )}
           </div>
