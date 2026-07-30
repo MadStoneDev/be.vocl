@@ -322,8 +322,9 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={photo.urls.thumb}
+                      src={photo.urls.small}
                       alt={photo.alt_description || ""}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 text-[10px] text-white truncate">
