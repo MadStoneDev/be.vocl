@@ -59,9 +59,14 @@ function CreatePageInner() {
     router.push("/feed");
   };
 
+  // The composer calls onEditSuccess() and then onClose() on a successful edit.
+  // onClose (handleClose → router.back()) owns the single navigation back to
+  // wherever the edit was opened from (e.g. the queue), so this handler must NOT
+  // navigate too — doing so double-pops history and lands on Home. router.refresh
+  // clears the App Router cache so the destination (queue/feed) shows the edit.
   const handleEditSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["feed"] });
-    router.back();
+    router.refresh();
   };
 
   if (isEdit && loadingPost) {
