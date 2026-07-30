@@ -79,6 +79,31 @@ export async function updateSession(request: NextRequest) {
   // Account status page is accessible to locked users
   const isAccountStatusRoute = request.nextUrl.pathname.startsWith("/account-status");
 
+  // Step-up MFA: a signed-in user who enrolled a TOTP factor but only holds an
+  // AAL1 session must complete the challenge before reaching any gated route.
+  // 2FA isn't compulsory, but once a user opts in it's enforced at every login.
+  // getAuthenticatorAssuranceLevel decodes the local session (no extra network
+  // call), so this is cheap.
+  if (user) {
+    const onMfaPage = request.nextUrl.pathname.startsWith("/auth/mfa");
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const needsMfa = aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2";
+
+    if (needsMfa && !onMfaPage && !isPublicRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/mfa";
+      url.search = `next=${encodeURIComponent(request.nextUrl.pathname)}`;
+      return NextResponse.redirect(url);
+    }
+    // Already stepped up (or nothing to step up to) — don't linger on the challenge.
+    if (!needsMfa && onMfaPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/feed";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // If user is not logged in and trying to access protected route
   if (!user && !isPublicRoute && !isAccountStatusRoute && request.nextUrl.pathname !== "/") {
     const url = request.nextUrl.clone();
