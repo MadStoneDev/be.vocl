@@ -299,6 +299,58 @@ export async function updateWebVisibilitySettings(settings: {
 /**
  * Update content settings (NSFW)
  */
+export type DmPrivacy = "everyone" | "following" | "none";
+
+/** Who can start a DM with the current user. Defaults to "everyone" (also if the
+ *  dm_privacy column hasn't been migrated yet). */
+export async function getMessagePrivacy(): Promise<DmPrivacy> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return "everyone";
+    const { data } = await (supabase as any)
+      .from("profiles")
+      .select("dm_privacy")
+      .eq("id", user.id)
+      .maybeSingle();
+    const v = data?.dm_privacy;
+    return v === "following" || v === "none" ? v : "everyone";
+  } catch {
+    return "everyone";
+  }
+}
+
+export async function updateMessagePrivacy(
+  value: DmPrivacy
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!["everyone", "following", "none"].includes(value)) {
+      return { success: false, error: "Invalid value" };
+    }
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({ dm_privacy: value })
+      .eq("id", user.id);
+    if (error) {
+      return {
+        success: false,
+        error: "Couldn't save — the dm_privacy migration may not be applied yet.",
+      };
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
 export async function updateContentSettings(settings: {
   showSensitivePosts?: boolean;
   blurSensitiveByDefault?: boolean;

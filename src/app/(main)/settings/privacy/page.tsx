@@ -23,7 +23,11 @@ import {
   updatePrivacySettings,
   updateContentSettings,
   updateWebVisibilitySettings,
+  getMessagePrivacy,
+  updateMessagePrivacy,
+  type DmPrivacy,
 } from "@/actions/profile";
+import { IconMessage } from "@tabler/icons-react";
 import { unblockUser, unmuteUser, getBlockedUsers, getMutedUsers } from "@/actions/follows";
 import { updateAskSettings } from "@/actions/asks";
 import { getMutedTags, unmuteTag } from "@/actions/tags";
@@ -58,6 +62,9 @@ export default function PrivacySettingsPage() {
   const [showFollowers, setShowFollowers] = useState(true);
   const [showFollowing, setShowFollowing] = useState(true);
 
+  // Messaging
+  const [dmPrivacy, setDmPrivacy] = useState<DmPrivacy>("everyone");
+
   // Public web settings
   const [isDiscoverable, setIsDiscoverable] = useState(true);
   const [allowSearchIndexing, setAllowSearchIndexing] = useState(true);
@@ -80,13 +87,15 @@ export default function PrivacySettingsPage() {
 
   useEffect(() => {
     async function loadSettings() {
-      const [profileResult, mutedTagsResult, blockedResult, mutedUsersResult] =
+      const [profileResult, mutedTagsResult, blockedResult, mutedUsersResult, dmResult] =
         await Promise.all([
           getCurrentProfile(),
           getMutedTags(),
           getBlockedUsers(),
           getMutedUsers(),
+          getMessagePrivacy(),
         ]);
+      setDmPrivacy(dmResult);
       if (profileResult.success && profileResult.profile) {
         setShowLikes(profileResult.profile.showLikes);
         setShowComments(profileResult.profile.showComments);
@@ -155,6 +164,20 @@ export default function PrivacySettingsPage() {
       }
     });
   }, []);
+
+  const handleDmPrivacyChange = useCallback((value: DmPrivacy) => {
+    const prev = dmPrivacy;
+    setDmPrivacy(value);
+    startTransition(async () => {
+      const result = await updateMessagePrivacy(value);
+      if (result.success) {
+        toast.success("Message settings updated");
+      } else {
+        setDmPrivacy(prev);
+        toast.error(result.error || "Failed to update settings");
+      }
+    });
+  }, [dmPrivacy]);
 
   const handleAskSettingsChange = useCallback(
     (newAllowAsks: boolean, newAllowAnonymous: boolean) => {
@@ -324,6 +347,54 @@ export default function PrivacySettingsPage() {
                 }}
                 disabled={isPending}
               />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+              <IconMessage size={20} />
+              Messages
+            </h3>
+            <p className="text-xs text-foreground/50 mb-4">
+              Choose who can start a new direct-message conversation with you.
+              Existing conversations aren&apos;t affected.
+            </p>
+            <div className="space-y-2">
+              {(
+                [
+                  { value: "everyone", label: "Everyone", desc: "Anyone on be.vocl can message you" },
+                  { value: "following", label: "People I follow", desc: "Only people you follow can start a conversation" },
+                  { value: "none", label: "No one", desc: "Turn off new message requests" },
+                ] as { value: DmPrivacy; label: string; desc: string }[]
+              ).map((opt) => {
+                const selected = dmPrivacy === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleDmPrivacyChange(opt.value)}
+                    disabled={isPending}
+                    aria-pressed={selected}
+                    className={`w-full flex items-start gap-3 p-3 rounded-sm text-left transition-colors disabled:opacity-60 ${
+                      selected
+                        ? "bg-vocl-primary/15 border border-vocl-primary/40"
+                        : "bg-vocl-hover border border-transparent hover:bg-vocl-hover-strong"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        selected ? "border-vocl-primary" : "border-vocl-border"
+                      }`}
+                    >
+                      {selected && <span className="w-2 h-2 rounded-full bg-vocl-primary" />}
+                    </span>
+                    <span className="flex-1">
+                      <span className="block text-sm font-medium text-foreground">{opt.label}</span>
+                      <span className="block text-xs text-foreground/50">{opt.desc}</span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

@@ -574,6 +574,7 @@ export async function startConversation(
     }
 
     // Check if conversation already exists using a single optimized query
+    // (existing conversations are always allowed; DM-privacy only gates NEW ones).
     // Find conversations where both users are participants
     const { data: myConversations } = await (supabase as any)
       .from("conversation_participants")
@@ -594,6 +595,34 @@ export async function startConversation(
 
       if (sharedConversation) {
         return { success: true, conversationId: sharedConversation.conversation_id };
+      }
+    }
+
+    // DM privacy: does the recipient accept a NEW conversation from this sender?
+    // Missing column (pre-migration) → treated as "everyone" (permissive).
+    const { data: recipient } = await (supabase as any)
+      .from("profiles")
+      .select("dm_privacy")
+      .eq("id", participantId)
+      .maybeSingle();
+    const dmPrivacy = recipient?.dm_privacy ?? "everyone";
+    if (dmPrivacy === "none") {
+      return { success: false, error: "This person isn't accepting new messages." };
+    }
+    if (dmPrivacy === "following") {
+      // They only accept DMs from people they follow → they must follow the sender.
+      const { data: followsSender } = await (supabase as any)
+        .from("follows")
+        .select("follower_id")
+        .eq("follower_id", participantId)
+        .eq("following_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      if (!followsSender) {
+        return {
+          success: false,
+          error: "This person only accepts messages from people they follow.",
+        };
       }
     }
 
