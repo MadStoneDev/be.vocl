@@ -37,8 +37,8 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-4">2. Eligibility</h2>
             <p className="text-foreground/80">
-              You must be at least 18 years old to use this Service. By using the Service, you
-              represent and warrant that you are 18 years of age or older.
+              You must be at least 21 years old to use this Service. By using the Service, you
+              represent and warrant that you are 21 years of age or older.
             </p>
           </section>
 

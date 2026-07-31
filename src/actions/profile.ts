@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { validateUsernameFormat, isValidTimezone } from "@/lib/validation";
 import { isValidProfileLinkUrl } from "@/lib/sanitize";
 import { batchFetchPostStats } from "./shared/post-stats";
+import { canViewSensitive, ageFromDob, SENSITIVE_MIN_AGE } from "@/lib/age";
 
 interface ProfileResult {
   success: boolean;
@@ -32,6 +33,7 @@ interface Profile {
   allowSearchIndexing: boolean;
   isSearchable: boolean;
   isProfilePublic: boolean;
+  dateOfBirth?: string | null;
   accentColor?: string | null;
   createdAt: string;
   role: number;
@@ -55,7 +57,7 @@ export async function getProfileByUsername(
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, accent_color, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, date_of_birth, accent_color, created_at, role")
       .eq("username", username)
       .single();
 
@@ -86,6 +88,7 @@ export async function getProfileByUsername(
         allowSearchIndexing: data.allow_search_indexing ?? true,
         isSearchable: data.is_searchable ?? true,
         isProfilePublic: data.is_profile_public ?? true,
+        dateOfBirth: data.date_of_birth ?? null,
         accentColor: data.accent_color ?? null,
         createdAt: data.created_at,
         role: data.role ?? 0,
@@ -117,7 +120,7 @@ export async function getCurrentProfile(): Promise<{
 
     const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, accent_color, created_at, role")
+      .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, date_of_birth, accent_color, created_at, role")
       .eq("id", user.id)
       .single();
 
@@ -148,6 +151,7 @@ export async function getCurrentProfile(): Promise<{
         allowSearchIndexing: data.allow_search_indexing ?? true,
         isSearchable: data.is_searchable ?? true,
         isProfilePublic: data.is_profile_public ?? true,
+        dateOfBirth: data.date_of_birth ?? null,
         accentColor: data.accent_color ?? null,
         createdAt: data.created_at,
         role: data.role ?? 0,
@@ -357,6 +361,57 @@ export async function updateMessagePrivacy(
   }
 }
 
+/**
+ * Set the current user's date of birth. IMMUTABLE: succeeds only when it isn't
+ * already set — thereafter only staff/service-role can change it. Validates a
+ * real, past date with a plausible age.
+ */
+export async function setDateOfBirth(
+  dob: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const parsed = new Date(dob);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dob) || Number.isNaN(parsed.getTime()) || parsed > new Date()) {
+      return { success: false, error: "Please enter a valid date." };
+    }
+    const age = ageFromDob(dob);
+    if (age === null || age < 13 || age > 120) {
+      return { success: false, error: "Please enter a valid date of birth." };
+    }
+
+    // Immutable once set.
+    const { data: existing } = await (supabase as any)
+      .from("profiles")
+      .select("date_of_birth")
+      .eq("id", user.id)
+      .single();
+    if (existing?.date_of_birth) {
+      return {
+        success: false,
+        error: "Your date of birth is already set and can't be changed. Contact support if it's wrong.",
+      };
+    }
+
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({ date_of_birth: dob, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (error) return { success: false, error: "Failed to save date of birth." };
+
+    revalidatePath("/settings/privacy");
+    return { success: true };
+  } catch (error) {
+    console.error("Set date of birth error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
 export async function updateContentSettings(settings: {
   showSensitivePosts?: boolean;
   blurSensitiveByDefault?: boolean;
@@ -371,6 +426,22 @@ export async function updateContentSettings(settings: {
 
     if (!user) {
       return { success: false, error: "Unauthorized" };
+    }
+
+    // Enabling sensitive content requires a set date of birth and 21+.
+    // Enforced server-side so it can't be bypassed by calling the action directly.
+    if (settings.showSensitivePosts === true) {
+      const { data: prof } = await (supabase as any)
+        .from("profiles")
+        .select("date_of_birth")
+        .eq("id", user.id)
+        .single();
+      if (!canViewSensitive(prof?.date_of_birth)) {
+        return {
+          success: false,
+          error: `You must set your date of birth and be ${SENSITIVE_MIN_AGE} or older to enable sensitive content.`,
+        };
+      }
     }
 
     const updateData: any = { updated_at: new Date().toISOString() };
@@ -1041,7 +1112,7 @@ export async function getFullProfile(
     const [profileResult, authResult] = await Promise.all([
       (supabase as any)
         .from("profiles")
-        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, accent_color, created_at, role")
+        .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, date_of_birth, accent_color, created_at, role")
         .eq("username", username)
         .single(),
       supabase.auth.getUser(),
@@ -1076,6 +1147,7 @@ export async function getFullProfile(
       allowSearchIndexing: data.allow_search_indexing ?? true,
       isSearchable: data.is_searchable ?? true,
         isProfilePublic: data.is_profile_public ?? true,
+        dateOfBirth: data.date_of_birth ?? null,
       accentColor: data.accent_color ?? null,
       createdAt: data.created_at,
       role: data.role ?? 0,

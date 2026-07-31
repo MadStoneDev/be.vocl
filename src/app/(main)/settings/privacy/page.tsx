@@ -25,9 +25,11 @@ import {
   updateWebVisibilitySettings,
   getMessagePrivacy,
   updateMessagePrivacy,
+  setDateOfBirth,
   type DmPrivacy,
 } from "@/actions/profile";
-import { IconMessage } from "@tabler/icons-react";
+import { IconMessage, IconCake } from "@tabler/icons-react";
+import { ageFromDob, canViewSensitive, SENSITIVE_MIN_AGE } from "@/lib/age";
 import { unblockUser, unmuteUser, getBlockedUsers, getMutedUsers } from "@/actions/follows";
 import { updateAskSettings } from "@/actions/asks";
 import { getMutedTags, unmuteTag } from "@/actions/tags";
@@ -76,6 +78,11 @@ export default function PrivacySettingsPage() {
   const [blurSensitiveByDefault, setBlurSensitiveByDefault] = useState(true);
   const [isNsfw, setIsNsfw] = useState(false);
 
+  // Date of birth (immutable once set; gates sensitive content at 21+)
+  const [dateOfBirth, setDob] = useState<string | null>(null);
+  const [dobInput, setDobInput] = useState("");
+  const [savingDob, setSavingDob] = useState(false);
+
   // Ask settings
   const [allowAsks, setAllowAsks] = useState(true);
   const [allowAnonymousAsks, setAllowAnonymousAsks] = useState(true);
@@ -109,6 +116,7 @@ export default function PrivacySettingsPage() {
         setShowSensitivePosts(profileResult.profile.showSensitivePosts);
         setBlurSensitiveByDefault(profileResult.profile.blurSensitiveByDefault);
         setIsNsfw(profileResult.profile.isNsfw ?? false);
+        setDob(profileResult.profile.dateOfBirth ?? null);
         setAllowAsks(profileResult.profile.allowAsks ?? true);
         setAllowAnonymousAsks(profileResult.profile.allowAnonymousAsks ?? true);
       }
@@ -166,6 +174,21 @@ export default function PrivacySettingsPage() {
       }
     });
   }, []);
+
+  const handleSaveDob = () => {
+    if (!dobInput) return;
+    setSavingDob(true);
+    (async () => {
+      const result = await setDateOfBirth(dobInput);
+      setSavingDob(false);
+      if (result.success) {
+        setDob(dobInput);
+        toast.success("Date of birth saved");
+      } else {
+        toast.error(result.error || "Failed to save date of birth");
+      }
+    })();
+  };
 
   const handleDmPrivacyChange = useCallback((value: DmPrivacy) => {
     const prev = dmPrivacy;
@@ -463,6 +486,65 @@ export default function PrivacySettingsPage() {
       {/* Content Tab */}
       {activeTab === "content" && (
         <div className="space-y-4">
+          {/* Date of birth (immutable; gates sensitive content at 21+) */}
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+              <IconCake size={20} />
+              Date of birth
+            </h3>
+            <p className="text-xs text-foreground/50 mb-4">
+              be.vocl is {SENSITIVE_MIN_AGE}+. Your date of birth gates access to
+              sensitive content. It can&apos;t be changed once set — contact
+              support if it&apos;s wrong.
+            </p>
+            {dateOfBirth ? (
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {new Date(dateOfBirth).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <p className="text-xs text-foreground/50">
+                    {(() => {
+                      const a = ageFromDob(dateOfBirth);
+                      if (a === null) return "";
+                      return a >= SENSITIVE_MIN_AGE
+                        ? `${a} — you can enable sensitive content`
+                        : `${a} — must be ${SENSITIVE_MIN_AGE}+ for sensitive content`;
+                    })()}
+                  </p>
+                </div>
+                <span className="text-xs text-foreground/40 shrink-0">Locked</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="date"
+                    value={dobInput}
+                    max={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => setDobInput(e.target.value)}
+                    className="flex-1 px-4 py-2.5 rounded-sm bg-vocl-hover border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveDob}
+                    disabled={!dobInput || savingDob}
+                    className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
+                  >
+                    {savingDob ? "Saving…" : "Save"}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-amber-500">
+                  This can&apos;t be changed once saved.
+                </p>
+              </>
+            )}
+          </div>
+
           <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconEyeOff size={20} />
@@ -471,13 +553,19 @@ export default function PrivacySettingsPage() {
             <div className="space-y-4">
               <ToggleSetting
                 label="Show sensitive content"
-                description="Display posts marked as sensitive in your feed"
+                description={
+                  canViewSensitive(dateOfBirth)
+                    ? "Display posts marked as sensitive in your feed"
+                    : dateOfBirth
+                      ? `You must be ${SENSITIVE_MIN_AGE}+ to enable this.`
+                      : "Set your date of birth above to enable this."
+                }
                 checked={showSensitivePosts}
                 onChange={(checked) => {
                   setShowSensitivePosts(checked);
                   handleContentChange("showSensitivePosts", checked);
                 }}
-                disabled={isPending}
+                disabled={isPending || !canViewSensitive(dateOfBirth)}
               />
               <ToggleSetting
                 label="Blur sensitive content by default"
