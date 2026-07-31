@@ -81,6 +81,10 @@ function buildEditInitial(
     tags: tagsToNames(post.tags),
   };
 
+  // Preserve the content warning (stored inside the content JSON) on edit.
+  const cw = (post.content as { content_warning?: string } | null)?.content_warning;
+  if (cw) base.contentWarning = cw;
+
   if (isReblogEdit) {
     base.postType = "text";
     base.content = {

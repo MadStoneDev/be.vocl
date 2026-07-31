@@ -47,6 +47,9 @@ interface QueuePost {
 
 interface QueueItemProps {
   post: QueuePost;
+  /** Sequential position in the list (1-based) — shown instead of the raw
+   *  stored queue_position, which goes sparse as earlier posts publish. */
+  displayNumber?: number;
   /** Projected publish time (queued) or fixed scheduled time (scheduled). */
   scheduledFor?: Date;
   /** "queued" = auto-slotted + reorderable; "scheduled" = fixed date/time. */
@@ -112,6 +115,7 @@ function renderBody(postType: string, content: any, postId: string) {
 
 export function QueueItem({
   post,
+  displayNumber,
   scheduledFor,
   variant = "queued",
   onPublishNow,
@@ -159,7 +163,7 @@ export function QueueItem({
                 <IconGripVertical size={18} />
               </span>
               <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 text-xs font-semibold text-vocl-primary">
-                {post.queuePosition}
+                {displayNumber ?? post.queuePosition}
               </span>
             </>
           )}

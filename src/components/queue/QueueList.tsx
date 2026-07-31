@@ -99,6 +99,7 @@ export function QueueList({
         >
           <QueueItem
             post={post}
+            displayNumber={index + 1}
             scheduledFor={times.get(post.id)}
             onPublishNow={onPublishNow}
             onRemove={onRemove}

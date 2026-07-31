@@ -37,6 +37,9 @@ function CreatePageInner() {
             postType: res.post.postType,
             content: res.post.content,
             isSensitive: res.post.isSensitive,
+            // Preserve the audience (Members vs Public) on edit — without this the
+            // composer defaulted excludeFromPublic to false, flipping the post Public.
+            excludeFromPublic: res.post.excludeFromPublic,
             tags: res.post.tags || [],
           });
         }
