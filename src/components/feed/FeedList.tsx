@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent, AskContent } from "@/components/Post";
+import { InteractivePost } from "@/components/Post";
 import type { PostStats, PostInteractions } from "@/components/Post";
 import { useMemo } from "react";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -129,7 +129,6 @@ export function FeedList({
   return (
     <div className="flex flex-col gap-2 sm:gap-5">
       {posts.map((post, index) => {
-        const isAboveFold = index < 3;
         return (
         <React.Fragment key={post.id}>
           {index === whoToFollowIndex && <WhoToFollow />}
@@ -158,71 +157,9 @@ export function FeedList({
           tags={post.tags}
           content={post.rawContent}
           initialBookmarked={post.isBookmarked}
-        >
-          {/* Image content */}
-          {post.contentType === "image" && post.content.imageUrl && (
-            <ImageContent src={post.content.imageUrl} alt="Post image" caption={post.content.captionHtml} priority={isAboveFold} />
-          )}
-
-          {/* Text content */}
-          {post.contentType === "text" && (post.content.html || post.content.text) && (
-            <>
-              <TextContent
-                html={post.content.html}
-                isEssay={post.content.isEssay}
-                essayTitle={post.content.essayTitle}
-                readingTimeMinutes={post.content.readingTimeMinutes}
-              >{post.content.text}</TextContent>
-              {post.content.linkPreviews && post.content.linkPreviews.length > 0 && (
-                <div className="bg-vocl-surface-muted">
-                  <LinkPreviewCarousel previews={post.content.linkPreviews} />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Video content (embed or file) */}
-          {post.contentType === "video" && (
-            <VideoContent
-              src={post.content.videoUrl}
-              thumbnailUrl={post.content.videoThumbnailUrl}
-              embedUrl={post.content.embedUrl}
-              embedPlatform={post.content.embedPlatform}
-              caption={post.content.captionHtml}
-            />
-          )}
-
-          {/* Audio content */}
-          {post.contentType === "audio" && (post.content.audioUrl || post.content.spotifyData) && (
-            <AudioContent
-              src={post.content.audioUrl}
-              albumArtUrl={post.content.albumArtUrl}
-              spotifyData={post.content.spotifyData}
-              caption={post.content.captionHtml}
-              transcript={post.content.transcript}
-              isVoiceNote={post.content.isVoiceNote}
-            />
-          )}
-
-          {/* Gallery content */}
-          {post.contentType === "gallery" && post.content.imageUrls && (
-            <GalleryContent
-              images={post.content.imageUrls}
-              caption={post.content.captionHtml}
-              priority={isAboveFold}
-            />
-          )}
-
-          {/* Poll content */}
-          {post.contentType === "poll" && post.rawContent && (
-            <PollContent postId={post.id} content={post.rawContent} />
-          )}
-
-          {/* Ask content */}
-          {post.contentType === "ask" && post.rawContent && (
-            <AskContent content={post.rawContent} />
-          )}
-        </InteractivePost>
+        />{/* InteractivePost renders the body itself from `content` — passing it
+             as children broke its memo() (new element every render), re-rendering
+             the whole feed on each infinite-scroll append. */}
           </div>
         </React.Fragment>
         );

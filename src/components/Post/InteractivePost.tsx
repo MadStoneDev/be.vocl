@@ -7,6 +7,7 @@ import { VideoContent } from "./content/VideoContent";
 import { AudioContent } from "./content/AudioContent";
 import { AskContent } from "./content/AskContent";
 import { GalleryContent } from "./content/GalleryContent";
+import { PollContent } from "./content/PollContent";
 import { LinkPreviewCarousel } from "./content/LinkPreviewCarousel";
 import type { PostContentType, PostAuthor, PostStats, PostInteractions, CommentData, UserData } from "./Post";
 import type { VideoEmbedPlatform } from "@/types/database";
@@ -47,7 +48,9 @@ interface InteractivePostProps {
   authorId?: string;
   timestamp: string;
   contentType: PostContentType;
-  children: ReactNode;
+  /** Optional fallback body for content types the internal switch doesn't
+   *  handle. Feed callers omit this — InteractivePost renders from `content`. */
+  children?: ReactNode;
   initialStats: PostStats;
   initialInteractions: PostInteractions;
   isSensitive?: boolean;
@@ -589,13 +592,16 @@ function InteractivePostComponent({
           />
         );
 
+      case "poll":
+        return <PollContent postId={id} content={contentData} />;
+
       case "ask":
         return <AskContent content={contentData} />;
 
       default:
         return children;
     }
-  }, [currentContent, contentType, children]);
+  }, [currentContent, contentType, children, id]);
 
   // Don't render if deleted
   if (isDeleted) {

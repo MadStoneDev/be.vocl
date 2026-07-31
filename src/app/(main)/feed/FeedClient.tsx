@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useSyncExternalStore } from "react";
+import { useMemo, useRef, useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
@@ -321,11 +321,26 @@ export default function FeedClient({
     refetchOnWindowFocus: false,
   });
 
-  // Flatten all pages into a single list, transform once
+  // Flatten all pages into a single list. Cache the transform by raw-post
+  // identity: react-query keeps existing raw post objects stable across
+  // infinite-scroll appends, so unchanged posts return the SAME transformed
+  // object — keeping InteractivePost's props referentially stable so its memo()
+  // actually skips re-rendering already-mounted posts. Changed posts (refetch)
+  // arrive as new raw objects → cache miss → re-transform.
+  const transformCacheRef = useRef(new WeakMap<object, ReturnType<typeof transformPost>>());
   const feedListPosts = useMemo(() => {
     if (!data?.pages) return [];
+    const cache = transformCacheRef.current;
     return data.pages.flatMap((page) =>
-      page.posts.map((post) => transformPost(post as PostWithDetails))
+      page.posts.map((post) => {
+        const key = post as unknown as object;
+        let transformed = cache.get(key);
+        if (!transformed) {
+          transformed = transformPost(post as PostWithDetails);
+          cache.set(key, transformed);
+        }
+        return transformed;
+      })
     );
   }, [data]);
 
