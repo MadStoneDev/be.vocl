@@ -152,7 +152,7 @@ export function LinkPreviewCarousel({
   const isSingle = previews.length === 1 && !isLoading;
 
   return (
-    <div className={article ? "" : "px-3 sm:px-4 pb-3"}>
+    <div className={article ? "" : "p-3 sm:p-4"}>
       <div
         data-no-swipe
         className={`flex gap-3 ${

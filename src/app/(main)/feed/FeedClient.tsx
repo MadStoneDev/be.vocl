@@ -346,7 +346,10 @@ export default function FeedClient({
 
   return (
     <PullToRefresh onRefresh={refetch}>
-    <div className="py-1 sm:py-3 mx-auto max-w-5xl">
+    {/* Front Page fills a wider column on lg+ (where the broadsheet grid shows);
+        Reader stays a comfortable single-column width. Bounded by the parent, so
+        it never overflows the sidebar/viewport. */}
+    <div className={`py-1 sm:py-3 mx-auto ${layout === "frontpage" ? "max-w-5xl lg:max-w-7xl" : "max-w-5xl"}`}>
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
         <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />

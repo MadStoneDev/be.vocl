@@ -44,8 +44,9 @@ export function FrontPageGrid({
 
   return (
     <MotionConfig reducedMotion="user">
-    {/* Break out of the centered reading column to fill the content area on wide screens. */}
-    <div className="mx-auto w-full xl:-mx-32 xl:w-[calc(100%+16rem)] 2xl:-mx-56 2xl:w-[calc(100%+28rem)]">
+    {/* Fills the widened feed container (see FeedClient) — no negative-margin
+        breakout, which overflowed behind the sidebar / past the viewport at xl. */}
+    <div className="w-full">
       {/* Hero tier */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-8">
         {lead && (
