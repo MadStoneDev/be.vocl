@@ -489,7 +489,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
           <div className="text-center py-16 px-4">
             <p className="text-foreground/50 text-sm">{conversationsError}</p>
             <button
-              onClick={refreshConversations}
+              onClick={() => refreshConversations()}
               className="mt-4 px-4 py-2 rounded-xl bg-vocl-primary text-white text-sm"
             >
               Try again

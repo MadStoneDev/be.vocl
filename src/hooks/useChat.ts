@@ -68,7 +68,7 @@ interface UseChatReturn {
   isLoading: boolean;
   error: string | null;
   totalUnread: number;
-  refreshConversations: () => Promise<void>;
+  refreshConversations: (opts?: { silent?: boolean }) => Promise<void>;
   startNewConversation: (participantId: string) => Promise<string | null>;
 }
 
@@ -99,8 +99,10 @@ export function useChat(currentUserId?: string): UseChatReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshConversations = useCallback(async () => {
-    setIsLoading(true);
+  const refreshConversations = useCallback(async (opts?: { silent?: boolean }) => {
+    // Realtime-triggered refreshes pass { silent } so they don't flash the
+    // sidebar skeleton on every incoming message.
+    if (!opts?.silent) setIsLoading(true);
     setError(null);
 
     try {
@@ -116,7 +118,7 @@ export function useChat(currentUserId?: string): UseChatReturn {
       setError("Failed to load conversations");
     }
 
-    setIsLoading(false);
+    if (!opts?.silent) setIsLoading(false);
   }, []);
 
   // Initial load
@@ -131,8 +133,10 @@ export function useChat(currentUserId?: string): UseChatReturn {
     if (!currentUserId) return;
 
     const supabase = createClient();
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    // Subscribe to new messages for all conversations the user is in
+    // New messages (RLS-scoped to the user's conversations) refresh the list —
+    // debounced to coalesce bursts, and silent so the sidebar doesn't flicker.
     const channel = supabase
       .channel("chat-updates")
       .on(
@@ -142,14 +146,17 @@ export function useChat(currentUserId?: string): UseChatReturn {
           schema: "public",
           table: "messages",
         },
-        (payload: any) => {
-          // Refresh conversations when a new message arrives
-          refreshConversations();
+        () => {
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(() => {
+            refreshConversations({ silent: true });
+          }, 500);
         }
       )
       .subscribe();
 
     return () => {
+      if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
   }, [currentUserId, refreshConversations]);

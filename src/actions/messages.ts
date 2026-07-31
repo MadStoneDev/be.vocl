@@ -143,22 +143,6 @@ export async function getConversations(): Promise<{
       .in("conversation_id", conversationIds)
       .neq("profile_id", user.id);
 
-    // Batch fetch: Get latest message for each conversation using a subquery approach
-    // We'll get all recent messages and pick the latest per conversation in JS
-    const { data: allMessages } = await (supabase as any)
-      .from("messages")
-      .select("id, conversation_id, content, sender_id, created_at")
-      .in("conversation_id", conversationIds)
-      .eq("is_deleted", false)
-      .order("created_at", { ascending: false });
-
-    // Batch fetch: Get unread counts - get all unread messages and count in JS
-    const { data: unreadMessages } = await (supabase as any)
-      .from("messages")
-      .select("conversation_id, created_at")
-      .in("conversation_id", conversationIds)
-      .neq("sender_id", user.id);
-
     // Build lookup maps for O(1) access
     const participantMap = new Map<string, any>();
     for (const p of allParticipants || []) {
@@ -167,26 +151,59 @@ export async function getConversations(): Promise<{
       }
     }
 
-    // Get latest message per conversation
     const lastMessageMap = new Map<string, any>();
-    for (const msg of allMessages || []) {
-      if (!lastMessageMap.has(msg.conversation_id)) {
-        lastMessageMap.set(msg.conversation_id, msg);
-      }
-    }
-
-    // Build last_read_at lookup
-    const lastReadMap = new Map<string, string>();
-    for (const p of participations) {
-      lastReadMap.set(p.conversation_id, p.last_read_at || "1970-01-01");
-    }
-
-    // Count unread messages per conversation
     const unreadCountMap = new Map<string, number>();
-    for (const msg of unreadMessages || []) {
-      const lastRead = lastReadMap.get(msg.conversation_id) || "1970-01-01";
-      if (new Date(msg.created_at) > new Date(lastRead)) {
-        unreadCountMap.set(msg.conversation_id, (unreadCountMap.get(msg.conversation_id) || 0) + 1);
+
+    // Fast path: one row per conversation (latest message + unread) via RPC —
+    // avoids pulling every message across every conversation into memory.
+    const { data: previews, error: rpcError } = await (supabase as any).rpc(
+      "get_conversation_previews"
+    );
+
+    if (!rpcError && Array.isArray(previews)) {
+      for (const p of previews) {
+        if (p.last_created_at) {
+          lastMessageMap.set(p.conversation_id, {
+            content: p.last_content,
+            sender_id: p.last_sender_id,
+            created_at: p.last_created_at,
+          });
+        }
+        unreadCountMap.set(p.conversation_id, Number(p.unread_count) || 0);
+      }
+    } else {
+      // Fallback (e.g. RPC not migrated yet): the original unbounded approach.
+      const { data: allMessages } = await (supabase as any)
+        .from("messages")
+        .select("id, conversation_id, content, sender_id, created_at")
+        .in("conversation_id", conversationIds)
+        .eq("is_deleted", false)
+        .order("created_at", { ascending: false });
+
+      const { data: unreadMessages } = await (supabase as any)
+        .from("messages")
+        .select("conversation_id, created_at")
+        .in("conversation_id", conversationIds)
+        .neq("sender_id", user.id);
+
+      for (const msg of allMessages || []) {
+        if (!lastMessageMap.has(msg.conversation_id)) {
+          lastMessageMap.set(msg.conversation_id, msg);
+        }
+      }
+
+      const lastReadMap = new Map<string, string>();
+      for (const p of participations) {
+        lastReadMap.set(p.conversation_id, p.last_read_at || "1970-01-01");
+      }
+      for (const msg of unreadMessages || []) {
+        const lastRead = lastReadMap.get(msg.conversation_id) || "1970-01-01";
+        if (new Date(msg.created_at) > new Date(lastRead)) {
+          unreadCountMap.set(
+            msg.conversation_id,
+            (unreadCountMap.get(msg.conversation_id) || 0) + 1
+          );
+        }
       }
     }
 
