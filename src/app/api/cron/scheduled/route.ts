@@ -42,12 +42,16 @@ export async function GET(request: Request) {
     }
 
     for (const post of scheduledPosts || []) {
+      // Surface the post fresh at its go-live moment (feeds order + display by
+      // created_at), not buried at the time it was originally composed.
+      const publishedAt = new Date().toISOString();
       const { error: publishError } = await supabase
         .from("posts")
         .update({
           status: "published",
           scheduled_for: null,
-          published_at: new Date().toISOString(),
+          published_at: publishedAt,
+          created_at: publishedAt,
           pending_community_ids: null,
         })
         .eq("id", post.id);

@@ -194,12 +194,17 @@ export async function GET(request: Request) {
         }
 
         for (const post of queuedPosts || []) {
+          // Stamp both published_at AND created_at to the go-live moment, so the
+          // post surfaces fresh (feeds order + display by created_at) rather than
+          // buried at its original queue time.
+          const publishedAt = new Date().toISOString();
           const { error: publishError } = await supabase
             .from("posts")
             .update({
               status: "published",
               queue_position: null,
-              published_at: new Date().toISOString(),
+              published_at: publishedAt,
+              created_at: publishedAt,
               published_from_queue: true,
               pending_community_ids: null,
             })
