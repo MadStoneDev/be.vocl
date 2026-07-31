@@ -71,7 +71,7 @@ function renderBody(postType: string, content: any, postId: string) {
         <>
           <TextContent html={c.html}>{c.plain || c.text}</TextContent>
           {c.link_previews?.length > 0 && (
-            <div className="bg-[#EBEBEB] -mt-16 pb-16">
+            <div className="">
               <LinkPreviewCarousel previews={c.link_previews} />
             </div>
           )}

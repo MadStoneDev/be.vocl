@@ -140,7 +140,7 @@ export default function TagPage() {
               {content.plain || content.text}
             </TextContent>
             {content.link_previews?.length > 0 && (
-              <div className="bg-vocl-surface-muted -mt-16 pb-16">
+              <div className="">
                 <LinkPreviewCarousel previews={content.link_previews} />
               </div>
             )}

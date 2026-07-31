@@ -945,7 +945,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
               <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
             </TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-vocl-surface-muted">
+              <div className="">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}
@@ -955,7 +955,7 @@ function PostCard({ post }: { post: SearchResult["posts"][0] }) {
           <>
             <TextContent>{post.content.plain}</TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-vocl-surface-muted">
+              <div className="">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}

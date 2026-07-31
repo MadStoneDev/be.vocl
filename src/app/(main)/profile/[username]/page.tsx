@@ -308,7 +308,7 @@ export default function ProfilePage() {
               <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
             </TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+              <div className="">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}
@@ -318,7 +318,7 @@ export default function ProfilePage() {
           <>
             <TextContent>{post.content.plain}</TextContent>
             {post.content.link_previews?.length > 0 && (
-              <div className="bg-[#EBEBEB] -mt-16 pb-16">
+              <div className="">
                 <LinkPreviewCarousel previews={post.content.link_previews} />
               </div>
             )}

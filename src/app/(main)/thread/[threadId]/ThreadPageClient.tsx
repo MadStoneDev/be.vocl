@@ -46,7 +46,7 @@ function renderPostContent(postType: string, content: any) {
             {content.plain || content.text}
           </TextContent>
           {content.link_previews && content.link_previews.length > 0 && (
-            <div className="bg-vocl-surface-muted">
+            <div className="">
               <LinkPreviewCarousel previews={content.link_previews} />
             </div>
           )}

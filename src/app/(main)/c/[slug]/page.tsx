@@ -76,7 +76,7 @@ function renderPostContent(post: CommunityPost) {
             readingTimeMinutes={c.reading_time_minutes}
           >{c.plain || c.text}</TextContent>
           {c.link_previews?.length > 0 && (
-            <div className="bg-vocl-surface-muted -mt-16 pb-16">
+            <div className="">
               <LinkPreviewCarousel previews={c.link_previews} />
             </div>
           )}
