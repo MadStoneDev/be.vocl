@@ -28,6 +28,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
+  // Legacy public-profile URLs (/u/[username], /u/[username]/archive) were folded
+  // into the single canonical /profile/[username] surface. 301 so old shared
+  // links and any indexed URLs pass their equity to the new location.
+  if (request.nextUrl.pathname.startsWith("/u/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/profile/" + request.nextUrl.pathname.slice("/u/".length);
+    return NextResponse.redirect(url, 301);
+  }
+
   return await updateSession(request);
 }
 

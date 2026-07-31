@@ -104,7 +104,7 @@ export default async function EmbedPostPage({ params }: Props) {
       <article className="w-full max-w-[600px] rounded-xl bg-vocl-surface-dark border border-white/10 overflow-hidden">
         <header className="flex items-center justify-between px-4 py-3 border-b border-white/5">
           <Link
-            href={`${APP_URL}/u/${author?.username}`}
+            href={`${APP_URL}/profile/${author?.username}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 min-w-0 group"

@@ -168,7 +168,7 @@ export default async function PostPage({ params }: Props) {
           author: {
             "@type": "Person",
             name: p.author?.display_name || `@${p.author?.username}`,
-            url: p.author?.username ? `${APP_URL}/u/${p.author.username}` : undefined,
+            url: p.author?.username ? `${APP_URL}/profile/${p.author.username}` : undefined,
           },
           publisher: { "@type": "Organization", name: "be.vocl", url: APP_URL },
         }

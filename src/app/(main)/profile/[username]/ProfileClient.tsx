@@ -1,0 +1,770 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { IconLoader2, IconMoodSad } from "@tabler/icons-react";
+import {
+  ProfileHeader,
+  ProfileLinks,
+  ProfileTabs,
+  PinnedPost,
+  FollowersModal,
+  AvatarModal,
+  AskModal,
+  ProfileAccentScope,
+  type TabId,
+} from "@/components/profile";
+import { ReportModal } from "@/components/moderation";
+import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent } from "@/components/Post";
+import type { VideoEmbedPlatform } from "@/types/database";
+import { getFullProfile } from "@/actions/profile";
+import { getLikedPosts, getCommentedPosts } from "@/actions/posts";
+import { followUser, unfollowUser, blockUser, muteUser, isMutual } from "@/actions/follows";
+import { startConversation } from "@/actions/messages";
+import { toast } from "@/components/ui";
+import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+
+interface ProfileData {
+  id: string;
+  username: string;
+  displayName?: string;
+  avatarUrl?: string;
+  headerUrl?: string;
+  bio?: string;
+  showLikes: boolean;
+  showComments: boolean;
+  showFollowers: boolean;
+  showFollowing: boolean;
+  accentColor?: string | null;
+  role: number;
+}
+
+interface ProfileLink {
+  id: string;
+  title: string;
+  url: string;
+}
+
+interface PostData {
+  id: string;
+  authorId: string;
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  };
+  postType: string;
+  content: any;
+  isSensitive: boolean;
+  isPinned: boolean;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  reblogCount: number;
+  hasLiked: boolean;
+  hasCommented: boolean;
+  hasReblogged: boolean;
+  tags?: Array<{ id: string; name: string }>;
+}
+
+export function ProfileClient() {
+  const params = useParams();
+  const router = useRouter();
+  const username = params.username as string;
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0, likes: 0, comments: 0 });
+  const [links, setLinks] = useState<ProfileLink[]>([]);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [following, setFollowing] = useState(false);
+  const [mutual, setMutual] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>("posts");
+  const [error, setError] = useState<string | null>(null);
+
+  // Posts state
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [pinnedPost, setPinnedPost] = useState<PostData | null>(null);
+  const [likedPosts, setLikedPosts] = useState<PostData[]>([]);
+  const [commentedPosts, setCommentedPosts] = useState<PostData[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
+
+  // Followers modal state (for stat clicks in header)
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalType, setFollowersModalType] = useState<"followers" | "following">("followers");
+
+  // Avatar modal state
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+
+  // Report modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+
+  // Ask modal state
+  const [askModalOpen, setAskModalOpen] = useState(false);
+  const [allowsAsks, setAllowsAsks] = useState(false);
+
+  const fetchProfile = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Single server action that fetches everything in parallel
+      const result = await getFullProfile(username);
+
+      if (!result.success || !result.profile) {
+        setError(result.error || "Profile not found");
+        setIsLoading(false);
+        return;
+      }
+
+      setProfile({
+        id: result.profile.id,
+        username: result.profile.username,
+        displayName: result.profile.displayName,
+        avatarUrl: result.profile.avatarUrl,
+        headerUrl: result.profile.headerUrl,
+        bio: result.profile.bio,
+        showLikes: result.profile.showLikes,
+        showComments: result.profile.showComments,
+        showFollowers: result.profile.showFollowers,
+        showFollowing: result.profile.showFollowing,
+        accentColor: result.profile.accentColor ?? null,
+        role: result.profile.role,
+      });
+
+      setIsOwnProfile(result.isOwnProfile || false);
+      setCurrentUserId(result.currentUserId);
+      setStats(result.stats || { posts: 0, followers: 0, following: 0, likes: 0, comments: 0 });
+      // Seed the Likes/Comments badge counts upfront so they're correct before
+      // the tabs are opened; the lazy tab fetches still refresh them.
+      setLikesCount(result.stats?.likes || 0);
+      setCommentsCount(result.stats?.comments || 0);
+      setLinks(result.links || []);
+      setPosts(result.posts || []);
+      setPinnedPost(result.pinnedPost || null);
+      setFollowing(result.isFollowing || false);
+      setAllowsAsks(result.canAsk || false);
+
+      // Check mutual status for non-own profiles
+      if (!result.isOwnProfile && result.profile.id) {
+        isMutual(result.profile.id).then((mutualResult) => {
+          if (mutualResult.success) {
+            setMutual(mutualResult.isMutual);
+          }
+        });
+      } else {
+        setMutual(false);
+      }
+    } catch (err) {
+      setError("Failed to load profile");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [username]);
+
+  // Fetch liked posts when switching to likes tab
+  const fetchLikedPosts = useCallback(async () => {
+    if (!profile) return;
+    setPostsLoading(true);
+    const result = await getLikedPosts(profile.id);
+    if (result.success) {
+      setLikedPosts(result.posts || []);
+      setLikesCount(result.total || 0);
+    }
+    setPostsLoading(false);
+  }, [profile]);
+
+  // Fetch commented posts when switching to comments tab
+  const fetchCommentedPosts = useCallback(async () => {
+    if (!profile) return;
+    setPostsLoading(true);
+    const result = await getCommentedPosts(profile.id);
+    if (result.success) {
+      setCommentedPosts(result.posts || []);
+      setCommentsCount(result.total || 0);
+    }
+    setPostsLoading(false);
+  }, [profile]);
+
+  useEffect(() => {
+    if (activeTab === "likes" && likedPosts.length === 0 && profile) {
+      fetchLikedPosts();
+    }
+    if (activeTab === "comments" && commentedPosts.length === 0 && profile) {
+      fetchCommentedPosts();
+    }
+  }, [activeTab, likedPosts.length, commentedPosts.length, profile, fetchLikedPosts, fetchCommentedPosts]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const handleFollow = async () => {
+    if (!profile) return;
+    const result = await followUser(profile.id);
+    if (result.success) {
+      setFollowing(true);
+      setStats((prev) => ({ ...prev, followers: prev.followers + 1 }));
+      toast.success(`Following @${profile.username}`);
+      // Re-check mutual status after following
+      isMutual(profile.id).then((mutualResult) => {
+        if (mutualResult.success) setMutual(mutualResult.isMutual);
+      });
+    } else {
+      toast.error(result.error || "Failed to follow user");
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!profile) return;
+    const result = await unfollowUser(profile.id);
+    if (result.success) {
+      setFollowing(false);
+      setMutual(false);
+      setStats((prev) => ({ ...prev, followers: prev.followers - 1 }));
+      toast.success(`Unfollowed @${profile.username}`);
+    } else {
+      toast.error(result.error || "Failed to unfollow user");
+    }
+  };
+
+  const handleBlock = async () => {
+    if (!profile) return;
+    const result = await blockUser(profile.id);
+    if (result.success) {
+      toast.success(`Blocked @${profile.username}`);
+      router.push("/feed");
+    } else {
+      toast.error(result.error || "Failed to block user");
+    }
+  };
+
+  const handleMute = async () => {
+    if (!profile) return;
+    const result = await muteUser(profile.id);
+    if (result.success) {
+      toast.success(`Muted @${profile.username}`);
+    }
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Profile link copied!");
+  };
+
+  const openFollowersModal = (type: "followers" | "following") => {
+    setFollowersModalType(type);
+    setFollowersModalOpen(true);
+  };
+
+  // Render a post
+  const renderPost = (post: PostData) => {
+    const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
+
+    // Get content preview for reblog dialog
+    const contentPreview = post.content?.plain || post.content?.caption_html?.replace(/<[^>]*>/g, "") || "";
+    const imageUrl = post.content?.urls?.[0] || post.content?.thumbnail_url;
+
+    return (
+      <InteractivePost
+        key={post.id}
+        id={post.id}
+        author={{
+          username: post.author.username,
+          avatarUrl: post.author.avatarUrl || "",
+        }}
+        authorId={post.authorId}
+        timestamp={post.createdAt}
+        contentType={contentType}
+        content={post.content}
+        initialStats={{
+          comments: post.commentCount,
+          likes: post.likeCount,
+          reblogs: post.reblogCount,
+        }}
+        initialInteractions={{
+          hasCommented: post.hasCommented,
+          hasLiked: post.hasLiked,
+          hasReblogged: post.hasReblogged,
+        }}
+        isSensitive={post.isSensitive}
+        isOwn={post.authorId === currentUserId}
+        isPinned={post.isPinned}
+        contentPreview={contentPreview}
+        imageUrl={imageUrl}
+        tags={post.tags}
+      >
+        {contentType === "image" && post.content?.urls?.[0] && (
+          <ImageContent src={post.content.urls[0]} alt="" />
+        )}
+        {contentType === "text" && post.content?.html && (
+          <>
+            <TextContent>
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
+            </TextContent>
+            {post.content.link_previews?.length > 0 && (
+              <div className="">
+                <LinkPreviewCarousel previews={post.content.link_previews} />
+              </div>
+            )}
+          </>
+        )}
+        {contentType === "text" && post.content?.plain && !post.content?.html && (
+          <>
+            <TextContent>{post.content.plain}</TextContent>
+            {post.content.link_previews?.length > 0 && (
+              <div className="">
+                <LinkPreviewCarousel previews={post.content.link_previews} />
+              </div>
+            )}
+          </>
+        )}
+        {contentType === "video" && (
+          <VideoContent
+            src={post.content?.url}
+            thumbnailUrl={post.content?.thumbnail_url}
+            embedUrl={post.content?.embed_url}
+            embedPlatform={post.content?.embed_platform as VideoEmbedPlatform}
+            caption={post.content?.caption_html}
+          />
+        )}
+        {contentType === "audio" && (post.content?.url || post.content?.spotify_data) && (
+          <AudioContent
+            src={post.content?.url}
+            albumArtUrl={post.content?.album_art_url}
+            spotifyData={post.content?.spotify_data}
+            caption={post.content?.caption_html}
+            transcript={post.content?.transcript}
+            isVoiceNote={post.content?.is_voice_note}
+          />
+        )}
+        {contentType === "gallery" && post.content?.urls && (
+          <GalleryContent
+            images={post.content.urls}
+            caption={post.content?.caption_html}
+          />
+        )}
+        {contentType === "poll" && post.content?.options && (
+          <PollContent postId={post.id} content={post.content} />
+        )}
+      </InteractivePost>
+    );
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <IconLoader2 size={40} className="animate-spin text-vocl-primary" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
+        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+          <IconMoodSad size={40} className="text-foreground/30" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          {error || "Profile not found"}
+        </h1>
+        <p className="text-foreground/50 mb-6">
+          The profile you&apos;re looking for doesn&apos;t exist or has been removed.
+        </p>
+        <button
+          onClick={() => router.push("/feed")}
+          className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
+        >
+          Go to feed
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <ProfileAccentScope accent={profile.accentColor}>
+    <div className="min-h-screen pb-24">
+      {profile && <title>{`@${profile.username} | be.vocl`}</title>}
+      {/* Profile Header */}
+      <div className="max-w-5xl mx-auto">
+      <ProfileHeader
+        username={profile.username}
+        displayName={profile.displayName}
+        avatarUrl={profile.avatarUrl}
+        headerUrl={profile.headerUrl}
+        bio={profile.bio}
+        isOwnProfile={isOwnProfile}
+        isFollowing={following}
+        isMutual={mutual}
+        role={profile.role}
+        allowsAsks={allowsAsks}
+        stats={stats}
+        onStatClick={(stat) => {
+          if (stat === "posts") {
+            setActiveTab("posts");
+          } else {
+            openFollowersModal(stat);
+          }
+        }}
+        onFollow={handleFollow}
+        onUnfollow={handleUnfollow}
+        onSettings={() => router.push("/settings")}
+        onBlock={handleBlock}
+        onMute={handleMute}
+        onShare={handleShare}
+        onMessage={async () => {
+          const result = await startConversation(profile.id);
+          if (result.success && result.conversationId) {
+            window.dispatchEvent(
+              new CustomEvent("vocl:open-conversation", {
+                detail: { conversationId: result.conversationId },
+              }),
+            );
+          } else {
+            toast.error(result.error || "Could not start conversation");
+          }
+        }}
+        onAsk={() => setAskModalOpen(true)}
+        onReport={() => setReportModalOpen(true)}
+        onAvatarClick={() => setAvatarModalOpen(true)}
+      />
+      </div>
+
+      {/* Profile Links */}
+      <div className="px-2 sm:px-6 max-w-5xl mx-auto">
+        <ProfileLinks links={links} />
+      </div>
+
+      {/* Profile Tabs */}
+      <div className="px-2 sm:px-6 max-w-5xl mx-auto">
+        <ProfileTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          showLikes={profile.showLikes || isOwnProfile}
+          showComments={profile.showComments || isOwnProfile}
+          showFollowers={profile.showFollowers || isOwnProfile}
+          showFollowing={profile.showFollowing || isOwnProfile}
+          counts={{
+            posts: stats.posts,
+            likes: likesCount,
+            comments: commentsCount,
+            followers: stats.followers,
+            following: stats.following,
+          }}
+        />
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-4 sm:mt-6 px-2 sm:px-6">
+        <div className="max-w-5xl mx-auto space-y-2 sm:space-y-6">
+          {activeTab === "posts" && (
+            <>
+              {/* Pinned Post */}
+              {pinnedPost && (
+                <PinnedPost>
+                  {renderPost(pinnedPost)}
+                </PinnedPost>
+              )}
+
+              {/* Regular Posts */}
+              {posts.length > 0 ? (
+                posts.map((post) => renderPost(post))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-foreground/50">
+                    {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "likes" && (
+            <>
+              {postsLoading ? (
+                <div className="flex justify-center py-12">
+                  <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+                </div>
+              ) : likedPosts.length > 0 ? (
+                likedPosts.map((post) => renderPost(post))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-foreground/50">No liked posts yet</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "comments" && (
+            <>
+              {postsLoading ? (
+                <div className="flex justify-center py-12">
+                  <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+                </div>
+              ) : commentedPosts.length > 0 ? (
+                commentedPosts.map((post) => renderPost(post))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-foreground/50">
+                    {isOwnProfile ? "You haven't commented on any posts yet" : "No commented posts yet"}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "followers" && (
+            <FollowersListTab
+              userId={profile.id}
+              type="followers"
+              currentUserId={currentUserId}
+            />
+          )}
+
+          {activeTab === "following" && (
+            <FollowersListTab
+              userId={profile.id}
+              type="following"
+              currentUserId={currentUserId}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Followers/Following Modal (for stat clicks) */}
+      {profile && (
+        <FollowersModal
+          isOpen={followersModalOpen}
+          onClose={() => setFollowersModalOpen(false)}
+          type={followersModalType}
+          userId={profile.id}
+          username={profile.username}
+          currentUserId={currentUserId}
+        />
+      )}
+
+      {/* Avatar Modal */}
+      {profile && (
+        <AvatarModal
+          isOpen={avatarModalOpen}
+          onClose={() => setAvatarModalOpen(false)}
+          avatarUrl={profile.avatarUrl}
+          username={profile.username}
+        />
+      )}
+
+      {/* Report User Modal */}
+      {profile && (
+        <ReportModal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          reportedUserId={profile.id}
+          reportedUsername={profile.username}
+        />
+      )}
+
+      {/* Ask Modal */}
+      {profile && (
+        <AskModal
+          isOpen={askModalOpen}
+          onClose={() => setAskModalOpen(false)}
+          recipientUsername={profile.username}
+          recipientDisplayName={profile.displayName}
+        />
+      )}
+    </div>
+    </ProfileAccentScope>
+  );
+}
+
+// Inline component for followers/following tab content
+function FollowersListTab({
+  userId,
+  type,
+  currentUserId,
+}: {
+  userId: string;
+  type: "followers" | "following";
+  currentUserId?: string;
+}) {
+  const [users, setUsers] = useState<Array<{
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+  }>>([]);
+  const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const { getFollowers, getFollowing, batchIsFollowing } = await import("@/actions/follows");
+        const result = type === "followers"
+          ? await getFollowers(userId)
+          : await getFollowing(userId);
+        if (result.success) {
+          const userList = type === "followers"
+            ? (result as { followers?: typeof users }).followers
+            : (result as { following?: typeof users }).following;
+          const fetchedUsers = userList || [];
+          setUsers(fetchedUsers);
+
+          // Batch check follow status for all users at once (1 query instead of N)
+          if (currentUserId && fetchedUsers.length > 0) {
+            const userIds = fetchedUsers
+              .filter((u) => u.id !== currentUserId)
+              .map((u) => u.id);
+            if (userIds.length > 0) {
+              const result = await batchIsFollowing(userIds);
+              setFollowingSet(result);
+            }
+          }
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [userId, type, currentUserId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-foreground/50">
+          {type === "followers" ? "No followers yet" : "Not following anyone yet"}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {users.map((user) => (
+        <FollowerCard
+          key={user.id}
+          user={user}
+          currentUserId={currentUserId}
+          initialIsFollowing={followingSet.has(user.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Inline component for individual follower/following card
+function FollowerCard({
+  user,
+  currentUserId,
+  initialIsFollowing = false,
+}: {
+  user: {
+    id: string;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+  };
+  currentUserId?: string;
+  initialIsFollowing?: boolean;
+}) {
+  const [isFollowingUser, setIsFollowingUser] = useState(initialIsFollowing);
+  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+  const isOwnCard = currentUserId === user.id;
+
+  const handleFollowToggle = async () => {
+    if (isOwnCard) return;
+    setIsLoadingFollow(true);
+    try {
+      const { followUser, unfollowUser } = await import("@/actions/follows");
+      if (isFollowingUser) {
+        const result = await unfollowUser(user.id);
+        if (result.success) {
+          setIsFollowingUser(false);
+          toast.success(`Unfollowed @${user.username}`);
+        }
+      } else {
+        const result = await followUser(user.id);
+        if (result.success) {
+          setIsFollowingUser(true);
+          toast.success(`Following @${user.username}`);
+        }
+      }
+    } finally {
+      setIsLoadingFollow(false);
+    }
+  };
+
+  return (
+    <Link
+      href={`/profile/${user.username}`}
+      className="flex items-center gap-3 p-3 rounded-sm bg-white/5 hover:bg-white/10 transition-colors"
+    >
+      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+        {user.avatarUrl ? (
+          <Image
+            src={user.avatarUrl}
+            alt={user.username}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+            <span className="text-lg font-bold text-white">
+              {user.username.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-foreground truncate">
+          {user.displayName || user.username}
+        </p>
+        <p className="text-sm text-foreground/50 truncate">@{user.username}</p>
+        {user.bio && (
+          <p className="text-sm text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
+        )}
+      </div>
+      {!isOwnCard && currentUserId && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFollowToggle();
+          }}
+          disabled={isLoadingFollow}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
+            isFollowingUser
+              ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+              : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+          }`}
+        >
+          {isLoadingFollow ? (
+            <IconLoader2 size={16} className="animate-spin" />
+          ) : isFollowingUser ? (
+            "Following"
+          ) : (
+            "Follow"
+          )}
+        </button>
+      )}
+    </Link>
+  );
+}

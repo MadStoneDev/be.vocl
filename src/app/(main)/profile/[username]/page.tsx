@@ -1,44 +1,38 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { Metadata } from "next";
 import Image from "next/image";
-import { IconLoader2, IconMoodSad } from "@tabler/icons-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
-  ProfileHeader,
-  ProfileLinks,
-  ProfileTabs,
-  PinnedPost,
-  FollowersModal,
-  AvatarModal,
-  AskModal,
-  ProfileAccentScope,
-  type TabId,
-} from "@/components/profile";
-import { ReportModal } from "@/components/moderation";
-import { InteractivePost, ImageContent, TextContent, VideoContent, AudioContent, GalleryContent, LinkPreviewCarousel, PollContent } from "@/components/Post";
-import type { VideoEmbedPlatform } from "@/types/database";
-import { getFullProfile } from "@/actions/profile";
-import { getLikedPosts, getCommentedPosts } from "@/actions/posts";
-import { followUser, unfollowUser, blockUser, muteUser, isMutual } from "@/actions/follows";
-import { startConversation } from "@/actions/messages";
-import { toast } from "@/components/ui";
+  InteractivePost,
+  ImageContent,
+  TextContent,
+  VideoContent,
+  AudioContent,
+  GalleryContent,
+  PollContent,
+} from "@/components/Post";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import { ProfileAccentScope } from "@/components/profile";
+import type { VideoEmbedPlatform } from "@/types/database";
+import { ProfileClient } from "./ProfileClient";
+
+interface Props {
+  params: Promise<{ username: string }>;
+}
 
 interface ProfileData {
   id: string;
   username: string;
-  displayName?: string;
-  avatarUrl?: string;
-  headerUrl?: string;
-  bio?: string;
-  showLikes: boolean;
-  showComments: boolean;
-  showFollowers: boolean;
-  showFollowing: boolean;
-  accentColor?: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  header_url: string | null;
+  bio: string | null;
+  accent_color: string | null;
   role: number;
+  allow_search_indexing: boolean | null;
+  is_profile_public: boolean | null;
 }
 
 interface ProfileLink {
@@ -49,291 +43,485 @@ interface ProfileLink {
 
 interface PostData {
   id: string;
-  authorId: string;
-  author: {
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  };
-  postType: string;
+  author_id: string;
+  post_type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any;
-  isSensitive: boolean;
-  isPinned: boolean;
-  createdAt: string;
-  likeCount: number;
-  commentCount: number;
-  reblogCount: number;
-  hasLiked: boolean;
-  hasCommented: boolean;
-  hasReblogged: boolean;
-  tags?: Array<{ id: string; name: string }>;
+  is_sensitive: boolean;
+  created_at: string;
+  like_count: number;
+  comment_count: number;
+  reblog_count: number;
+  tags: Array<{ id: string; name: string }>;
 }
 
-export default function ProfilePage() {
-  const params = useParams();
-  const router = useRouter();
-  const username = params.username as string;
+async function getProfile(username: string, publicOnly: boolean) {
+  const supabase = createAdminClient();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0, likes: 0, comments: 0 });
-  const [links, setLinks] = useState<ProfileLink[]>([]);
-  const [isOwnProfile, setIsOwnProfile] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
-  const [following, setFollowing] = useState(false);
-  const [mutual, setMutual] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>("posts");
-  const [error, setError] = useState<string | null>(null);
+  const { data: profileData, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, avatar_url, header_url, bio, accent_color, role, allow_search_indexing, is_profile_public")
+    .eq("username", username)
+    .single();
 
-  // Posts state
-  const [posts, setPosts] = useState<PostData[]>([]);
-  const [pinnedPost, setPinnedPost] = useState<PostData | null>(null);
-  const [likedPosts, setLikedPosts] = useState<PostData[]>([]);
-  const [commentedPosts, setCommentedPosts] = useState<PostData[]>([]);
-  const [postsLoading, setPostsLoading] = useState(false);
-  const [likesCount, setLikesCount] = useState(0);
-  const [commentsCount, setCommentsCount] = useState(0);
+  const profile = profileData as ProfileData | null;
 
-  // Followers modal state (for stat clicks in header)
-  const [followersModalOpen, setFollowersModalOpen] = useState(false);
-  const [followersModalType, setFollowersModalType] = useState<"followers" | "following">("followers");
+  if (error || !profile) return null;
 
-  // Avatar modal state
-  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  // Logged-out visitors only ever see Public (non-Members-only, non-sensitive)
+  // posts — sensitive posts are always exclude_from_public, so one filter covers
+  // both. Logged-in members see everything published (Members-only semantics).
+  const postsQuery = supabase
+    .from("posts")
+    .select(
+      "id, author_id, post_type, content, is_sensitive, created_at, like_count, comment_count, reblog_count"
+    )
+    .eq("author_id", profile.id)
+    .eq("status", "published");
+  const countQuery = supabase
+    .from("posts")
+    .select("id", { count: "exact", head: true })
+    .eq("author_id", profile.id)
+    .eq("status", "published");
+  if (publicOnly) {
+    postsQuery.eq("exclude_from_public", false);
+    countQuery.eq("exclude_from_public", false);
+  }
 
-  // Report modal state
-  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [linksResult, postsResult, statsResult] = await Promise.all([
+    supabase
+      .from("profile_links")
+      .select("id, title, url")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: true }),
+    postsQuery.order("created_at", { ascending: false }).limit(10),
+    countQuery,
+  ]);
 
-  // Ask modal state
-  const [askModalOpen, setAskModalOpen] = useState(false);
-  const [allowsAsks, setAllowsAsks] = useState(false);
+  const rawPosts = (postsResult.data ?? []) as Array<Omit<PostData, "tags">>;
+  const postIds = rawPosts.map((p) => p.id);
 
-  const fetchProfile = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  // Fetch tags joined to these posts
+  let tagsByPost: Record<string, Array<{ id: string; name: string }>> = {};
+  if (postIds.length > 0) {
+    const { data: postTagRows } = await supabase
+      .from("post_tags")
+      .select("post_id, tag:tags!tag_id(id, name)")
+      .in("post_id", postIds);
 
-    try {
-      // Single server action that fetches everything in parallel
-      const result = await getFullProfile(username);
+    tagsByPost = (postTagRows ?? []).reduce<Record<string, Array<{ id: string; name: string }>>>(
+      (acc, row: any) => {
+        if (!row.tag) return acc;
+        if (!acc[row.post_id]) acc[row.post_id] = [];
+        acc[row.post_id].push({ id: row.tag.id, name: row.tag.name });
+        return acc;
+      },
+      {},
+    );
+  }
 
-      if (!result.success || !result.profile) {
-        setError(result.error || "Profile not found");
-        setIsLoading(false);
-        return;
-      }
+  const posts: PostData[] = rawPosts.map((p) => ({
+    ...p,
+    tags: tagsByPost[p.id] ?? [],
+  }));
 
-      setProfile({
-        id: result.profile.id,
-        username: result.profile.username,
-        displayName: result.profile.displayName,
-        avatarUrl: result.profile.avatarUrl,
-        headerUrl: result.profile.headerUrl,
-        bio: result.profile.bio,
-        showLikes: result.profile.showLikes,
-        showComments: result.profile.showComments,
-        showFollowers: result.profile.showFollowers,
-        showFollowing: result.profile.showFollowing,
-        accentColor: result.profile.accentColor ?? null,
-        role: result.profile.role,
-      });
-
-      setIsOwnProfile(result.isOwnProfile || false);
-      setCurrentUserId(result.currentUserId);
-      setStats(result.stats || { posts: 0, followers: 0, following: 0, likes: 0, comments: 0 });
-      // Seed the Likes/Comments badge counts upfront so they're correct before
-      // the tabs are opened; the lazy tab fetches still refresh them.
-      setLikesCount(result.stats?.likes || 0);
-      setCommentsCount(result.stats?.comments || 0);
-      setLinks(result.links || []);
-      setPosts(result.posts || []);
-      setPinnedPost(result.pinnedPost || null);
-      setFollowing(result.isFollowing || false);
-      setAllowsAsks(result.canAsk || false);
-
-      // Check mutual status for non-own profiles
-      if (!result.isOwnProfile && result.profile.id) {
-        isMutual(result.profile.id).then((mutualResult) => {
-          if (mutualResult.success) {
-            setMutual(mutualResult.isMutual);
-          }
-        });
-      } else {
-        setMutual(false);
-      }
-    } catch (err) {
-      setError("Failed to load profile");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [username]);
-
-  // Fetch liked posts when switching to likes tab
-  const fetchLikedPosts = useCallback(async () => {
-    if (!profile) return;
-    setPostsLoading(true);
-    const result = await getLikedPosts(profile.id);
-    if (result.success) {
-      setLikedPosts(result.posts || []);
-      setLikesCount(result.total || 0);
-    }
-    setPostsLoading(false);
-  }, [profile]);
-
-  // Fetch commented posts when switching to comments tab
-  const fetchCommentedPosts = useCallback(async () => {
-    if (!profile) return;
-    setPostsLoading(true);
-    const result = await getCommentedPosts(profile.id);
-    if (result.success) {
-      setCommentedPosts(result.posts || []);
-      setCommentsCount(result.total || 0);
-    }
-    setPostsLoading(false);
-  }, [profile]);
-
-  useEffect(() => {
-    if (activeTab === "likes" && likedPosts.length === 0 && profile) {
-      fetchLikedPosts();
-    }
-    if (activeTab === "comments" && commentedPosts.length === 0 && profile) {
-      fetchCommentedPosts();
-    }
-  }, [activeTab, likedPosts.length, commentedPosts.length, profile, fetchLikedPosts, fetchCommentedPosts]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  const handleFollow = async () => {
-    if (!profile) return;
-    const result = await followUser(profile.id);
-    if (result.success) {
-      setFollowing(true);
-      setStats((prev) => ({ ...prev, followers: prev.followers + 1 }));
-      toast.success(`Following @${profile.username}`);
-      // Re-check mutual status after following
-      isMutual(profile.id).then((mutualResult) => {
-        if (mutualResult.success) setMutual(mutualResult.isMutual);
-      });
-    } else {
-      toast.error(result.error || "Failed to follow user");
-    }
+  return {
+    profile,
+    links: (linksResult.data ?? []) as ProfileLink[],
+    posts,
+    postCount: statsResult.count || 0,
   };
+}
 
-  const handleUnfollow = async () => {
-    if (!profile) return;
-    const result = await unfollowUser(profile.id);
-    if (result.success) {
-      setFollowing(false);
-      setMutual(false);
-      setStats((prev) => ({ ...prev, followers: prev.followers - 1 }));
-      toast.success(`Unfollowed @${profile.username}`);
-    } else {
-      toast.error(result.error || "Failed to unfollow user");
-    }
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params;
+  const data = await getProfile(username, true);
+
+  if (!data) {
+    return { title: "Profile not found | be.vocl" };
+  }
+
+  const { profile } = data;
+  const displayName = profile.display_name || profile.username;
+  const title = `${displayName} (@${profile.username}) | be.vocl`;
+  const description =
+    profile.bio || `Check out ${displayName}'s profile on be.vocl`;
+
+  // Index public profiles (unless the user opted out of search indexing);
+  // private profiles are never indexed.
+  const indexable =
+    profile.is_profile_public !== false && profile.allow_search_indexing !== false;
+
+  return {
+    title,
+    description,
+    robots: indexable
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      ...(profile.avatar_url && {
+        images: [{ url: profile.avatar_url, width: 400, height: 400 }],
+      }),
+    },
+    twitter: {
+      card: profile.avatar_url ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(profile.avatar_url && { images: [profile.avatar_url] }),
+    },
   };
+}
 
-  const handleBlock = async () => {
-    if (!profile) return;
-    const result = await blockUser(profile.id);
-    if (result.success) {
-      toast.success(`Blocked @${profile.username}`);
-      router.push("/feed");
-    } else {
-      toast.error(result.error || "Failed to block user");
-    }
-  };
+export default async function ProfilePage({ params }: Props) {
+  const { username } = await params;
 
-  const handleMute = async () => {
-    if (!profile) return;
-    const result = await muteUser(profile.id);
-    if (result.success) {
-      toast.success(`Muted @${profile.username}`);
-    }
-  };
+  const authClient = await createClient();
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Profile link copied!");
-  };
+  // Logged-in members get the full interactive in-app profile (client-rendered).
+  if (user) {
+    return <ProfileClient />;
+  }
 
-  const openFollowersModal = (type: "followers" | "following") => {
-    setFollowersModalType(type);
-    setFollowersModalOpen(true);
-  };
+  // Logged-out visitors get the public, server-rendered, indexable view — this
+  // is the canonical public surface (the old /u/[username] route now 301s here).
+  const data = await getProfile(username, true);
 
-  // Render a post
-  const renderPost = (post: PostData) => {
-    const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
+  if (!data) {
+    notFound();
+  }
 
-    // Get content preview for reblog dialog
-    const contentPreview = post.content?.plain || post.content?.caption_html?.replace(/<[^>]*>/g, "") || "";
-    const imageUrl = post.content?.urls?.[0] || post.content?.thumbnail_url;
+  const { profile, links, posts, postCount } = data;
+  const displayName = profile.display_name || profile.username;
 
-    return (
-      <InteractivePost
-        key={post.id}
-        id={post.id}
-        author={{
-          username: post.author.username,
-          avatarUrl: post.author.avatarUrl || "",
-        }}
-        authorId={post.authorId}
-        timestamp={post.createdAt}
-        contentType={contentType}
-        content={post.content}
-        initialStats={{
-          comments: post.commentCount,
-          likes: post.likeCount,
-          reblogs: post.reblogCount,
-        }}
-        initialInteractions={{
-          hasCommented: post.hasCommented,
-          hasLiked: post.hasLiked,
-          hasReblogged: post.hasReblogged,
-        }}
-        isSensitive={post.isSensitive}
-        isOwn={post.authorId === currentUserId}
-        isPinned={post.isPinned}
-        contentPreview={contentPreview}
-        imageUrl={imageUrl}
-        tags={post.tags}
-      >
-        {contentType === "image" && post.content?.urls?.[0] && (
-          <ImageContent src={post.content.urls[0]} alt="" />
-        )}
-        {contentType === "text" && post.content?.html && (
-          <>
-            <TextContent>
-              <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
-            </TextContent>
-            {post.content.link_previews?.length > 0 && (
-              <div className="">
-                <LinkPreviewCarousel previews={post.content.link_previews} />
-              </div>
-            )}
-          </>
-        )}
-        {contentType === "text" && post.content?.plain && !post.content?.html && (
-          <>
-            <TextContent>{post.content.plain}</TextContent>
-            {post.content.link_previews?.length > 0 && (
-              <div className="">
-                <LinkPreviewCarousel previews={post.content.link_previews} />
-              </div>
-            )}
-          </>
-        )}
-        {contentType === "video" && (
-          <VideoContent
-            src={post.content?.url}
-            thumbnailUrl={post.content?.thumbnail_url}
-            embedUrl={post.content?.embed_url}
-            embedPlatform={post.content?.embed_platform as VideoEmbedPlatform}
-            caption={post.content?.caption_html}
+  // Private profile + logged-out visitor → gated shell. The URL still resolves
+  // (good for shared links) but the content is walled behind sign-in.
+  if (profile.is_profile_public === false) {
+    return <PrivateProfileShell profile={profile} displayName={displayName} />;
+  }
+
+  const loginHref = `/login?next=${encodeURIComponent(`/profile/${profile.username}`)}`;
+
+  return (
+    <ProfileAccentScope accent={profile.accent_color}>
+    <div className="pb-16">
+      {/* Header Image */}
+      <div className="relative w-full h-48 sm:h-64 bg-white/5">
+        {profile.header_url ? (
+          <Image
+            src={profile.header_url}
+            alt={`${displayName}'s header`}
+            fill
+            className="object-cover"
+            priority
           />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 to-vocl-primary/10" />
         )}
-        {contentType === "audio" && (post.content?.url || post.content?.spotify_data) && (
+      </div>
+
+      {/* Avatar + Name Section */}
+      <div className="px-4 sm:px-6 -mt-16 relative">
+        <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden bg-white/10">
+          {profile.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt={displayName}
+              fill
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+              <span className="text-3xl font-bold text-white">
+                {profile.username.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
+            be.vocl
+          </span>
+          <h1 className="type-display-lg text-foreground mt-1 leading-none">
+            {displayName}
+          </h1>
+          <p className="type-meta text-foreground/50 mt-1">
+            @{profile.username} · {postCount} {postCount === 1 ? "post" : "posts"}
+          </p>
+        </div>
+
+        {profile.bio && (
+          <p className="mt-4 type-body text-foreground/80 whitespace-pre-wrap leading-relaxed max-w-xl">
+            {profile.bio}
+          </p>
+        )}
+
+        {/* Masthead closing rule */}
+        <div className="mt-5 border-b-4 border-double border-vocl-border" />
+
+        {/* CTA Buttons */}
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/signup"
+            className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
+          >
+            Join be.vocl
+          </Link>
+          <Link
+            href={loginHref}
+            className="px-6 py-2.5 rounded-sm bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
+          >
+            Log in
+          </Link>
+        </div>
+      </div>
+
+      {/* Profile Links */}
+      {links.length > 0 && (
+        <div className="mt-8 px-4 sm:px-6">
+          <div className="flex flex-wrap gap-2">
+            {links.map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-white/5 border border-white/5 text-sm text-foreground/80 hover:bg-white/10 hover:text-foreground transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="opacity-50"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+                {link.title}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Posts */}
+      <div className="mt-10 px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            Recent Posts
+          </h2>
+          {postCount > 0 && (
+            <Link
+              href={`/profile/${profile.username}/archive`}
+              className="text-sm text-vocl-primary hover:text-vocl-primary-hover transition-colors"
+            >
+              View archive ({postCount.toLocaleString()})
+            </Link>
+          )}
+        </div>
+
+        {posts.length > 0 ? (
+          <div className="flex flex-col gap-2 sm:gap-5">
+            {posts.map((post) => renderPublicPost(post, profile))}
+          </div>
+        ) : (
+          <div className="text-center py-12 rounded-sm bg-white/5 border border-white/5">
+            <p className="text-foreground/50">No posts yet</p>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="mt-12 px-4 sm:px-6">
+        <div className="rounded-sm bg-white/5 border border-white/5 p-6 text-center">
+          <p className="text-foreground/70 mb-4">
+            Want to see more from{" "}
+            <span className="font-semibold text-foreground">{displayName}</span>
+            ?
+          </p>
+          <div className="flex justify-center gap-3">
+            <Link
+              href="/signup"
+              className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
+            >
+              Join be.vocl
+            </Link>
+            <Link
+              href={loginHref}
+              className="px-6 py-2.5 rounded-sm bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
+            >
+              Log in
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+    </ProfileAccentScope>
+  );
+}
+
+/* ---------- Static sub-components ---------- */
+
+/** Gated view for a private profile hit by a logged-out visitor: the URL
+ *  resolves (shared links work) but posts are walled behind sign-in. */
+function PrivateProfileShell({
+  profile,
+  displayName,
+}: {
+  profile: ProfileData;
+  displayName: string;
+}) {
+  return (
+    <ProfileAccentScope accent={profile.accent_color}>
+      <div className="pb-16">
+        <div className="relative w-full h-48 sm:h-64 bg-white/5">
+          {profile.header_url ? (
+            <Image
+              src={profile.header_url}
+              alt={`${displayName}'s header`}
+              fill
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 to-vocl-primary/10" />
+          )}
+        </div>
+
+        <div className="px-4 sm:px-6 -mt-16 relative">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden bg-white/10">
+            {profile.avatar_url ? (
+              <Image src={profile.avatar_url} alt={displayName} fill sizes="128px" className="object-cover" priority />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+                <span className="text-3xl font-bold text-white">
+                  {profile.username.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <h1 className="type-display-lg text-foreground mt-1 leading-none">{displayName}</h1>
+            <p className="type-meta text-foreground/50 mt-1">@{profile.username}</p>
+          </div>
+
+          <div className="mt-8 rounded-sm bg-white/5 border border-white/5 p-6 text-center max-w-md">
+            <p className="text-foreground font-medium mb-1">This account is private</p>
+            <p className="text-sm text-foreground/60 mb-4">
+              Log in or join be.vocl to see {displayName}&apos;s posts.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Link
+                href={`/login?next=${encodeURIComponent(`/profile/${profile.username}`)}`}
+                className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="px-6 py-2.5 rounded-sm bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
+              >
+                Join be.vocl
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ProfileAccentScope>
+  );
+}
+
+function renderPublicPost(post: PostData, author: ProfileData) {
+  const contentType = post.post_type as
+    | "text"
+    | "image"
+    | "video"
+    | "audio"
+    | "gallery"
+    | "poll"
+    | "ask";
+
+  const contentPreview =
+    post.content?.plain ||
+    post.content?.caption_html?.replace(/<[^>]*>/g, "") ||
+    "";
+  const imageUrl =
+    post.content?.urls?.[0] || post.content?.thumbnail_url || undefined;
+
+  return (
+    <InteractivePost
+      key={post.id}
+      id={post.id}
+      author={{
+        username: author.username,
+        avatarUrl: author.avatar_url || "https://via.placeholder.com/100",
+        role: author.role,
+      }}
+      authorId={post.author_id}
+      timestamp={formatRelativeTime(post.created_at)}
+      contentType={contentType}
+      initialStats={{
+        comments: post.comment_count,
+        likes: post.like_count,
+        reblogs: post.reblog_count,
+      }}
+      initialInteractions={{
+        hasCommented: false,
+        hasLiked: false,
+        hasReblogged: false,
+      }}
+      isSensitive={post.is_sensitive}
+      isOwn={false}
+      contentPreview={contentPreview}
+      imageUrl={imageUrl}
+      tags={post.tags}
+      content={post.content}
+    >
+      {contentType === "image" && post.content?.urls?.[0] && (
+        <ImageContent
+          src={post.content.urls[0]}
+          alt=""
+          caption={post.content?.caption_html}
+        />
+      )}
+      {contentType === "text" && post.content?.html && (
+        <TextContent>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtmlWithSafeLinks(post.content.html),
+            }}
+          />
+        </TextContent>
+      )}
+      {contentType === "text" && post.content?.plain && !post.content?.html && (
+        <TextContent>{post.content.plain}</TextContent>
+      )}
+      {contentType === "video" && (
+        <VideoContent
+          src={post.content?.url}
+          thumbnailUrl={post.content?.thumbnail_url}
+          embedUrl={post.content?.embed_url}
+          embedPlatform={post.content?.embed_platform as VideoEmbedPlatform}
+          caption={post.content?.caption_html}
+        />
+      )}
+      {contentType === "audio" &&
+        (post.content?.url || post.content?.spotify_data) && (
           <AudioContent
             src={post.content?.url}
             albumArtUrl={post.content?.album_art_url}
@@ -343,428 +531,36 @@ export default function ProfilePage() {
             isVoiceNote={post.content?.is_voice_note}
           />
         )}
-        {contentType === "gallery" && post.content?.urls && (
-          <GalleryContent
-            images={post.content.urls}
-            caption={post.content?.caption_html}
-          />
-        )}
-        {contentType === "poll" && post.content?.options && (
-          <PollContent postId={post.id} content={post.content} />
-        )}
-      </InteractivePost>
-    );
-  };
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <IconLoader2 size={40} className="animate-spin text-vocl-primary" />
-      </div>
-    );
-  }
-
-  // Error state
-  if (error || !profile) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-          <IconMoodSad size={40} className="text-foreground/30" />
-        </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          {error || "Profile not found"}
-        </h1>
-        <p className="text-foreground/50 mb-6">
-          The profile you&apos;re looking for doesn&apos;t exist or has been removed.
-        </p>
-        <button
-          onClick={() => router.push("/feed")}
-          className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
-        >
-          Go to feed
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <ProfileAccentScope accent={profile.accentColor}>
-    <div className="min-h-screen pb-24">
-      {profile && <title>{`@${profile.username} | be.vocl`}</title>}
-      {/* Profile Header */}
-      <div className="max-w-5xl mx-auto">
-      <ProfileHeader
-        username={profile.username}
-        displayName={profile.displayName}
-        avatarUrl={profile.avatarUrl}
-        headerUrl={profile.headerUrl}
-        bio={profile.bio}
-        isOwnProfile={isOwnProfile}
-        isFollowing={following}
-        isMutual={mutual}
-        role={profile.role}
-        allowsAsks={allowsAsks}
-        stats={stats}
-        onStatClick={(stat) => {
-          if (stat === "posts") {
-            setActiveTab("posts");
-          } else {
-            openFollowersModal(stat);
-          }
-        }}
-        onFollow={handleFollow}
-        onUnfollow={handleUnfollow}
-        onSettings={() => router.push("/settings")}
-        onBlock={handleBlock}
-        onMute={handleMute}
-        onShare={handleShare}
-        onMessage={async () => {
-          const result = await startConversation(profile.id);
-          if (result.success && result.conversationId) {
-            window.dispatchEvent(
-              new CustomEvent("vocl:open-conversation", {
-                detail: { conversationId: result.conversationId },
-              }),
-            );
-          } else {
-            toast.error(result.error || "Could not start conversation");
-          }
-        }}
-        onAsk={() => setAskModalOpen(true)}
-        onReport={() => setReportModalOpen(true)}
-        onAvatarClick={() => setAvatarModalOpen(true)}
-      />
-      </div>
-
-      {/* Profile Links */}
-      <div className="px-2 sm:px-6 max-w-5xl mx-auto">
-        <ProfileLinks links={links} />
-      </div>
-
-      {/* Profile Tabs */}
-      <div className="px-2 sm:px-6 max-w-5xl mx-auto">
-        <ProfileTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          showLikes={profile.showLikes || isOwnProfile}
-          showComments={profile.showComments || isOwnProfile}
-          showFollowers={profile.showFollowers || isOwnProfile}
-          showFollowing={profile.showFollowing || isOwnProfile}
-          counts={{
-            posts: stats.posts,
-            likes: likesCount,
-            comments: commentsCount,
-            followers: stats.followers,
-            following: stats.following,
-          }}
-        />
-      </div>
-
-      {/* Tab Content */}
-      <div className="mt-4 sm:mt-6 px-2 sm:px-6">
-        <div className="max-w-5xl mx-auto space-y-2 sm:space-y-6">
-          {activeTab === "posts" && (
-            <>
-              {/* Pinned Post */}
-              {pinnedPost && (
-                <PinnedPost>
-                  {renderPost(pinnedPost)}
-                </PinnedPost>
-              )}
-
-              {/* Regular Posts */}
-              {posts.length > 0 ? (
-                posts.map((post) => renderPost(post))
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-foreground/50">
-                    {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "likes" && (
-            <>
-              {postsLoading ? (
-                <div className="flex justify-center py-12">
-                  <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
-                </div>
-              ) : likedPosts.length > 0 ? (
-                likedPosts.map((post) => renderPost(post))
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-foreground/50">No liked posts yet</p>
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "comments" && (
-            <>
-              {postsLoading ? (
-                <div className="flex justify-center py-12">
-                  <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
-                </div>
-              ) : commentedPosts.length > 0 ? (
-                commentedPosts.map((post) => renderPost(post))
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-foreground/50">
-                    {isOwnProfile ? "You haven't commented on any posts yet" : "No commented posts yet"}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "followers" && (
-            <FollowersListTab
-              userId={profile.id}
-              type="followers"
-              currentUserId={currentUserId}
-            />
-          )}
-
-          {activeTab === "following" && (
-            <FollowersListTab
-              userId={profile.id}
-              type="following"
-              currentUserId={currentUserId}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Followers/Following Modal (for stat clicks) */}
-      {profile && (
-        <FollowersModal
-          isOpen={followersModalOpen}
-          onClose={() => setFollowersModalOpen(false)}
-          type={followersModalType}
-          userId={profile.id}
-          username={profile.username}
-          currentUserId={currentUserId}
+      {contentType === "gallery" && post.content?.urls && (
+        <GalleryContent
+          images={post.content.urls}
+          caption={post.content?.caption_html}
         />
       )}
-
-      {/* Avatar Modal */}
-      {profile && (
-        <AvatarModal
-          isOpen={avatarModalOpen}
-          onClose={() => setAvatarModalOpen(false)}
-          avatarUrl={profile.avatarUrl}
-          username={profile.username}
-        />
+      {contentType === "poll" && post.content?.options && (
+        <PollContent postId={post.id} content={post.content} />
       )}
-
-      {/* Report User Modal */}
-      {profile && (
-        <ReportModal
-          isOpen={reportModalOpen}
-          onClose={() => setReportModalOpen(false)}
-          reportedUserId={profile.id}
-          reportedUsername={profile.username}
-        />
-      )}
-
-      {/* Ask Modal */}
-      {profile && (
-        <AskModal
-          isOpen={askModalOpen}
-          onClose={() => setAskModalOpen(false)}
-          recipientUsername={profile.username}
-          recipientDisplayName={profile.displayName}
-        />
-      )}
-    </div>
-    </ProfileAccentScope>
+    </InteractivePost>
   );
 }
 
-// Inline component for followers/following tab content
-function FollowersListTab({
-  userId,
-  type,
-  currentUserId,
-}: {
-  userId: string;
-  type: "followers" | "following";
-  currentUserId?: string;
-}) {
-  const [users, setUsers] = useState<Array<{
-    id: string;
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    bio: string | null;
-  }>>([]);
-  const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const { getFollowers, getFollowing, batchIsFollowing } = await import("@/actions/follows");
-        const result = type === "followers"
-          ? await getFollowers(userId)
-          : await getFollowing(userId);
-        if (result.success) {
-          const userList = type === "followers"
-            ? (result as { followers?: typeof users }).followers
-            : (result as { following?: typeof users }).following;
-          const fetchedUsers = userList || [];
-          setUsers(fetchedUsers);
+  if (diffSec < 60) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffDay < 7) return `${diffDay}d ago`;
 
-          // Batch check follow status for all users at once (1 query instead of N)
-          if (currentUserId && fetchedUsers.length > 0) {
-            const userIds = fetchedUsers
-              .filter((u) => u.id !== currentUserId)
-              .map((u) => u.id);
-            if (userIds.length > 0) {
-              const result = await batchIsFollowing(userIds);
-              setFollowingSet(result);
-            }
-          }
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUsers();
-  }, [userId, type, currentUserId]);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
-      </div>
-    );
-  }
-
-  if (users.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-foreground/50">
-          {type === "followers" ? "No followers yet" : "Not following anyone yet"}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {users.map((user) => (
-        <FollowerCard
-          key={user.id}
-          user={user}
-          currentUserId={currentUserId}
-          initialIsFollowing={followingSet.has(user.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-// Inline component for individual follower/following card
-function FollowerCard({
-  user,
-  currentUserId,
-  initialIsFollowing = false,
-}: {
-  user: {
-    id: string;
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    bio: string | null;
-  };
-  currentUserId?: string;
-  initialIsFollowing?: boolean;
-}) {
-  const [isFollowingUser, setIsFollowingUser] = useState(initialIsFollowing);
-  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
-  const isOwnCard = currentUserId === user.id;
-
-  const handleFollowToggle = async () => {
-    if (isOwnCard) return;
-    setIsLoadingFollow(true);
-    try {
-      const { followUser, unfollowUser } = await import("@/actions/follows");
-      if (isFollowingUser) {
-        const result = await unfollowUser(user.id);
-        if (result.success) {
-          setIsFollowingUser(false);
-          toast.success(`Unfollowed @${user.username}`);
-        }
-      } else {
-        const result = await followUser(user.id);
-        if (result.success) {
-          setIsFollowingUser(true);
-          toast.success(`Following @${user.username}`);
-        }
-      }
-    } finally {
-      setIsLoadingFollow(false);
-    }
-  };
-
-  return (
-    <Link
-      href={`/profile/${user.username}`}
-      className="flex items-center gap-3 p-3 rounded-sm bg-white/5 hover:bg-white/10 transition-colors"
-    >
-      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-        {user.avatarUrl ? (
-          <Image
-            src={user.avatarUrl}
-            alt={user.username}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-            <span className="text-lg font-bold text-white">
-              {user.username.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">
-          {user.displayName || user.username}
-        </p>
-        <p className="text-sm text-foreground/50 truncate">@{user.username}</p>
-        {user.bio && (
-          <p className="text-sm text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
-        )}
-      </div>
-      {!isOwnCard && currentUserId && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleFollowToggle();
-          }}
-          disabled={isLoadingFollow}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
-            isFollowingUser
-              ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-              : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
-          }`}
-        >
-          {isLoadingFollow ? (
-            <IconLoader2 size={16} className="animate-spin" />
-          ) : isFollowingUser ? (
-            "Following"
-          ) : (
-            "Follow"
-          )}
-        </button>
-      )}
-    </Link>
-  );
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 }

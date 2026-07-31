@@ -488,7 +488,7 @@ export default function AnalyticsPage() {
                                           className="flex items-center justify-between px-3 py-2 rounded-lg bg-vocl-surface-dark border border-vocl-border"
                                         >
                                           <Link
-                                            href={`/u/${commenter.username}`}
+                                            href={`/profile/${commenter.username}`}
                                             className="text-sm text-foreground hover:text-vocl-primary transition-colors"
                                           >
                                             @{commenter.username}

@@ -127,7 +127,7 @@ export default async function ArchivePage({ params }: Props) {
     data: { user },
   } = await authClient.auth.getUser();
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/u/${username}/archive`)}`);
+    redirect(`/login?next=${encodeURIComponent(`/profile/${username}/archive`)}`);
   }
 
   const data = await getArchive(username);
@@ -138,7 +138,7 @@ export default async function ArchivePage({ params }: Props) {
   return (
     <div className="py-6 px-4 max-w-4xl mx-auto">
       <Link
-        href={`/u/${profile.username}`}
+        href={`/profile/${profile.username}`}
         className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
       >
         <IconArrowLeft size={16} />

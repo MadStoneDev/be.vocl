@@ -62,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    // Public profiles → /u/[username] (public, indexing-allowed, not restricted).
+    // Public profiles → /profile/[username] (public, indexing-allowed, not restricted).
     const { data: profiles } = await (supabase as any)
       .from("profiles")
       .select("username, updated_at, allow_search_indexing, lock_status")
@@ -79,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (p.allow_search_indexing === false) continue;
       if (p.lock_status === "restricted" || p.lock_status === "banned") continue;
       entries.push({
-        url: `${APP_URL}/u/${p.username}`,
+        url: `${APP_URL}/profile/${p.username}`,
         lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
         changeFrequency: "daily",
         priority: 0.6,

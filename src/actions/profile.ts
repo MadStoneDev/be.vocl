@@ -298,7 +298,7 @@ export async function updateWebVisibilitySettings(settings: {
 
     revalidatePath("/");
     revalidatePath("/settings/privacy");
-    revalidatePath("/u/[username]", "page");
+    revalidatePath("/profile/[username]", "page");
     return { success: true };
   } catch (error) {
     console.error("Update web visibility settings error:", error);
