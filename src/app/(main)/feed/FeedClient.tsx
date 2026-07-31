@@ -28,7 +28,10 @@ const TAB_ORDER: FeedTab[] = ["chronological", "engagement", "trending"];
 // Viewport width as an external store: null during SSR + hydration (so the
 // first client render matches the server HTML and CSS picks the visible
 // layout), the real value immediately after.
-const WIDE_QUERY = "(min-width: 1024px)";
+// The broadsheet Front Page only has room once the sidebar isn't eating most
+// of the width — gate it at 2xl (1536px), below which Front Page falls back to
+// the single-column feed.
+const WIDE_QUERY = "(min-width: 1536px)";
 function subscribeWide(onChange: () => void) {
   const mql = window.matchMedia(WIDE_QUERY);
   mql.addEventListener("change", onChange);
@@ -349,7 +352,7 @@ export default function FeedClient({
     {/* Front Page fills a wider column on lg+ (where the broadsheet grid shows);
         Reader stays a comfortable single-column width. Bounded by the parent, so
         it never overflows the sidebar/viewport. */}
-    <div className={`py-1 sm:py-3 mx-auto ${layout === "frontpage" ? "max-w-5xl lg:max-w-7xl" : "max-w-5xl"}`}>
+    <div className={`py-1 sm:py-3 mx-auto ${layout === "frontpage" ? "max-w-5xl 2xl:max-w-7xl" : "max-w-5xl"}`}>
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
         <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />
@@ -398,17 +401,17 @@ export default function FeedClient({
       <div {...feedSwipe}>
         {layout === "frontpage" && isWide === null ? (
           // SSR + first paint: the server can't know the viewport, so render
-          // both layouts and let the lg breakpoint pick — no post-hydration
+          // both layouts and let the 2xl breakpoint pick — no post-hydration
           // swap. Collapses to a single tree once isWide is measured.
           <>
-            <div className="hidden lg:block">
+            <div className="hidden 2xl:block">
               <FrontPageGrid
                 posts={feedListPosts}
                 isLoading={isLoading}
                 isLoadingMore={isFetchingNextPage}
               />
             </div>
-            <div className="lg:hidden">
+            <div className="2xl:hidden">
               <FeedList
                 posts={feedListPosts}
                 isLoading={isLoading}
