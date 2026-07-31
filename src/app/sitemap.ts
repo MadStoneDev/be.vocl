@@ -22,10 +22,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = createAdminClient();
 
-    // Profiles are members-only and never indexed, so they are NOT in the sitemap.
-    // Public discoverability happens at the post level: index only Public posts
-    // (not sensitive, not opted out) from authors who allow the public web + search
-    // indexing and are not restricted/banned.
+    // Public posts: index only Public posts (not sensitive, not opted out) from
+    // authors who allow the public web + search indexing and aren't restricted.
     const { data: posts } = await (supabase as any)
       .from("posts")
       .select(
@@ -61,6 +59,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             : new Date(),
         changeFrequency: "weekly",
         priority: 0.7,
+      });
+    }
+
+    // Public profiles → /u/[username] (public, indexing-allowed, not restricted).
+    const { data: profiles } = await (supabase as any)
+      .from("profiles")
+      .select("username, updated_at, allow_search_indexing, lock_status")
+      .eq("is_profile_public", true)
+      .order("created_at", { ascending: false })
+      .limit(5000);
+
+    for (const p of (profiles ?? []) as Array<{
+      username: string;
+      updated_at: string | null;
+      allow_search_indexing: boolean | null;
+      lock_status: string | null;
+    }>) {
+      if (p.allow_search_indexing === false) continue;
+      if (p.lock_status === "restricted" || p.lock_status === "banned") continue;
+      entries.push({
+        url: `${APP_URL}/u/${p.username}`,
+        lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+        changeFrequency: "daily",
+        priority: 0.6,
       });
     }
   } catch (error) {

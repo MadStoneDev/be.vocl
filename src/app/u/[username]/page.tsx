@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -31,6 +31,7 @@ interface ProfileData {
   accent_color: string | null;
   role: number;
   allow_search_indexing: boolean | null;
+  is_profile_public: boolean | null;
 }
 
 interface ProfileLink {
@@ -53,12 +54,12 @@ interface PostData {
   tags: Array<{ id: string; name: string }>;
 }
 
-async function getProfile(username: string) {
+async function getProfile(username: string, publicOnly: boolean) {
   const supabase = createAdminClient();
 
   const { data: profileData, error } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, header_url, bio, accent_color, role, allow_search_indexing")
+    .select("id, username, display_name, avatar_url, header_url, bio, accent_color, role, allow_search_indexing, is_profile_public")
     .eq("username", username)
     .single();
 
@@ -66,26 +67,34 @@ async function getProfile(username: string) {
 
   if (error || !profile) return null;
 
+  // Logged-out visitors only ever see Public (non-Members-only, non-sensitive)
+  // posts — sensitive posts are always exclude_from_public, so one filter covers
+  // both. Logged-in members see everything published (Members-only semantics).
+  const postsQuery = supabase
+    .from("posts")
+    .select(
+      "id, author_id, post_type, content, is_sensitive, created_at, like_count, comment_count, reblog_count"
+    )
+    .eq("author_id", profile.id)
+    .eq("status", "published");
+  const countQuery = supabase
+    .from("posts")
+    .select("id", { count: "exact", head: true })
+    .eq("author_id", profile.id)
+    .eq("status", "published");
+  if (publicOnly) {
+    postsQuery.eq("exclude_from_public", false);
+    countQuery.eq("exclude_from_public", false);
+  }
+
   const [linksResult, postsResult, statsResult] = await Promise.all([
     supabase
       .from("profile_links")
       .select("id, title, url")
       .eq("user_id", profile.id)
       .order("created_at", { ascending: true }),
-    supabase
-      .from("posts")
-      .select(
-        "id, author_id, post_type, content, is_sensitive, created_at, like_count, comment_count, reblog_count"
-      )
-      .eq("author_id", profile.id)
-      .eq("status", "published")
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("posts")
-      .select("id", { count: "exact", head: true })
-      .eq("author_id", profile.id)
-      .eq("status", "published"),
+    postsQuery.order("created_at", { ascending: false }).limit(10),
+    countQuery,
   ]);
 
   const rawPosts = (postsResult.data ?? []) as Array<Omit<PostData, "tags">>;
@@ -125,7 +134,7 @@ async function getProfile(username: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
-  const data = await getProfile(username);
+  const data = await getProfile(username, true);
 
   if (!data) {
     return { title: "Profile not found | be.vocl" };
@@ -137,12 +146,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     profile.bio || `Check out ${displayName}'s profile on be.vocl`;
 
+  // Index public profiles (unless the user opted out of search indexing);
+  // private profiles are never indexed.
+  const indexable =
+    profile.is_profile_public !== false && profile.allow_search_indexing !== false;
+
   return {
     title,
     description,
-    // Profiles are members-only — never index them. Public reach happens at the
-    // per-post level (Public posts on /discover and /post/[id]).
-    robots: { index: false, follow: false },
+    robots: indexable
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
     openGraph: {
       title,
       description,
@@ -163,16 +177,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params }: Props) {
   const { username } = await params;
 
-  // Profiles are members-only: logged-out visitors must sign in to view them.
   const authClient = await createClient();
   const {
     data: { user },
   } = await authClient.auth.getUser();
-  if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/u/${username}`)}`);
-  }
 
-  const data = await getProfile(username);
+  // Logged-out visitors only get Public posts; logged-in members see everything.
+  const data = await getProfile(username, !user);
 
   if (!data) {
     notFound();
@@ -180,6 +191,12 @@ export default async function PublicProfilePage({ params }: Props) {
 
   const { profile, links, posts, postCount } = data;
   const displayName = profile.display_name || profile.username;
+
+  // Private profile + logged-out visitor → gated shell. The URL still resolves
+  // (good for shared links) but the content is walled behind sign-in.
+  if (profile.is_profile_public === false && !user) {
+    return <PrivateProfileShell profile={profile} displayName={displayName} />;
+  }
 
   return (
     <ProfileAccentScope accent={profile.accent_color}>
@@ -349,6 +366,76 @@ export default async function PublicProfilePage({ params }: Props) {
 }
 
 /* ---------- Static sub-components ---------- */
+
+/** Gated view for a private profile hit by a logged-out visitor: the URL
+ *  resolves (shared links work) but posts are walled behind sign-in. */
+function PrivateProfileShell({
+  profile,
+  displayName,
+}: {
+  profile: ProfileData;
+  displayName: string;
+}) {
+  return (
+    <ProfileAccentScope accent={profile.accent_color}>
+      <div className="pb-16">
+        <div className="relative w-full h-48 sm:h-64 bg-white/5">
+          {profile.header_url ? (
+            <Image
+              src={profile.header_url}
+              alt={`${displayName}'s header`}
+              fill
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 to-vocl-primary/10" />
+          )}
+        </div>
+
+        <div className="px-4 sm:px-6 -mt-16 relative">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden bg-white/10">
+            {profile.avatar_url ? (
+              <Image src={profile.avatar_url} alt={displayName} fill sizes="128px" className="object-cover" priority />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+                <span className="text-3xl font-bold text-white">
+                  {profile.username.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <h1 className="type-display-lg text-foreground mt-1 leading-none">{displayName}</h1>
+            <p className="type-meta text-foreground/50 mt-1">@{profile.username}</p>
+          </div>
+
+          <div className="mt-8 rounded-sm bg-white/5 border border-white/5 p-6 text-center max-w-md">
+            <p className="text-foreground font-medium mb-1">This account is private</p>
+            <p className="text-sm text-foreground/60 mb-4">
+              Log in or join be.vocl to see {displayName}&apos;s posts.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Link
+                href={`/login?next=${encodeURIComponent(`/profile/${profile.username}`)}`}
+                className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors text-sm"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="px-6 py-2.5 rounded-sm bg-white/10 text-foreground font-semibold hover:bg-white/15 transition-colors text-sm border border-white/5"
+              >
+                Join be.vocl
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ProfileAccentScope>
+  );
+}
 
 function renderPublicPost(post: PostData, author: ProfileData) {
   const contentType = post.post_type as

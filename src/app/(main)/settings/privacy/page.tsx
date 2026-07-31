@@ -66,6 +66,7 @@ export default function PrivacySettingsPage() {
   const [dmPrivacy, setDmPrivacy] = useState<DmPrivacy>("everyone");
 
   // Public web settings
+  const [isProfilePublic, setIsProfilePublic] = useState(true);
   const [isDiscoverable, setIsDiscoverable] = useState(true);
   const [allowSearchIndexing, setAllowSearchIndexing] = useState(true);
   const [isSearchable, setIsSearchable] = useState(true);
@@ -101,6 +102,7 @@ export default function PrivacySettingsPage() {
         setShowComments(profileResult.profile.showComments);
         setShowFollowers(profileResult.profile.showFollowers);
         setShowFollowing(profileResult.profile.showFollowing);
+        setIsProfilePublic(profileResult.profile.isProfilePublic ?? true);
         setIsDiscoverable(profileResult.profile.isDiscoverable ?? true);
         setAllowSearchIndexing(profileResult.profile.allowSearchIndexing ?? true);
         setIsSearchable(profileResult.profile.isSearchable ?? true);
@@ -136,7 +138,7 @@ export default function PrivacySettingsPage() {
   }, []);
 
   const handleWebVisibilityChange = useCallback(
-    (key: "isDiscoverable" | "allowSearchIndexing" | "isSearchable", value: boolean) => {
+    (key: "isDiscoverable" | "allowSearchIndexing" | "isSearchable" | "isProfilePublic", value: boolean) => {
       startTransition(async () => {
         const result = await updateWebVisibilitySettings({ [key]: value });
         if (result.success) {
@@ -278,6 +280,28 @@ export default function PrivacySettingsPage() {
       {/* Privacy Tab */}
       {activeTab === "privacy" && (
         <div className="space-y-4">
+          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
+            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+              <IconWorld size={20} />
+              Public profile
+            </h3>
+            <p className="text-xs text-foreground/50 mb-4">
+              When on, your profile page is viewable by logged-out visitors and can
+              be indexed by search engines. Your Members-only and sensitive posts
+              stay hidden either way — only posts you set to Public appear.
+            </p>
+            <ToggleSetting
+              label="Public profile"
+              description="Turn off to keep your profile members-only (logged-out visitors see a gated page)."
+              checked={isProfilePublic}
+              onChange={(checked) => {
+                setIsProfilePublic(checked);
+                handleWebVisibilityChange("isProfilePublic", checked);
+              }}
+              disabled={isPending}
+            />
+          </div>
+
           <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
             <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
               <IconEye size={20} />
