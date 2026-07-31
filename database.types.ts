@@ -1935,6 +1935,8 @@ export type Database = {
           is_searchable: boolean
           is_nsfw: boolean
           dm_privacy: string
+          is_profile_public: boolean
+          date_of_birth: string | null
         }
         Insert: {
           id: string
@@ -1988,6 +1990,8 @@ export type Database = {
           is_searchable?: boolean
           is_nsfw?: boolean
           dm_privacy?: string
+          is_profile_public?: boolean
+          date_of_birth?: string | null
         }
         Update: {
           id?: string
@@ -2041,6 +2045,8 @@ export type Database = {
           is_searchable?: boolean
           is_nsfw?: boolean
           dm_privacy?: string
+          is_profile_public?: boolean
+          date_of_birth?: string | null
         }
         Relationships: [
           {
