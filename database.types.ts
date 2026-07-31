@@ -2400,6 +2400,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_conversation_previews: {
+        Args: Record<PropertyKey, never>
+        Returns: Json[]
+      }
       get_next_queue_position: {
         Args: {
           p_user_id: string
