@@ -28,7 +28,7 @@ import {
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
-import { OPEN_COMMAND_PALETTE_EVENT } from "./CommandPalette";
+import { OPEN_COMMAND_PALETTE_EVENT } from "./commandPaletteEvents";
 import { useModKey } from "@/lib/platform";
 
 interface LeftSidebarProps {

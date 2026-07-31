@@ -33,16 +33,14 @@ import {
 import { Portal, Avatar } from "@/components/ui";
 import { searchUsers } from "@/actions/search";
 import { scaleIn } from "@/lib/motion";
-
-/** Dispatch this to open the messages chat sidebar (handled in (main)/layout.tsx). */
-export const OPEN_CHAT_EVENT = "vocl:open-chat";
-/** Dispatch this to open the command palette from anywhere. */
-export const OPEN_COMMAND_PALETTE_EVENT = "vocl:open-command-palette";
+import { OPEN_CHAT_EVENT, OPEN_COMMAND_PALETTE_EVENT } from "./commandPaletteEvents";
 
 interface CommandPaletteProps {
   username?: string;
   /** Called when the user picks the Messages command. */
   onOpenChat?: () => void;
+  /** Open immediately on mount (used when the palette is lazy-loaded on first trigger). */
+  initiallyOpen?: boolean;
 }
 
 interface CommandAction {
@@ -65,11 +63,11 @@ type Row =
   | { kind: "action"; action: CommandAction }
   | { kind: "user"; user: UserResult };
 
-export function CommandPalette({ username, onOpenChat }: CommandPaletteProps) {
+export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandPaletteProps) {
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initiallyOpen ?? false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [users, setUsers] = useState<UserResult[]>([]);

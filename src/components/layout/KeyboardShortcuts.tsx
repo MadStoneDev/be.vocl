@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { IconX, IconKeyboard } from "@tabler/icons-react";
-import { OPEN_CHAT_EVENT } from "./CommandPalette";
+import { OPEN_CHAT_EVENT } from "./commandPaletteEvents";
 import { useModKey } from "@/lib/platform";
 
 // "g then X" go-to targets. Messages opens the chat sidebar (an action, not a route).

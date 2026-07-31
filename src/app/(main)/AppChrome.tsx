@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { getQueueCount } from "@/actions/reblogs";
-import { MainNav, BottomNav, LeftSidebar, CommandPalette, OPEN_CHAT_EVENT } from "@/components/layout";
+import { MainNav, BottomNav, LeftSidebar, CommandPaletteHost, OPEN_CHAT_EVENT } from "@/components/layout";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
 import { ConversationUrlOpener } from "@/components/chat/ConversationUrlOpener";
@@ -219,7 +219,7 @@ export function AppChrome({
       <SecurityWarningModal isAuthenticated={!!user && !authLoading} />
 
       {/* Command palette (Cmd/Ctrl+K) */}
-      <CommandPalette username={profile?.username} onOpenChat={toggleChat} />
+      <CommandPaletteHost username={profile?.username} onOpenChat={toggleChat} />
 
       {/* Global keyboard shortcuts */}
       <KeyboardShortcuts />
