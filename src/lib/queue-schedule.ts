@@ -28,8 +28,11 @@ export function computeQueuedTimes<T extends { id: string; queuePosition: number
   const windowDuration = windowEndMinutes - windowStartMinutes;
   if (windowDuration <= 0) return map;
 
+  // Cell model: the window is divided into `postsPerDay` equal slots, slot k at
+  // windowStart + k*interval (k = 0..postsPerDay-1). Matches the cron publisher
+  // in /api/cron/queue so projected times and actual go-live times agree.
   const interval =
-    settings.postsPerDay === 1 ? 0 : windowDuration / (settings.postsPerDay - 1);
+    settings.postsPerDay === 1 ? 0 : windowDuration / settings.postsPerDay;
 
   const sorted = [...posts].sort((a, b) => a.queuePosition - b.queuePosition);
 

@@ -146,88 +146,135 @@ export async function GET(request: Request) {
           continue; // Outside posting window in user's TZ (or misconfigured)
         }
 
-        const progress = Math.min(elapsed / windowDuration, 1);
-
         const postsPerDay = user.queue_posts_per_day || 8;
-        // ceil (not floor) so a non-empty queue always targets at least one post
-        // once we're inside the window — floor starved small queues to zero early
-        // in the day, leaving posts stuck indefinitely.
-        const targetPostsSoFar = Math.ceil(progress * postsPerDay);
+        if (postsPerDay <= 0) continue;
 
-        // Count posts published from the queue today (in user TZ)
+        // Cell-model pacing: the window is divided into `postsPerDay` equal
+        // slots (slot k at windowStart + k*interval). A queued post publishes at
+        // its slot — NOT the instant it's added — so a post dropped into an empty
+        // queue mid-window waits for the next slot instead of firing immediately.
+        const interval = windowDuration / postsPerDay; // minutes per slot
+        const endGreaterThanStart = endMinutes > startMinutes;
+        const nowMsws = elapsed; // minutes since today's window start (wrap-aware)
+
+        // Minutes-since-window-start for an arbitrary instant, in the user's TZ.
+        // A prior-day instant clamps to <=0 (eligible from window start) — that's
+        // how a genuinely-old post keeps its early slots while a freshly-queued
+        // post can't reach back into the morning's already-passed slots.
+        const instantMsws = (instant: Date): number => {
+          const t = getTimeInTz(instant, tz);
+          if (t.dayKey < dayKey) return -1;
+          const minOfDay = t.hour * 60 + t.minute;
+          if (endGreaterThanStart) return minOfDay - startMinutes;
+          return minOfDay >= startMinutes
+            ? minOfDay - startMinutes
+            : 1440 - startMinutes + minOfDay;
+        };
+
+        // Daily cap + spacing anchor both come from today's queue publishes.
         const dayStartUtc = tzDayStartUtc(dayKey, tz);
-        const { count: publishedToday } = await supabase
+        const { data: publishedRows } = await supabase
           .from("posts")
-          .select("*", { count: "exact", head: true })
+          .select("published_at")
           .eq("author_id", user.id)
           .eq("published_from_queue", true)
-          .gte("published_at", dayStartUtc.toISOString());
+          .gte("published_at", dayStartUtc.toISOString())
+          .order("published_at", { ascending: false });
 
-        const actualPublished = publishedToday || 0;
-        const toPublish = targetPostsSoFar - actualPublished;
+        const publishedToday = publishedRows?.length || 0;
+        if (publishedToday >= postsPerDay) continue; // day's quota already met
+
+        // Head of the queue (publish at most one post per run — never bursts).
+        const { data: headRows, error: queueError } = await supabase
+          .from("posts")
+          .select("id, original_post_id, author_id, pending_community_ids, created_at")
+          .eq("author_id", user.id)
+          .eq("status", "queued")
+          .order("queue_position", { ascending: true })
+          .limit(1);
+
+        if (queueError) {
+          errors.push(`User ${user.id}: ${queueError.message}`);
+          continue;
+        }
+        const head = headRows?.[0];
+        if (!head) continue;
+
+        // Target grid slot for the head post.
+        let slotIndex: number;
+        let dueMsws: number;
+        if (postsPerDay === 1) {
+          // Single daily post sits at the window midpoint (matches the list
+          // projection). If it was queued after today's midpoint, it rolls over.
+          slotIndex = 0;
+          dueMsws = windowDuration / 2;
+          const createdMsws = Math.max(0, instantMsws(new Date(head.created_at)));
+          if (createdMsws > dueMsws + 1e-6) continue;
+        } else if (publishedToday > 0) {
+          // The slot AFTER the one the previous publish occupied. Anchoring on
+          // the slot (not the actual publish minute) keeps a few minutes of cron
+          // jitter from drifting posts later and skipping slots over the day.
+          const lastPubMsws = instantMsws(new Date(publishedRows![0].published_at));
+          slotIndex = Math.floor(lastPubMsws / interval + 1e-6) + 1;
+          if (slotIndex > postsPerDay - 1) continue;
+          dueMsws = slotIndex * interval;
+        } else {
+          // First of the day: the first slot at or after when the post was queued
+          // — the fix for the immediate-publish bug (a post added mid-window can't
+          // reach back into the morning's already-passed slots).
+          const createdMsws = Math.max(0, instantMsws(new Date(head.created_at)));
+          slotIndex = Math.ceil(createdMsws / interval - 1e-6);
+          if (slotIndex > postsPerDay - 1) continue;
+          dueMsws = slotIndex * interval;
+        }
+        if (nowMsws < dueMsws) continue; // this slot hasn't arrived yet
 
         debug.push({
           user_id: user.id,
           tz,
           local: `${hour}:${minute.toString().padStart(2, "0")}`,
           window: `${windowStart}–${windowEnd}`,
-          progress: progress.toFixed(2),
           postsPerDay,
-          targetPostsSoFar,
-          publishedToday: actualPublished,
-          toPublish,
+          publishedToday,
+          slotIndex,
+          dueMinutesIntoWindow: Math.round(dueMsws),
+          nowMinutesIntoWindow: Math.round(nowMsws),
         });
 
-        if (toPublish <= 0) continue;
-
-        const { data: queuedPosts, error: queueError } = await supabase
+        // Stamp both published_at AND created_at to the go-live moment, so the
+        // post surfaces fresh (feeds order + display by created_at) rather than
+        // buried at its original queue time.
+        const publishedAt = new Date().toISOString();
+        const { error: publishError } = await supabase
           .from("posts")
-          .select("id, original_post_id, author_id, pending_community_ids")
-          .eq("author_id", user.id)
-          .eq("status", "queued")
-          .order("queue_position", { ascending: true })
-          .limit(toPublish);
+          .update({
+            status: "published",
+            queue_position: null,
+            published_at: publishedAt,
+            created_at: publishedAt,
+            published_from_queue: true,
+            pending_community_ids: null,
+          })
+          .eq("id", head.id);
 
-        if (queueError) {
-          errors.push(`User ${user.id}: ${queueError.message}`);
+        if (publishError) {
+          errors.push(`Post ${head.id}: ${publishError.message}`);
           continue;
         }
+        publishedCount++;
 
-        for (const post of queuedPosts || []) {
-          // Stamp both published_at AND created_at to the go-live moment, so the
-          // post surfaces fresh (feeds order + display by created_at) rather than
-          // buried at its original queue time.
-          const publishedAt = new Date().toISOString();
-          const { error: publishError } = await supabase
-            .from("posts")
-            .update({
-              status: "published",
-              queue_position: null,
-              published_at: publishedAt,
-              created_at: publishedAt,
-              published_from_queue: true,
-              pending_community_ids: null,
-            })
-            .eq("id", post.id);
-
-          if (publishError) {
-            errors.push(`Post ${post.id}: ${publishError.message}`);
-            continue;
-          }
-          publishedCount++;
-          // Apply deferred cross-posts
-          const pendingCommunityIds = (post as any).pending_community_ids as string[] | null;
-          if (pendingCommunityIds && pendingCommunityIds.length > 0) {
-            const rows = pendingCommunityIds.map((cid) => ({
-              community_id: cid,
-              post_id: post.id,
-              added_by: post.author_id,
-            }));
-            const { error: cpError } = await supabase
-              .from("community_posts")
-              .insert(rows);
-            if (cpError) errors.push(`Cross-post ${post.id}: ${cpError.message}`);
-          }
+        // Apply deferred cross-posts.
+        const pendingCommunityIds = (head as any).pending_community_ids as string[] | null;
+        if (pendingCommunityIds && pendingCommunityIds.length > 0) {
+          const rows = pendingCommunityIds.map((cid) => ({
+            community_id: cid,
+            post_id: head.id,
+            added_by: head.author_id,
+          }));
+          const { error: cpError } = await supabase
+            .from("community_posts")
+            .insert(rows);
+          if (cpError) errors.push(`Cross-post ${head.id}: ${cpError.message}`);
         }
       } catch (userError) {
         errors.push(`User ${user.id}: ${String(userError)}`);
