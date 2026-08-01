@@ -217,6 +217,8 @@ export default async function ProfilePage({ params }: Props) {
             src={profile.header_url}
             alt={`${displayName}'s header`}
             fill
+            sizes="100vw"
+            quality={85}
             className="object-cover"
             priority
           />
@@ -233,6 +235,8 @@ export default async function ProfilePage({ params }: Props) {
               src={profile.avatar_url}
               alt={displayName}
               fill
+              sizes="(max-width: 640px) 112px, 128px"
+              quality={90}
               className="object-cover"
               priority
             />
@@ -249,7 +253,7 @@ export default async function ProfilePage({ params }: Props) {
           <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
             be.vocl
           </span>
-          <h1 className="type-display-lg text-foreground mt-1 leading-none">
+          <h1 className="font-display font-normal text-3xl sm:text-4xl text-foreground mt-1 leading-tight">
             {displayName}
           </h1>
           <p className="type-meta text-foreground/50 mt-1">
@@ -405,7 +409,7 @@ function PrivateProfileShell({
         <div className="px-4 sm:px-6 -mt-16 relative">
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden bg-white/10">
             {profile.avatar_url ? (
-              <Image src={profile.avatar_url} alt={displayName} fill sizes="128px" className="object-cover" priority />
+              <Image src={profile.avatar_url} alt={displayName} fill sizes="128px" quality={90} className="object-cover" priority />
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
                 <span className="text-3xl font-bold text-white">

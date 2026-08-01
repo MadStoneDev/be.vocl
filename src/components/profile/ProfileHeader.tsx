@@ -121,6 +121,8 @@ export function ProfileHeader({
               src={headerUrl}
               alt=""
               fill
+              sizes="100vw"
+              quality={85}
               className="object-cover"
               priority
             />
@@ -149,6 +151,7 @@ export function ProfileHeader({
                       alt={username}
                       fill
                       sizes="(max-width: 640px) 80px, 112px"
+                      quality={90}
                       className="object-cover"
                       priority
                     />
@@ -167,7 +170,7 @@ export function ProfileHeader({
 
               {/* Name and username — editorial masthead */}
               <div className="pb-1">
-                <h1 className="type-display-lg text-foreground flex items-center gap-2 flex-wrap">
+                <h1 className="font-display font-normal text-3xl sm:text-4xl leading-tight text-foreground flex items-center gap-2 flex-wrap">
                   {displayName || username}
                   {isVerified && <VerificationBadge size={22} />}
                   <StaffBadge role={role} size={22} />
