@@ -1750,6 +1750,7 @@ export type Database = {
           like_count: number
           comment_count: number
           reblog_count: number
+          queued_at: string | null
         }
         Insert: {
           id?: string
@@ -1779,6 +1780,7 @@ export type Database = {
           like_count?: number
           comment_count?: number
           reblog_count?: number
+          queued_at?: string | null
         }
         Update: {
           id?: string
@@ -1808,6 +1810,7 @@ export type Database = {
           like_count?: number
           comment_count?: number
           reblog_count?: number
+          queued_at?: string | null
         }
         Relationships: [
           {

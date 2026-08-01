@@ -167,6 +167,7 @@ export interface Database {
           reblog_comment_html: string | null;
           scheduled_for: string | null;
           queue_position: number | null;
+          queued_at: string | null;
           is_pinned: boolean;
           created_at: string;
           updated_at: string;
@@ -184,6 +185,7 @@ export interface Database {
           reblog_comment_html?: string | null;
           scheduled_for?: string | null;
           queue_position?: number | null;
+          queued_at?: string | null;
           is_pinned?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -201,6 +203,7 @@ export interface Database {
           reblog_comment_html?: string | null;
           scheduled_for?: string | null;
           queue_position?: number | null;
+          queued_at?: string | null;
           is_pinned?: boolean;
           created_at?: string;
           updated_at?: string;
