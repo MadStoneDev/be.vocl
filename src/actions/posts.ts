@@ -158,6 +158,9 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         exclude_from_public: finalExcludeFromPublic,
         status,
         queue_position: queuePosition,
+        // Stamp when the post entered the queue so the publisher paces off this
+        // (not created_at) — see 20260801_posts_queued_at.sql.
+        queued_at: status === "queued" ? new Date().toISOString() : null,
         scheduled_for: scheduledFor || null,
         pending_community_ids: pendingCommunityIds && pendingCommunityIds.length > 0 ? pendingCommunityIds : null,
         // Only set published_at if actually publishing (not flagged)

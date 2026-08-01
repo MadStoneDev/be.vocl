@@ -77,6 +77,7 @@ export async function reblogPost(
         reblog_comment_html: options?.comment || null,
         status,
         queue_position: queuePosition,
+        queued_at: status === "queued" ? new Date().toISOString() : null,
         scheduled_for: scheduledFor,
         published_at: status === "published" ? new Date().toISOString() : null,
       })

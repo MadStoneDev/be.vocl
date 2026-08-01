@@ -187,7 +187,7 @@ export async function GET(request: Request) {
         // Head of the queue (publish at most one post per run — never bursts).
         const { data: headRows, error: queueError } = await supabase
           .from("posts")
-          .select("id, original_post_id, author_id, pending_community_ids, created_at")
+          .select("id, original_post_id, author_id, pending_community_ids, created_at, queued_at")
           .eq("author_id", user.id)
           .eq("status", "queued")
           .order("queue_position", { ascending: true })
@@ -200,6 +200,11 @@ export async function GET(request: Request) {
         const head = headRows?.[0];
         if (!head) continue;
 
+        // "When was this queued?" — prefer queued_at (stamped at queue-entry, so
+        // the drafts path is correct); fall back to created_at for rows queued
+        // before the column existed.
+        const queuedAt: string = head.queued_at || head.created_at;
+
         // Target grid slot for the head post.
         let slotIndex: number;
         let dueMsws: number;
@@ -208,7 +213,7 @@ export async function GET(request: Request) {
           // projection). If it was queued after today's midpoint, it rolls over.
           slotIndex = 0;
           dueMsws = windowDuration / 2;
-          const createdMsws = Math.max(0, instantMsws(new Date(head.created_at)));
+          const createdMsws = Math.max(0, instantMsws(new Date(queuedAt)));
           if (createdMsws > dueMsws + 1e-6) continue;
         } else if (publishedToday > 0) {
           // The slot AFTER the one the previous publish occupied. Anchoring on
@@ -222,7 +227,7 @@ export async function GET(request: Request) {
           // First of the day: the first slot at or after when the post was queued
           // — the fix for the immediate-publish bug (a post added mid-window can't
           // reach back into the morning's already-passed slots).
-          const createdMsws = Math.max(0, instantMsws(new Date(head.created_at)));
+          const createdMsws = Math.max(0, instantMsws(new Date(queuedAt)));
           slotIndex = Math.ceil(createdMsws / interval - 1e-6);
           if (slotIndex > postsPerDay - 1) continue;
           dueMsws = slotIndex * interval;
