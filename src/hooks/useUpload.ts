@@ -22,6 +22,29 @@ interface UploadResult {
   mediaType: "image" | "video" | "audio";
 }
 
+// Mobile file pickers (Android gallery/Downloads especially) often hand back a
+// File with an empty `type`. Falling back to the extension keeps those uploads
+// from being rejected by the server's content-type allowlist.
+const EXT_CONTENT_TYPE: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  mp4: "video/mp4",
+  webm: "video/webm",
+  mov: "video/quicktime",
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+  ogg: "audio/ogg",
+};
+
+function resolveContentType(file: File): string {
+  if (file.type) return file.type;
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  return (ext && EXT_CONTENT_TYPE[ext]) || "";
+}
+
 export function useUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
@@ -33,6 +56,8 @@ export function useUpload() {
       setProgress(null);
       setError(null);
 
+      const contentType = resolveContentType(file);
+
       try {
         // Step 1: Get presigned URL
         const presignResponse = await fetch("/api/upload/presign", {
@@ -40,7 +65,7 @@ export function useUpload() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             filename: file.name,
-            contentType: file.type,
+            contentType,
             ...options,
           }),
         });
@@ -91,7 +116,8 @@ export function useUpload() {
           });
 
           xhr.open("PUT", uploadUrl);
-          xhr.setRequestHeader("Content-Type", file.type);
+          // Must match the content-type the presigned URL was signed for.
+          xhr.setRequestHeader("Content-Type", contentType);
           xhr.send(file);
         });
 

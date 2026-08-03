@@ -211,6 +211,7 @@ export function EditorialComposer({
   const [isPending, startTransition] = useTransition();
   const [showPreview, setShowPreview] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [myCommunities, setMyCommunities] = useState<CommunitySummary[]>([]);
   const [myCollections, setMyCollections] = useState<MyCollection[]>([]);
   const draftHydrated = useRef(false);
@@ -249,7 +250,11 @@ export function EditorialComposer({
     draftHydrated.current = true;
     const saved = loadDraft();
     if (saved) {
-      reset({ ...createInitialState(saved), postId: state.postId });
+      // Keep a non-empty postId across the restore. `state.postId` is captured
+      // from the initial render (still ""), and this RESET replaces state — so
+      // without the fallback the id ensurePostId() just generated gets clobbered
+      // back to "", and every postId-gated upload box stops rendering.
+      reset({ ...createInitialState(saved), postId: state.postId || crypto.randomUUID() });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -276,7 +281,18 @@ export function EditorialComposer({
   }, []);
 
   const handleClose = () => {
-    // Non-destructive: the draft is preserved in localStorage for create mode.
+    // Create mode with something typed/attached: confirm before leaving so the
+    // draft isn't silently kept (and then surprising the author next time).
+    if (!isEdit && composer.hasUnsavedChanges()) {
+      setShowDiscardConfirm(true);
+      return;
+    }
+    onClose();
+  };
+
+  const confirmDiscard = () => {
+    clearDraft();
+    setShowDiscardConfirm(false);
     onClose();
   };
 
@@ -429,6 +445,39 @@ export function EditorialComposer({
               myCommunities={myCommunities}
               myCollections={myCollections}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Discard confirmation — sits above the composer panel (z-[60]) and the
+          mobile inspector (z-[70]). */}
+      {showDiscardConfirm && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setShowDiscardConfirm(false)}
+          />
+          <div className="relative w-full max-w-sm mx-4 rounded-2xl bg-vocl-surface-dark border border-[var(--vocl-border)] shadow-2xl p-6">
+            <h2 className="text-lg font-semibold text-foreground">Discard this post?</h2>
+            <p className="mt-2 text-sm text-foreground/60">
+              Your draft won&apos;t be saved.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDiscardConfirm(false)}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-foreground/70 hover:bg-[var(--vocl-hover)]"
+              >
+                Keep editing
+              </button>
+              <button
+                type="button"
+                onClick={confirmDiscard}
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-vocl-like"
+              >
+                Discard
+              </button>
+            </div>
           </div>
         </div>
       )}

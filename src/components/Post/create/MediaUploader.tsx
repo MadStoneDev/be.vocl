@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import {
   IconUpload,
@@ -12,6 +12,7 @@ import {
   IconGripVertical,
 } from "@tabler/icons-react";
 import { useUpload } from "@/hooks/useUpload";
+import { toast } from "@/components/ui";
 
 interface MediaUploaderProps {
   postId: string;
@@ -30,6 +31,13 @@ export function MediaUploader({
 }: MediaUploaderProps) {
   const { upload, isUploading, progress, error } = useUpload();
   const [uploadedUrls, setUploadedUrls] = useState<string[]>(existingUrls);
+
+  // Surface upload failures — otherwise a rejected file (e.g. an unsupported
+  // format or empty content-type from a mobile picker) fails silently and it
+  // looks like nothing happened after selecting files.
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
   const [dragOver, setDragOver] = useState(false);
   // Reorder-by-drag state for the gallery preview.
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -204,7 +212,12 @@ export function MediaUploader({
             type="file"
             accept={acceptTypes[mediaType]}
             multiple={mediaType === "image"}
-            onChange={(e) => e.target.files && handleFiles(e.target.files)}
+            onChange={(e) => {
+              if (e.target.files?.length) handleFiles(e.target.files);
+              // Clear the value so re-selecting the same file(s) fires onChange
+              // again (mobile: a failed pick otherwise looks permanently dead).
+              e.target.value = "";
+            }}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             disabled={isUploading}
           />
