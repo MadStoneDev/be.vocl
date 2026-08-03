@@ -66,7 +66,10 @@ export function FeaturedCarousel({ items }: { items: FeaturedItem[] }) {
           )}
 
           {/* Center stage */}
-          <div className="relative aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-primary/30">
+          {/* max-w-full caps the inline size to the container. Without it, aspect-ratio
+              + min-h-[340px] makes the browser derive width from the height
+              (340 × 16/10 = 544px), overflowing the viewport on mobile. */}
+          <div className="relative max-w-full aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-primary/30">
             <AnimatePresence initial={false} custom={dir} mode="popLayout">
               <motion.article
                 key={current.slug}

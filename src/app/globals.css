@@ -43,6 +43,11 @@
   --vocl-border: rgba(0, 0, 0, 0.08);
   --vocl-hover: rgba(0, 0, 0, 0.04);
   --vocl-hover-strong: rgba(0, 0, 0, 0.07);
+
+  /* Tell the browser the page is light so its own chrome — the mobile
+     address-bar tint and the canvas/backdrop painted outside the body —
+     matches instead of defaulting to white/black bands. */
+  color-scheme: light;
 }
 
 .dark {
@@ -52,6 +57,7 @@
   --vocl-border: rgba(255, 255, 255, 0.06);
   --vocl-hover: rgba(255, 255, 255, 0.05);
   --vocl-hover-strong: rgba(255, 255, 255, 0.10);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -75,6 +81,13 @@
   --color-vocl-hover-strong: var(--vocl-hover-strong);
   --font-sans: var(--font-lexend-sans);
   --font-display: var(--font-gloock--display);
+}
+
+/* Paint the root too, not just <body>. On mobile the browser fills any area
+   the body doesn't cover (overscroll, the gap while the address bar animates)
+   with the <html> background — unset, that reads as a black band top/bottom. */
+html {
+  background: var(--background);
 }
 
 body {
@@ -367,4 +380,15 @@ html.theme-transition body {
 /* Toast animation overrides */
 [data-sonner-toaster] [data-sonner-toast] {
   font-family: var(--font-sans);
+}
+
+/* Sonner's own mobile rule (max-width:600px) sets the fixed toaster container to
+   width:100% *with* a 16px left offset, so its box bleeds 16px past the right
+   edge and can trigger horizontal overflow on mobile. It's portaled to <body>,
+   outside the page's overflow-x-hidden, so nothing clips it. Keep it inside the
+   viewport with an even gutter on both sides. */
+@media (max-width: 600px) {
+  [data-sonner-toaster] {
+    width: calc(100% - 32px) !important;
+  }
 }
