@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -59,6 +59,9 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
   const [inviteCodeValid, setInviteCodeValid] = useState<boolean | null>(null);
   const [checkingInviteCode, setCheckingInviteCode] = useState(false);
 
+  const emailRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
+
   // Check for error in URL params (from auth callback)
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -66,6 +69,13 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
       setError(errorMessages[errorParam] || "An authentication error occurred.");
     }
   }, [searchParams]);
+
+  // Focus the primary field for the active mode: email for sign-in, username
+  // for subscribe. Runs on load and whenever the tab switches.
+  useEffect(() => {
+    if (mode === "login") emailRef.current?.focus();
+    else if (mode === "signup") usernameRef.current?.focus();
+  }, [mode]);
 
   // Validate username on change with debouncing
   const validateUsername = useCallback(async (value: string) => {
@@ -480,6 +490,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
                   />
                   <input
+                    ref={usernameRef}
                     type="text"
                     placeholder="Username"
                     value={username}
@@ -533,6 +544,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
             />
             <input
+              ref={emailRef}
               type="email"
               placeholder="Email"
               value={email}
