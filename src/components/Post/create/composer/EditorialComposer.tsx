@@ -212,6 +212,9 @@ export function EditorialComposer({
   const [showPreview, setShowPreview] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  // Holds the latest Escape behavior; the keydown listener is bound once but
+  // must always run against current state (see below).
+  const escapeRef = useRef<() => void>(() => {});
   const [myCommunities, setMyCommunities] = useState<CommunitySummary[]>([]);
   const [myCollections, setMyCollections] = useState<MyCollection[]>([]);
   const draftHydrated = useRef(false);
@@ -273,7 +276,7 @@ export function EditorialComposer({
   // Close on Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
+      if (e.key === "Escape") escapeRef.current();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -294,6 +297,17 @@ export function EditorialComposer({
     clearDraft();
     setShowDiscardConfirm(false);
     onClose();
+  };
+
+  // Escape dismisses the discard prompt if it's open; otherwise it goes through
+  // the same guard as the X button. Reassigned every render so the once-bound
+  // keydown listener always sees current state.
+  escapeRef.current = () => {
+    if (showDiscardConfirm) {
+      setShowDiscardConfirm(false);
+      return;
+    }
+    handleClose();
   };
 
   const handleSubmit = () => {

@@ -30,6 +30,8 @@ export interface ComposerState {
   postId: string;
   content: { html: string; plain: string };
   mediaUrls: string[];
+  /** Per-type media buffers so switching post type and back keeps uploads. */
+  mediaByType: Partial<Record<PostType, { urls: string[]; alts: string[] }>>;
   tags: string[];
   selectedCommunityIds: string[];
   isSensitive: boolean;
@@ -100,6 +102,7 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     postId: "",
     content: { html: "", plain: "" },
     mediaUrls: [],
+    mediaByType: {},
     tags: [],
     selectedCommunityIds: [],
     isSensitive: false,
@@ -156,13 +159,21 @@ function reducer(state: ComposerState, action: Action): ComposerState {
       return { ...state, ...action.payload };
     case "SET_POST_TYPE": {
       const type = action.payload;
-      // Mirror the original modal's behavior: switching type clears media + alt
-      // text, and toggles the GIF picker.
+      if (type === state.postType) return state;
+      // Buffer the current type's uploads and restore the target type's, so
+      // switching tabs and coming back doesn't lose work — while still keeping
+      // each type's media separate.
+      const mediaByType = {
+        ...state.mediaByType,
+        [state.postType]: { urls: state.mediaUrls, alts: state.altTexts },
+      };
+      const restored = mediaByType[type] ?? { urls: [], alts: [] };
       return {
         ...state,
         postType: type,
-        mediaUrls: [],
-        altTexts: [],
+        mediaByType,
+        mediaUrls: restored.urls,
+        altTexts: restored.alts,
         gifPickerOpen: type === "gif",
         selectedGifUrl: type === "gif" ? state.selectedGifUrl : null,
       };
@@ -183,6 +194,7 @@ const PERSISTED_KEYS: (keyof ComposerState)[] = [
   "postType",
   "content",
   "mediaUrls",
+  "mediaByType",
   "tags",
   "selectedCommunityIds",
   "isSensitive",
@@ -287,6 +299,7 @@ export function useComposerState(
     if (state.content.plain?.trim()) return true;
     if (state.content.html?.trim() && state.content.html !== "<p></p>") return true;
     if (state.mediaUrls.length > 0) return true;
+    if (Object.values(state.mediaByType).some((m) => m && m.urls.length > 0)) return true;
     if (state.imageLinkUrl.trim()) return true;
     if (state.selectedTrack) return true;
     if (state.recordedAudioUrl) return true;

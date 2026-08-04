@@ -128,7 +128,7 @@ export function MediaUploader({
 
       {/* Uploaded files preview */}
       {uploadedUrls.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {uploadedUrls.map((url, index) => {
             const reorderable = mediaType === "image" && uploadedUrls.length > 1;
             return (
