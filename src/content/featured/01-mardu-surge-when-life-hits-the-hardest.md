@@ -5,6 +5,7 @@ excerpt: Rejection can either bury you in defeat or catapult you to a new you.
 image: /featured-articles/mardu-surge---when-life-hits-the-hardest.jpg
 author: mardusurge
 order: 1
+draft: true
 ---
 
 Rejection can either bury you in defeat or catapult you to a new you.

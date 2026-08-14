@@ -11,6 +11,8 @@ export interface FeaturedPost {
   author?: string;
   /** Lower sorts first. Defaults to filename order. */
   order: number;
+  /** `draft: true` in frontmatter hides the post from all public surfaces. */
+  draft: boolean;
   /** Markdown body (kept for a future reader view; not used on the card). */
   body: string;
 }
@@ -67,11 +69,14 @@ export function getFeaturedPosts(): FeaturedPost[] {
       image: String(data.image ?? ""),
       author: data.author ? String(data.author) : undefined,
       order: data.order !== undefined ? Number(data.order) : 999,
+      draft: data.draft === true || data.draft === "true",
       body,
     } satisfies FeaturedPost;
   });
 
-  return posts.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+  return posts
+    .filter((p) => !p.draft)
+    .sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 }
 
 /** Load a single featured post by slug (or null). */
