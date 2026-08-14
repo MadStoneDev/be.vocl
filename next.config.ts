@@ -78,6 +78,11 @@ const nextConfig: NextConfig = {
         hostname: "*.r2.cloudflarestorage.com",
       },
       {
+        // Production R2 custom domain (CLOUDFLARE_R2_PUBLIC_URL)
+        protocol: "https",
+        hostname: "r2.justsent.app",
+      },
+      {
         protocol: "https",
         hostname: "i.scdn.co",
       },

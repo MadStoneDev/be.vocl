@@ -6,8 +6,11 @@ import { getPublicFrontPagePosts } from "@/actions/posts";
 import { FrontPageGrid } from "@/components/feed/frontpage";
 import type { FeedPost } from "@/components/feed/FeedList";
 import { getFeaturedPosts } from "@/lib/featured";
-import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
+import { FeaturedCarousel, type HeroSlide } from "@/components/home/FeaturedCarousel";
 import { HeroAmbience } from "@/components/home/HeroAmbience";
+import { TrustSection } from "@/components/home/TrustSection";
+import { HowItWorks } from "@/components/home/HowItWorks";
+import { SiteFooter } from "@/components/marketing/SiteFooter";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
@@ -35,6 +38,18 @@ export const metadata: Metadata = {
 // Revalidate the public landing every few minutes — content is editorial, not live.
 export const revalidate = 300;
 
+// The branded hero shown as slide 0 of the carousel — the page's main promise.
+const HERO: HeroSlide = {
+  kicker: "Welcome to be.vocl",
+  title: "Say the thing you can't say anywhere else.",
+  subhead:
+    "A calmer corner of the web to write, vent and share — under your name or a pen name. You choose who sees every post. We don't track you, and we don't sell you.",
+  primaryHref: "/signup",
+  primaryLabel: "Join be.vocl — it's free",
+  secondaryHref: "/discover",
+  secondaryLabel: "Look around first",
+};
+
 export default async function Home() {
   // Logged-in users belong in their feed. The proxy already handles this for `/`,
   // but guard here too so a direct render still redirects.
@@ -49,8 +64,34 @@ export default async function Home() {
   const posts = (await getPublicFrontPagePosts({ limit: 24 })) as unknown as FeedPost[];
   const featured = getFeaturedPosts();
 
+  // Organization + WebSite schema so search/answer engines understand the brand.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: "be.vocl",
+        url: APP_URL,
+        description:
+          "A calmer corner of the social web to write, vent and share — pseudonymous, with per-post visibility controls and no ad-tracking.",
+      },
+      {
+        "@type": "WebSite",
+        name: "be.vocl",
+        url: APP_URL,
+        description:
+          "Read what people are publishing on be.vocl, then join the conversation.",
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Top bar */}
       <header className="border-b border-vocl-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
@@ -74,16 +115,20 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* Featured carousel hero */}
-      {featured.length > 0 && (
-        <section className="relative isolate overflow-hidden py-10 sm:py-14">
-          <HeroAmbience />
-          <FeaturedCarousel items={featured} />
-        </section>
-      )}
+      {/* Hero + featured carousel (HeroAmbience drifts in the gutters) */}
+      <section className="relative isolate overflow-hidden py-10 sm:py-14">
+        <HeroAmbience />
+        <FeaturedCarousel items={featured} hero={HERO} />
+      </section>
 
-      {/* Public front page */}
-      <main id="main-content" className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
+      {/* Why be.vocl — the differentiator */}
+      <TrustSection />
+
+      {/* How it works */}
+      <HowItWorks />
+
+      {/* Public front page — social proof */}
+      <main id="main-content" className="mx-auto max-w-full px-4 pb-24 sm:px-6">
         <div className="mb-8 flex items-center gap-3">
           <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
             From the community
@@ -106,21 +151,24 @@ export default async function Home() {
       <section className="border-t border-vocl-border">
         <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6">
           <h2 className="type-display text-2xl font-bold text-foreground sm:text-3xl">
-            Ready to publish your first post?
+            Your voice is waiting.
           </h2>
           <p className="mt-3 type-body text-foreground/65">
-            Join be.vocl and start sharing with a community that listens.
+            Start writing today — anonymously if you want. No algorithm to please,
+            no one to perform for.
           </p>
           <div className="mt-8">
             <Link
               href="/signup"
               className="rounded-xl bg-vocl-primary px-7 py-3 text-base font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
             >
-              Join be.vocl
+              Join be.vocl — it&apos;s free
             </Link>
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </div>
   );
 }
