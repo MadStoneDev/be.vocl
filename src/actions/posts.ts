@@ -1128,51 +1128,179 @@ export async function getPublicFrontPagePosts(
     });
 
     const limited = visible.slice(0, limit);
-    const postIds = limited.map((p) => p.id);
-
-    // Fetch tags joined to these posts
-    let tagsByPost: Record<string, Array<{ id: string; name: string }>> = {};
-    if (postIds.length > 0) {
-      const { data: postTagRows } = await (supabase as any)
-        .from("post_tags")
-        .select("post_id, tag:tags!tag_id(id, name)")
-        .in("post_id", postIds);
-
-      tagsByPost = (postTagRows ?? []).reduce(
-        (acc: Record<string, Array<{ id: string; name: string }>>, row: any) => {
-          if (!row.tag) return acc;
-          if (!acc[row.post_id]) acc[row.post_id] = [];
-          acc[row.post_id].push({ id: row.tag.id, name: row.tag.name });
-          return acc;
-        },
-        {}
-      );
-    }
-
-    return limited.map((post): PublicFrontPagePost => ({
-      id: post.id,
-      author: {
-        username: post.author?.username || "unknown",
-        avatarUrl: post.author?.avatar_url || "",
-        role: post.author?.role || 0,
-      },
-      authorId: post.author_id,
-      timestamp: post.created_at,
-      contentType: post.post_type,
-      content: shapePublicContent(post.post_type, post.content),
-      rawContent: post.content,
-      stats: { comments: 0, likes: 0, reblogs: 0 },
-      interactions: { hasCommented: false, hasLiked: false, hasReblogged: false },
-      isSensitive: post.is_sensitive,
-      isOwn: false,
-      tags: tagsByPost[post.id] ?? [],
-      threadId: post.thread_id ?? null,
-    }));
+    return shapePublicPostRows(supabase, limited);
   } catch (error) {
     console.error("Get public front page posts error:", error);
     return [];
   }
 }
+
+/** Author-side visibility filter shared by every public (anon) posts query.
+ *  The post-level filters (published/approved/is_sensitive/exclude_from_public)
+ *  are applied in the DB query; this catches the author-level conditions. */
+function filterPublicVisible(rows: any[]): any[] {
+  return rows.filter((p) => {
+    const a = p.author;
+    if (!a) return false;
+    if (a.is_discoverable === false) return false;
+    if (a.lock_status === "restricted" || a.lock_status === "banned") return false;
+    return true;
+  });
+}
+
+/** Fetch each post's tags and shape rows into the FeedPost-compatible public
+ *  shape. Shared by getPublicFrontPagePosts and the tag-filtered queries so
+ *  they stay in sync. */
+async function shapePublicPostRows(
+  supabase: any,
+  rows: any[]
+): Promise<PublicFrontPagePost[]> {
+  const postIds = rows.map((p) => p.id);
+
+  let tagsByPost: Record<string, Array<{ id: string; name: string }>> = {};
+  if (postIds.length > 0) {
+    const { data: postTagRows } = await supabase
+      .from("post_tags")
+      .select("post_id, tag:tags!tag_id(id, name)")
+      .in("post_id", postIds);
+
+    tagsByPost = (postTagRows ?? []).reduce(
+      (acc: Record<string, Array<{ id: string; name: string }>>, row: any) => {
+        if (!row.tag) return acc;
+        if (!acc[row.post_id]) acc[row.post_id] = [];
+        acc[row.post_id].push({ id: row.tag.id, name: row.tag.name });
+        return acc;
+      },
+      {}
+    );
+  }
+
+  return rows.map((post): PublicFrontPagePost => ({
+    id: post.id,
+    author: {
+      username: post.author?.username || "unknown",
+      avatarUrl: post.author?.avatar_url || "",
+      role: post.author?.role || 0,
+    },
+    authorId: post.author_id,
+    timestamp: post.created_at,
+    contentType: post.post_type,
+    content: shapePublicContent(post.post_type, post.content),
+    rawContent: post.content,
+    stats: { comments: 0, likes: 0, reblogs: 0 },
+    interactions: { hasCommented: false, hasLiked: false, hasReblogged: false },
+    isSensitive: post.is_sensitive,
+    isOwn: false,
+    tags: tagsByPost[post.id] ?? [],
+    threadId: post.thread_id ?? null,
+  }));
+}
+
+/**
+ * Public posts carrying a given tag — same safety guarantees as the front page
+ * (published, approved, NOT sensitive, not excluded-from-public, discoverable +
+ * unrestricted author). Admin client, so it works with no session.
+ */
+export async function getPublicPostsByTag(
+  tagName: string,
+  options?: { limit?: number }
+): Promise<PublicFrontPagePost[]> {
+  try {
+    const supabase = createAdminClient();
+    const limit = options?.limit ?? 6;
+
+    // Resolve the tag name (case-insensitive) to its id.
+    const { data: tag } = await (supabase as any)
+      .from("tags")
+      .select("id")
+      .ilike("name", tagName)
+      .maybeSingle();
+    if (!tag) return [];
+
+    const { data: posts, error } = await (supabase as any)
+      .from("posts")
+      .select(
+        `
+        id,
+        author_id,
+        post_type,
+        content,
+        is_sensitive,
+        exclude_from_public,
+        created_at,
+        thread_id,
+        author:author_id (
+          username,
+          avatar_url,
+          role,
+          is_discoverable,
+          lock_status
+        ),
+        post_tags!inner ( tag_id )
+      `
+      )
+      .eq("post_tags.tag_id", tag.id)
+      .eq("status", "published")
+      .eq("moderation_status", "approved")
+      .eq("is_sensitive", false)
+      .eq("exclude_from_public", false)
+      .order("created_at", { ascending: false })
+      .limit(limit * 3); // over-fetch to allow author-side filtering
+
+    if (error || !posts) {
+      if (error) console.error("getPublicPostsByTag error:", error);
+      return [];
+    }
+
+    const limited = filterPublicVisible(posts as any[]).slice(0, limit);
+    return shapePublicPostRows(supabase, limited);
+  } catch (error) {
+    console.error("getPublicPostsByTag error:", error);
+    return [];
+  }
+}
+
+/**
+ * Tag "shelves" for the public Discover page: the most-used tags, each with a
+ * handful of real public sample posts. Tags whose posts are all non-public
+ * (sensitive/excluded/etc.) drop out, so shelves only show what a logged-out
+ * visitor may actually see.
+ */
+export async function getPublicTagShelves(options?: {
+  tagLimit?: number;
+  postsPerTag?: number;
+}): Promise<Array<{ tag: { name: string; postCount: number }; posts: PublicFrontPagePost[] }>> {
+  try {
+    const supabase = createAdminClient();
+    const tagLimit = options?.tagLimit ?? 6;
+    const postsPerTag = options?.postsPerTag ?? 6;
+
+    // Over-fetch tags — some will have no publicly-visible posts.
+    const { data: tags } = await (supabase as any)
+      .from("tags")
+      .select("name, post_count")
+      .gt("post_count", 0)
+      .order("post_count", { ascending: false })
+      .limit(tagLimit + 6);
+    if (!tags) return [];
+
+    const shelves = await Promise.all(
+      (tags as any[]).map(async (t) => ({
+        tag: { name: t.name as string, postCount: (t.post_count as number) ?? 0 },
+        posts: await getPublicPostsByTag(t.name, { limit: postsPerTag }),
+      }))
+    );
+
+    return shelves.filter((s) => s.posts.length > 0).slice(0, tagLimit);
+  } catch (error) {
+    console.error("getPublicTagShelves error:", error);
+    return [];
+  }
+}
+
+/**
+ * Get feed posts (from followed users or all public posts)
+ */
 
 /**
  * Get feed posts (from followed users or all public posts)

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getPublicFrontPagePosts } from "@/actions/posts";
-import { FrontPageGrid } from "@/components/feed/frontpage";
+import { getPublicFrontPagePosts, getPublicTagShelves } from "@/actions/posts";
+import { FrontPageGrid, TagShelf } from "@/components/feed/frontpage";
 import type { FeedPost } from "@/components/feed/FeedList";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
@@ -36,7 +36,10 @@ export default async function DiscoverPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const posts = (await getPublicFrontPagePosts({ limit: 48 })) as unknown as FeedPost[];
+  const [posts, shelves] = await Promise.all([
+    getPublicFrontPagePosts({ limit: 48 }) as Promise<unknown> as Promise<FeedPost[]>,
+    getPublicTagShelves({ tagLimit: 6, postsPerTag: 6 }),
+  ]);
 
   // CollectionPage JSON-LD so search/answer engines understand this is a curated
   // public index of articles.
@@ -123,6 +126,28 @@ export default async function DiscoverPage() {
               Nothing public to show yet. Be the first to share your voice.
             </p>
           </div>
+        )}
+
+        {/* Browse by tag — a shelf of sample posts per popular tag */}
+        {shelves.length > 0 && (
+          <section className="mt-16">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
+                Browse by tag
+              </span>
+              <span className="h-px flex-1 bg-vocl-border" />
+            </div>
+            <div>
+              {shelves.map((shelf) => (
+                <TagShelf
+                  key={shelf.tag.name}
+                  name={shelf.tag.name}
+                  postCount={shelf.tag.postCount}
+                  posts={shelf.posts as unknown as FeedPost[]}
+                />
+              ))}
+            </div>
+          </section>
         )}
       </main>
     </div>
