@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gloock, Lexend } from "next/font/google";
 import { QueryProvider, ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { ACCENT_BOOT_SCRIPT } from "@/lib/accent";
 import "./globals.css";
 
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
     template: "%s | be.vocl",
   },
   description: "Share your voice freely",
+  // Google Search Console ownership verification — set GSC_VERIFICATION to the
+  // token from GSC's "HTML tag" method. Omitted (no meta tag) until then.
+  verification: process.env.GSC_VERIFICATION
+    ? { google: process.env.GSC_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({
@@ -46,6 +52,7 @@ export default function RootLayout({
             <Toaster />
           </QueryProvider>
         </ThemeProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );
