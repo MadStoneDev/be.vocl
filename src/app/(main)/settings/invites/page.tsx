@@ -197,8 +197,8 @@ export default function InviteSettingsPage() {
 
           {/* Generate Section */}
           <div className="bg-vocl-surface-dark rounded-sm border border-vocl-border p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <h3 className="font-medium text-foreground">
                   {isUnlimited ? (
                     "Unlimited codes available"
@@ -217,7 +217,7 @@ export default function InviteSettingsPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generating || !canGenerate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
+                className="flex w-full shrink-0 items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors sm:w-auto"
               >
                 {generating ? (
                   <>
@@ -308,7 +308,7 @@ export default function InviteSettingsPage() {
                   </div>
 
                   {/* Code Stats */}
-                  <div className="flex items-center gap-4 mt-3 text-sm text-foreground/50">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-foreground/50">
                     <span>
                       Used: {code.uses}/{code.maxUses ?? "∞"}
                     </span>
