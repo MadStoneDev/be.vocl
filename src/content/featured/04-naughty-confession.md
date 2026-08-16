@@ -5,6 +5,7 @@ excerpt: theres a guy at my gym and i go at a different time now just so he's th
 image: https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80
 author: anonymous
 order: 4
+draft: true
 ---
 
 ok i don't really know how this works or if anyone even reads these but i can't say it out loud so.

@@ -5,6 +5,7 @@ excerpt: it's easier than the conversation. i hate that it's easier.
 image: https://images.unsplash.com/photo-1499209974431-9daddcb1d1e3?w=1600&q=80
 author: anonymous
 order: 3
+draft: true
 ---
 
 he comes up around eleven and i do the thing where i make my breathing go slow and even and let my mouth fall open a bit. and he stands on his side a second — i can hear him deciding — and then the mattress dips and he turns away and that's the night. both of us safe for another night.
