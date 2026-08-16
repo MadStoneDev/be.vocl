@@ -12,6 +12,14 @@ const COLUMNS: { heading: string; links: FooterLink[] }[] = [
     links: [{ label: "Discover", href: "/discover" }],
   },
   {
+    heading: "Compare",
+    links: [
+      { label: "vs Tumblr", href: "/vs/tumblr" },
+      { label: "vs Medium", href: "/vs/medium" },
+      { label: "vs Substack", href: "/vs/substack" },
+    ],
+  },
+  {
     heading: "Legal",
     links: [
       { label: "Privacy", href: "/privacy" },
@@ -31,7 +39,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-vocl-border">
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div className="max-w-xs">
             <span className="type-display text-2xl font-bold text-vocl-primary">
