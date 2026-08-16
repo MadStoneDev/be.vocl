@@ -1,13 +1,21 @@
 'use client';
 
 import { IconRefresh } from '@tabler/icons-react';
+import { isDeploymentSkew } from '@/lib/deploymentSkew';
+import { DeploymentSkewNotice } from '@/components/ui/DeploymentSkewNotice';
 
 export default function FeedError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // Stale-deployment errors surface here too when a feed action goes stale.
+  if (isDeploymentSkew(error)) {
+    return <DeploymentSkewNotice />;
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-16 text-center">
       <div className="text-5xl mb-4">😵</div>

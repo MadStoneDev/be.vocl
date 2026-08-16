@@ -7,6 +7,7 @@ import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { getMyCommunities, type CommunitySummary } from "@/actions/communities";
 import { getMyCollections, type MyCollection } from "@/actions/post-threads";
 import { readingTimeMinutes } from "@/lib/essay";
+import { isDeploymentSkew } from "@/lib/deploymentSkew";
 import type {
   TextPostContent,
   ImagePostContent,
@@ -310,17 +311,32 @@ export function EditorialComposer({
     handleClose();
   };
 
+  const [skewBlocked, setSkewBlocked] = useState(false);
+
   const handleSubmit = () => {
     patch({ error: null });
+    setSkewBlocked(false);
     startTransition(async () => {
-      const result = await composer.submit({
-        getPreviewsForSave,
-        mode,
-        editPostId: existingPost?.id,
-        isReblogEdit,
-        existingContent: existingPost?.content,
-        threadId,
-      });
+      let result;
+      try {
+        result = await composer.submit({
+          getPreviewsForSave,
+          mode,
+          editPostId: existingPost?.id,
+          isReblogEdit,
+          existingContent: existingPost?.content,
+          threadId,
+        });
+      } catch (err) {
+        // A new deployment invalidated this tab's Server Action IDs. Don't let it
+        // crash to the global boundary (which unmounts the composer and drops the
+        // draft) — surface an inline reload prompt instead.
+        if (isDeploymentSkew(err)) {
+          setSkewBlocked(true);
+          return;
+        }
+        throw err;
+      }
 
       if (result.success) {
         if (isEdit) {
@@ -358,6 +374,22 @@ export function EditorialComposer({
 
       {/* Panel */}
       <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-3xl border border-[var(--vocl-border)] bg-background shadow-2xl overflow-hidden">
+        {skewBlocked && (
+          <div className="flex items-center justify-between gap-3 border-b border-vocl-border bg-vocl-primary/10 px-4 py-3">
+            <span className="type-body text-sm text-foreground/80">
+              A new version of be.vocl was released. Reload to{" "}
+              {isEdit ? "continue" : "publish"}.
+              {!isEdit && " Your draft is saved."}
+            </span>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="shrink-0 rounded-lg bg-vocl-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
+            >
+              Reload
+            </button>
+          </div>
+        )}
         <ComposerTopBar
           mode={mode}
           publishMode={state.publishMode}
