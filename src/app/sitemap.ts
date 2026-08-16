@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getComparisons } from "@/lib/comparisons";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
@@ -17,6 +18,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.9,
     },
+    // Comparison pages (static marketing content).
+    {
+      url: `${APP_URL}/vs`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    ...getComparisons().map((c) => ({
+      url: `${APP_URL}/vs/${c.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
   ];
 
   try {
@@ -83,6 +97,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
         changeFrequency: "daily",
         priority: 0.6,
+      });
+    }
+
+    // Public tag pages → /discover/tag/[name]. Only tags with published posts;
+    // the tag page itself still applies the full public-visibility filters.
+    const { data: tags } = await (supabase as any)
+      .from("tags")
+      .select("name, post_count, created_at")
+      .gt("post_count", 0)
+      .order("post_count", { ascending: false })
+      .limit(1000);
+
+    for (const t of (tags ?? []) as Array<{
+      name: string;
+      post_count: number | null;
+      created_at: string | null;
+    }>) {
+      if (!t.name) continue;
+      entries.push({
+        url: `${APP_URL}/discover/tag/${encodeURIComponent(t.name)}`,
+        lastModified: t.created_at ? new Date(t.created_at) : new Date(),
+        changeFrequency: "daily",
+        priority: 0.5,
       });
     }
   } catch (error) {
