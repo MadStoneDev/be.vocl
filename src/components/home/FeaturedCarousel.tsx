@@ -98,7 +98,7 @@ export function FeaturedCarousel({
           {/* max-w-full caps the inline size to the container. Without it, aspect-ratio
               + min-h-[340px] makes the browser derive width from the height
               (340 × 16/10 = 544px), overflowing the viewport on mobile. */}
-          <div className="relative max-w-full aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-primary/30">
+          <div className="relative max-w-full aspect-[16/10] sm:aspect-[2/1] lg:aspect-[21/9] min-h-[440px] sm:min-h-[340px] rounded-lg overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-br from-vocl-primary/40 to-vocl-primary/30">
             <AnimatePresence initial={false} custom={dir} mode="popLayout">
               <motion.article
                 key={current.key}
@@ -167,29 +167,29 @@ function HeroStage({ hero }: { hero: HeroSlide }) {
       <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary via-vocl-primary to-[#7a0730]" />
       {/* Soft texture so the flat gradient doesn't feel bare */}
       <div className="absolute inset-0 opacity-40 [background:radial-gradient(120%_120%_at_10%_0%,rgba(255,255,255,0.25),transparent_55%)]" />
-      <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-10 lg:p-14">
+      <div className="absolute inset-0 flex flex-col justify-center px-5 py-8 sm:p-10 lg:p-14">
         {hero.kicker && (
           <span className="type-meta uppercase tracking-widest text-white/70 font-semibold">
             {hero.kicker}
           </span>
         )}
-        <h1 className="mt-3 max-w-3xl type-display text-3xl font-bold leading-[1.1] text-white sm:text-5xl">
+        <h1 className="mt-2.5 max-w-3xl type-display text-[1.75rem] font-bold leading-[1.12] text-white sm:mt-3 sm:text-5xl">
           {hero.title}
         </h1>
-        <p className="mt-4 max-w-2xl type-body text-sm text-white/90 sm:text-lg">
+        <p className="mt-3 max-w-2xl type-body text-sm text-white/90 sm:mt-4 sm:text-lg">
           {hero.subhead}
         </p>
-        <div className="mt-7 flex flex-wrap items-center gap-3">
+        <div className="mt-6 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:items-center sm:gap-3">
           <Link
             href={hero.primaryHref}
-            className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition-colors hover:bg-white/90 sm:text-base"
+            className="rounded-xl bg-white px-6 py-3 text-center text-sm font-semibold text-black transition-colors hover:bg-white/90 sm:text-base"
           >
             {hero.primaryLabel}
           </Link>
           {hero.secondaryHref && hero.secondaryLabel && (
             <Link
               href={hero.secondaryHref}
-              className="rounded-xl border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:text-base"
+              className="rounded-xl border border-white/40 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:text-base"
             >
               {hero.secondaryLabel}
             </Link>
