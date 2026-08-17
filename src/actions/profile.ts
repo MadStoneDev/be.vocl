@@ -6,6 +6,7 @@ import { validateUsernameFormat, isValidTimezone } from "@/lib/validation";
 import { isValidProfileLinkUrl } from "@/lib/sanitize";
 import { batchFetchPostStats } from "./shared/post-stats";
 import { canViewSensitive, ageFromDob, SENSITIVE_MIN_AGE } from "@/lib/age";
+import { trackEvent } from "@/lib/analytics/op";
 
 interface ProfileResult {
   success: boolean;
@@ -926,6 +927,10 @@ export async function completeOnboarding(data: {
       console.error("Complete onboarding error:", error);
       return { success: false, error: "Failed to complete onboarding" };
     }
+
+    // Product event — onboarding completion is the reliable server-side "signup"
+    // signal (Supabase's auth.signUp itself runs client-side).
+    void trackEvent("signup", user.id);
 
     revalidatePath("/feed");
     revalidatePath("/profile/[username]", "page");

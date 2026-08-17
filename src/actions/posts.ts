@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { moderateContent } from "@/lib/sightengine/client";
 import { isPubliclyViewable } from "@/lib/postVisibility";
+import { trackEvent } from "@/lib/analytics/op";
 import type {
   PostType,
   PostContent,
@@ -237,6 +238,9 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       if (textContent) {
         await processMentions(textContent, user.id, post.id, "post");
       }
+      // Product event — only for posts that actually went live now (queued /
+      // scheduled posts publish later via cron and aren't counted here).
+      void trackEvent("post_published", user.id, { postType });
     }
 
     revalidatePath("/feed");

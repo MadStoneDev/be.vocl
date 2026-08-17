@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "./shared/auth";
+import { trackEvent } from "@/lib/analytics/op";
 
 interface FollowResult {
   success: boolean;
@@ -64,6 +65,7 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
       notification_type: "follow",
     });
 
+    void trackEvent("follow", user.id, { targetUserId });
     revalidatePath("/profile/[username]", "page");
     return { success: true };
   } catch (error) {
