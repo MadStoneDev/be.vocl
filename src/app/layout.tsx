@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Gloock, Lexend } from "next/font/google";
 import { QueryProvider, ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui";
-import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { Analytics } from "@/components/analytics/Analytics";
 import { ACCENT_BOOT_SCRIPT } from "@/lib/accent";
 import "./globals.css";
 
@@ -52,7 +52,7 @@ export default function RootLayout({
             <Toaster />
           </QueryProvider>
         </ThemeProvider>
-        <GoogleAnalytics />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
 
+// Allow the Umami analytics origin in the CSP script-src, but only when it's
+// configured — so enabling analytics can't be silently blocked by the CSP.
+const umamiOrigin = (() => {
+  const src = process.env.NEXT_PUBLIC_UMAMI_SRC;
+  if (!src) return "";
+  try {
+    return new URL(src).origin;
+  } catch {
+    return "";
+  }
+})();
+
 const nextConfig: NextConfig = {
   // Output mode for containerized deployments (Railway, Docker, etc.)
   output: "standalone",
@@ -43,7 +55,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-inline/eval
+              `script-src 'self' 'unsafe-inline' 'unsafe-eval'${umamiOrigin ? ` ${umamiOrigin}` : ""}`, // Next.js requires unsafe-inline/eval; Umami host added when configured
               "style-src 'self' 'unsafe-inline'", // For styled-jsx and inline styles
               "img-src 'self' data: blob: https: http:",
               "media-src 'self' blob: https: http:",
