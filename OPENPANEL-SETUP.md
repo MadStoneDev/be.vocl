@@ -140,6 +140,12 @@ can (reverse-proxy `/op1.js` → instance) to beat ad-blockers; otherwise the CD
   Node containers).
 - **Real client IP** — behind Traefik/Cloudflare, ensure the visitor IP is forwarded (the §7
   proxy handles this; direct setups must not strip it) or geo/device data degrades.
+- **API must be HTTPS, and `API_URL`/`DASHBOARD_URL` must match it** — the biggest first-run
+  trap. If `op-api` is left on Coolify's auto `http://…sslip.io` domain, the HTTPS dashboard
+  throws *"Mixed Content … blocked"* on sign-up because it calls the API over HTTP. Fix: give
+  `op-api` an HTTPS domain (a real subdomain + Let's Encrypt is stablest), set `API_URL` /
+  `DASHBOARD_URL` to the `https://` URLs, then **redeploy `op-dashboard`** — the API URL is
+  compiled into its client bundle, so an env change alone won't take.
 
 ---
 
