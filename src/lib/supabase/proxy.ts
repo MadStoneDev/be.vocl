@@ -78,6 +78,8 @@ export async function updateSession(request: NextRequest) {
     "/sitemap.xml",
     "/robots.txt",
     "/llms.txt",
+    // Google Search Console HTML-file verification.
+    "/google731fe34a4a843607.html",
   ];
   const isPublicRoute = machineOrPublicPrefixes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
