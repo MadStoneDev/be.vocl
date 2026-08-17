@@ -41,6 +41,7 @@ async function getArchive(username: string) {
     .select("id, post_type, content, created_at")
     .eq("author_id", (profile as any).id)
     .eq("status", "published")
+    .eq("moderation_status", "approved")
     .order("created_at", { ascending: false });
 
   const buckets = new Map<string, MonthBucket>();

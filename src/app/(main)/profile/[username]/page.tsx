@@ -77,15 +77,19 @@ async function getProfile(username: string, publicOnly: boolean) {
       "id, author_id, post_type, content, is_sensitive, created_at, like_count, comment_count, reblog_count"
     )
     .eq("author_id", profile.id)
-    .eq("status", "published");
+    .eq("status", "published")
+    .eq("moderation_status", "approved");
   const countQuery = supabase
     .from("posts")
     .select("id", { count: "exact", head: true })
     .eq("author_id", profile.id)
-    .eq("status", "published");
+    .eq("status", "published")
+    .eq("moderation_status", "approved");
   if (publicOnly) {
-    postsQuery.eq("exclude_from_public", false);
-    countQuery.eq("exclude_from_public", false);
+    // Belt and braces: sensitive is always exclude_from_public, but filter both
+    // rather than trust that invariant on a public surface.
+    postsQuery.eq("exclude_from_public", false).eq("is_sensitive", false);
+    countQuery.eq("exclude_from_public", false).eq("is_sensitive", false);
   }
 
   const [linksResult, postsResult, statsResult] = await Promise.all([

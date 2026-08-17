@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sanitizeHtmlWithSafeLinks, stripHtml } from "@/lib/sanitize";
+import { isPubliclyViewable, type VisibilityPost } from "@/lib/postVisibility";
 import {
   IconHeart,
   IconMessage,
@@ -22,13 +23,19 @@ async function getEmbeddablePost(id: string) {
   const { data: post } = await supabase
     .from("posts")
     .select(`
-      id, post_type, content, created_at, like_count, comment_count, reblog_count, is_sensitive, status,
-      author:profiles!posts_author_id_fkey (username, display_name, avatar_url)
+      id, post_type, content, created_at, like_count, comment_count, reblog_count,
+      is_sensitive, exclude_from_public, status, moderation_status,
+      author:profiles!posts_author_id_fkey (username, display_name, avatar_url, is_discoverable, lock_status)
     `)
     .eq("id", id)
     .single();
 
-  if (!post || (post as any).status !== "published") return null;
+  // Embeds are a fully public surface — only serve posts that pass the same
+  // public-visibility rule as the front page (excludes members-only, sensitive,
+  // moderator-removed, and restricted/undiscoverable authors).
+  if (!post || !isPubliclyViewable(post as VisibilityPost, (post as any).author)) {
+    return null;
+  }
   return post as any;
 }
 

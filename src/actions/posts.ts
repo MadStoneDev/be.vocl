@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { moderateContent } from "@/lib/sightengine/client";
+import { isPubliclyViewable } from "@/lib/postVisibility";
 import type {
   PostType,
   PostContent,
@@ -366,10 +367,10 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
 
     const { postId, content, reblogComment, isSensitive, excludeFromPublic, tags } = input;
 
-    // Verify ownership
+    // Verify ownership (and fetch the fields needed to re-derive visibility).
     const { data: existingPost } = await (supabase as any)
       .from("posts")
-      .select("author_id")
+      .select("author_id, post_type, is_sensitive, exclude_from_public")
       .eq("id", postId)
       .single();
 
@@ -377,15 +378,55 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
       return { success: false, error: "Post not found or unauthorized" };
     }
 
-    // Update the post
     const updateData: any = { updated_at: new Date().toISOString() };
     if (content !== undefined) updateData.content = content;
     if (reblogComment !== undefined) updateData.reblog_comment_html = reblogComment;
-    if (isSensitive !== undefined) updateData.is_sensitive = isSensitive;
-    if (excludeFromPublic !== undefined) updateData.exclude_from_public = excludeFromPublic;
-    // Hard rule: marking a post sensitive forces it off the public web, no matter
-    // what the public-visibility toggle says.
-    if (isSensitive === true) updateData.exclude_from_public = true;
+
+    // Re-moderate on content change so an edit can't slip NSFW past the
+    // create-time screen (mirrors createPost). Without this, an author could
+    // publish a clean image and then swap in an unmoderated one.
+    let autoSensitive = false;
+    let heldForReview = false;
+    if (content !== undefined) {
+      const mediaUrls = extractMediaUrls(existingPost.post_type, content);
+      for (const { url, type } of mediaUrls) {
+        const result = await moderateContent(url, type);
+        if (result.flagged) {
+          updateData.moderation_status = "flagged";
+          updateData.moderation_reason = result.reason || "Content flagged by automated moderation";
+          autoSensitive = true;
+          heldForReview = true;
+          break;
+        }
+        if (result.hold) {
+          updateData.moderation_status = "pending";
+          updateData.moderation_reason = result.holdReason || result.reason || "Held for manual review";
+          heldForReview = true;
+          break;
+        }
+        if (result.errored) {
+          updateData.moderation_status = "pending";
+          updateData.moderation_reason = "Automated moderation was unavailable; held for manual review";
+          heldForReview = true;
+          break;
+        }
+        if (result.suggestSensitive) autoSensitive = true;
+      }
+      if (heldForReview) {
+        updateData.moderated_at = new Date().toISOString();
+        // Pull the edited post off the public web until a human reviews it.
+        updateData.status = "draft";
+      }
+    }
+
+    // Sensitivity is the greater of what the author asked for and what the screen
+    // found — an author cannot un-flag content moderation considers sensitive.
+    const requestedSensitive = isSensitive !== undefined ? isSensitive : !!existingPost.is_sensitive;
+    const finalIsSensitive = requestedSensitive || autoSensitive;
+    const requestedExclude = excludeFromPublic !== undefined ? excludeFromPublic : !!existingPost.exclude_from_public;
+    updateData.is_sensitive = finalIsSensitive;
+    // Hard rule: sensitive is NEVER public, whatever the visibility toggle says.
+    updateData.exclude_from_public = finalIsSensitive ? true : requestedExclude;
 
     const { error: updateError } = await (supabase as any)
       .from("posts")
@@ -609,12 +650,15 @@ export async function getPostById(postId: string): Promise<{
         exclude_from_public,
         is_pinned,
         status,
+        moderation_status,
         created_at,
         author:author_id (
           username,
           display_name,
           avatar_url,
-          role
+          role,
+          is_discoverable,
+          lock_status
         )
       `
       )
@@ -626,10 +670,18 @@ export async function getPostById(postId: string): Promise<{
       return { success: false, error: "Post not found" };
     }
 
-    // Published posts are viewable by anyone; unpublished posts (draft, scheduled,
-    // queued) are only visible to their author — e.g. to edit a scheduled post.
-    if (post.status !== "published" && post.author_id !== user?.id) {
-      return { success: false, error: "Post not found" };
+    // Owners always see their own posts (incl. draft/scheduled/queued to edit).
+    // Everyone else: never unpublished, never moderator-withheld (removed/held) —
+    // and anonymous callers (e.g. a harvested Server Action id) only ever get a
+    // fully-public post, since members-only / sensitive posts rely on the page's
+    // login + age gate that a direct action call would bypass.
+    if (post.author_id !== user?.id) {
+      if (post.status !== "published" || post.moderation_status !== "approved") {
+        return { success: false, error: "Post not found" };
+      }
+      if (!user && !isPubliclyViewable(post, post.author)) {
+        return { success: false, error: "Post not found" };
+      }
     }
 
     // Batch fetch all stats and interactions
