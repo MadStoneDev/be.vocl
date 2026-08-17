@@ -56,17 +56,42 @@ export default async function ComparisonPage({
   const c = getComparison(slug);
   if (!c) notFound();
 
-  // FAQPage-ish structured data: state the comparison plainly for answer engines.
+  // Article + Breadcrumb + a real FAQPage (from the comparison rows) — plain,
+  // answer-engine-friendly claims about how the two platforms differ.
+  const url = `${APP_URL}/vs/${c.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: `be.vocl vs ${c.competitor}`,
-    description: c.metaDescription,
-    url: `${APP_URL}/vs/${c.slug}`,
-    isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
-    about: [
-      { "@type": "Thing", name: "be.vocl" },
-      { "@type": "Thing", name: c.competitor },
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: `be.vocl vs ${c.competitor}`,
+        description: c.metaDescription,
+        url,
+        isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
+        about: [
+          { "@type": "Thing", name: "be.vocl" },
+          { "@type": "Thing", name: c.competitor },
+        ],
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: APP_URL },
+          { "@type": "ListItem", position: 2, name: "Comparisons", item: `${APP_URL}/vs` },
+          { "@type": "ListItem", position: 3, name: `be.vocl vs ${c.competitor}`, item: url },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: c.rows.map((row) => ({
+          "@type": "Question",
+          name: `How do be.vocl and ${c.competitor} compare on ${row.dimension.toLowerCase()}?`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `be.vocl: ${row.bevocl} ${c.competitor}: ${row.them}`,
+          },
+        })),
+      },
     ],
   };
 

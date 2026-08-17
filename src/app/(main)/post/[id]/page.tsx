@@ -107,7 +107,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${postTitle(p)} | be.vocl`;
+  const title = postTitle(p);
   const description = postDescription(p);
   const image = ogImage(p);
   const canonical = `${APP_URL}/post/${p.id}`;

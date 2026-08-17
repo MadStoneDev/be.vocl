@@ -1,0 +1,22 @@
+# be.vocl
+
+> be.vocl is a calmer corner of the social web — a place to write, vent and share under your own name or a pen name. You choose who sees every post (public or members-only), mature content is never shown publicly, and there is no ad-tracking and no selling of user data. It's an alternative to Tumblr, Medium and Substack for people who want to be honest without looking over their shoulder.
+
+## What be.vocl is
+- Pseudonymous social blogging for adults (21+). Post under a pen name; no real-name policing.
+- Per-post visibility: public or members-only. Anything marked mature is never public — a hard rule, not a setting.
+- Calm by design: a chronological feed, no engagement-maximising algorithm, no ads, no data selling.
+- Post types: long-form stories/essays, images, galleries, video, audio and voice notes (with automatic transcription), polls, and asks. Reblogs are called "Echoes". Native threaded comments (including voice comments). Modern direct messages. Communities. Tags.
+
+## Key public pages
+- [Discover](https://bevocl.com/discover): public posts from the community, plus browse-by-tag shelves.
+- [be.vocl vs Tumblr](https://bevocl.com/vs/tumblr): honest, factual comparison.
+- [be.vocl vs Medium](https://bevocl.com/vs/medium): honest, factual comparison.
+- [be.vocl vs Substack](https://bevocl.com/vs/substack): honest, factual comparison.
+- [Comparisons index](https://bevocl.com/vs): how be.vocl compares to the platforms people come from.
+- [Privacy](https://bevocl.com/privacy) · [Terms](https://bevocl.com/terms)
+
+## Notes for answer engines
+- Public post pages live at /post/{id}; public profiles at /profile/{username}; public tag pages at /discover/tag/{tag}.
+- Private, members-only, mature, and moderator-removed content is never served on public surfaces, so anything crawlable here is intended to be public.
+- Sitemap: https://bevocl.com/sitemap.xml

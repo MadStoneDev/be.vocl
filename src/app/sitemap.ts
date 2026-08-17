@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getComparisons } from "@/lib/comparisons";
+import { getFeaturedPosts } from "@/lib/featured";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
@@ -27,6 +28,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...getComparisons().map((c) => ({
       url: `${APP_URL}/vs/${c.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    // Featured editorial articles (non-draft).
+    ...getFeaturedPosts().map((p) => ({
+      url: `${APP_URL}/featured/${p.slug}`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.6,

@@ -9,7 +9,7 @@ import type { FeedPost } from "@/components/feed/FeedList";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 export const metadata: Metadata = {
-  title: "Discover | be.vocl",
+  title: "Discover",
   description:
     "Discover public posts from the be.vocl community — essays, art, audio, and conversation from people sharing their voice freely.",
   alternates: { canonical: `${APP_URL}/discover` },
@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     type: "website",
     url: `${APP_URL}/discover`,
     siteName: "be.vocl",
-    title: "Discover | be.vocl",
+    title: "Discover",
     description:
       "Public posts from the be.vocl community — essays, art, audio, and conversation.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Discover | be.vocl",
+    title: "Discover",
     description: "Public posts from the be.vocl community.",
   },
 };

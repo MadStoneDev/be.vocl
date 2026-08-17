@@ -20,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { tag } = await params;
   const name = decodeURIComponent(tag);
-  const title = `#${name} | be.vocl`;
+  const title = `#${name}`;
   const description = `Public posts tagged #${name} on be.vocl — shared by people writing freely under their own name or a pen name.`;
   const url = `${APP_URL}/discover/tag/${encodeURIComponent(name)}`;
   return {

@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { getFeaturedPost, getFeaturedPosts, featuredBodyToHtml } from "@/lib/featured";
+import { jsonLdScript } from "@/lib/jsonLd";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 // Pre-render all featured slugs at build time.
 export function generateStaticParams() {
@@ -16,11 +19,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = getFeaturedPost(slug);
-  if (!post) return { title: "Story not found | be.vocl" };
+  if (!post) return { title: "Story not found" };
+  const url = `${APP_URL}/featured/${post.slug}`;
   return {
-    title: `${post.title} | be.vocl`,
+    title: post.title,
     description: post.excerpt,
+    alternates: { canonical: url },
     openGraph: {
+      type: "article",
+      url,
+      title: post.title,
+      description: post.excerpt,
+      images: post.image ? [post.image] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
       title: post.title,
       description: post.excerpt,
       images: post.image ? [post.image] : undefined,
@@ -39,8 +52,25 @@ export default async function FeaturedArticlePage({
 
   const html = featuredBodyToHtml(post.body);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    url: `${APP_URL}/featured/${post.slug}`,
+    mainEntityOfPage: `${APP_URL}/featured/${post.slug}`,
+    ...(post.image ? { image: post.image } : {}),
+    ...(post.author ? { author: { "@type": "Person", name: post.author } } : {}),
+    ...(post.tags.length ? { keywords: post.tags.join(", ") } : {}),
+    isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+      />
       {/* Masthead — matches the public landing page */}
       <header className="border-b border-vocl-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
@@ -101,7 +131,7 @@ export default async function FeaturedArticlePage({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={post.image}
-              alt=""
+              alt={post.title}
               className="mt-6 w-full rounded-sm border border-vocl-border object-cover"
             />
           )}

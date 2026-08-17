@@ -17,6 +17,9 @@ import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
 import { ProfileAccentScope } from "@/components/profile";
 import type { VideoEmbedPlatform } from "@/types/database";
 import { ProfileClient } from "./ProfileClient";
+import { jsonLdScript } from "@/lib/jsonLd";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
 interface Props {
   params: Promise<{ username: string }>;
@@ -147,7 +150,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { profile } = data;
   const displayName = profile.display_name || profile.username;
-  const title = `${displayName} (@${profile.username}) | be.vocl`;
+  const title = `${displayName} (@${profile.username})`;
   const description =
     profile.bio || `Check out ${displayName}'s profile on be.vocl`;
 
@@ -159,6 +162,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    alternates: { canonical: `${APP_URL}/profile/${profile.username}` },
     robots: indexable
       ? { index: true, follow: true }
       : { index: false, follow: false },
@@ -211,8 +215,27 @@ export default async function ProfilePage({ params }: Props) {
 
   const loginHref = `/login?next=${encodeURIComponent(`/profile/${profile.username}`)}`;
 
+  const profileUrl = `${APP_URL}/profile/${profile.username}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: profileUrl,
+    mainEntity: {
+      "@type": "Person",
+      name: displayName,
+      alternateName: `@${profile.username}`,
+      url: profileUrl,
+      ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
+      ...(profile.bio ? { description: profile.bio } : {}),
+    },
+  };
+
   return (
     <ProfileAccentScope accent={profile.accent_color}>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+    />
     <div className="pb-16">
       {/* Header Image */}
       <div className="relative w-full h-48 sm:h-64 bg-white/5">
