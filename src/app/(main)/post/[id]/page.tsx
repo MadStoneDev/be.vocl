@@ -1,3 +1,4 @@
+import { jsonLdScript } from "@/lib/jsonLd";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -180,7 +181,7 @@ export default async function PostPage({ params }: Props) {
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
         />
       )}
       <PostPageClient postId={id} />

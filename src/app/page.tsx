@@ -1,3 +1,4 @@
+import { jsonLdScript } from "@/lib/jsonLd";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -89,7 +90,7 @@ export default async function Home() {
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
 
       {/* Top bar */}

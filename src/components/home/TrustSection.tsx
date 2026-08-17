@@ -16,7 +16,7 @@ const PROMISES = [
   {
     icon: IconAdjustmentsHorizontal,
     title: "You decide who sees it",
-    body: "Set each post to public, followers-only, or private. Anything marked mature is never shown publicly — that's a hard rule, not a setting.",
+    body: "Set each post to public or members-only. Anything marked mature is never shown publicly — that's a hard rule, not a setting.",
   },
   {
     icon: IconShieldLock,

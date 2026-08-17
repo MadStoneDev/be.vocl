@@ -1,3 +1,4 @@
+import { jsonLdScript } from "@/lib/jsonLd";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
@@ -62,7 +63,7 @@ export default async function TagPage({
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
       <MarketingHeader />
 

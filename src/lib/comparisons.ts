@@ -52,7 +52,7 @@ const COMPARISONS: Comparison[] = [
     rows: [
       {
         dimension: "Who sees your post",
-        bevocl: "Per-post choice: public, followers-only, or private.",
+        bevocl: "Per-post choice: public or members-only (mature is never public).",
         them: "Blog-level and largely public by default.",
       },
       {
@@ -111,7 +111,7 @@ const COMPARISONS: Comparison[] = [
       },
       {
         dimension: "Who sees your post",
-        bevocl: "Per-post public, followers-only, or private.",
+        bevocl: "Per-post public or members-only.",
         them: "Public, with optional members-only distribution.",
       },
       {
@@ -160,7 +160,7 @@ const COMPARISONS: Comparison[] = [
       },
       {
         dimension: "Who sees your post",
-        bevocl: "Per-post public, followers-only, or private.",
+        bevocl: "Per-post public or members-only.",
         them: "Public or paid-subscriber tiers.",
       },
     ],

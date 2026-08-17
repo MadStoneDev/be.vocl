@@ -1,3 +1,4 @@
+import { jsonLdScript } from "@/lib/jsonLd";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -73,7 +74,7 @@ export default async function ComparisonPage({
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
       <MarketingHeader />
 

@@ -67,12 +67,17 @@ export async function updateSession(request: NextRequest) {
     "/discover",
     "/post/",
     "/featured/",
+    "/vs",
     "/login",
     "/email-templates",
     "/signup",
     "/auth/callback",
     "/terms",
     "/privacy",
+    // Crawl-control + discovery files must be reachable by logged-out bots.
+    "/sitemap.xml",
+    "/robots.txt",
+    "/llms.txt",
   ];
   const isPublicRoute = machineOrPublicPrefixes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
