@@ -4,6 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { PostPageClient } from "./PostPageClient";
+import Link from "next/link";
+import { renderPublicPost } from "@/components/Post/PublicPost";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
@@ -13,6 +15,7 @@ interface Props {
 
 interface PostMeta {
   id: string;
+  author_id: string;
   post_type: string;
   content: any;
   is_sensitive: boolean;
@@ -21,27 +24,44 @@ interface PostMeta {
   moderation_status: string;
   created_at: string;
   updated_at: string | null;
+  like_count: number;
+  comment_count: number;
+  reblog_count: number;
   author: {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    role: number | null;
     is_discoverable: boolean | null;
     allow_search_indexing: boolean | null;
     lock_status: string | null;
   } | null;
 }
 
-/** Fetch the minimal post + author flags needed to decide audience + metadata. */
+/** Fetch the post + author flags needed to decide audience, metadata, and (for
+ *  logged-out visitors) to server-render the public view. */
 async function getPostMeta(id: string): Promise<PostMeta | null> {
   const supabase = createAdminClient();
   const { data } = await (supabase as any)
     .from("posts")
     .select(
-      "id, post_type, content, is_sensitive, exclude_from_public, status, moderation_status, created_at, updated_at, author:author_id ( username, display_name, avatar_url, is_discoverable, allow_search_indexing, lock_status )"
+      "id, author_id, post_type, content, is_sensitive, exclude_from_public, status, moderation_status, created_at, updated_at, like_count, comment_count, reblog_count, author:author_id ( username, display_name, avatar_url, role, is_discoverable, allow_search_indexing, lock_status )"
     )
     .eq("id", id)
     .maybeSingle();
   return (data as PostMeta) ?? null;
+}
+
+/** Tags for a single post — used to server-render the public post view. */
+async function getPostTags(id: string): Promise<Array<{ id: string; name: string }>> {
+  const supabase = createAdminClient();
+  const { data } = await (supabase as any)
+    .from("post_tags")
+    .select("tag:tags!tag_id(id, name)")
+    .eq("post_id", id);
+  return ((data ?? []) as Array<{ tag: { id: string; name: string } | null }>)
+    .map((r) => r.tag)
+    .filter((t): t is { id: string; name: string } => !!t);
 }
 
 /** Whether a post is reachable at all (published + approved, author not banned). */
@@ -174,6 +194,69 @@ export default async function PostPage({ params }: Props) {
           publisher: { "@type": "Organization", name: "be.vocl", url: APP_URL },
         }
       : null;
+
+  // Logged-out visitor on a fully-public post → server-render the article so the
+  // post text/media is in the initial HTML (crawlable by search + answer engines).
+  // Logged-in members get the full interactive client view below.
+  if (!user && p && isPublic(p) && p.author) {
+    const tags = await getPostTags(id);
+    const publicPost = {
+      id: p.id,
+      author_id: p.author_id,
+      post_type: p.post_type,
+      content: p.content,
+      is_sensitive: p.is_sensitive,
+      created_at: p.created_at,
+      like_count: p.like_count ?? 0,
+      comment_count: p.comment_count ?? 0,
+      reblog_count: p.reblog_count ?? 0,
+      tags,
+    };
+    const author = {
+      username: p.author.username,
+      avatar_url: p.author.avatar_url,
+      role: p.author.role ?? 0,
+    };
+    return (
+      <>
+        {jsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+          />
+        )}
+        <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+          {renderPublicPost(publicPost, author)}
+          <div className="mt-8 rounded-2xl border border-vocl-border p-6 text-center">
+            <p className="type-body text-foreground/70">
+              Join be.vocl to like, reply and follow{" "}
+              <Link
+                href={`/profile/${author.username}`}
+                className="font-semibold text-vocl-primary hover:underline"
+              >
+                @{author.username}
+              </Link>
+              .
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/signup"
+                className="rounded-xl bg-vocl-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
+              >
+                Join be.vocl
+              </Link>
+              <Link
+                href={`/login?next=${encodeURIComponent(`/post/${id}`)}`}
+                className="rounded-xl border border-vocl-border px-5 py-2.5 text-sm font-semibold text-foreground/80 transition-colors hover:bg-vocl-hover"
+              >
+                Log in
+              </Link>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
