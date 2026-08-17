@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
-// Allow the Umami analytics origin in the CSP script-src, but only when it's
-// configured — so enabling analytics can't be silently blocked by the CSP.
-const umamiOrigin = (() => {
-  const src = process.env.NEXT_PUBLIC_UMAMI_SRC;
+// Allow the OpenPanel analytics SDK origin in the CSP script-src, but only when
+// analytics is configured — so enabling it can't be silently blocked by the CSP.
+// (The ingestion POST to NEXT_PUBLIC_OPENPANEL_API_URL is already covered by the
+// permissive connect-src https: below.)
+const analyticsScriptOrigin = (() => {
+  const src =
+    process.env.NEXT_PUBLIC_OPENPANEL_SDK_URL ||
+    (process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID ? "https://openpanel.dev/op1.js" : "");
   if (!src) return "";
   try {
     return new URL(src).origin;
@@ -55,7 +59,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              `script-src 'self' 'unsafe-inline' 'unsafe-eval'${umamiOrigin ? ` ${umamiOrigin}` : ""}`, // Next.js requires unsafe-inline/eval; Umami host added when configured
+              `script-src 'self' 'unsafe-inline' 'unsafe-eval'${analyticsScriptOrigin ? ` ${analyticsScriptOrigin}` : ""}`, // Next.js requires unsafe-inline/eval; analytics SDK host added when configured
               "style-src 'self' 'unsafe-inline'", // For styled-jsx and inline styles
               "img-src 'self' data: blob: https: http:",
               "media-src 'self' blob: https: http:",
