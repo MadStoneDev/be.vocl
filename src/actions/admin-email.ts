@@ -13,7 +13,7 @@ export interface UserTag {
   id: string;
   name: string;
   description: string | null;
-  color: string;
+  color: string | null;
   userCount?: number;
 }
 
@@ -35,7 +35,7 @@ export async function getUserTags(): Promise<{
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -88,7 +88,7 @@ export async function createUserTag(
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -130,7 +130,7 @@ export async function deleteUserTag(tagId: string): Promise<{ success: boolean; 
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 10) {
+    if (!profile || (profile.role ?? 0) < 10) {
       return { success: false, error: "Only admins can delete tags" };
     }
 
@@ -165,7 +165,7 @@ export async function assignTagToUsers(
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -205,7 +205,7 @@ export async function removeTagFromUsers(
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -252,7 +252,7 @@ export async function getEmailRecipients(filter?: {
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -356,7 +356,7 @@ export async function sendBulkEmail(input: SendEmailInput): Promise<{
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -523,7 +523,7 @@ export async function getEmailHistory(limit = 20): Promise<{
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Insufficient permissions" };
     }
 

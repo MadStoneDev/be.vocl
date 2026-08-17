@@ -330,7 +330,7 @@ export async function getTagByName(tagName: string): Promise<{
       tag: {
         id: tag.id,
         name: tag.name,
-        postCount: tag.post_count,
+        postCount: tag.post_count ?? 0,
         isFollowing,
         isMuting,
       },
@@ -480,6 +480,7 @@ export async function getPostsByTag(
       commentCountMap.set(comment.post_id, (commentCountMap.get(comment.post_id) || 0) + 1);
     }
     for (const reblog of reblogCounts.data || []) {
+      if (!reblog.reblogged_from_id) continue;
       reblogCountMap.set(reblog.reblogged_from_id, (reblogCountMap.get(reblog.reblogged_from_id) || 0) + 1);
     }
 

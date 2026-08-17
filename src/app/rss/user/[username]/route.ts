@@ -55,7 +55,7 @@ export async function GET(
     .order("created_at", { ascending: false })
     .limit(20);
 
-  const posts = (postsData ?? []) as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null }>;
+  const posts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null }>;
 
   const displayName = profile.display_name || profile.username;
   const channelTitle = `${displayName} - be.vocl`;

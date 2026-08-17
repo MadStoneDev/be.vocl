@@ -318,8 +318,8 @@ export async function sendFollowNotification(
     await sendFollowNotificationEmail({
       to: email,
       followerUsername: follower.username,
-      followerAvatarUrl: follower.avatar_url,
-      followerBio: follower.bio,
+      followerAvatarUrl: follower.avatar_url ?? undefined,
+      followerBio: follower.bio ?? undefined,
       recipientUsername: following.username,
     });
   } catch (error) {
@@ -377,16 +377,17 @@ export async function sendLikeNotification(
     if (!email) return;
 
     let postPreview = "Your post";
-    if (post.content?.plain) {
-      postPreview = post.content.plain.slice(0, 100);
-    } else if (post.content?.html) {
-      postPreview = post.content.html.replace(/<[^>]*>/g, "").slice(0, 100);
+    const previewContent = post.content as { plain?: string; html?: string } | null;
+    if (previewContent?.plain) {
+      postPreview = previewContent.plain.slice(0, 100);
+    } else if (previewContent?.html) {
+      postPreview = previewContent.html.replace(/<[^>]*>/g, "").slice(0, 100);
     }
 
     await sendLikeNotificationEmail({
       to: email,
       likerUsername: liker.username,
-      likerAvatarUrl: liker.avatar_url,
+      likerAvatarUrl: liker.avatar_url ?? undefined,
       postPreview,
       postId,
       totalLikes: totalLikes || 1,
@@ -443,10 +444,11 @@ export async function sendCommentNotification(
     if (!email) return;
 
     let postPreview = "Your post";
-    if (post.content?.plain) {
-      postPreview = post.content.plain.slice(0, 100);
-    } else if (post.content?.html) {
-      postPreview = post.content.html.replace(/<[^>]*>/g, "").slice(0, 100);
+    const previewContent = post.content as { plain?: string; html?: string } | null;
+    if (previewContent?.plain) {
+      postPreview = previewContent.plain.slice(0, 100);
+    } else if (previewContent?.html) {
+      postPreview = previewContent.html.replace(/<[^>]*>/g, "").slice(0, 100);
     }
 
     const cleanComment = commentContent.replace(/<[^>]*>/g, "").slice(0, 200);
@@ -454,7 +456,7 @@ export async function sendCommentNotification(
     await sendCommentNotificationEmail({
       to: email,
       commenterUsername: commenter.username,
-      commenterAvatarUrl: commenter.avatar_url,
+      commenterAvatarUrl: commenter.avatar_url ?? undefined,
       commentContent: cleanComment,
       postPreview,
       postId,
@@ -511,10 +513,11 @@ export async function sendReblogNotification(
     if (!email) return;
 
     let postPreview = "Your post";
-    if (post.content?.plain) {
-      postPreview = post.content.plain.slice(0, 100);
-    } else if (post.content?.html) {
-      postPreview = post.content.html.replace(/<[^>]*>/g, "").slice(0, 100);
+    const previewContent = post.content as { plain?: string; html?: string } | null;
+    if (previewContent?.plain) {
+      postPreview = previewContent.plain.slice(0, 100);
+    } else if (previewContent?.html) {
+      postPreview = previewContent.html.replace(/<[^>]*>/g, "").slice(0, 100);
     }
 
     const cleanComment = reblogComment
@@ -524,7 +527,7 @@ export async function sendReblogNotification(
     await sendReblogNotificationEmail({
       to: email,
       rebloggerUsername: reblogger.username,
-      rebloggerAvatarUrl: reblogger.avatar_url,
+      rebloggerAvatarUrl: reblogger.avatar_url ?? undefined,
       reblogComment: cleanComment,
       postPreview,
       postId: originalPostId,
@@ -599,7 +602,7 @@ export async function sendMessageNotification(
     await sendMessageNotificationEmail({
       to: email,
       senderUsername: sender.username,
-      senderAvatarUrl: sender.avatar_url,
+      senderAvatarUrl: sender.avatar_url ?? undefined,
       messagePreview: messageContent.slice(0, 150),
       conversationId,
       unreadCount: unreadCount || 1,
@@ -656,7 +659,7 @@ export async function sendMentionNotification(
     await sendMentionNotificationEmail({
       to: email,
       mentionerUsername: mentioner.username,
-      mentionerAvatarUrl: mentioner.avatar_url,
+      mentionerAvatarUrl: mentioner.avatar_url ?? undefined,
       context: cleanContext,
       postId,
     });

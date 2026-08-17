@@ -33,7 +33,7 @@ export async function GET(
     .order("created_at", { ascending: false })
     .limit(60);
 
-  const rawPosts = (postsData ?? []) as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null; author_id: string }>;
+  const rawPosts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null; author_id: string }>;
 
   // Fetch author profiles (incl. discoverability + lock status).
   const authorIds = [...new Set(rawPosts.map((p) => p.author_id))];
