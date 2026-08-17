@@ -98,9 +98,11 @@ OpenPanel-managed and upgrades may touch it); test on a copy.
 ## 7. Wire up a site
 
 ### Next.js apps (be.vocl — already done; justreel/qrmory/tabletopchronicles use this pattern)
-be.vocl uses the **same-origin proxy** — `src/app/api/op/[...op]/route.ts` +
-`src/components/analytics/Analytics.tsx` (`<OpenPanelComponent apiUrl="/api/op"
-scriptUrl="/api/op/op1.js" …>`). This makes tracking first-party (ad-blocker-resistant) and
+be.vocl uses a **neutral-named same-origin proxy** — `src/app/api/i/[...path]/route.ts` +
+`src/components/analytics/Analytics.tsx` (`<OpenPanelComponent apiUrl="/api/i"
+scriptUrl="/api/i/s.js" …>`). Neutral names matter: OpenPanel's stock proxy hardcodes the
+`op1.js` filename, which privacy blocklists (EasyPrivacy) block even same-origin. This makes
+tracking first-party (genuinely ad-blocker-resistant) and
 preserves the real visitor IP. **Just set two env vars** on the be.vocl deploy:
 
 ```
@@ -108,7 +110,7 @@ NEXT_PUBLIC_OPENPANEL_CLIENT_ID=<be.vocl project client id>
 OPENPANEL_API_URL=https://analytics.youragency.com/api    # server-side, used by the proxy
 ```
 
-Nothing tracks until `NEXT_PUBLIC_OPENPANEL_CLIENT_ID` is set. Copy `src/app/api/op/` +
+Nothing tracks until `NEXT_PUBLIC_OPENPANEL_CLIENT_ID` is set. Copy `src/app/api/i/` +
 `src/components/analytics/Analytics.tsx` into the other Next.js projects.
 
 ### Non-Next sites (client HTML/WordPress/etc.)
