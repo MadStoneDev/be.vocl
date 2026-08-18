@@ -250,7 +250,9 @@ export async function GET(request: Request) {
         // post surfaces fresh (feeds order + display by created_at) rather than
         // buried at its original queue time.
         const publishedAt = new Date().toISOString();
-        const { error: publishError } = await supabase
+        // Compare-and-swap: only publish if this head is STILL queued, so two
+        // overlapping cron runs can't publish (and cross-post) it twice.
+        const { data: claimed, error: publishError } = await supabase
           .from("posts")
           .update({
             status: "published",
@@ -260,10 +262,16 @@ export async function GET(request: Request) {
             published_from_queue: true,
             pending_community_ids: null,
           })
-          .eq("id", head.id);
+          .eq("id", head.id)
+          .eq("status", "queued")
+          .select("id");
 
         if (publishError) {
           errors.push(`Post ${head.id}: ${publishError.message}`);
+          continue;
+        }
+        if (!claimed || claimed.length === 0) {
+          // Another overlapping run already published this head — skip.
           continue;
         }
         publishedCount++;

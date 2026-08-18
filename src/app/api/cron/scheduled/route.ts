@@ -45,7 +45,12 @@ export async function GET(request: Request) {
       // Surface the post fresh at its go-live moment (feeds order + display by
       // created_at), not buried at the time it was originally composed.
       const publishedAt = new Date().toISOString();
-      const { error: publishError } = await supabase
+      // Compare-and-swap: only publish if the row is STILL scheduled. Two
+      // overlapping cron runs (retry, manual "Run", overlapping ticks) can both
+      // select the same due post; the `.eq("status","scheduled")` guard means
+      // only the first one actually flips it — the other claims 0 rows and skips,
+      // so the post can't be published or cross-posted twice.
+      const { data: claimed, error: publishError } = await supabase
         .from("posts")
         .update({
           status: "published",
@@ -54,11 +59,13 @@ export async function GET(request: Request) {
           created_at: publishedAt,
           pending_community_ids: null,
         })
-        .eq("id", post.id);
+        .eq("id", post.id)
+        .eq("status", "scheduled")
+        .select("id");
 
       if (publishError) {
         errors.push(`Post ${post.id}: ${publishError.message}`);
-      } else {
+      } else if (claimed && claimed.length > 0) {
         publishedCount++;
         const pendingCommunityIds = (post as any).pending_community_ids as string[] | null;
         if (pendingCommunityIds && pendingCommunityIds.length > 0) {
