@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same branch/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # The gate that matters: type errors are exactly what breaks the Coolify
+      # build. This is green today and must stay green.
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Non-blocking for now. The tree still carries the `no-explicit-any` debt
+      # from the untyped-Supabase-client era; flip this to a hard gate once the
+      # `(supabase as any)` casts are peeled off.
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      # Catches build-only breakage (server/client boundaries, server-action
+      # constraints) that tsc alone misses. Uses repo secrets when present, and
+      # falls back to placeholders so the build still runs on forks/without them.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key' }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://bevocl.com' }}
