@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 // ============================================================================
@@ -719,30 +720,31 @@ export async function adminGrantInviteCodes(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Update target user's invite codes
-    const { error: updateError } = await (supabase as any).rpc(
-      "increment_invite_codes",
-      { user_id: userId, amount }
-    );
+    // Do the privileged write with the admin (service-role) client. RLS blocks a
+    // user — even an admin — from updating ANOTHER user's profile through the
+    // request-scoped client, so the previous update silently affected 0 rows and
+    // still reported success. The role check above authorises this write.
+    const admin = createAdminClient();
+    const { data: targetProfile, error: fetchError } = await (admin as any)
+      .from("profiles")
+      .select("invite_codes_remaining")
+      .eq("id", userId)
+      .single();
 
-    // Fallback if function doesn't exist
+    if (fetchError || !targetProfile) {
+      return { success: false, error: "User not found" };
+    }
+
+    const { error: updateError } = await (admin as any)
+      .from("profiles")
+      .update({
+        invite_codes_remaining: (targetProfile.invite_codes_remaining || 0) + amount,
+      })
+      .eq("id", userId);
+
     if (updateError) {
-      const { data: targetProfile } = await (supabase as any)
-        .from("profiles")
-        .select("invite_codes_remaining")
-        .eq("id", userId)
-        .single();
-
-      if (!targetProfile) {
-        return { success: false, error: "User not found" };
-      }
-
-      await (supabase as any)
-        .from("profiles")
-        .update({
-          invite_codes_remaining: (targetProfile.invite_codes_remaining || 0) + amount,
-        })
-        .eq("id", userId);
+      console.error("Admin grant invite codes update error:", updateError);
+      return { success: false, error: "Failed to grant invite codes" };
     }
 
     revalidatePath("/admin/invites");
