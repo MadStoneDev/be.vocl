@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
 import type { ReportSubject, ReportStatus } from "@/types/database";
 import { rateLimiters } from "@/lib/rate-limit";
@@ -481,7 +482,10 @@ async function notifyStaffOfReport(
       is_read: false,
     }));
 
-    await (supabase as any).from("notifications").insert(notifications);
+    // Service-role client: staff notifications have no actor_id, which the
+    // request-client INSERT policy (actor_id = auth.uid()) rejects — so via the
+    // session client these silently never insert and staff are never notified.
+    await (createAdminClient() as any).from("notifications").insert(notifications);
   } catch (error) {
     console.error("Staff notification error:", error);
   }

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { moderateContent } from "@/lib/sightengine/client";
 import { ROLES } from "@/constants/roles";
 import type { FlagSubject } from "@/types/database";
@@ -175,7 +176,9 @@ async function notifyStaffOfFlaggedContent(
       is_read: false,
     }));
 
-    await (supabase as any).from("notifications").insert(notifications);
+    // Service-role client — staff notifications carry no actor_id, which the
+    // request-client INSERT policy would reject (silent no-op otherwise).
+    await (createAdminClient() as any).from("notifications").insert(notifications);
   } catch (error) {
     console.error("Staff notification error:", error);
   }

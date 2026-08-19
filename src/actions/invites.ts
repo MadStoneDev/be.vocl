@@ -147,14 +147,20 @@ export async function generateInviteCode(options?: {
       return { success: false, error: "Failed to create invite code" };
     }
 
-    // Decrement user's remaining codes (unless staff)
+    // Decrement the user's remaining codes (unless staff). invite_codes_remaining
+    // is a privileged, RLS/trigger-guarded column, so the write must go through the
+    // service-role client — a request-client update is silently rejected, which
+    // would let trusted users mint unlimited invite codes.
     if (!isStaff) {
-      await (supabase as any)
+      const { error: decrementError } = await (createAdminClient() as any)
         .from("profiles")
         .update({
           invite_codes_remaining: profile.invite_codes_remaining - 1,
         })
         .eq("id", user.id);
+      if (decrementError) {
+        console.error("Decrement invite codes error:", decrementError);
+      }
     }
 
     revalidatePath("/settings/invites");

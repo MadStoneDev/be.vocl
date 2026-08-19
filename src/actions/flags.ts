@@ -542,7 +542,9 @@ async function notifyStaffOfFlag(
       is_read: false,
     }));
 
-    await (supabase as any).from("notifications").insert(notifications);
+    // Service-role client — staff notifications carry no actor_id, which the
+    // request-client INSERT policy would reject (silent no-op otherwise).
+    await (createAdminClient() as any).from("notifications").insert(notifications);
   } catch (error) {
     console.error("Staff notification error:", error);
   }

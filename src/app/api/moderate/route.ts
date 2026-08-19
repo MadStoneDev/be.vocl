@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { moderateContent, type ModerationResult } from "@/lib/sightengine/client";
 import { validateCsrf } from "@/lib/csrf";
 
@@ -40,7 +41,10 @@ export async function POST(request: NextRequest) {
 
     // If flagged, create an auto-moderation report
     if (result.flagged) {
-      await (supabase as any).from("reports").insert({
+      // Service-role client: a system report has reporter_id = null, which the
+      // request-client INSERT policy (reporter_id = auth.uid()) rejects — so via
+      // the session client the auto-moderation report is never created.
+      await (createAdminClient() as any).from("reports").insert({
         reporter_id: null, // System report
         reported_user_id: user.id,
         subject: "minor_safety", // Default for auto-moderation
