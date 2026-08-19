@@ -26,7 +26,10 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      types: { "application/rss+xml": `${APP_URL}/rss/tag/${encodeURIComponent(name)}` },
+    },
     openGraph: { type: "website", url, siteName: "be.vocl", title, description },
     twitter: { card: "summary_large_image", title, description },
   };
@@ -41,22 +44,35 @@ export default async function TagPage({
   const name = decodeURIComponent(tag);
   const posts = (await getPublicPostsByTag(name, { limit: 48 })) as unknown as FeedPost[];
 
+  const tagUrl = `${APP_URL}/discover/tag/${encodeURIComponent(name)}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: `#${name} — be.vocl`,
-    description: `Public posts tagged #${name} on be.vocl.`,
-    url: `${APP_URL}/discover/tag/${encodeURIComponent(name)}`,
-    isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
-    hasPart: posts.slice(0, 20).map((p) => ({
-      "@type": "Article",
-      headline:
-        (typeof p.content?.text === "string" && p.content.text.slice(0, 110)) ||
-        `Post by @${p.author.username}`,
-      url: `${APP_URL}/post/${p.id}`,
-      author: { "@type": "Person", name: `@${p.author.username}` },
-      datePublished: p.timestamp,
-    })),
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        name: `#${name} — be.vocl`,
+        description: `Public posts tagged #${name} on be.vocl.`,
+        url: tagUrl,
+        isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
+        hasPart: posts.slice(0, 20).map((p) => ({
+          "@type": "Article",
+          headline:
+            (typeof p.content?.text === "string" && p.content.text.slice(0, 110)) ||
+            `Post by @${p.author.username}`,
+          url: `${APP_URL}/post/${p.id}`,
+          author: { "@type": "Person", name: `@${p.author.username}` },
+          datePublished: p.timestamp,
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "be.vocl", item: APP_URL },
+          { "@type": "ListItem", position: 2, name: "Discover", item: `${APP_URL}/discover` },
+          { "@type": "ListItem", position: 3, name: `#${name}`, item: tagUrl },
+        ],
+      },
+    ],
   };
 
   return (

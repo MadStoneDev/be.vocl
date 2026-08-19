@@ -152,7 +152,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `${APP_URL}/profile/${profile.username}` },
+    alternates: {
+      canonical: `${APP_URL}/profile/${profile.username}`,
+      types: { "application/rss+xml": `${APP_URL}/rss/user/${profile.username}` },
+    },
     robots: indexable
       ? { index: true, follow: true }
       : { index: false, follow: false },
@@ -208,16 +211,27 @@ export default async function ProfilePage({ params }: Props) {
   const profileUrl = `${APP_URL}/profile/${profile.username}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "ProfilePage",
-    url: profileUrl,
-    mainEntity: {
-      "@type": "Person",
-      name: displayName,
-      alternateName: `@${profile.username}`,
-      url: profileUrl,
-      ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
-      ...(profile.bio ? { description: profile.bio } : {}),
-    },
+    "@graph": [
+      {
+        "@type": "ProfilePage",
+        url: profileUrl,
+        mainEntity: {
+          "@type": "Person",
+          name: displayName,
+          alternateName: `@${profile.username}`,
+          url: profileUrl,
+          ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
+          ...(profile.bio ? { description: profile.bio } : {}),
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "be.vocl", item: APP_URL },
+          { "@type": "ListItem", position: 2, name: `@${profile.username}`, item: profileUrl },
+        ],
+      },
+    ],
   };
 
   return (

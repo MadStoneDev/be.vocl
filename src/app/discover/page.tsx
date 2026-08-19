@@ -12,7 +12,10 @@ export const metadata: Metadata = {
   title: "Discover",
   description:
     "Discover public posts from the be.vocl community — essays, art, audio, and conversation from people sharing their voice freely.",
-  alternates: { canonical: `${APP_URL}/discover` },
+  alternates: {
+    canonical: `${APP_URL}/discover`,
+    types: { "application/rss+xml": `${APP_URL}/rss/feed` },
+  },
   openGraph: {
     type: "website",
     url: `${APP_URL}/discover`,

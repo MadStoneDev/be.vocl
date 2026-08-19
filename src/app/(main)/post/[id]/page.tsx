@@ -175,23 +175,60 @@ export default async function PostPage({ params }: Props) {
     notFound();
   }
 
-  // Article JSON-LD for public posts (helps SEO + answer/generative engines).
+  // Tags for public posts — used for both the JSON-LD keywords and the
+  // server-rendered public view below (fetched once).
+  const isPub = p != null && isPublic(p);
+  const tags = isPub ? await getPostTags(id) : [];
+
+  // Article + Breadcrumb JSON-LD for public posts (SEO + answer/generative engines).
+  const postUrl = p ? `${APP_URL}/post/${p.id}` : APP_URL;
+  const articleImage = p ? ogImage(p) : undefined;
   const jsonLd =
-    p && isPublic(p)
+    p && isPub
       ? {
           "@context": "https://schema.org",
-          "@type": "Article",
-          headline: postTitle(p).split(" — ")[0],
-          description: postDescription(p),
-          url: `${APP_URL}/post/${p.id}`,
-          datePublished: p.created_at,
-          dateModified: p.updated_at || p.created_at,
-          author: {
-            "@type": "Person",
-            name: p.author?.display_name || `@${p.author?.username}`,
-            url: p.author?.username ? `${APP_URL}/profile/${p.author.username}` : undefined,
-          },
-          publisher: { "@type": "Organization", name: "be.vocl", url: APP_URL },
+          "@graph": [
+            {
+              "@type": "Article",
+              headline: postTitle(p).split(" — ")[0],
+              description: postDescription(p),
+              articleBody: postDescription(p),
+              url: postUrl,
+              mainEntityOfPage: postUrl,
+              datePublished: p.created_at,
+              dateModified: p.updated_at || p.created_at,
+              ...(articleImage ? { image: articleImage } : {}),
+              ...(tags.length ? { keywords: tags.map((t) => t.name).join(", ") } : {}),
+              author: {
+                "@type": "Person",
+                name: p.author?.display_name || `@${p.author?.username}`,
+                url: p.author?.username ? `${APP_URL}/profile/${p.author.username}` : undefined,
+              },
+              publisher: { "@type": "Organization", name: "be.vocl", url: APP_URL },
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "be.vocl", item: APP_URL },
+                ...(p.author?.username
+                  ? [
+                      {
+                        "@type": "ListItem",
+                        position: 2,
+                        name: `@${p.author.username}`,
+                        item: `${APP_URL}/profile/${p.author.username}`,
+                      },
+                    ]
+                  : []),
+                {
+                  "@type": "ListItem",
+                  position: p.author?.username ? 3 : 2,
+                  name: postTitle(p).split(" — ")[0] || "Post",
+                  item: postUrl,
+                },
+              ],
+            },
+          ],
         }
       : null;
 
@@ -199,7 +236,6 @@ export default async function PostPage({ params }: Props) {
   // post text/media is in the initial HTML (crawlable by search + answer engines).
   // Logged-in members get the full interactive client view below.
   if (!user && p && isPublic(p) && p.author) {
-    const tags = await getPostTags(id);
     const publicPost = {
       id: p.id,
       author_id: p.author_id,

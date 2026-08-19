@@ -52,17 +52,29 @@ export default async function FeaturedArticlePage({
 
   const html = featuredBodyToHtml(post.body);
 
+  const featuredUrl = `${APP_URL}/featured/${post.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.excerpt,
-    url: `${APP_URL}/featured/${post.slug}`,
-    mainEntityOfPage: `${APP_URL}/featured/${post.slug}`,
-    ...(post.image ? { image: post.image } : {}),
-    ...(post.author ? { author: { "@type": "Person", name: post.author } } : {}),
-    ...(post.tags.length ? { keywords: post.tags.join(", ") } : {}),
-    isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: post.title,
+        description: post.excerpt,
+        url: featuredUrl,
+        mainEntityOfPage: featuredUrl,
+        ...(post.image ? { image: post.image } : {}),
+        ...(post.author ? { author: { "@type": "Person", name: post.author } } : {}),
+        ...(post.tags.length ? { keywords: post.tags.join(", ") } : {}),
+        isPartOf: { "@type": "WebSite", name: "be.vocl", url: APP_URL },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "be.vocl", item: APP_URL },
+          { "@type": "ListItem", position: 2, name: post.title, item: featuredUrl },
+        ],
+      },
+    ],
   };
 
   return (

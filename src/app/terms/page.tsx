@@ -3,8 +3,9 @@ import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | BeVocl",
-  description: "Terms of Service for BeVocl - Share your voice freely",
+  title: "Terms of Service",
+  description: "Terms of Service for be.vocl — share your voice freely.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsOfServicePage() {
@@ -29,7 +30,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-4">1. Acceptance of Terms</h2>
             <p className="text-foreground/80">
-              By accessing or using BeVocl (&quot;the Service&quot;), you agree to be bound by these Terms of
+              By accessing or using be.vocl (&quot;the Service&quot;), you agree to be bound by these Terms of
               Service. If you do not agree to these terms, do not use the Service.
             </p>
           </section>
@@ -65,7 +66,7 @@ export default function TermsOfServicePage() {
             </h2>
             <div className="space-y-4 text-foreground/90">
               <p className="font-medium">
-                BeVocl maintains a strict zero tolerance policy regarding any content that sexualizes,
+                be.vocl maintains a strict zero tolerance policy regarding any content that sexualizes,
                 exploits, endangers, or otherwise harms minors (anyone under 18 years of age).
               </p>
               <p>The following content is absolutely prohibited:</p>
@@ -111,7 +112,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">6. Sensitive Content</h2>
             <div className="space-y-3 text-foreground/80">
               <p>
-                BeVocl allows certain adult content between consenting adults, provided it is properly
+                be.vocl allows certain adult content between consenting adults, provided it is properly
                 marked as sensitive.
               </p>
               <p>If you post sensitive content, you must:</p>
@@ -173,12 +174,12 @@ export default function TermsOfServicePage() {
             <h2 className="text-xl font-semibold text-foreground mb-4">9. Intellectual Property</h2>
             <div className="space-y-3 text-foreground/80">
               <p>
-                You retain ownership of content you post to BeVocl. By posting content, you grant us
+                You retain ownership of content you post to be.vocl. By posting content, you grant us
                 a non-exclusive, worldwide, royalty-free licence to display and distribute your
                 content within the Service.
               </p>
               <p>
-                You may not use BeVocl&apos;s name, logo, or branding without our written permission.
+                You may not use be.vocl&apos;s name, logo, or branding without our written permission.
               </p>
             </div>
           </section>

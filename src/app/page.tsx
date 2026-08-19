@@ -19,7 +19,10 @@ export const metadata: Metadata = {
   title: "be.vocl — Share your voice freely",
   description:
     "be.vocl is a place to write, share, and discover — a calmer corner of the social web. Read what people are publishing, then join the conversation.",
-  alternates: { canonical: APP_URL },
+  alternates: {
+    canonical: APP_URL,
+    types: { "application/rss+xml": `${APP_URL}/rss/feed` },
+  },
   openGraph: {
     type: "website",
     url: APP_URL,

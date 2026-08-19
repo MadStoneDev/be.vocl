@@ -88,7 +88,7 @@ export function renderPublicPost(post: PublicPostData, author: PublicPostAuthor)
       {contentType === "image" && post.content?.urls?.[0] && (
         <ImageContent
           src={post.content.urls[0]}
-          alt=""
+          alt={post.content?.alt_texts?.[0] || `Image post by @${author.username}`}
           caption={post.content?.caption_html}
         />
       )}

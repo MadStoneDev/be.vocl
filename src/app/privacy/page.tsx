@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | BeVocl",
-  description: "Privacy Policy for BeVocl - Share your voice freely",
+  title: "Privacy Policy",
+  description: "Privacy Policy for be.vocl — share your voice freely.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPolicyPage() {
@@ -23,7 +24,7 @@ export default function PrivacyPolicyPage() {
               1. Introduction
             </h2>
             <p className="text-foreground/80 mb-4">
-              Welcome to BeVocl. We respect your privacy and are committed to
+              Welcome to be.vocl. We respect your privacy and are committed to
               protecting your personal data. This Privacy Policy explains how we
               collect, use, disclose, and safeguard your information when you use
               our service.
