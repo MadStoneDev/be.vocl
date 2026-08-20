@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { resend, emailConfig, isEmailConfigured } from "@/lib/email";
 import { AnnouncementEmail, FounderMessageEmail } from "@/emails";
@@ -24,12 +25,13 @@ export async function getUserTags(): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
     // Check if admin
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -39,7 +41,7 @@ export async function getUserTags(): Promise<{
       return { success: false, error: "Insufficient permissions" };
     }
 
-    const { data: tags, error } = await supabase
+    const { data: tags, error } = await admin
       .from("user_tags")
       .select("*")
       .order("name");
@@ -49,7 +51,7 @@ export async function getUserTags(): Promise<{
     // Get user counts for each tag
     const tagsWithCounts = await Promise.all(
       (tags || []).map(async (tag) => {
-        const { count } = await supabase
+        const { count } = await admin
           .from("user_tag_assignments")
           .select("*", { count: "exact", head: true })
           .eq("tag_id", tag.id);
@@ -78,11 +80,12 @@ export async function createUserTag(
 ): Promise<{ success: boolean; tag?: UserTag; error?: string }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -92,7 +95,7 @@ export async function createUserTag(
       return { success: false, error: "Insufficient permissions" };
     }
 
-    const { data: tag, error } = await supabase
+    const { data: tag, error } = await admin
       .from("user_tags")
       .insert({
         name: name.toLowerCase().trim(),
@@ -120,11 +123,12 @@ export async function createUserTag(
 export async function deleteUserTag(tagId: string): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -134,7 +138,7 @@ export async function deleteUserTag(tagId: string): Promise<{ success: boolean; 
       return { success: false, error: "Only admins can delete tags" };
     }
 
-    const { error } = await supabase
+    const { error } = await admin
       .from("user_tags")
       .delete()
       .eq("id", tagId);
@@ -155,11 +159,12 @@ export async function assignTagToUsers(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -175,7 +180,7 @@ export async function assignTagToUsers(
       assigned_by: user.id,
     }));
 
-    const { error } = await supabase
+    const { error } = await admin
       .from("user_tag_assignments")
       .upsert(assignments, { onConflict: "user_id,tag_id" });
 
@@ -195,11 +200,12 @@ export async function removeTagFromUsers(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -209,7 +215,7 @@ export async function removeTagFromUsers(
       return { success: false, error: "Insufficient permissions" };
     }
 
-    const { error } = await supabase
+    const { error } = await admin
       .from("user_tag_assignments")
       .delete()
       .eq("tag_id", tagId)
@@ -242,11 +248,12 @@ export async function getEmailRecipients(filter?: {
 }): Promise<{ success: boolean; recipients?: EmailRecipient[]; total?: number; error?: string }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -257,7 +264,7 @@ export async function getEmailRecipients(filter?: {
     }
 
     // Get all profiles
-    let query = supabase
+    let query = admin
       .from("profiles")
       .select("id, username")
       .order("username");
@@ -276,7 +283,7 @@ export async function getEmailRecipients(filter?: {
     // Get user IDs that match tag filter
     let filteredUserIds: string[] | null = null;
     if (filter?.tagIds && filter.tagIds.length > 0) {
-      const { data: assignments } = await supabase
+      const { data: assignments } = await admin
         .from("user_tag_assignments")
         .select("user_id")
         .in("tag_id", filter.tagIds);
@@ -291,11 +298,11 @@ export async function getEmailRecipients(filter?: {
         continue;
       }
 
-      const { data: authUser } = await supabase.auth.admin.getUserById(p.id);
+      const { data: authUser } = await admin.auth.admin.getUserById(p.id);
       if (!authUser?.user?.email) continue;
 
       // Get tags for this user
-      const { data: userTags } = await supabase
+      const { data: userTags } = await admin
         .from("user_tag_assignments")
         .select("tag:tag_id (name)")
         .eq("user_id", p.id);
@@ -346,11 +353,12 @@ export async function sendBulkEmail(input: SendEmailInput): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -391,7 +399,7 @@ export async function sendBulkEmail(input: SendEmailInput): Promise<{
     }
 
     // Create email send record
-    const { data: emailSend, error: sendError } = await supabase
+    const { data: emailSend, error: sendError } = await admin
       .from("email_sends")
       .insert({
         template_type: input.templateType,
@@ -461,7 +469,7 @@ export async function sendBulkEmail(input: SendEmailInput): Promise<{
         }
 
         // Record recipient status
-        await supabase.from("email_send_recipients").insert({
+        await admin.from("email_send_recipients").insert({
           email_send_id: emailSend.id,
           recipient_id: recipient.id,
           email_address: recipient.email,
@@ -475,7 +483,7 @@ export async function sendBulkEmail(input: SendEmailInput): Promise<{
     }
 
     // Update email send record
-    await supabase
+    await admin
       .from("email_sends")
       .update({
         status: "completed",
@@ -513,11 +521,12 @@ export async function getEmailHistory(limit = 20): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { data: profile } = await supabase
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
@@ -527,7 +536,7 @@ export async function getEmailHistory(limit = 20): Promise<{
       return { success: false, error: "Insufficient permissions" };
     }
 
-    const { data: sends, error } = await supabase
+    const { data: sends, error } = await admin
       .from("email_sends")
       .select(`
         id,
