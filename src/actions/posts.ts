@@ -1316,6 +1316,166 @@ export async function getPublicPostsByTag(
   }
 }
 
+/** Strip characters that break PostgREST filter strings / ILIKE wildcards. */
+function sanitizeIlikeTerm(raw: string): string {
+  return raw.replace(/[%_,()*:]/g, "").trim();
+}
+
+export interface PublicTagResult {
+  name: string;
+  postCount: number;
+}
+
+export interface PublicUserResult {
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+}
+
+/**
+ * Public full-text search over posts. Ranking + the public visibility gate
+ * (published/approved/NOT sensitive/not excluded + discoverable, unrestricted
+ * author) are applied in the `search_public_posts` SQL function so pagination
+ * is stable; here we hydrate the ranked ids into the FeedPost public shape and
+ * preserve rank order. Admin client — works with no session.
+ */
+export async function searchPublicPosts(
+  query: string,
+  options?: { limit?: number; offset?: number }
+): Promise<PublicFrontPagePost[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  try {
+    const supabase = createAdminClient();
+    const limit = Math.min(Math.max(options?.limit ?? 24, 1), 50);
+    const offset = Math.max(options?.offset ?? 0, 0);
+
+    const { data: ranked, error: rankErr } = await (supabase as any).rpc(
+      "search_public_posts",
+      { q, lim: limit, off: offset }
+    );
+    if (rankErr || !ranked || ranked.length === 0) {
+      if (rankErr) console.error("searchPublicPosts rpc error:", rankErr);
+      return [];
+    }
+
+    const rankById = new Map<string, number>(
+      (ranked as Array<{ id: string; rank: number }>).map((r) => [r.id, r.rank])
+    );
+    const ids = (ranked as Array<{ id: string }>).map((r) => r.id);
+
+    const { data: posts, error } = await (supabase as any)
+      .from("posts")
+      .select(
+        `
+        id,
+        author_id,
+        post_type,
+        content,
+        is_sensitive,
+        exclude_from_public,
+        created_at,
+        thread_id,
+        author:author_id (
+          username,
+          avatar_url,
+          role,
+          is_discoverable,
+          lock_status
+        )
+      `
+      )
+      .in("id", ids);
+
+    if (error || !posts) {
+      if (error) console.error("searchPublicPosts hydrate error:", error);
+      return [];
+    }
+
+    // Re-apply the author gate (belt & suspenders) and restore rank order —
+    // the `.in()` hydrate doesn't preserve the ranked ordering.
+    const visible = filterPublicVisible(posts as any[]).sort(
+      (a, b) => (rankById.get(b.id) ?? 0) - (rankById.get(a.id) ?? 0)
+    );
+    return shapePublicPostRows(supabase, visible);
+  } catch (error) {
+    console.error("searchPublicPosts error:", error);
+    return [];
+  }
+}
+
+/** Public tag search — substring match on the (small) tags table, most-used
+ *  first. Only tags that actually carry published posts (post_count > 0). */
+export async function searchPublicTags(
+  query: string,
+  options?: { limit?: number }
+): Promise<PublicTagResult[]> {
+  const q = sanitizeIlikeTerm(query);
+  if (q.length < 1) return [];
+  try {
+    const supabase = createAdminClient();
+    const limit = Math.min(Math.max(options?.limit ?? 20, 1), 50);
+    const { data, error } = await (supabase as any)
+      .from("tags")
+      .select("name, post_count")
+      .ilike("name", `%${q}%`)
+      .gt("post_count", 0)
+      .order("post_count", { ascending: false })
+      .limit(limit);
+    if (error || !data) {
+      if (error) console.error("searchPublicTags error:", error);
+      return [];
+    }
+    return (data as any[]).map((t) => ({
+      name: t.name,
+      postCount: t.post_count ?? 0,
+    }));
+  } catch (error) {
+    console.error("searchPublicTags error:", error);
+    return [];
+  }
+}
+
+/** Public people search — discoverable, unrestricted profiles only. */
+export async function searchPublicUsers(
+  query: string,
+  options?: { limit?: number }
+): Promise<PublicUserResult[]> {
+  const q = sanitizeIlikeTerm(query);
+  if (q.length < 2) return [];
+  try {
+    const supabase = createAdminClient();
+    const limit = Math.min(Math.max(options?.limit ?? 20, 1), 50);
+    const { data, error } = await (supabase as any)
+      .from("profiles")
+      .select("username, display_name, avatar_url, bio, is_discoverable, lock_status")
+      .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+      .limit(limit * 2); // over-fetch for the author-side gate below
+    if (error || !data) {
+      if (error) console.error("searchPublicUsers error:", error);
+      return [];
+    }
+    return (data as any[])
+      .filter(
+        (u) =>
+          u.is_discoverable !== false &&
+          u.lock_status !== "restricted" &&
+          u.lock_status !== "banned"
+      )
+      .slice(0, limit)
+      .map((u) => ({
+        username: u.username,
+        displayName: u.display_name ?? null,
+        avatarUrl: u.avatar_url ?? null,
+        bio: u.bio ?? null,
+      }));
+  } catch (error) {
+    console.error("searchPublicUsers error:", error);
+    return [];
+  }
+}
+
 /**
  * Tag "shelves" for the public Discover page: the most-used tags, each with a
  * handful of real public sample posts. Tags whose posts are all non-public

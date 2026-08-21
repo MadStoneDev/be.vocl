@@ -85,6 +85,14 @@ export default async function Home() {
         url: APP_URL,
         description:
           "Read what people are publishing on be.vocl, then join the conversation.",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${APP_URL}/discover/search?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   };

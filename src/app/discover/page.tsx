@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getPublicFrontPagePosts, getPublicTagShelves } from "@/actions/posts";
 import { FrontPageGrid, TagShelf } from "@/components/feed/frontpage";
 import type { FeedPost } from "@/components/feed/FeedList";
+import { PublicSearchBox } from "@/components/marketing/PublicSearchBox";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
 
@@ -120,6 +121,9 @@ export default async function DiscoverPage() {
             A reading room of posts people chose to share with the whole web. Join
             be.vocl to follow voices you love and share your own.
           </p>
+          <div className="mt-6">
+            <PublicSearchBox />
+          </div>
         </div>
 
         {posts.length > 0 ? (
