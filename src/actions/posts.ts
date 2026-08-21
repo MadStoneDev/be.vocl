@@ -1316,9 +1316,11 @@ export async function getPublicPostsByTag(
   }
 }
 
-/** Strip characters that break PostgREST filter strings / ILIKE wildcards. */
+/** Normalise a search term: drop the @/# people/tag sigils users type, and
+ *  strip characters that break PostgREST filter strings / ILIKE wildcards.
+ *  So "@ada" searches for "ada" and "#carpenter" for "carpenter". */
 function sanitizeIlikeTerm(raw: string): string {
-  return raw.replace(/[%_,()*:]/g, "").trim();
+  return raw.replace(/[%_,()*:@#]/g, "").trim();
 }
 
 export interface PublicTagResult {
@@ -1344,7 +1346,9 @@ export async function searchPublicPosts(
   query: string,
   options?: { limit?: number; offset?: number }
 ): Promise<PublicFrontPagePost[]> {
-  const q = query.trim();
+  // Normalised so the RPC's tag ILIKE is wildcard-safe and "#car"/"@ada" work;
+  // websearch_to_tsquery tokenises whatever's left for the content match.
+  const q = sanitizeIlikeTerm(query);
   if (q.length < 2) return [];
   try {
     const supabase = createAdminClient();
@@ -1405,8 +1409,10 @@ export async function searchPublicPosts(
   }
 }
 
-/** Public tag search — substring match on the (small) tags table, most-used
- *  first. Only tags that actually carry published posts (post_count > 0). */
+/** Public tag search — substring match on tag names, ranked by how many
+ *  PUBLICLY-VISIBLE posts carry the tag (via the search_public_tags RPC). Tags
+ *  whose only posts are sensitive / members-only never surface, and the count
+ *  shown matches what the tag page actually renders. */
 export async function searchPublicTags(
   query: string,
   options?: { limit?: number }
@@ -1415,21 +1421,18 @@ export async function searchPublicTags(
   if (q.length < 1) return [];
   try {
     const supabase = createAdminClient();
-    const limit = Math.min(Math.max(options?.limit ?? 20, 1), 50);
-    const { data, error } = await (supabase as any)
-      .from("tags")
-      .select("name, post_count")
-      .ilike("name", `%${q}%`)
-      .gt("post_count", 0)
-      .order("post_count", { ascending: false })
-      .limit(limit);
+    const limit = Math.min(Math.max(options?.limit ?? 12, 1), 50);
+    const { data, error } = await (supabase as any).rpc("search_public_tags", {
+      q,
+      lim: limit,
+    });
     if (error || !data) {
-      if (error) console.error("searchPublicTags error:", error);
+      if (error) console.error("searchPublicTags rpc error:", error);
       return [];
     }
-    return (data as any[]).map((t) => ({
+    return (data as Array<{ name: string; public_post_count: number }>).map((t) => ({
       name: t.name,
-      postCount: t.post_count ?? 0,
+      postCount: Number(t.public_post_count) || 0,
     }));
   } catch (error) {
     console.error("searchPublicTags error:", error);
