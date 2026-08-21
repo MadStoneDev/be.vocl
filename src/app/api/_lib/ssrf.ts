@@ -2,6 +2,8 @@
  * SSRF protection helpers shared by API routes that fetch user-supplied URLs.
  */
 
+import { lookup } from "node:dns/promises";
+
 /**
  * Check if a hostname is a private/internal/reserved host.
  * Blocks:
@@ -12,9 +14,10 @@
  * - Multicast/reserved (224.0.0.0+)
  * - Internal domain suffixes (.local, .internal, .localhost, k8s svc)
  *
- * Note: this is a best-effort, syntactic guard. It cannot catch a public
- * hostname whose DNS resolves to a private IP (DNS rebinding). Callers must
- * also use `redirect: "manual"` and re-validate any redirect target.
+ * Note: this is a syntactic guard against literal hosts. On its own it cannot
+ * catch a public hostname whose DNS resolves to a private IP (DNS rebinding) —
+ * use {@link safeFetch}, which additionally resolves each hop and validates
+ * every returned address via {@link assertPublicHost}.
  */
 export function isPrivateOrReservedHost(hostname: string): boolean {
   // Normalize: strip IPv6 brackets and lowercase.
@@ -101,10 +104,44 @@ export function parseSafeHttpUrl(url: string): URL | null {
 }
 
 /**
+ * Resolve a hostname and assert that EVERY address it resolves to is public.
+ *
+ * The syntactic {@link isPrivateOrReservedHost} check cannot catch a public
+ * hostname whose DNS record points at a private/metadata IP (DNS rebinding).
+ * Resolving here and validating each returned address closes that gap.
+ *
+ * Residual: a narrow TOCTOU window remains between this lookup and the actual
+ * fetch (the name could re-resolve differently). Pinning the connection to the
+ * validated IP would require breaking TLS SNI/cert validation, so we accept the
+ * narrowed window — this raises the bar from "trivial" to "race a DNS TTL".
+ *
+ * Throws if resolution fails or any resolved address is private/reserved.
+ */
+export async function assertPublicHost(hostname: string): Promise<void> {
+  // An IP literal was already covered syntactically; still, lookup() will just
+  // echo it back and we re-check, which is harmless.
+  let addresses: { address: string }[];
+  try {
+    addresses = await lookup(hostname, { all: true, verbatim: true });
+  } catch {
+    throw new Error("URL not allowed");
+  }
+  if (addresses.length === 0) {
+    throw new Error("URL not allowed");
+  }
+  for (const { address } of addresses) {
+    if (isPrivateOrReservedHost(address)) {
+      throw new Error("URL not allowed");
+    }
+  }
+}
+
+/**
  * Fetch a URL with SSRF protection. Uses manual redirect handling so each
  * redirect target's host is re-validated against {@link isPrivateOrReservedHost}
  * before being followed — preventing a public URL from redirecting into a
- * private/metadata endpoint.
+ * private/metadata endpoint. Each target's DNS is also resolved and every
+ * resolved address validated ({@link assertPublicHost}) to defeat rebinding.
  *
  * Throws on disallowed redirect targets or too many redirects.
  */
@@ -119,6 +156,9 @@ export async function safeFetch(
   }
 
   for (let i = 0; i <= maxRedirects; i++) {
+    // DNS-resolve and validate every address before each hop.
+    await assertPublicHost(current.hostname);
+
     const response = await fetch(current.toString(), {
       ...init,
       redirect: "manual",

@@ -117,6 +117,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Reject oversized bodies before buffering them into memory. This is a
+    // hint only (Content-Length can be absent or wrong); the authoritative
+    // check is the buffer.length test below.
+    const declaredLength = Number(response.headers.get("content-length"));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_IMAGE_SIZE) {
+      return NextResponse.json(
+        { error: `Image too large. Maximum size is ${Math.round(MAX_IMAGE_SIZE / 1024 / 1024)}MB` },
+        { status: 400 }
+      );
+    }
+
     // Determine content type
     const responseContentType = response.headers.get("content-type");
     const contentType = guessContentType(url, responseContentType);

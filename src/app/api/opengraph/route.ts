@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isPrivateOrReservedHost, safeFetch } from "@/app/api/_lib/ssrf";
+import { createClient } from "@/lib/supabase/server";
+import { rateLimiters, getRateLimitHeaders } from "@/lib/rate-limit";
 
 interface OpenGraphData {
   url: string;
@@ -10,11 +12,66 @@ interface OpenGraphData {
   favicon?: string;
 }
 
-// Simple in-memory cache (in production, use Redis or similar)
+// Simple in-memory cache (in production, use Redis or similar).
+// Bounded so a flood of distinct URLs can't grow the map without limit.
 const cache = new Map<string, { data: OpenGraphData; timestamp: number }>();
 const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+const CACHE_MAX_ENTRIES = 500;
+// Cap the HTML we read from a remote server — we only need the <head>. Stops a
+// malicious/hostile URL from streaming gigabytes into memory.
+const MAX_HTML_BYTES = 512 * 1024; // 512 KB
+
+function setCached(url: string, data: OpenGraphData) {
+  // Map preserves insertion order; evict the oldest entries past the cap.
+  while (cache.size >= CACHE_MAX_ENTRIES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+  cache.set(url, { data, timestamp: Date.now() });
+}
+
+/** Read a response body as text, aborting once maxBytes is exceeded. */
+async function readTextCapped(response: Response, maxBytes: number): Promise<string> {
+  const reader = response.body?.getReader();
+  if (!reader) return "";
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      total += value.length;
+      if (total > maxBytes) {
+        await reader.cancel();
+        break;
+      }
+      chunks.push(value);
+    }
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks));
+}
 
 export async function GET(request: NextRequest) {
+  // Auth gate: this proxy makes the server fetch arbitrary URLs, so it must not
+  // be an open relay. Both callers (chat link previews) run authenticated.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Per-user rate limit (shares the general API limiter: 100/min).
+  const rateLimit = rateLimiters.api(`opengraph:${user.id}`);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many preview requests. Please try again shortly." },
+      { status: 429, headers: getRateLimitHeaders(rateLimit) }
+    );
+  }
+
   const url = request.nextUrl.searchParams.get("url");
 
   if (!url) {
@@ -74,17 +131,17 @@ export async function GET(request: NextRequest) {
         url,
         title: parsedUrl.hostname,
       };
-      cache.set(url, { data, timestamp: Date.now() });
+      setCached(url, data);
       return NextResponse.json(data);
     }
 
-    const html = await response.text();
+    const html = await readTextCapped(response, MAX_HTML_BYTES);
 
     // Parse OpenGraph and meta tags
     const ogData = parseOpenGraph(html, url);
 
     // Cache the result
-    cache.set(url, { data: ogData, timestamp: Date.now() });
+    setCached(url, ogData);
 
     return NextResponse.json(ogData);
   } catch (error) {
