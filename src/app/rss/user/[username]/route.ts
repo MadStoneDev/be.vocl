@@ -45,9 +45,10 @@ export async function GET(
   // never public), and not opted out of the public web.
   const { data: postsData } = await supabase
     .from("posts")
-    .select("id, post_type, content, created_at, tags")
+    .select("id, post_type, content, created_at")
     .eq("author_id", profile.id)
-    .eq("is_deleted", false)
+    // status='published' already excludes deleted posts (post_status has a
+    // 'deleted' value); there is no posts.is_deleted / posts.tags column.
     .eq("status", "published")
     .eq("moderation_status", "approved")
     .eq("is_sensitive", false)
@@ -55,7 +56,7 @@ export async function GET(
     .order("created_at", { ascending: false })
     .limit(20);
 
-  const posts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null }>;
+  const posts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string }>;
 
   const displayName = profile.display_name || profile.username;
   const channelTitle = `${displayName} - be.vocl`;
@@ -67,6 +68,7 @@ export async function GET(
     buildRssItem({
       ...post,
       content: post.content as RssPost["content"],
+      tags: null,
     })
   );
 

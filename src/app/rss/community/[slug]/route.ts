@@ -48,7 +48,8 @@ export async function GET(
   if (postIds.length > 0) {
     const { data: postsData } = await supabase
       .from("posts")
-      .select("id, post_type, content, created_at, tags")
+      // no posts.tags column — tags live in the post_tags join table.
+      .select("id, post_type, content, created_at")
       .in("id", postIds)
       .eq("status", "published");
     posts = (postsData ?? []) as any[];
@@ -62,7 +63,6 @@ export async function GET(
     post_type: string;
     content: unknown;
     created_at: string;
-    tags: string[] | null;
   }>;
 
   const channelTitle = `/c/${community.slug} - be.vocl`;
@@ -73,6 +73,7 @@ export async function GET(
     buildRssItem({
       ...post,
       content: post.content as RssPost["content"],
+      tags: null,
     })
   );
 

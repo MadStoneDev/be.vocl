@@ -17,9 +17,10 @@ export async function GET() {
   const { data: postsData } = await supabase
     .from("posts")
     .select(
-      "id, post_type, content, created_at, tags, author_id"
+      "id, post_type, content, created_at, author_id"
     )
-    .eq("is_deleted", false)
+    // status='published' already excludes deleted posts (post_status has a
+    // 'deleted' value); there is no posts.is_deleted / posts.tags column.
     .eq("status", "published")
     .eq("moderation_status", "approved")
     .eq("is_sensitive", false)
@@ -27,7 +28,7 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(60);
 
-  const rawPosts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null; author_id: string }>;
+  const rawPosts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; author_id: string }>;
 
   // Fetch author profiles for these posts (incl. discoverability + lock status).
   const authorIds = [...new Set(rawPosts.map((p) => p.author_id))];
@@ -55,7 +56,7 @@ export async function GET() {
       post_type: post.post_type,
       content: post.content as RssPost["content"],
       created_at: post.created_at,
-      tags: post.tags,
+      tags: null,
       author_username: profile?.username ?? undefined,
       author_display_name:
         profile?.display_name ?? profile?.username ?? undefined,

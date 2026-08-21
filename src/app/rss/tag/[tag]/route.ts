@@ -18,14 +18,26 @@ export async function GET(
   const supabase = createAdminClient();
   const appUrl = getAppUrl();
 
-  // Fetch recent PUBLIC posts with this tag: published + approved, never sensitive
-  // (NSFW is never public), and not opted out of the public web. Over-fetch to
-  // allow author-side filtering below.
+  // Resolve the tag name (case-insensitive) to its id — tags live in the
+  // post_tags join table, there is no posts.tags column.
+  const { data: tagRow } = await supabase
+    .from("tags")
+    .select("id")
+    .ilike("name", decodedTag)
+    .maybeSingle();
+
+  if (!tagRow) {
+    return rss404(`No posts found for tag "${decodedTag}"`);
+  }
+
+  // Fetch recent PUBLIC posts carrying this tag: published + approved, never
+  // sensitive (NSFW is never public), and not opted out of the public web.
+  // status='published' already excludes deleted posts (the post_status enum has
+  // a 'deleted' value). Over-fetch to allow author-side filtering below.
   const { data: postsData, error } = await supabase
     .from("posts")
-    .select("id, post_type, content, created_at, tags, author_id")
-    .contains("tags", [decodedTag])
-    .eq("is_deleted", false)
+    .select("id, post_type, content, created_at, author_id, post_tags!inner(tag_id)")
+    .eq("post_tags.tag_id", (tagRow as { id: string }).id)
     .eq("status", "published")
     .eq("moderation_status", "approved")
     .eq("is_sensitive", false)
@@ -33,7 +45,7 @@ export async function GET(
     .order("created_at", { ascending: false })
     .limit(60);
 
-  const rawPosts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; tags: string[] | null; author_id: string }>;
+  const rawPosts = (postsData ?? []) as unknown as Array<{ id: string; post_type: string; content: unknown; created_at: string; author_id: string }>;
 
   // Fetch author profiles (incl. discoverability + lock status).
   const authorIds = [...new Set(rawPosts.map((p) => p.author_id))];
@@ -69,7 +81,7 @@ export async function GET(
       post_type: post.post_type,
       content: post.content as RssPost["content"],
       created_at: post.created_at,
-      tags: post.tags,
+      tags: null,
       author_username: profile?.username ?? undefined,
       author_display_name:
         profile?.display_name ?? profile?.username ?? undefined,
