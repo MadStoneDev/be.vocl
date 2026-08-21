@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { randomInt } from "node:crypto";
 
 // ============================================================================
 // TYPES
@@ -45,15 +46,17 @@ interface InviteResult {
  * Format: VOCL-XXXX-XXXX
  */
 function generateCodeString(): string {
+  // Invite codes are security tokens (they gate account creation), so draw from
+  // a CSPRNG — Math.random() is predictable and must not mint credentials.
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No confusing chars
   let code = "VOCL-";
 
   for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(randomInt(chars.length));
   }
   code += "-";
   for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(randomInt(chars.length));
   }
 
   return code;
