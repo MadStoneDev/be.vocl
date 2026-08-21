@@ -386,8 +386,13 @@ export async function resolveFlag(
           moderation_reason: null,
         };
         if (flaggedPost?.status === "draft") {
+          // Stamp published_at AND created_at to the approval moment so a post
+          // that sat in review surfaces fresh, not buried at its draft time
+          // (feeds order by created_at — same convention as the publish crons).
+          const goLive = new Date().toISOString();
           patch.status = "published";
-          patch.published_at = new Date().toISOString();
+          patch.published_at = goLive;
+          patch.created_at = goLive;
         }
 
         await (adminSupabase as any).from("posts").update(patch).eq("id", flag.post_id);

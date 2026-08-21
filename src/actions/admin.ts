@@ -297,8 +297,13 @@ export async function resolveReport(
           moderation_reason: null,
         };
         if (heldPost?.status === "draft") {
+          // Stamp published_at AND created_at to the approval moment so a post
+          // that sat in review surfaces fresh, not buried at its draft time
+          // (feeds order by created_at — same convention as the publish crons).
+          const goLive = new Date().toISOString();
           postPatch.status = "published";
-          postPatch.published_at = new Date().toISOString();
+          postPatch.published_at = goLive;
+          postPatch.created_at = goLive;
         }
 
         await (adminSupabase as any)

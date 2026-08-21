@@ -176,9 +176,19 @@ export async function publishDraft(postId: string): Promise<ActionResult> {
       };
     }
 
+    // Stamp published_at AND created_at to the go-live moment — same convention
+    // the scheduled/queue crons use — so the post surfaces fresh in feeds
+    // (which order by created_at) instead of being buried at the time it was
+    // originally drafted.
+    const publishedAt = new Date().toISOString();
     const { error } = await (supabase as any)
       .from("posts")
-      .update({ status: "published", updated_at: new Date().toISOString() })
+      .update({
+        status: "published",
+        published_at: publishedAt,
+        created_at: publishedAt,
+        updated_at: publishedAt,
+      })
       .eq("id", postId);
 
     if (error) {
