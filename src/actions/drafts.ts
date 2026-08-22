@@ -27,7 +27,7 @@ export async function getDrafts(): Promise<DraftsResult> {
 
     const { data: posts, error } = await supabase
       .from("posts")
-      .select("id, post_type, content, created_at, updated_at, tags")
+      .select("id, post_type, content, created_at, updated_at")
       .eq("status", "draft")
       .eq("author_id", user.id)
       .order("updated_at", { ascending: false });
@@ -56,7 +56,7 @@ export async function getScheduledPosts(): Promise<DraftsResult> {
 
     const { data: posts, error } = await supabase
       .from("posts")
-      .select("id, post_type, content, created_at, updated_at, scheduled_for, tags")
+      .select("id, post_type, content, created_at, updated_at, scheduled_for")
       .eq("status", "scheduled")
       .eq("author_id", user.id)
       .order("scheduled_for", { ascending: true });
@@ -85,7 +85,7 @@ export async function getQueuedPosts(): Promise<DraftsResult> {
 
     const { data: posts, error } = await supabase
       .from("posts")
-      .select("id, post_type, content, created_at, updated_at, queue_position, tags")
+      .select("id, post_type, content, created_at, updated_at, queue_position")
       .eq("status", "queued")
       .eq("author_id", user.id)
       .order("queue_position", { ascending: true });
