@@ -1225,8 +1225,8 @@ export async function getFullProfile(
       stage2.push(
         supabase
           .from("blocks")
-          // FIXME(types): `blocks` has no `id` column (only blocker_id, blocked_id, created_at). Select an existing column, e.g. "blocker_id".
-          .select("id")
+          // `blocks` has no `id` column; select an existing one so the check runs.
+          .select("blocker_id")
           .eq("blocker_id", data.id)
           .eq("blocked_id", currentUser.id)
           .maybeSingle()

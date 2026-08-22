@@ -97,9 +97,11 @@ export async function sendAsk(
     }
 
     // Check if user is blocked by recipient
-    const { data: blocked } = await (supabase as any)
+    const { data: blocked } = await supabase
       .from("blocks")
-      .select("id")
+      // `blocks` has no `id` column; select an existing one so the check runs
+      // instead of erroring → null → "not blocked" (block-evasion).
+      .select("blocker_id")
       .eq("blocker_id", recipient.id)
       .eq("blocked_id", user.id)
       .single();
@@ -426,9 +428,11 @@ export async function canSendAskTo(username: string): Promise<{
     }
 
     // Check if blocked
-    const { data: blocked } = await (supabase as any)
+    const { data: blocked } = await supabase
       .from("blocks")
-      .select("id")
+      // `blocks` has no `id` column; select an existing one so the check runs
+      // instead of erroring → null → "not blocked" (block-evasion).
+      .select("blocker_id")
       .eq("blocker_id", recipient.id)
       .eq("blocked_id", user.id)
       .single();

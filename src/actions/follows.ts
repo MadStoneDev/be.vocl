@@ -35,11 +35,12 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Already following" };
     }
 
-    // Check if blocked (either direction) - use two separate queries to avoid template literal injection
-    // FIXME(types): `blocks` has no `id` column (only blocker_id, blocked_id, created_at). Select an existing column, e.g. "blocker_id".
+    // Check if blocked (either direction) - use two separate queries to avoid template literal injection.
+    // `blocks` has no `id` column (only blocker_id/blocked_id/created_at); select an
+    // existing column so the check actually runs instead of erroring → null → "not blocked".
     const [{ data: blockedByMe }, { data: blockedByThem }] = await Promise.all([
-      supabase.from("blocks").select("id").eq("blocker_id", user.id).eq("blocked_id", targetUserId).limit(1),
-      supabase.from("blocks").select("id").eq("blocker_id", targetUserId).eq("blocked_id", user.id).limit(1),
+      supabase.from("blocks").select("blocker_id").eq("blocker_id", user.id).eq("blocked_id", targetUserId).limit(1),
+      supabase.from("blocks").select("blocker_id").eq("blocker_id", targetUserId).eq("blocked_id", user.id).limit(1),
     ]);
 
     if ((blockedByMe && blockedByMe.length > 0) || (blockedByThem && blockedByThem.length > 0)) {
