@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import type { TablesInsert } from "@/types/database";
 
 /**
  * Submit an appeal for a banned or restricted account
@@ -21,7 +22,7 @@ export async function submitAppeal(reason: string): Promise<{
     }
 
     // Check user's lock status and if appeals are blocked
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("lock_status, appeals_blocked")
       .eq("id", user.id)
@@ -40,7 +41,7 @@ export async function submitAppeal(reason: string): Promise<{
     }
 
     // Check for pending appeal
-    const { data: pendingAppeal } = await (supabase as any)
+    const { data: pendingAppeal } = await supabase
       .from("appeals")
       .select("id")
       .eq("user_id", user.id)
@@ -52,7 +53,7 @@ export async function submitAppeal(reason: string): Promise<{
     }
 
     // Create appeal
-    const { data: appeal, error } = await (supabase as any)
+    const { data: appeal, error } = await supabase
       .from("appeals")
       .insert({
         user_id: user.id,
@@ -69,19 +70,19 @@ export async function submitAppeal(reason: string): Promise<{
 
     // Notify admins of the new appeal (in-app).
     try {
-      const { data: admins } = await (supabase as any)
+      const { data: admins } = await supabase
         .from("profiles")
         .select("id")
         .gte("role", 10);
 
       if (admins && admins.length > 0) {
-        const notifications = admins.map((admin: { id: string }) => ({
+        const notifications: TablesInsert<"notifications">[] = admins.map((admin: { id: string }) => ({
           recipient_id: admin.id,
           actor_id: user.id,
           notification_type: "appeal",
           is_read: false,
         }));
-        await (supabase as any).from("notifications").insert(notifications);
+        await supabase.from("notifications").insert(notifications);
       }
     } catch (notifyError) {
       console.error("Admin notification error:", notifyError);
@@ -116,7 +117,7 @@ export async function getUserAppealStatus(): Promise<{
     }
 
     // Check if appeals are blocked
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("appeals_blocked")
       .eq("id", user.id)
@@ -127,7 +128,7 @@ export async function getUserAppealStatus(): Promise<{
     }
 
     // Get latest appeal
-    const { data: appeal, error } = await (supabase as any)
+    const { data: appeal, error } = await supabase
       .from("appeals")
       .select("status, reason, review_notes, created_at")
       .eq("user_id", user.id)
@@ -141,10 +142,10 @@ export async function getUserAppealStatus(): Promise<{
 
     return {
       success: true,
-      status: appeal.status,
-      reason: appeal.reason,
-      reviewNotes: appeal.review_notes,
-      createdAt: appeal.created_at,
+      status: appeal.status ?? undefined,
+      reason: appeal.reason ?? undefined,
+      reviewNotes: appeal.review_notes ?? undefined,
+      createdAt: appeal.created_at ?? undefined,
     };
   } catch (error) {
     console.error("Get appeal status error:", error);
@@ -177,17 +178,17 @@ export async function getUserAppeals(userId: string): Promise<{
     }
 
     // Check admin role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false };
     }
 
-    const { data: appeals, error } = await (supabase as any)
+    const { data: appeals, error } = await supabase
       .from("appeals")
       .select("id, reason, status, review_notes, created_at, reviewed_at")
       .eq("user_id", userId)

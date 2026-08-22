@@ -58,7 +58,7 @@ export async function createCommunity(input: {
       return { success: false, error: "Name must be 2–60 characters" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("communities")
       .insert({
         slug,
@@ -87,7 +87,7 @@ export async function getCommunity(slug: string): Promise<{ success: boolean; co
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: row, error } = await (supabase as any)
+    const { data: row, error } = await supabase
       .from("communities")
       .select("*")
       .eq("slug", slug)
@@ -98,7 +98,7 @@ export async function getCommunity(slug: string): Promise<{ success: boolean; co
     let isMember = false;
     let myRole: any = null;
     if (user) {
-      const { data: m } = await (supabase as any)
+      const { data: m } = await supabase
         .from("community_members")
         .select("role")
         .eq("community_id", row.id)
@@ -130,7 +130,7 @@ export async function listCommunities(opts?: {
 
     let myCommunityIds = new Set<string>();
     if (user) {
-      const { data: mine } = await (supabase as any)
+      const { data: mine } = await supabase
         .from("community_members")
         .select("community_id")
         .eq("user_id", user.id);
@@ -141,7 +141,7 @@ export async function listCommunities(opts?: {
       if (!user) return { success: true, communities: [], hasMore: false };
       if (myCommunityIds.size === 0) return { success: true, communities: [], hasMore: false };
 
-      let query = (supabase as any)
+      let query = supabase
         .from("communities")
         .select("*")
         .in("id", Array.from(myCommunityIds))
@@ -161,7 +161,7 @@ export async function listCommunities(opts?: {
       };
     }
 
-    let query = (supabase as any)
+    let query = supabase
       .from("communities")
       .select("*")
       .eq("visibility", "public")
@@ -194,7 +194,7 @@ export async function joinCommunity(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { data: community } = await (supabase as any)
+    const { data: community } = await supabase
       .from("communities")
       .select("join_policy")
       .eq("id", communityId)
@@ -202,7 +202,7 @@ export async function joinCommunity(
     if (!community) return { success: false, error: "Community not found" };
 
     if (community.join_policy === "open") {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("community_members")
         .insert({ community_id: communityId, user_id: user.id, role: "member" });
       if (error && error.code !== "23505") return { success: false, error: error.message };
@@ -210,7 +210,7 @@ export async function joinCommunity(
     }
 
     // request or invite_only -> create a join request
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_join_requests")
       .insert({
         community_id: communityId,
@@ -230,7 +230,7 @@ export async function leaveCommunity(communityId: string): Promise<{ success: bo
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_members")
       .delete()
       .eq("community_id", communityId)
@@ -262,7 +262,7 @@ export async function crossPostToCommunities(
       added_by: user.id,
     }));
 
-    const { error, count } = await (supabase as any)
+    const { error, count } = await supabase
       .from("community_posts")
       .insert(rows, { count: "exact" });
     if (error) return { success: false, error: error.message };
@@ -279,7 +279,7 @@ export async function removeFromCommunity(communityId: string, postId: string): 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_posts")
       .delete()
       .eq("community_id", communityId)
@@ -346,7 +346,7 @@ export async function updateCommunity(
     if (updates.visibility !== undefined) patch.visibility = updates.visibility;
     if (updates.joinPolicy !== undefined) patch.join_policy = updates.joinPolicy;
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("communities")
       .update(patch)
       .eq("id", communityId);
@@ -365,7 +365,7 @@ export async function deleteCommunity(communityId: string): Promise<{ success: b
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("communities")
       .delete()
       .eq("id", communityId);
@@ -387,7 +387,7 @@ export async function requestJoinCommunity(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_join_requests")
       .insert({
         community_id: communityId,
@@ -409,7 +409,7 @@ export async function listJoinRequests(
   try {
     const supabase = await createClient();
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("community_join_requests")
       .select(`
         id, message, status, created_at, user_id,
@@ -447,7 +447,7 @@ export async function reviewJoinRequest(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_join_requests")
       .update({
         status: decision,
@@ -471,7 +471,7 @@ export async function listCommunityMembers(
     const limit = opts?.limit ?? 50;
     const offset = opts?.offset ?? 0;
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("community_members")
       .select(`
         role, joined_at, user_id,
@@ -516,7 +516,7 @@ export async function changeMemberRole(
     // SECURITY (SEC-11): only an owner may change member roles or transfer
     // ownership. Previously any caller could promote themselves (or anyone) to
     // owner. Verify the caller is an owner of this community first.
-    const { data: caller } = await (supabase as any)
+    const { data: caller } = await supabase
       .from("community_members")
       .select("role")
       .eq("community_id", communityId)
@@ -527,7 +527,7 @@ export async function changeMemberRole(
       return { success: false, error: "Only the community owner can change member roles" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_members")
       .update({ role })
       .eq("community_id", communityId)
@@ -550,7 +550,7 @@ export async function removeMember(
 
     // SECURITY (SEC-11): only an owner or moderator may remove members, and a
     // moderator may not remove an owner. Members can leave via a separate action.
-    const { data: caller } = await (supabase as any)
+    const { data: caller } = await supabase
       .from("community_members")
       .select("role")
       .eq("community_id", communityId)
@@ -561,7 +561,7 @@ export async function removeMember(
       return { success: false, error: "Only owners or moderators can remove members" };
     }
 
-    const { data: target } = await (supabase as any)
+    const { data: target } = await supabase
       .from("community_members")
       .select("role")
       .eq("community_id", communityId)
@@ -572,7 +572,7 @@ export async function removeMember(
       return { success: false, error: "Only the owner can remove an owner" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_members")
       .delete()
       .eq("community_id", communityId)
@@ -591,7 +591,7 @@ export async function setCommunityPostPinned(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_posts")
       .update({ pinned })
       .eq("community_id", communityId)
@@ -608,7 +608,7 @@ export async function listCommunityRules(
 ): Promise<{ success: boolean; rules?: CommunityRule[]; error?: string }> {
   try {
     const supabase = await createClient();
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("community_rules")
       .select("id, position, title, body")
       .eq("community_id", communityId)
@@ -627,7 +627,7 @@ export async function upsertCommunityRule(
   try {
     const supabase = await createClient();
     if (rule.id) {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("community_rules")
         .update({
           position: rule.position,
@@ -638,7 +638,7 @@ export async function upsertCommunityRule(
       if (error) return { success: false, error: error.message };
       return { success: true, id: rule.id };
     } else {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("community_rules")
         .insert({
           community_id: communityId,
@@ -661,7 +661,7 @@ export async function deleteCommunityRule(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("community_rules")
       .delete()
       .eq("id", ruleId);
@@ -688,7 +688,7 @@ export async function getCommunityFeed(
     }
     const community = communityResult.community;
 
-    const { data: links, error: linksErr } = await (supabase as any)
+    const { data: links, error: linksErr } = await supabase
       .from("community_posts")
       .select("post_id, added_at, pinned")
       .eq("community_id", community.id)
@@ -703,7 +703,7 @@ export async function getCommunityFeed(
     if (sliced.length === 0) return { success: true, posts: [], community, hasMore: false };
 
     const postIds = sliced.map((l) => l.post_id);
-    const { data: posts, error: postsErr } = await (supabase as any)
+    const { data: posts, error: postsErr } = await supabase
       .from("posts")
       .select(`
         id, author_id, post_type, content, is_sensitive, is_pinned, created_at, published_at,
@@ -718,8 +718,8 @@ export async function getCommunityFeed(
     let userBookmarks = new Set<string>();
     if (user) {
       const [likesRes, bookmarksRes] = await Promise.all([
-        (supabase as any).from("likes").select("post_id").eq("user_id", user.id).in("post_id", postIds),
-        (supabase as any).from("bookmarks").select("post_id").eq("user_id", user.id).in("post_id", postIds),
+        supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", postIds),
+        supabase.from("bookmarks").select("post_id").eq("user_id", user.id).in("post_id", postIds),
       ]);
       userLikes = new Set((likesRes.data || []).map((l: any) => l.post_id));
       userBookmarks = new Set((bookmarksRes.data || []).map((b: any) => b.post_id));

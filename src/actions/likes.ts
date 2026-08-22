@@ -34,7 +34,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
     }
 
     // Check if user already liked the post
-    const { data: existingLike } = await (supabase as any)
+    const { data: existingLike } = await supabase
       .from("likes")
       .select("id")
       .eq("user_id", user.id)
@@ -43,7 +43,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
 
     if (existingLike) {
       // Unlike: remove the like
-      const { error: deleteError } = await (supabase as any)
+      const { error: deleteError } = await supabase
         .from("likes")
         .delete()
         .eq("id", existingLike.id);
@@ -54,7 +54,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
       }
 
       // Remove like notification
-      await (supabase as any)
+      await supabase
         .from("notifications")
         .delete()
         .eq("actor_id", user.id)
@@ -65,7 +65,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
       return { success: true, liked: false };
     } else {
       // Like: create the like
-      const { error: insertError } = await (supabase as any)
+      const { error: insertError } = await supabase
         .from("likes")
         .insert({
           user_id: user.id,
@@ -78,7 +78,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
       }
 
       // Get post author to send notification
-      const { data: post } = await (supabase as any)
+      const { data: post } = await supabase
         .from("posts")
         .select("author_id")
         .eq("id", postId)
@@ -86,7 +86,7 @@ export async function toggleLike(postId: string): Promise<LikeResult> {
 
       // Create notification (don't notify self)
       if (post && post.author_id !== user.id) {
-        await (supabase as any)
+        await supabase
           .from("notifications")
           .insert({
             recipient_id: post.author_id,
@@ -113,7 +113,7 @@ export async function getLikesByPost(postId: string): Promise<LikesData> {
     const { user, supabase } = await requireAuth();
 
     // Get likes with user profiles
-    const { data: likesData, error: likesError } = await (supabase as any)
+    const { data: likesData, error: likesError } = await supabase
       .from("likes")
       .select(
         `
@@ -176,7 +176,7 @@ export async function hasUserLiked(postId: string): Promise<{
       return { success: true, hasLiked: false };
     }
 
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("likes")
       .select("id")
       .eq("user_id", user.id)

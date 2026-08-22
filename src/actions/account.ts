@@ -21,7 +21,7 @@ export async function acceptContentPromise(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({
         promise_accepted_at: new Date().toISOString(),
@@ -58,7 +58,7 @@ export async function hasAcceptedPromise(): Promise<{
       return { success: false, accepted: false };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profiles")
       .select("promise_accepted_at")
       .eq("id", user.id)
@@ -96,7 +96,7 @@ export async function requestDataExport(): Promise<{
     }
 
     // Check for pending requests
-    const { data: pendingRequest } = await (supabase as any)
+    const { data: pendingRequest } = await supabase
       .from("data_export_requests")
       .select("id, status")
       .eq("user_id", user.id)
@@ -111,7 +111,7 @@ export async function requestDataExport(): Promise<{
     }
 
     // Create new export request
-    const { data: request, error } = await (supabase as any)
+    const { data: request, error } = await supabase
       .from("data_export_requests")
       .insert({
         user_id: user.id,
@@ -155,7 +155,7 @@ export async function getExportStatus(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("data_export_requests")
       .select("status, file_url, expires_at")
       .eq("user_id", user.id)
@@ -169,9 +169,9 @@ export async function getExportStatus(): Promise<{
 
     return {
       success: true,
-      status: data.status,
-      fileUrl: data.file_url,
-      expiresAt: data.expires_at,
+      status: data.status ?? undefined,
+      fileUrl: data.file_url ?? undefined,
+      expiresAt: data.expires_at ?? undefined,
     };
   } catch (error) {
     return { success: false, error: "Failed to get export status" };
@@ -201,7 +201,7 @@ export async function deleteAccount(): Promise<{
     const deletedEmail = `deleted-${randomSuffix}@deleted.vocl.local`;
 
     // Anonymize profile
-    const { error: profileError } = await (supabase as any)
+    const { error: profileError } = await supabase
       .from("profiles")
       .update({
         username: deletedUsername,
@@ -226,25 +226,25 @@ export async function deleteAccount(): Promise<{
     }
 
     // Delete profile links
-    await (supabase as any)
+    await supabase
       .from("profile_links")
       .delete()
       .eq("profile_id", user.id);
 
     // Delete follows (both directions) - separate queries to avoid injection
     await Promise.all([
-      (supabase as any).from("follows").delete().eq("follower_id", user.id),
-      (supabase as any).from("follows").delete().eq("following_id", user.id),
+      supabase.from("follows").delete().eq("follower_id", user.id),
+      supabase.from("follows").delete().eq("following_id", user.id),
     ]);
 
     // Delete likes
-    await (supabase as any)
+    await supabase
       .from("likes")
       .delete()
       .eq("user_id", user.id);
 
     // Delete notifications
-    await (supabase as any)
+    await supabase
       .from("notifications")
       .delete()
       .eq("recipient_id", user.id);
@@ -253,7 +253,7 @@ export async function deleteAccount(): Promise<{
     // the anon/session client cannot call auth.admin.* (the old code used the wrong
     // client, so this silently no-op'd and left the real email on auth.users).
     const supabaseAdmin = createAdminClient();
-    const { error: authError } = await (supabaseAdmin as any).auth.admin.updateUserById(
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
       user.id,
       {
         email: deletedEmail,
@@ -292,7 +292,7 @@ export async function getUserLockStatus(): Promise<{
       return { success: false };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profiles")
       .select("lock_status, ban_reason")
       .eq("id", user.id)
@@ -305,7 +305,7 @@ export async function getUserLockStatus(): Promise<{
     return {
       success: true,
       lockStatus: data.lock_status || "unlocked",
-      banReason: data.ban_reason,
+      banReason: data.ban_reason ?? undefined,
     };
   } catch (error) {
     return { success: false };

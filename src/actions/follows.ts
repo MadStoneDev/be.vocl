@@ -24,7 +24,7 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
     }
 
     // Check if already following
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("follows")
       .select("id")
       .eq("follower_id", user.id)
@@ -36,9 +36,10 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
     }
 
     // Check if blocked (either direction) - use two separate queries to avoid template literal injection
+    // FIXME(types): `blocks` has no `id` column (only blocker_id, blocked_id, created_at). Select an existing column, e.g. "blocker_id".
     const [{ data: blockedByMe }, { data: blockedByThem }] = await Promise.all([
-      (supabase as any).from("blocks").select("id").eq("blocker_id", user.id).eq("blocked_id", targetUserId).limit(1),
-      (supabase as any).from("blocks").select("id").eq("blocker_id", targetUserId).eq("blocked_id", user.id).limit(1),
+      supabase.from("blocks").select("id").eq("blocker_id", user.id).eq("blocked_id", targetUserId).limit(1),
+      supabase.from("blocks").select("id").eq("blocker_id", targetUserId).eq("blocked_id", user.id).limit(1),
     ]);
 
     if ((blockedByMe && blockedByMe.length > 0) || (blockedByThem && blockedByThem.length > 0)) {
@@ -46,7 +47,7 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
     }
 
     // Create follow
-    const { error: followError } = await (supabase as any)
+    const { error: followError } = await supabase
       .from("follows")
       .insert({
         follower_id: user.id,
@@ -59,7 +60,7 @@ export async function followUser(targetUserId: string): Promise<FollowResult> {
     }
 
     // Create notification
-    await (supabase as any).from("notifications").insert({
+    await supabase.from("notifications").insert({
       recipient_id: targetUserId,
       actor_id: user.id,
       notification_type: "follow",
@@ -84,7 +85,7 @@ export async function unfollowUser(targetUserId: string): Promise<FollowResult> 
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("follows")
       .delete()
       .eq("follower_id", user.id)
@@ -111,7 +112,7 @@ export async function isFollowing(targetUserId: string): Promise<boolean> {
     const { user, supabase } = await requireAuth();
     if (!user) return false;
 
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("follows")
       .select("id")
       .eq("follower_id", user.id)
@@ -135,7 +136,7 @@ export async function batchIsFollowing(targetUserIds: string[]): Promise<Set<str
     const { user, supabase } = await requireAuth();
     if (!user) return new Set();
 
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("follows")
       .select("following_id")
       .eq("follower_id", user.id)
@@ -158,7 +159,7 @@ export async function getFollowers(
   try {
     const { supabase } = await requireAuth();
 
-    const { data, error, count } = await (supabase as any)
+    const { data, error, count } = await supabase
       .from("follows")
       .select(
         `
@@ -204,7 +205,7 @@ export async function getFollowing(
   try {
     const { supabase } = await requireAuth();
 
-    const { data, error, count } = await (supabase as any)
+    const { data, error, count } = await supabase
       .from("follows")
       .select(
         `
@@ -251,12 +252,12 @@ export async function blockUser(targetUserId: string): Promise<FollowResult> {
 
     // Remove any existing follow relationships (both directions) - separate queries to avoid injection
     await Promise.all([
-      (supabase as any).from("follows").delete().eq("follower_id", user.id).eq("following_id", targetUserId),
-      (supabase as any).from("follows").delete().eq("follower_id", targetUserId).eq("following_id", user.id),
+      supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", targetUserId),
+      supabase.from("follows").delete().eq("follower_id", targetUserId).eq("following_id", user.id),
     ]);
 
     // Create block
-    const { error } = await (supabase as any).from("blocks").insert({
+    const { error } = await supabase.from("blocks").insert({
       blocker_id: user.id,
       blocked_id: targetUserId,
     });
@@ -283,7 +284,7 @@ export async function unblockUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("blocks")
       .delete()
       .eq("blocker_id", user.id)
@@ -316,7 +317,7 @@ export async function getFollowStatusBatch(
       return { success: true, followingIds: [] };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("follows")
       .select("following_id")
       .eq("follower_id", user.id)
@@ -346,8 +347,8 @@ export async function isMutual(targetUserId: string): Promise<{ success: boolean
     if (!user) return { success: false, isMutual: false };
 
     const [{ data: iFollow }, { data: theyFollow }] = await Promise.all([
-      (supabase as any).from("follows").select("id").eq("follower_id", user.id).eq("following_id", targetUserId).limit(1),
-      (supabase as any).from("follows").select("id").eq("follower_id", targetUserId).eq("following_id", user.id).limit(1),
+      supabase.from("follows").select("id").eq("follower_id", user.id).eq("following_id", targetUserId).limit(1),
+      supabase.from("follows").select("id").eq("follower_id", targetUserId).eq("following_id", user.id).limit(1),
     ]);
 
     return { success: true, isMutual: !!(iFollow?.length && theyFollow?.length) };
@@ -365,8 +366,8 @@ export async function batchCheckMutuals(userIds: string[]): Promise<{ success: b
     if (!user || userIds.length === 0) return { success: true, mutualIds: [] };
 
     const [{ data: iFollow }, { data: theyFollow }] = await Promise.all([
-      (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", userIds),
-      (supabase as any).from("follows").select("follower_id").eq("following_id", user.id).in("follower_id", userIds),
+      supabase.from("follows").select("following_id").eq("follower_id", user.id).in("following_id", userIds),
+      supabase.from("follows").select("follower_id").eq("following_id", user.id).in("follower_id", userIds),
     ]);
 
     const iFollowSet = new Set((iFollow || []).map((f: any) => f.following_id));
@@ -389,7 +390,7 @@ export async function muteUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any).from("mutes").insert({
+    const { error } = await supabase.from("mutes").insert({
       muter_id: user.id,
       muted_id: targetUserId,
     });
@@ -415,7 +416,7 @@ export async function unmuteUser(targetUserId: string): Promise<FollowResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("mutes")
       .delete()
       .eq("muter_id", user.id)
@@ -453,7 +454,7 @@ export async function getBlockedUsers(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("blocks")
       .select("blocked:blocked_id ( id, username, display_name, avatar_url )")
       .eq("blocker_id", user.id);
@@ -493,7 +494,7 @@ export async function getMutedUsers(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("mutes")
       .select("muted:muted_id ( id, username, display_name, avatar_url )")
       .eq("muter_id", user.id);

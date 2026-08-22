@@ -60,7 +60,7 @@ export async function createComment(
 
     const sanitizedContent = trimmedContent ? sanitizeHtml(trimmedContent) : null;
 
-    const { data: comment, error: insertError } = await (supabase as any)
+    const { data: comment, error: insertError } = await supabase
       .from("comments")
       .insert({
         user_id: user.id,
@@ -78,7 +78,7 @@ export async function createComment(
     }
 
     // Get post author to send notification
-    const { data: post } = await (supabase as any)
+    const { data: post } = await supabase
       .from("posts")
       .select("author_id")
       .eq("id", postId)
@@ -86,7 +86,7 @@ export async function createComment(
 
     // Create notification (don't notify self)
     if (post && post.author_id !== user.id) {
-      await (supabase as any)
+      await supabase
         .from("notifications")
         .insert({
           recipient_id: post.author_id,
@@ -120,7 +120,7 @@ export async function deleteComment(commentId: string): Promise<CommentResult> {
     }
 
     // Verify ownership
-    const { data: existingComment } = await (supabase as any)
+    const { data: existingComment } = await supabase
       .from("comments")
       .select("user_id, post_id")
       .eq("id", commentId)
@@ -135,7 +135,7 @@ export async function deleteComment(commentId: string): Promise<CommentResult> {
     }
 
     // Delete the comment
-    const { error: deleteError } = await (supabase as any)
+    const { error: deleteError } = await supabase
       .from("comments")
       .delete()
       .eq("id", commentId);
@@ -146,7 +146,7 @@ export async function deleteComment(commentId: string): Promise<CommentResult> {
     }
 
     // Delete associated notification
-    await (supabase as any)
+    await supabase
       .from("notifications")
       .delete()
       .eq("comment_id", commentId);
@@ -168,7 +168,7 @@ export async function getCommentsByPost(postId: string): Promise<CommentsData> {
     const { user, supabase } = await requireAuth();
 
     // Get comments with user profiles
-    const { data: commentsData, error: commentsError } = await (supabase as any)
+    const { data: commentsData, error: commentsError } = await supabase
       .from("comments")
       .select(
         `
@@ -238,7 +238,7 @@ export async function getCommentCount(postId: string): Promise<{
   try {
     const { supabase } = await requireAuth();
 
-    const { count, error } = await (supabase as any)
+    const { count, error } = await supabase
       .from("comments")
       .select("*", { count: "exact", head: true })
       .eq("post_id", postId);

@@ -19,7 +19,7 @@ export async function toggleBookmark(postId: string): Promise<BookmarkResult> {
     }
 
     // Check if already bookmarked
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("bookmarks")
       .select("id")
       .eq("user_id", user.id)
@@ -28,7 +28,7 @@ export async function toggleBookmark(postId: string): Promise<BookmarkResult> {
 
     if (existing) {
       // Remove bookmark
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("bookmarks")
         .delete()
         .eq("id", existing.id);
@@ -41,7 +41,7 @@ export async function toggleBookmark(postId: string): Promise<BookmarkResult> {
       return { success: true, bookmarked: false };
     } else {
       // Add bookmark
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("bookmarks")
         .insert({
           user_id: user.id,
@@ -79,7 +79,7 @@ export async function getBookmarksByUser(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("bookmarks")
       .select(`
         id,
@@ -184,7 +184,7 @@ export async function getBookmarkCollections(): Promise<{
     }
 
     // Fetch collections
-    const { data: collections, error } = await (supabase as any)
+    const { data: collections, error } = await supabase
       .from("bookmark_collections")
       .select("id, name, description, created_at")
       .eq("user_id", user.id)
@@ -200,7 +200,7 @@ export async function getBookmarkCollections(): Promise<{
     let countMap: Record<string, number> = {};
 
     if (collectionIds.length > 0) {
-      const { data: counts } = await (supabase as any)
+      const { data: counts } = await supabase
         .from("bookmarks")
         .select("collection_id")
         .eq("user_id", user.id)
@@ -255,7 +255,7 @@ export async function createBookmarkCollection(
     }
 
     // Check collection limit (max 20 per user)
-    const { count } = await (supabase as any)
+    const { count } = await supabase
       .from("bookmark_collections")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id);
@@ -264,7 +264,7 @@ export async function createBookmarkCollection(
       return { success: false, error: "Maximum of 20 collections reached" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("bookmark_collections")
       .insert({
         user_id: user.id,
@@ -307,7 +307,7 @@ export async function renameBookmarkCollection(
       return { success: false, error: "Collection name must be 1-50 characters" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("bookmark_collections")
       .update({ name: trimmedName })
       .eq("id", collectionId)
@@ -341,14 +341,14 @@ export async function deleteBookmarkCollection(
     }
 
     // Set collection_id to null on all bookmarks in this collection
-    await (supabase as any)
+    await supabase
       .from("bookmarks")
       .update({ collection_id: null })
       .eq("collection_id", collectionId)
       .eq("user_id", user.id);
 
     // Delete the collection
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("bookmark_collections")
       .delete()
       .eq("id", collectionId)
@@ -384,7 +384,7 @@ export async function moveBookmarkToCollection(
 
     // Validate collection ownership if collectionId is provided
     if (collectionId) {
-      const { data: collection } = await (supabase as any)
+      const { data: collection } = await supabase
         .from("bookmark_collections")
         .select("id")
         .eq("id", collectionId)
@@ -397,7 +397,7 @@ export async function moveBookmarkToCollection(
     }
 
     // Update the bookmark's collection_id
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("bookmarks")
       .update({ collection_id: collectionId })
       .eq("post_id", postId)
@@ -436,7 +436,7 @@ export async function getBookmarksByCollection(
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
-    let query = (supabase as any)
+    let query = supabase
       .from("bookmarks")
       .select(`
         id,
@@ -542,7 +542,7 @@ export async function batchCheckBookmarks(postIds: string[]): Promise<Set<string
     const { user, supabase } = await requireAuth();
     if (!user) return new Set();
 
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("bookmarks")
       .select("post_id")
       .eq("user_id", user.id)

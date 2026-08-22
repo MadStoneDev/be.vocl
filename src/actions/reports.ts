@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
-import type { ReportSubject, ReportStatus } from "@/types/database";
+import type { ReportSubject, ReportStatus, TablesInsert } from "@/types/database";
 import { rateLimiters } from "@/lib/rate-limit";
 
 interface ReportResult {
@@ -79,7 +79,7 @@ export async function reportUser(
     }
 
     // Check if user already reported this user
-    const { data: existingReport } = await (supabase as any)
+    const { data: existingReport } = await supabase
       .from("reports")
       .select("id")
       .eq("reporter_id", user.id)
@@ -92,7 +92,7 @@ export async function reportUser(
     }
 
     // Create report - starts at Junior Mod level
-    const { data: report, error } = await (supabase as any)
+    const { data: report, error } = await supabase
       .from("reports")
       .insert({
         reporter_id: user.id,
@@ -140,17 +140,17 @@ export async function getReports(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
-    let query = (supabase as any)
+    let query = supabase
       .from("reports")
       .select(`
         *,
@@ -177,7 +177,7 @@ export async function getReports(
       return { success: false, error: "Failed to fetch reports" };
     }
 
-    return { success: true, reports };
+    return { success: true, reports: reports as unknown as ReportWithUser[] };
   } catch (error) {
     console.error("Get reports error:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -201,18 +201,18 @@ export async function claimReport(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
     // Get report to check role requirement
-    const { data: report } = await (supabase as any)
+    const { data: report } = await supabase
       .from("reports")
       .select("assigned_role, status, reported_user_id")
       .eq("id", reportId)
@@ -222,7 +222,7 @@ export async function claimReport(
       return { success: false, error: "Report not found" };
     }
 
-    if (profile.role < report.assigned_role) {
+    if ((profile.role ?? 0) < (report.assigned_role ?? 0)) {
       return { success: false, error: "This report requires a higher role level" };
     }
 
@@ -231,17 +231,17 @@ export async function claimReport(
     }
 
     // Get reported user's role to check if mod can handle them
-    const { data: reportedUser } = await (supabase as any)
+    const { data: reportedUser } = await supabase
       .from("profiles")
       .select("role")
-      .eq("id", report.reported_user_id)
+      .eq("id", report.reported_user_id ?? "")
       .single();
 
-    if (reportedUser && !canModerateUser(profile.role, reportedUser.role)) {
+    if (reportedUser && !canModerateUser(profile.role ?? 0, reportedUser.role ?? 0)) {
       return { success: false, error: "Cannot moderate a user with equal or higher role" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("reports")
       .update({
         assigned_to: user.id,
@@ -279,24 +279,24 @@ export async function escalateReport(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
     // Check valid escalation targets
-    const validTargets = getEscalationTargets(profile.role);
+    const validTargets = getEscalationTargets(profile.role ?? 0);
     if (!validTargets.includes(targetRole as any)) {
       return { success: false, error: "Invalid escalation target" };
     }
 
     // Get report
-    const { data: report } = await (supabase as any)
+    const { data: report } = await supabase
       .from("reports")
       .select("assigned_role, status")
       .eq("id", reportId)
@@ -306,12 +306,12 @@ export async function escalateReport(
       return { success: false, error: "Report not found" };
     }
 
-    if (targetRole <= report.assigned_role) {
+    if (targetRole <= (report.assigned_role ?? 0)) {
       return { success: false, error: "Can only escalate to a higher role" };
     }
 
     // Update report
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("reports")
       .update({
         status: "escalated",
@@ -328,9 +328,9 @@ export async function escalateReport(
     }
 
     // Record escalation history
-    await (supabase as any).from("escalation_history").insert({
+    await supabase.from("escalation_history").insert({
       report_id: reportId,
-      from_role: report.assigned_role,
+      from_role: report.assigned_role ?? 0,
       to_role: targetRole,
       escalated_by: user.id,
       reason,
@@ -358,7 +358,7 @@ async function notifyStaffOfReport(
     const supabase = await createClient();
 
     // Get staff at or above the role level
-    const { data: staff } = await (supabase as any)
+    const { data: staff } = await supabase
       .from("profiles")
       .select("id")
       .gte("role", roleLevel);
@@ -366,7 +366,7 @@ async function notifyStaffOfReport(
     if (!staff || staff.length === 0) return;
 
     // Create in-app notifications
-    const notifications = staff.map((s: any) => ({
+    const notifications: TablesInsert<"notifications">[] = staff.map((s: any) => ({
       recipient_id: s.id,
       notification_type: "moderation",
       is_read: false,
@@ -375,7 +375,7 @@ async function notifyStaffOfReport(
     // Service-role client: staff notifications have no actor_id, which the
     // request-client INSERT policy (actor_id = auth.uid()) rejects — so via the
     // session client these silently never insert and staff are never notified.
-    await (createAdminClient() as any).from("notifications").insert(notifications);
+    await createAdminClient().from("notifications").insert(notifications);
   } catch (error) {
     console.error("Staff notification error:", error);
   }
@@ -405,13 +405,13 @@ export async function getReportStats(): Promise<{
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -420,22 +420,22 @@ export async function getReportStats(): Promise<{
 
     // Count reports by status (filtered by role)
     const [pending, reviewing, escalated, resolvedToday] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("reports")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending")
         .lte("assigned_role", profile.role),
-      (supabase as any)
+      supabase
         .from("reports")
         .select("*", { count: "exact", head: true })
         .eq("status", "reviewing")
         .lte("assigned_role", profile.role),
-      (supabase as any)
+      supabase
         .from("reports")
         .select("*", { count: "exact", head: true })
         .eq("status", "escalated")
         .lte("assigned_role", profile.role),
-      (supabase as any)
+      supabase
         .from("reports")
         .select("*", { count: "exact", head: true })
         .in("status", ["resolved_ban", "resolved_restrict", "resolved_dismissed"])
@@ -476,7 +476,7 @@ export async function getUserPendingReports(): Promise<{
       return { success: false, hasPendingReports: false };
     }
 
-    const { count, error } = await (supabase as any)
+    const { count, error } = await supabase
       .from("reports")
       .select("*", { count: "exact", head: true })
       .eq("reported_user_id", user.id)

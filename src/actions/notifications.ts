@@ -61,7 +61,7 @@ export async function getNotifications(
     }
 
     // Get notifications with actor profile
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("notifications")
       .select(
         `
@@ -98,7 +98,7 @@ export async function getNotifications(
     }
 
     // Get unread count
-    const { count: unreadCount } = await (supabase as any)
+    const { count: unreadCount } = await supabase
       .from("notifications")
       .select("*", { count: "exact", head: true })
       .eq("recipient_id", user.id)
@@ -160,7 +160,7 @@ export async function getUnreadCount(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { count, error } = await (supabase as any)
+    const { count, error } = await supabase
       .from("notifications")
       .select("*", { count: "exact", head: true })
       .eq("recipient_id", user.id)
@@ -191,7 +191,7 @@ export async function markAsRead(notificationId: string): Promise<NotificationRe
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("id", notificationId)
@@ -223,7 +223,7 @@ export async function markAllAsRead(): Promise<NotificationResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("recipient_id", user.id)
@@ -255,7 +255,7 @@ export async function deleteNotification(notificationId: string): Promise<Notifi
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("notifications")
       .delete()
       .eq("id", notificationId)
@@ -287,7 +287,7 @@ export async function clearAllNotifications(): Promise<NotificationResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("notifications")
       .delete()
       .eq("recipient_id", user.id);
@@ -313,7 +313,7 @@ export async function mutePostNotifications(postId: string): Promise<{ success: 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Unauthorized" };
 
-    await (supabase as any).from("muted_post_notifications").upsert({
+    await supabase.from("muted_post_notifications").upsert({
       user_id: user.id,
       post_id: postId,
     }, { onConflict: "user_id,post_id" });
@@ -333,7 +333,7 @@ export async function unmutePostNotifications(postId: string): Promise<{ success
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Unauthorized" };
 
-    await (supabase as any).from("muted_post_notifications")
+    await supabase.from("muted_post_notifications")
       .delete()
       .eq("user_id", user.id)
       .eq("post_id", postId);
@@ -353,7 +353,7 @@ export async function isPostNotificationMuted(postId: string): Promise<boolean> 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("muted_post_notifications")
       .select("post_id")
       .eq("user_id", user.id)

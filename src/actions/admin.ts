@@ -11,6 +11,7 @@ import {
 } from "@/constants/roles";
 import { logAuditEvent, getActorInfo, getTargetUserInfo } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { ReportStatus, LockStatus, AppealStatus } from "@/types/database";
 import {
   sendAccountBannedEmail,
   sendAccountRestrictedEmail,
@@ -34,17 +35,17 @@ async function requireRole(minRole: number = ROLES.MODERATOR): Promise<{
     return { authorized: false };
   }
 
-  const { data: profile } = await (supabase as any)
+  const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role < minRole) {
+  if (!profile || (profile.role ?? 0) < minRole) {
     return { authorized: false };
   }
 
-  return { authorized: true, userId: user.id, role: profile.role };
+  return { authorized: true, userId: user.id, role: profile.role ?? undefined };
 }
 
 // ============================================================================
@@ -99,7 +100,7 @@ export async function getReports(options?: {
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
-    let query = (supabase as any)
+    let query = supabase
       .from("reports")
       .select(
         `
@@ -120,7 +121,7 @@ export async function getReports(options?: {
       .range(offset, offset + limit - 1);
 
     if (options?.status && options.status !== "all") {
-      query = query.eq("status", options.status);
+      query = query.eq("status", options.status as ReportStatus);
     }
 
     const { data: reports, count, error } = await query;
@@ -187,7 +188,7 @@ export async function assignReport(
   try {
     const supabase = await createClient();
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("reports")
       .update({
         assigned_to: assigneeId,
@@ -239,35 +240,36 @@ export async function resolveReport(
     const supabase = await createClient();
 
     // Get report details
-    const { data: report } = await (supabase as any)
+    const { data: report } = await supabase
       .from("reports")
       .select("reported_user_id, post_id")
       .eq("id", reportId)
       .single();
 
-    if (!report) {
+    if (!report || !report.reported_user_id) {
       return { success: false, error: "Report not found" };
     }
+    const reportedUserId = report.reported_user_id;
 
     // Get actor and target info for audit log
     const [actorInfo, targetInfo] = await Promise.all([
       getActorInfo(auth.userId),
-      getTargetUserInfo(report.reported_user_id),
+      getTargetUserInfo(reportedUserId),
     ]);
 
     // Apply the user sanction FIRST, so we don't mark the report resolved (or
     // touch the post) if the sanction is rejected. banUser/restrictUser now
     // surface auth/DB failures instead of silently no-opping.
     if (resolution === "resolved_ban") {
-      const r = await banUser(report.reported_user_id, notes || "Banned due to report");
+      const r = await banUser(reportedUserId, notes || "Banned due to report");
       if (!r.success) return { success: false, error: r.error || "Failed to ban user" };
     } else if (resolution === "resolved_restrict") {
-      const r = await restrictUser(report.reported_user_id);
+      const r = await restrictUser(reportedUserId);
       if (!r.success) return { success: false, error: r.error || "Failed to restrict user" };
     }
 
     // Mark the report resolved.
-    await (supabase as any)
+    await supabase
       .from("reports")
       .update({
         status: resolution,
@@ -286,7 +288,7 @@ export async function resolveReport(
       if (approve) {
         // Approve the post — and PUBLISH it if it was held (draft) for review,
         // so approved content doesn't stay stranded and invisible.
-        const { data: heldPost } = await (supabase as any)
+        const { data: heldPost } = await supabase
           .from("posts")
           .select("status")
           .eq("id", report.post_id)
@@ -306,7 +308,7 @@ export async function resolveReport(
           postPatch.created_at = goLive;
         }
 
-        await (adminSupabase as any)
+        await adminSupabase
           .from("posts")
           .update(postPatch)
           .eq("id", report.post_id);
@@ -316,14 +318,14 @@ export async function resolveReport(
           actorUsername: actorInfo?.username || "unknown",
           actorRole: auth.role,
           action: "restore_post",
-          targetUserId: report.reported_user_id,
+          targetUserId: reportedUserId,
           targetUserUsername: targetInfo?.username,
           targetPostId: report.post_id,
           targetReportId: reportId,
         });
       } else {
         // resolved_ban / resolved_restrict → remove the post.
-        await (adminSupabase as any)
+        await adminSupabase
           .from("posts")
           .update({
             moderation_status: "removed",
@@ -338,7 +340,7 @@ export async function resolveReport(
           actorUsername: actorInfo?.username || "unknown",
           actorRole: auth.role,
           action: "remove_post",
-          targetUserId: report.reported_user_id,
+          targetUserId: reportedUserId,
           targetUserUsername: targetInfo?.username,
           targetPostId: report.post_id,
           targetReportId: reportId,
@@ -353,7 +355,7 @@ export async function resolveReport(
       actorUsername: actorInfo?.username || "unknown",
       actorRole: auth.role,
       action: "resolve_report",
-      targetUserId: report.reported_user_id,
+      targetUserId: reportedUserId,
       targetUserUsername: targetInfo?.username,
       targetReportId: reportId,
       details: { resolution, notes },
@@ -405,7 +407,7 @@ export async function getUsers(options?: {
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
-    let query = (supabase as any)
+    let query = supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url, role, lock_status, is_nsfw, created_at", {
         count: "exact",
@@ -418,7 +420,7 @@ export async function getUsers(options?: {
     }
 
     if (options?.lockStatus && options.lockStatus !== "all") {
-      query = query.eq("lock_status", options.lockStatus);
+      query = query.eq("lock_status", options.lockStatus as LockStatus);
     }
 
     const { data: users, count, error } = await query;
@@ -430,7 +432,7 @@ export async function getUsers(options?: {
 
     // Get report counts for each user
     const userIds = (users || []).map((u: any) => u.id);
-    const { data: reportCounts } = await (supabase as any)
+    const { data: reportCounts } = await supabase
       .from("reports")
       .select("reported_user_id")
       .in("reported_user_id", userIds);
@@ -487,7 +489,7 @@ export async function banUser(
     ]);
 
     // Update user profile
-    const { error: updateError } = await (adminSupabase as any)
+    const { error: updateError } = await adminSupabase
       .from("profiles")
       .update({
         lock_status: "banned",
@@ -503,7 +505,7 @@ export async function banUser(
 
     // Log IP if provided
     if (logIp) {
-      await (adminSupabase as any).from("banned_ips").insert({
+      await adminSupabase.from("banned_ips").insert({
         ip_address: logIp,
         user_id: userId,
         reason,
@@ -573,7 +575,7 @@ export async function restrictUser(
       getTargetUserInfo(userId),
     ]);
 
-    const { error: updateError } = await (adminSupabase as any)
+    const { error: updateError } = await adminSupabase
       .from("profiles")
       .update({
         lock_status: "restricted",
@@ -634,7 +636,7 @@ export async function unlockUser(
       getTargetUserInfo(userId),
     ]);
 
-    const { error: updateError } = await (adminSupabase as any)
+    const { error: updateError } = await adminSupabase
       .from("profiles")
       .update({
         lock_status: "unlocked",
@@ -689,7 +691,7 @@ export async function setUserRole(
     const supabase = await createClient();
 
     // Get target user's current role
-    const { data: targetUser } = await (supabase as any)
+    const { data: targetUser } = await supabase
       .from("profiles")
       .select("role, username")
       .eq("id", userId)
@@ -700,11 +702,11 @@ export async function setUserRole(
     }
 
     // Can't modify users with equal or higher role
-    if (targetUser.role >= auth.role) {
+    if ((targetUser.role ?? 0) >= auth.role) {
       return { success: false, error: "Cannot modify a user with equal or higher role" };
     }
 
-    const oldRole = targetUser.role;
+    const oldRole = targetUser.role ?? 0;
 
     // Build update object
     const updateData: { role: number; invite_codes_remaining?: number } = { role: newRole };
@@ -716,7 +718,7 @@ export async function setUserRole(
 
     // Role is a service-role-only column (security-hardening trigger).
     const adminSupabase = createAdminClient();
-    const { error: roleError } = await (adminSupabase as any)
+    const { error: roleError } = await adminSupabase
       .from("profiles")
       .update(updateData)
       .eq("id", userId);
@@ -768,7 +770,7 @@ export async function setUserNsfw(
   try {
     // Admin client so a moderator can write another user's profile.
     const adminSupabase = createAdminClient();
-    const { error } = await (adminSupabase as any)
+    const { error } = await adminSupabase
       .from("profiles")
       .update({ is_nsfw: isNsfw, updated_at: new Date().toISOString() })
       .eq("id", userId);
@@ -863,7 +865,7 @@ export async function getAppeals(options?: {
     const limit = options?.limit || 20;
     const offset = options?.offset || 0;
 
-    let query = (supabase as any)
+    let query = supabase
       .from("appeals")
       .select(
         `
@@ -882,7 +884,7 @@ export async function getAppeals(options?: {
       .range(offset, offset + limit - 1);
 
     if (options?.status && options.status !== "all") {
-      query = query.eq("status", options.status);
+      query = query.eq("status", options.status as AppealStatus);
     }
 
     const { data: appeals, count, error } = await query;
@@ -939,7 +941,7 @@ export async function reviewAppeal(
     const supabase = await createClient();
 
     // Get appeal details
-    const { data: appeal } = await (supabase as any)
+    const { data: appeal } = await supabase
       .from("appeals")
       .select("user_id")
       .eq("id", appealId)
@@ -956,7 +958,7 @@ export async function reviewAppeal(
     ]);
 
     // Update appeal
-    await (supabase as any)
+    await supabase
       .from("appeals")
       .update({
         status: decision,
@@ -974,7 +976,7 @@ export async function reviewAppeal(
     // If blocked, update profile to block future appeals (service-role column)
     if (decision === "blocked") {
       const adminSupabase = createAdminClient();
-      const { error: blockError } = await (adminSupabase as any)
+      const { error: blockError } = await adminSupabase
         .from("profiles")
         .update({ appeals_blocked: true })
         .eq("id", appeal.user_id);
@@ -1056,35 +1058,35 @@ export async function getAdminStats(): Promise<{
       { count: bannedUsers },
       { count: restrictedUsers },
     ] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("reports")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending")
         .lte("assigned_role", auth.role),
-      (supabase as any)
+      supabase
         .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending")
         .lte("assigned_role", auth.role),
-      (supabase as any)
+      supabase
         .from("appeals")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending"),
-      (supabase as any)
+      supabase
         .from("reports")
         .select("*", { count: "exact", head: true })
         .eq("status", "escalated")
         .lte("assigned_role", auth.role),
-      (supabase as any)
+      supabase
         .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "escalated")
         .lte("assigned_role", auth.role),
-      (supabase as any)
+      supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .eq("lock_status", "banned"),
-      (supabase as any)
+      supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .eq("lock_status", "restricted"),
@@ -1141,7 +1143,7 @@ export async function getAuditLogs(options?: {
     const limit = options?.limit || 50;
     const offset = options?.offset || 0;
 
-    const { data, count, error } = await (supabase as any)
+    const { data, count, error } = await supabase
       .from("audit_logs")
       .select(
         "id, actor_username, actor_role, action, target_user_username, target_post_id, details, created_at",

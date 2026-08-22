@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import type { PollPostContent } from "@/types/database";
 
 interface VoteResult {
   success: boolean;
@@ -37,7 +38,7 @@ export async function voteInPoll(
     }
 
     // Get the post to verify it's a poll and check expiration
-    const { data: post } = await (supabase as any)
+    const { data: post } = await supabase
       .from("posts")
       .select("post_type, content, status")
       .eq("id", postId)
@@ -55,7 +56,7 @@ export async function voteInPoll(
       return { success: false, error: "This poll is not available" };
     }
 
-    const content = post.content;
+    const content = post.content as unknown as PollPostContent;
 
     // Check if poll has expired
     if (content.expires_at && new Date(content.expires_at) < new Date()) {
@@ -68,7 +69,7 @@ export async function voteInPoll(
     }
 
     // Check if user already voted
-    const { data: existingVote } = await (supabase as any)
+    const { data: existingVote } = await supabase
       .from("poll_votes")
       .select("id")
       .eq("post_id", postId)
@@ -77,7 +78,7 @@ export async function voteInPoll(
 
     if (existingVote) {
       // Update existing vote
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("poll_votes")
         .update({ option_index: optionIndex })
         .eq("post_id", postId)
@@ -89,7 +90,7 @@ export async function voteInPoll(
       }
     } else {
       // Create new vote
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("poll_votes")
         .insert({
           post_id: postId,
@@ -124,7 +125,7 @@ export async function removeVote(postId: string): Promise<VoteResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("poll_votes")
       .delete()
       .eq("post_id", postId)
@@ -153,7 +154,7 @@ export async function getPollResults(postId: string): Promise<PollResults> {
     } = await supabase.auth.getUser();
 
     // Get the post
-    const { data: post } = await (supabase as any)
+    const { data: post } = await supabase
       .from("posts")
       .select("post_type, content")
       .eq("id", postId)
@@ -163,14 +164,14 @@ export async function getPollResults(postId: string): Promise<PollResults> {
       return { success: false, error: "Poll not found" };
     }
 
-    const content = post.content;
+    const content = post.content as unknown as PollPostContent;
     const optionCount = content.options.length;
     const isExpired = content.expires_at
       ? new Date(content.expires_at) < new Date()
       : false;
 
     // Get all votes for this poll
-    const { data: votes } = await (supabase as any)
+    const { data: votes } = await supabase
       .from("poll_votes")
       .select("option_index, user_id")
       .eq("post_id", postId);
@@ -227,7 +228,7 @@ export async function hasVotedInPoll(
       return { success: true, hasVoted: false };
     }
 
-    const { data: vote } = await (supabase as any)
+    const { data: vote } = await supabase
       .from("poll_votes")
       .select("option_index")
       .eq("post_id", postId)

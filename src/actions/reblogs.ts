@@ -35,7 +35,7 @@ export async function reblogPost(
     }
 
     // Get the original post
-    const { data: originalPost, error: fetchError } = await (supabase as any)
+    const { data: originalPost, error: fetchError } = await supabase
       .from("posts")
       .select("*, original_post_id")
       .eq("id", originalPostId)
@@ -55,7 +55,7 @@ export async function reblogPost(
 
     if (mode === "queue") {
       status = "queued";
-      const { data: nextPos } = await (supabase as any).rpc("get_next_queue_position", {
+      const { data: nextPos } = await supabase.rpc("get_next_queue_position", {
         p_user_id: user.id,
       });
       queuePosition = nextPos || 1;
@@ -65,7 +65,7 @@ export async function reblogPost(
     }
 
     // Create the reblog
-    const { data: reblog, error: createError } = await (supabase as any)
+    const { data: reblog, error: createError } = await supabase
       .from("posts")
       .insert({
         author_id: user.id,
@@ -91,7 +91,7 @@ export async function reblogPost(
 
     // Create notification for original author (only if published immediately)
     if (status === "published" && originalPost.author_id !== user.id) {
-      await (supabase as any).from("notifications").insert({
+      await supabase.from("notifications").insert({
         recipient_id: originalPost.author_id,
         actor_id: user.id,
         notification_type: "reblog",
@@ -120,7 +120,7 @@ export async function getQueueCount(): Promise<number> {
     } = await supabase.auth.getUser();
     if (!user) return 0;
 
-    const { count } = await (supabase as any)
+    const { count } = await supabase
       .from("posts")
       .select("id", { count: "exact", head: true })
       .eq("author_id", user.id)
@@ -143,7 +143,7 @@ export async function getQueue(): Promise<{ success: boolean; posts?: any[]; err
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(`
         *,
@@ -188,7 +188,7 @@ export async function reorderQueue(
 
     // Update positions
     for (let i = 0; i < postIds.length; i++) {
-      await (supabase as any)
+      await supabase
         .from("posts")
         .update({ queue_position: i + 1 })
         .eq("id", postIds[i])
@@ -220,7 +220,7 @@ export async function removeFromQueue(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({ status: "deleted" })
       .eq("id", postId)
@@ -255,7 +255,7 @@ export async function publishNow(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({
         status: "published",
@@ -303,7 +303,7 @@ export async function getQueueSettings(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: profile, error } = await (supabase as any)
+    const { data: profile, error } = await supabase
       .from("profiles")
       .select("queue_enabled, queue_paused, queue_posts_per_day, queue_window_start, queue_window_end")
       .eq("id", user.id)
@@ -356,7 +356,7 @@ export async function updateQueueSettings(settings: {
     if (settings.windowStart !== undefined) updateData.queue_window_start = settings.windowStart;
     if (settings.windowEnd !== undefined) updateData.queue_window_end = settings.windowEnd;
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update(updateData)
       .eq("id", user.id);
@@ -397,7 +397,7 @@ export async function getRebloggedBy(
     const limit = options?.limit || 10;
 
     // Get posts that reblogged this post (or have it as original)
-    const { data: reblogs, error, count } = await (supabase as any)
+    const { data: reblogs, error, count } = await supabase
       .from("posts")
       .select(
         `

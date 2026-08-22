@@ -56,7 +56,7 @@ export async function getProfileByUsername(
   try {
     const supabase = await createClient();
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, date_of_birth, accent_color, created_at, role")
       .eq("username", username)
@@ -71,17 +71,17 @@ export async function getProfileByUsername(
       profile: {
         id: data.id,
         username: data.username,
-        displayName: data.display_name,
-        avatarUrl: data.avatar_url,
-        headerUrl: data.header_url,
-        bio: data.bio,
-        timezone: data.timezone,
-        showLikes: data.show_likes,
-        showComments: data.show_comments,
-        showFollowers: data.show_followers,
-        showFollowing: data.show_following,
-        showSensitivePosts: data.show_sensitive_posts,
-        blurSensitiveByDefault: data.blur_sensitive_by_default,
+        displayName: data.display_name ?? undefined,
+        avatarUrl: data.avatar_url ?? undefined,
+        headerUrl: data.header_url ?? undefined,
+        bio: data.bio ?? undefined,
+        timezone: data.timezone ?? undefined,
+        showLikes: data.show_likes ?? false,
+        showComments: data.show_comments ?? false,
+        showFollowers: data.show_followers ?? false,
+        showFollowing: data.show_following ?? false,
+        showSensitivePosts: data.show_sensitive_posts ?? false,
+        blurSensitiveByDefault: data.blur_sensitive_by_default ?? false,
         isNsfw: data.is_nsfw ?? false,
         allowAsks: data.allow_asks ?? true,
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
@@ -91,7 +91,7 @@ export async function getProfileByUsername(
         isProfilePublic: data.is_profile_public ?? true,
         dateOfBirth: data.date_of_birth ?? null,
         accentColor: data.accent_color ?? null,
-        createdAt: data.created_at,
+        createdAt: data.created_at ?? "",
         role: data.role ?? 0,
       },
     };
@@ -119,7 +119,7 @@ export async function getCurrentProfile(): Promise<{
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, date_of_birth, accent_color, created_at, role")
       .eq("id", user.id)
@@ -134,17 +134,17 @@ export async function getCurrentProfile(): Promise<{
       profile: {
         id: data.id,
         username: data.username,
-        displayName: data.display_name,
-        avatarUrl: data.avatar_url,
-        headerUrl: data.header_url,
-        bio: data.bio,
-        timezone: data.timezone,
-        showLikes: data.show_likes,
-        showComments: data.show_comments,
-        showFollowers: data.show_followers,
-        showFollowing: data.show_following,
-        showSensitivePosts: data.show_sensitive_posts,
-        blurSensitiveByDefault: data.blur_sensitive_by_default,
+        displayName: data.display_name ?? undefined,
+        avatarUrl: data.avatar_url ?? undefined,
+        headerUrl: data.header_url ?? undefined,
+        bio: data.bio ?? undefined,
+        timezone: data.timezone ?? undefined,
+        showLikes: data.show_likes ?? false,
+        showComments: data.show_comments ?? false,
+        showFollowers: data.show_followers ?? false,
+        showFollowing: data.show_following ?? false,
+        showSensitivePosts: data.show_sensitive_posts ?? false,
+        blurSensitiveByDefault: data.blur_sensitive_by_default ?? false,
         isNsfw: data.is_nsfw ?? false,
         allowAsks: data.allow_asks ?? true,
         allowAnonymousAsks: data.allow_anonymous_asks ?? true,
@@ -154,7 +154,7 @@ export async function getCurrentProfile(): Promise<{
         isProfilePublic: data.is_profile_public ?? true,
         dateOfBirth: data.date_of_birth ?? null,
         accentColor: data.accent_color ?? null,
-        createdAt: data.created_at,
+        createdAt: data.created_at ?? "",
         role: data.role ?? 0,
       },
     };
@@ -196,7 +196,7 @@ export async function updateProfile(updates: {
     if (updates.headerUrl !== undefined) updateData.header_url = updates.headerUrl;
     if (updates.timezone !== undefined) updateData.timezone = updates.timezone;
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update(updateData)
       .eq("id", user.id);
@@ -240,7 +240,7 @@ export async function updatePrivacySettings(settings: {
     if (settings.showFollowers !== undefined) updateData.show_followers = settings.showFollowers;
     if (settings.showFollowing !== undefined) updateData.show_following = settings.showFollowing;
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update(updateData)
       .eq("id", user.id);
@@ -288,7 +288,7 @@ export async function updateWebVisibilitySettings(settings: {
     if (settings.isProfilePublic !== undefined)
       updateData.is_profile_public = settings.isProfilePublic;
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update(updateData)
       .eq("id", user.id);
@@ -321,7 +321,7 @@ export async function getMessagePrivacy(): Promise<DmPrivacy> {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return "everyone";
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("profiles")
       .select("dm_privacy")
       .eq("id", user.id)
@@ -346,7 +346,7 @@ export async function updateMessagePrivacy(
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({ dm_privacy: value })
       .eq("id", user.id);
@@ -387,7 +387,7 @@ export async function setDateOfBirth(
     }
 
     // Immutable once set.
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("profiles")
       .select("date_of_birth")
       .eq("id", user.id)
@@ -399,7 +399,7 @@ export async function setDateOfBirth(
       };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({ date_of_birth: dob, updated_at: new Date().toISOString() })
       .eq("id", user.id);
@@ -432,7 +432,7 @@ export async function updateContentSettings(settings: {
     // Enabling sensitive content requires a set date of birth and 21+.
     // Enforced server-side so it can't be bypassed by calling the action directly.
     if (settings.showSensitivePosts === true) {
-      const { data: prof } = await (supabase as any)
+      const { data: prof } = await supabase
         .from("profiles")
         .select("date_of_birth")
         .eq("id", user.id)
@@ -453,7 +453,7 @@ export async function updateContentSettings(settings: {
     if (settings.isNsfw !== undefined)
       updateData.is_nsfw = settings.isNsfw;
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update(updateData)
       .eq("id", user.id);
@@ -495,7 +495,7 @@ export async function updateAccentColor(
       }
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({
         accent_color: accentColor === "" ? null : accentColor,
@@ -537,7 +537,7 @@ export async function updateFeedLayout(
       return { success: false, error: "Invalid layout" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({
         feed_layout: layout,
@@ -572,7 +572,7 @@ export async function getProfileLinks(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profile_links")
       .select("id, title, url, sort_order")
       .eq("profile_id", profileId)
@@ -620,16 +620,16 @@ export async function addProfileLink(
     }
 
     // Get current max sort order
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("profile_links")
       .select("sort_order")
       .eq("profile_id", user.id)
       .order("sort_order", { ascending: false })
       .limit(1);
 
-    const nextSortOrder = existing?.[0]?.sort_order + 1 || 0;
+    const nextSortOrder = (existing?.[0]?.sort_order as number) + 1 || 0;
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profile_links")
       .insert({
         profile_id: user.id,
@@ -666,7 +666,7 @@ export async function removeProfileLink(linkId: string): Promise<ProfileResult> 
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profile_links")
       .delete()
       .eq("id", linkId)
@@ -702,7 +702,7 @@ export async function reorderProfileLinks(
     }
 
     // Get all links sorted
-    const { data: allLinks, error: fetchError } = await (supabase as any)
+    const { data: allLinks, error: fetchError } = await supabase
       .from("profile_links")
       .select("id, sort_order")
       .eq("profile_id", user.id)
@@ -725,12 +725,12 @@ export async function reorderProfileLinks(
 
     // Swap sort_order values
     await Promise.all([
-      (supabase as any)
+      supabase
         .from("profile_links")
         .update({ sort_order: swap.sort_order })
         .eq("id", current.id)
         .eq("profile_id", user.id),
-      (supabase as any)
+      supabase
         .from("profile_links")
         .update({ sort_order: current.sort_order })
         .eq("id", swap.id)
@@ -761,16 +761,16 @@ export async function getProfileStats(
 
     // Parallel fetch all counts at once
     const [postsResult, followersResult, followingResult] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("posts")
         .select("*", { count: "exact", head: true })
         .eq("author_id", profileId)
         .eq("status", "published"),
-      (supabase as any)
+      supabase
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("following_id", profileId),
-      (supabase as any)
+      supabase
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("follower_id", profileId),
@@ -805,14 +805,14 @@ export async function pinPost(postId: string): Promise<ProfileResult> {
     }
 
     // Unpin any currently pinned post
-    await (supabase as any)
+    await supabase
       .from("posts")
       .update({ is_pinned: false })
       .eq("author_id", user.id)
       .eq("is_pinned", true);
 
     // Pin the new post
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({ is_pinned: true })
       .eq("id", postId)
@@ -854,7 +854,7 @@ export async function checkOnboardingStatus(): Promise<{
       return { success: false, isComplete: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profiles")
       .select("username, display_name, avatar_url, bio, onboarding_completed")
       .eq("id", user.id)
@@ -875,9 +875,9 @@ export async function checkOnboardingStatus(): Promise<{
       isComplete,
       profile: {
         username: data.username,
-        displayName: data.display_name,
-        avatarUrl: data.avatar_url,
-        bio: data.bio,
+        displayName: data.display_name ?? undefined,
+        avatarUrl: data.avatar_url ?? undefined,
+        bio: data.bio ?? undefined,
       },
     };
   } catch (error) {
@@ -918,7 +918,7 @@ export async function completeOnboarding(data: {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update(updateData)
       .eq("id", user.id);
@@ -955,7 +955,7 @@ export async function unpinPost(postId: string): Promise<ProfileResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({ is_pinned: false })
       .eq("id", postId)
@@ -991,7 +991,7 @@ export async function checkUsernameAvailability(
     const normalized = username.toLowerCase().trim();
 
     // Check if username exists
-    let query = (supabase as any)
+    let query = supabase
       .from("profiles")
       .select("id")
       .eq("username", normalized);
@@ -1038,7 +1038,7 @@ export async function updateUsername(
 
     const normalized = newUsername.toLowerCase().trim();
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({
         username: normalized,
@@ -1115,7 +1115,7 @@ export async function getFullProfile(
 
     // Stage 1: Fetch profile + auth user in parallel (we need profile.id for everything else)
     const [profileResult, authResult] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, header_url, bio, timezone, show_likes, show_comments, show_followers, show_following, show_sensitive_posts, blur_sensitive_by_default, is_nsfw, allow_asks, allow_anonymous_asks, is_discoverable, allow_search_indexing, is_searchable, is_profile_public, date_of_birth, accent_color, created_at, role")
         .eq("username", username)
@@ -1134,17 +1134,17 @@ export async function getFullProfile(
     const profile: Profile = {
       id: data.id,
       username: data.username,
-      displayName: data.display_name,
-      avatarUrl: data.avatar_url,
-      headerUrl: data.header_url,
-      bio: data.bio,
-      timezone: data.timezone,
-      showLikes: data.show_likes,
-      showComments: data.show_comments,
-      showFollowers: data.show_followers,
-      showFollowing: data.show_following,
-      showSensitivePosts: data.show_sensitive_posts,
-      blurSensitiveByDefault: data.blur_sensitive_by_default,
+      displayName: data.display_name ?? undefined,
+      avatarUrl: data.avatar_url ?? undefined,
+      headerUrl: data.header_url ?? undefined,
+      bio: data.bio ?? undefined,
+      timezone: data.timezone ?? undefined,
+      showLikes: data.show_likes ?? false,
+      showComments: data.show_comments ?? false,
+      showFollowers: data.show_followers ?? false,
+      showFollowing: data.show_following ?? false,
+      showSensitivePosts: data.show_sensitive_posts ?? false,
+      blurSensitiveByDefault: data.blur_sensitive_by_default ?? false,
       isNsfw: data.is_nsfw ?? false,
       allowAsks: data.allow_asks ?? true,
       allowAnonymousAsks: data.allow_anonymous_asks ?? true,
@@ -1154,7 +1154,7 @@ export async function getFullProfile(
         isProfilePublic: data.is_profile_public ?? true,
         dateOfBirth: data.date_of_birth ?? null,
       accentColor: data.accent_color ?? null,
-      createdAt: data.created_at,
+      createdAt: data.created_at ?? "",
       role: data.role ?? 0,
     };
 
@@ -1162,31 +1162,31 @@ export async function getFullProfile(
     const postLimit = options?.postLimit || 20;
     const postOffset = options?.postOffset || 0;
 
-    const stage2: Promise<any>[] = [
+    const stage2: any[] = [
       // 0: Post count
-      (supabase as any)
+      supabase
         .from("posts")
         .select("*", { count: "exact", head: true })
         .eq("author_id", data.id)
         .eq("status", "published"),
       // 1: Follower count
-      (supabase as any)
+      supabase
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("following_id", data.id),
       // 2: Following count
-      (supabase as any)
+      supabase
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("follower_id", data.id),
       // 3: Profile links
-      (supabase as any)
+      supabase
         .from("profile_links")
         .select("id, title, url, sort_order")
         .eq("profile_id", data.id)
         .order("sort_order", { ascending: true }),
       // 4: Posts
-      (supabase as any)
+      supabase
         .from("posts")
         .select(`
           id,
@@ -1214,7 +1214,7 @@ export async function getFullProfile(
     if (!isOwn && currentUser) {
       // 5: isFollowing check
       stage2.push(
-        (supabase as any)
+        supabase
           .from("follows")
           .select("id")
           .eq("follower_id", currentUser.id)
@@ -1223,8 +1223,9 @@ export async function getFullProfile(
       );
       // 6: Block check for canAsk (check if profile owner blocked current user)
       stage2.push(
-        (supabase as any)
+        supabase
           .from("blocks")
+          // FIXME(types): `blocks` has no `id` column (only blocker_id, blocked_id, created_at). Select an existing column, e.g. "blocker_id".
           .select("id")
           .eq("blocker_id", data.id)
           .eq("blocked_id", currentUser.id)
@@ -1239,11 +1240,11 @@ export async function getFullProfile(
     // opened). Likes mirrors getLikedPosts (all like rows for the user);
     // comments mirrors getCommentedPosts (distinct, non-deleted posts).
     const [likesCountRes, commentRowsRes] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("likes")
         .select("*", { count: "exact", head: true })
         .eq("user_id", data.id),
-      (supabase as any)
+      supabase
         .from("comments")
         .select("post_id, post:post_id(status)")
         .eq("user_id", data.id),

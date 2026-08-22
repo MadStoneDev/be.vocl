@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
 import { logAuditEvent, getActorInfo } from "@/lib/audit";
-import type { FlagSubject, FlagStatus } from "@/types/database";
+import type { FlagSubject, FlagStatus, TablesInsert } from "@/types/database";
 
 interface FlagResult {
   success: boolean;
@@ -71,7 +71,7 @@ export async function flagPost(
     }
 
     // Check if user already flagged this post
-    const { data: existingFlag } = await (supabase as any)
+    const { data: existingFlag } = await supabase
       .from("flags")
       .select("id")
       .eq("flagger_id", user.id)
@@ -83,7 +83,7 @@ export async function flagPost(
     }
 
     // Get post info
-    const { data: post } = await (supabase as any)
+    const { data: post } = await supabase
       .from("posts")
       .select("author_id")
       .eq("id", postId)
@@ -99,7 +99,7 @@ export async function flagPost(
     }
 
     // Create flag - starts at Junior Mod level
-    const { data: flag, error } = await (supabase as any)
+    const { data: flag, error } = await supabase
       .from("flags")
       .insert({
         flagger_id: user.id,
@@ -146,17 +146,17 @@ export async function getFlags(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
-    let query = (supabase as any)
+    let query = supabase
       .from("flags")
       .select(`
         *,
@@ -186,7 +186,7 @@ export async function getFlags(
       return { success: false, error: "Failed to fetch flags" };
     }
 
-    return { success: true, flags };
+    return { success: true, flags: flags as unknown as FlagWithPost[] };
   } catch (error) {
     console.error("Get flags error:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -210,18 +210,18 @@ export async function claimFlag(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
     // Get flag to check role requirement
-    const { data: flag } = await (supabase as any)
+    const { data: flag } = await supabase
       .from("flags")
       .select("assigned_role, status")
       .eq("id", flagId)
@@ -231,7 +231,7 @@ export async function claimFlag(
       return { success: false, error: "Flag not found" };
     }
 
-    if (profile.role < flag.assigned_role) {
+    if ((profile.role ?? 0) < (flag.assigned_role ?? 0)) {
       return { success: false, error: "This flag requires a higher role level" };
     }
 
@@ -239,7 +239,7 @@ export async function claimFlag(
       return { success: false, error: "Flag is not available to claim" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("flags")
       .update({
         assigned_to: user.id,
@@ -277,18 +277,18 @@ export async function resolveFlag(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
     // Get flag details
-    const { data: flag } = await (supabase as any)
+    const { data: flag } = await supabase
       .from("flags")
       .select("assigned_role, assigned_to, post_id, status")
       .eq("id", flagId)
@@ -298,7 +298,7 @@ export async function resolveFlag(
       return { success: false, error: "Flag not found" };
     }
 
-    if (profile.role < flag.assigned_role) {
+    if ((profile.role ?? 0) < (flag.assigned_role ?? 0)) {
       return { success: false, error: "This flag requires a higher role level" };
     }
 
@@ -312,27 +312,27 @@ export async function resolveFlag(
     // of the flagged post to act on it. Prevents a junior mod from removing a
     // higher-role user's post.
     if (flag.post_id) {
-      const { data: flaggedPost } = await (supabase as any)
+      const { data: flaggedPost } = await supabase
         .from("posts")
         .select("author_id")
         .eq("id", flag.post_id)
         .single();
 
       if (flaggedPost?.author_id) {
-        const { data: postAuthor } = await (supabase as any)
+        const { data: postAuthor } = await supabase
           .from("profiles")
           .select("role")
           .eq("id", flaggedPost.author_id)
           .single();
 
-        if (postAuthor && !canModerateUser(profile.role, postAuthor.role)) {
+        if (postAuthor && !canModerateUser(profile.role ?? 0, postAuthor.role ?? 0)) {
           return { success: false, error: "Cannot moderate content from a user with equal or higher role" };
         }
       }
     }
 
     // Update flag
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("flags")
       .update({
         status: resolution,
@@ -353,7 +353,7 @@ export async function resolveFlag(
       const actorInfo = await getActorInfo(user.id);
 
       if (resolution === "resolved_removed") {
-        await (adminSupabase as any)
+        await adminSupabase
           .from("posts")
           .update({
             moderation_status: "removed",
@@ -366,7 +366,7 @@ export async function resolveFlag(
         await logAuditEvent({
           actorId: user.id,
           actorUsername: actorInfo?.username || "unknown",
-          actorRole: profile.role,
+          actorRole: profile.role ?? 0,
           action: "remove_post",
           targetPostId: flag.post_id,
           targetFlagId: flagId,
@@ -375,7 +375,7 @@ export async function resolveFlag(
       } else if (resolution === "resolved_dismissed") {
         // Dismissing a flag must un-hide the post — otherwise a 'flagged' post
         // stays invisible to everyone but the author/staff forever.
-        const { data: flaggedPost } = await (supabase as any)
+        const { data: flaggedPost } = await supabase
           .from("posts")
           .select("status")
           .eq("id", flag.post_id)
@@ -395,18 +395,18 @@ export async function resolveFlag(
           patch.created_at = goLive;
         }
 
-        await (adminSupabase as any).from("posts").update(patch).eq("id", flag.post_id);
+        await adminSupabase.from("posts").update(patch).eq("id", flag.post_id);
 
         await logAuditEvent({
           actorId: user.id,
           actorUsername: actorInfo?.username || "unknown",
-          actorRole: profile.role,
+          actorRole: profile.role ?? 0,
           action: "restore_post",
           targetPostId: flag.post_id,
           targetFlagId: flagId,
         });
       } else if (resolution === "resolved_flagged") {
-        await (adminSupabase as any)
+        await adminSupabase
           .from("posts")
           .update({
             moderation_status: "flagged",
@@ -419,7 +419,7 @@ export async function resolveFlag(
         await logAuditEvent({
           actorId: user.id,
           actorUsername: actorInfo?.username || "unknown",
-          actorRole: profile.role,
+          actorRole: profile.role ?? 0,
           action: "resolve_flag",
           targetPostId: flag.post_id,
           targetFlagId: flagId,
@@ -454,24 +454,24 @@ export async function escalateFlag(
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
     // Check valid escalation targets
-    const validTargets = getEscalationTargets(profile.role);
+    const validTargets = getEscalationTargets(profile.role ?? 0);
     if (!validTargets.includes(targetRole as any)) {
       return { success: false, error: "Invalid escalation target" };
     }
 
     // Get flag
-    const { data: flag } = await (supabase as any)
+    const { data: flag } = await supabase
       .from("flags")
       .select("assigned_role, status")
       .eq("id", flagId)
@@ -481,12 +481,12 @@ export async function escalateFlag(
       return { success: false, error: "Flag not found" };
     }
 
-    if (targetRole <= flag.assigned_role) {
+    if (targetRole <= (flag.assigned_role ?? 0)) {
       return { success: false, error: "Can only escalate to a higher role" };
     }
 
     // Update flag
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("flags")
       .update({
         status: "escalated",
@@ -503,9 +503,9 @@ export async function escalateFlag(
     }
 
     // Record escalation history
-    await (supabase as any).from("escalation_history").insert({
+    await supabase.from("escalation_history").insert({
       flag_id: flagId,
-      from_role: flag.assigned_role,
+      from_role: flag.assigned_role ?? 0,
       to_role: targetRole,
       escalated_by: user.id,
       reason,
@@ -533,7 +533,7 @@ async function notifyStaffOfFlag(
     const supabase = await createClient();
 
     // Get staff at or above the role level
-    const { data: staff } = await (supabase as any)
+    const { data: staff } = await supabase
       .from("profiles")
       .select("id")
       .gte("role", roleLevel);
@@ -541,7 +541,7 @@ async function notifyStaffOfFlag(
     if (!staff || staff.length === 0) return;
 
     // Create in-app notifications
-    const notifications = staff.map((s: any) => ({
+    const notifications: TablesInsert<"notifications">[] = staff.map((s: any) => ({
       recipient_id: s.id,
       notification_type: "moderation",
       is_read: false,
@@ -549,7 +549,7 @@ async function notifyStaffOfFlag(
 
     // Service-role client — staff notifications carry no actor_id, which the
     // request-client INSERT policy would reject (silent no-op otherwise).
-    await (createAdminClient() as any).from("notifications").insert(notifications);
+    await createAdminClient().from("notifications").insert(notifications);
   } catch (error) {
     console.error("Staff notification error:", error);
   }
@@ -579,13 +579,13 @@ export async function getFlagStats(): Promise<{
     }
 
     // Get user's role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < ROLES.JUNIOR_MOD) {
+    if (!profile || (profile.role ?? 0) < ROLES.JUNIOR_MOD) {
       return { success: false, error: "Insufficient permissions" };
     }
 
@@ -594,22 +594,22 @@ export async function getFlagStats(): Promise<{
 
     // Count flags by status (filtered by role)
     const [pending, reviewing, escalated, resolvedToday] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending")
         .lte("assigned_role", profile.role),
-      (supabase as any)
+      supabase
         .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "reviewing")
         .lte("assigned_role", profile.role),
-      (supabase as any)
+      supabase
         .from("flags")
         .select("*", { count: "exact", head: true })
         .eq("status", "escalated")
         .lte("assigned_role", profile.role),
-      (supabase as any)
+      supabase
         .from("flags")
         .select("*", { count: "exact", head: true })
         .in("status", ["resolved_removed", "resolved_flagged", "resolved_dismissed"])

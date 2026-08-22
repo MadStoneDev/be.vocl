@@ -101,7 +101,7 @@ export async function getConversations(): Promise<{
     }
 
     // Get conversations where user is a participant
-    const { data: participations, error: partError } = await (supabase as any)
+    const { data: participations, error: partError } = await supabase
       .from("conversation_participants")
       .select(
         `
@@ -128,7 +128,7 @@ export async function getConversations(): Promise<{
     const conversationIds = participations.map((p: any) => p.conversation_id);
 
     // Batch fetch: Get all other participants for all conversations at once
-    const { data: allParticipants } = await (supabase as any)
+    const { data: allParticipants } = await supabase
       .from("conversation_participants")
       .select(
         `
@@ -156,12 +156,18 @@ export async function getConversations(): Promise<{
 
     // Fast path: one row per conversation (latest message + unread) via RPC —
     // avoids pulling every message across every conversation into memory.
-    const { data: previews, error: rpcError } = await (supabase as any).rpc(
+    const { data: previews, error: rpcError } = await supabase.rpc(
       "get_conversation_previews"
     );
 
     if (!rpcError && Array.isArray(previews)) {
-      for (const p of previews) {
+      for (const p of previews as Array<{
+        conversation_id: string;
+        last_content: string | null;
+        last_sender_id: string | null;
+        last_created_at: string | null;
+        unread_count: number | string | null;
+      }>) {
         if (p.last_created_at) {
           lastMessageMap.set(p.conversation_id, {
             content: p.last_content,
@@ -173,14 +179,14 @@ export async function getConversations(): Promise<{
       }
     } else {
       // Fallback (e.g. RPC not migrated yet): the original unbounded approach.
-      const { data: allMessages } = await (supabase as any)
+      const { data: allMessages } = await supabase
         .from("messages")
         .select("id, conversation_id, content, sender_id, created_at")
         .in("conversation_id", conversationIds)
         .eq("is_deleted", false)
         .order("created_at", { ascending: false });
 
-      const { data: unreadMessages } = await (supabase as any)
+      const { data: unreadMessages } = await supabase
         .from("messages")
         .select("conversation_id, created_at")
         .in("conversation_id", conversationIds)
@@ -198,7 +204,7 @@ export async function getConversations(): Promise<{
       }
       for (const msg of unreadMessages || []) {
         const lastRead = lastReadMap.get(msg.conversation_id) || "1970-01-01";
-        if (new Date(msg.created_at) > new Date(lastRead)) {
+        if (msg.created_at && new Date(msg.created_at) > new Date(lastRead)) {
           unreadCountMap.set(
             msg.conversation_id,
             (unreadCountMap.get(msg.conversation_id) || 0) + 1
@@ -231,7 +237,7 @@ export async function getConversations(): Promise<{
               // Expose the raw ISO timestamp; the client formats it (<TimeAgo />).
               createdAt: lastMessage.created_at,
               isRead: lastMessage.sender_id === user.id ||
-                     (lastReadAt && new Date(lastMessage.created_at) <= new Date(lastReadAt)),
+                     Boolean(lastReadAt && new Date(lastMessage.created_at) <= new Date(lastReadAt)),
             }
           : undefined,
         unreadCount: unreadCountMap.get(part.conversation_id) || 0,
@@ -280,7 +286,7 @@ export async function getMessages(
     }
 
     // Verify user is participant
-    const { data: isParticipant } = await (supabase as any)
+    const { data: isParticipant } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
       .eq("conversation_id", conversationId)
@@ -291,7 +297,7 @@ export async function getMessages(
       return { success: false, error: "Access denied" };
     }
 
-    let query = (supabase as any)
+    let query = supabase
       .from("messages")
       .select("*")
       .eq("conversation_id", conversationId)
@@ -309,7 +315,7 @@ export async function getMessages(
     }
 
     // Mark as read
-    await (supabase as any)
+    await supabase
       .from("conversation_participants")
       .update({ last_read_at: new Date().toISOString() })
       .eq("conversation_id", conversationId)
@@ -321,7 +327,7 @@ export async function getMessages(
     // --- Reactions: one query for all loaded messages, aggregated in JS. ---
     const reactionMap = new Map<string, MessageReaction[]>();
     if (messageIds.length > 0) {
-      const { data: reactionRows } = await (supabase as any)
+      const { data: reactionRows } = await supabase
         .from("message_reactions")
         .select("message_id, emoji, user_id")
         .in("message_id", messageIds);
@@ -357,7 +363,7 @@ export async function getMessages(
       new Set(rows.map((m) => m.reply_to_id).filter(Boolean))
     );
     if (replyIds.length > 0) {
-      const { data: repliedRows } = await (supabase as any)
+      const { data: repliedRows } = await supabase
         .from("messages")
         .select("id, content, media_type, sender_id, is_deleted")
         .in("id", replyIds);
@@ -368,7 +374,7 @@ export async function getMessages(
       );
       const nameMap = new Map<string, string>();
       if (replySenderIds.length > 0) {
-        const { data: profiles } = await (supabase as any)
+        const { data: profiles } = await supabase
           .from("profiles")
           .select("id, username")
           .in("id", replySenderIds);
@@ -398,7 +404,7 @@ export async function getMessages(
 
     // The other participant's read cursor drives "seen" receipts on OUR sent
     // messages (a real receipt, not a blanket true).
-    const { data: otherReaders } = await (supabase as any)
+    const { data: otherReaders } = await supabase
       .from("conversation_participants")
       .select("last_read_at")
       .eq("conversation_id", conversationId)
@@ -469,7 +475,7 @@ export async function sendMessage(
     }
 
     // Verify user is participant
-    const { data: isParticipant } = await (supabase as any)
+    const { data: isParticipant } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
       .eq("conversation_id", conversationId)
@@ -481,7 +487,7 @@ export async function sendMessage(
     }
 
     // Check if either user has blocked the other
-    const { data: otherPart } = await (supabase as any)
+    const { data: otherPart } = await supabase
       .from("conversation_participants")
       .select("profile_id")
       .eq("conversation_id", conversationId)
@@ -489,7 +495,7 @@ export async function sendMessage(
       .single();
 
     if (otherPart) {
-      const { data: block } = await (supabase as any)
+      const { data: block } = await supabase
         .from("blocks")
         .select("blocker_id")
         .or(
@@ -504,7 +510,7 @@ export async function sendMessage(
     }
 
     // Create message
-    const { data: message, error } = await (supabase as any)
+    const { data: message, error } = await supabase
       .from("messages")
       .insert({
         conversation_id: conversationId,
@@ -524,14 +530,14 @@ export async function sendMessage(
     }
 
     // Update conversation timestamp
-    await (supabase as any)
+    await supabase
       .from("conversations")
       .update({ updated_at: new Date().toISOString() })
       .eq("id", conversationId);
 
     // Create notification for the other participant — unless they've muted this
     // conversation.
-    const { data: otherParticipant } = await (supabase as any)
+    const { data: otherParticipant } = await supabase
       .from("conversation_participants")
       .select("profile_id, is_muted")
       .eq("conversation_id", conversationId)
@@ -539,7 +545,7 @@ export async function sendMessage(
       .single();
 
     if (otherParticipant && !otherParticipant.is_muted) {
-      await (supabase as any).from("notifications").insert({
+      await supabase.from("notifications").insert({
         recipient_id: otherParticipant.profile_id,
         actor_id: user.id,
         notification_type: "message",
@@ -577,7 +583,7 @@ export async function startConversation(
     }
 
     // Check if either user has blocked the other
-    const { data: block } = await (supabase as any)
+    const { data: block } = await supabase
       .from("blocks")
       .select("blocker_id")
       .or(
@@ -593,7 +599,7 @@ export async function startConversation(
     // Check if conversation already exists using a single optimized query
     // (existing conversations are always allowed; DM-privacy only gates NEW ones).
     // Find conversations where both users are participants
-    const { data: myConversations } = await (supabase as any)
+    const { data: myConversations } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
       .eq("profile_id", user.id);
@@ -602,7 +608,7 @@ export async function startConversation(
       const myConversationIds = myConversations.map((c: any) => c.conversation_id);
 
       // Single query to check if target user is in any of these conversations
-      const { data: sharedConversation } = await (supabase as any)
+      const { data: sharedConversation } = await supabase
         .from("conversation_participants")
         .select("conversation_id")
         .eq("profile_id", participantId)
@@ -617,7 +623,7 @@ export async function startConversation(
 
     // DM privacy: does the recipient accept a NEW conversation from this sender?
     // Missing column (pre-migration) → treated as "everyone" (permissive).
-    const { data: recipient } = await (supabase as any)
+    const { data: recipient } = await supabase
       .from("profiles")
       .select("dm_privacy")
       .eq("id", participantId)
@@ -628,7 +634,7 @@ export async function startConversation(
     }
     if (dmPrivacy === "following") {
       // They only accept DMs from people they follow → they must follow the sender.
-      const { data: followsSender } = await (supabase as any)
+      const { data: followsSender } = await supabase
         .from("follows")
         .select("follower_id")
         .eq("follower_id", participantId)
@@ -647,7 +653,7 @@ export async function startConversation(
     // (RLS only allows inserting conversation_participants for your own profile_id)
     const admin = createAdminClient();
 
-    const { data: conversation, error: convError } = await (admin as any)
+    const { data: conversation, error: convError } = await admin
       .from("conversations")
       .insert({})
       .select("id")
@@ -657,7 +663,7 @@ export async function startConversation(
       return { success: false, error: "Failed to create conversation" };
     }
 
-    const { error: partError } = await (admin as any)
+    const { error: partError } = await admin
       .from("conversation_participants")
       .insert([
         { conversation_id: conversation.id, profile_id: user.id },
@@ -692,7 +698,7 @@ export async function editMessage(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("messages")
       .update({
         content: newContent,
@@ -727,7 +733,7 @@ export async function deleteMessage(messageId: string): Promise<MessageResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("messages")
       .update({
         is_deleted: true,
@@ -767,7 +773,7 @@ export async function hideConversation(
     // from their list without affecting the other participant.
     // Uses admin client to bypass RLS (DELETE policy may not exist yet).
     const admin = createAdminClient();
-    const { error } = await (admin as any)
+    const { error } = await admin
       .from("conversation_participants")
       .delete()
       .eq("conversation_id", conversationId)
@@ -801,7 +807,7 @@ export async function setConversationMuted(
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("conversation_participants")
       .update({ is_muted: muted })
       .eq("conversation_id", conversationId)
@@ -839,14 +845,14 @@ export async function searchMessages(
     const term = sanitizeFilterTerm(rawQuery).trim();
     if (term.length < 2) return { success: true, results: [] };
 
-    const { data: myConvos } = await (supabase as any)
+    const { data: myConvos } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
       .eq("profile_id", user.id);
     const convoIds = (myConvos || []).map((c: any) => c.conversation_id);
     if (convoIds.length === 0) return { success: true, results: [] };
 
-    const { data: msgs } = await (supabase as any)
+    const { data: msgs } = await supabase
       .from("messages")
       .select("id, conversation_id, content, created_at, sender_id")
       .in("conversation_id", convoIds)
@@ -886,7 +892,7 @@ export async function markConversationAsRead(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("conversation_participants")
       .update({ last_read_at: new Date().toISOString() })
       .eq("conversation_id", conversationId)

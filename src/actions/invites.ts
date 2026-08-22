@@ -81,7 +81,7 @@ export async function generateInviteCode(options?: {
     }
 
     // Check if user has codes remaining
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("invite_codes_remaining, role")
       .eq("id", user.id)
@@ -92,16 +92,16 @@ export async function generateInviteCode(options?: {
     }
 
     // Staff (role >= 5) can always generate codes
-    const isStaff = profile.role >= 5;
+    const isStaff = (profile.role ?? 0) >= 5;
 
     // Trusted Users (role >= 1) can generate codes if they have remaining
-    const isTrustedUser = profile.role >= 1;
+    const isTrustedUser = (profile.role ?? 0) >= 1;
 
     if (!isStaff && !isTrustedUser) {
       return { success: false, error: "You need to be a Trusted User to generate invite codes" };
     }
 
-    if (!isStaff && profile.invite_codes_remaining <= 0) {
+    if (!isStaff && (profile.invite_codes_remaining ?? 0) <= 0) {
       return { success: false, error: "You have no invite codes remaining" };
     }
 
@@ -112,7 +112,7 @@ export async function generateInviteCode(options?: {
 
     do {
       code = generateCodeString();
-      const { data: existing } = await (supabase as any)
+      const { data: existing } = await supabase
         .from("invite_codes")
         .select("id")
         .eq("code", code)
@@ -135,7 +135,7 @@ export async function generateInviteCode(options?: {
     }
 
     // Create the code
-    const { error: insertError } = await (supabase as any)
+    const { error: insertError } = await supabase
       .from("invite_codes")
       .insert({
         code,
@@ -155,10 +155,10 @@ export async function generateInviteCode(options?: {
     // service-role client — a request-client update is silently rejected, which
     // would let trusted users mint unlimited invite codes.
     if (!isStaff) {
-      const { error: decrementError } = await (createAdminClient() as any)
+      const { error: decrementError } = await createAdminClient()
         .from("profiles")
         .update({
-          invite_codes_remaining: profile.invite_codes_remaining - 1,
+          invite_codes_remaining: (profile.invite_codes_remaining ?? 0) - 1,
         })
         .eq("id", user.id);
       if (decrementError) {
@@ -194,13 +194,13 @@ export async function adminGenerateInviteCode(options: {
     }
 
     // Check staff role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -222,7 +222,7 @@ export async function adminGenerateInviteCode(options: {
 
       do {
         code = generateCodeString();
-        const { data: existing } = await (supabase as any)
+        const { data: existing } = await supabase
           .from("invite_codes")
           .select("id")
           .eq("code", code)
@@ -235,7 +235,7 @@ export async function adminGenerateInviteCode(options: {
       if (attempts >= 10) continue; // Skip if can't generate unique
 
       // Create the code
-      const { error: insertError } = await (supabase as any)
+      const { error: insertError } = await supabase
         .from("invite_codes")
         .insert({
           code,
@@ -273,7 +273,7 @@ export async function validateInviteCode(code: string): Promise<{
     const supabase = await createClient();
     const normalizedCode = code.toUpperCase().trim();
 
-    const { data: inviteCode } = await (supabase as any)
+    const { data: inviteCode } = await supabase
       .from("invite_codes")
       .select("id, max_uses, uses, expires_at, is_revoked")
       .eq("code", normalizedCode)
@@ -291,7 +291,7 @@ export async function validateInviteCode(code: string): Promise<{
       return { valid: false, error: "This invite code has expired" };
     }
 
-    if (inviteCode.max_uses !== null && inviteCode.uses >= inviteCode.max_uses) {
+    if (inviteCode.max_uses !== null && (inviteCode.uses ?? 0) >= inviteCode.max_uses) {
       return { valid: false, error: "This invite code has reached its maximum uses" };
     }
 
@@ -314,7 +314,7 @@ export async function useInviteCode(
     const normalizedCode = code.toUpperCase().trim();
 
     // Use the database function for atomic operation
-    const { data, error } = await (supabase as any).rpc("use_invite_code", {
+    const { data, error } = await supabase.rpc("use_invite_code", {
       p_code: normalizedCode,
       p_user_id: userId,
     });
@@ -324,8 +324,9 @@ export async function useInviteCode(
       return { success: false, error: "Failed to use invite code" };
     }
 
-    if (!data.success) {
-      return { success: false, error: data.error };
+    const result = data as { success: boolean; error?: string };
+    if (!result.success) {
+      return { success: false, error: result.error };
     }
 
     return { success: true };
@@ -360,14 +361,14 @@ export async function getMyInviteCodes(): Promise<{
     }
 
     // Get profile with remaining codes
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("invite_codes_remaining, role")
       .eq("id", user.id)
       .single();
 
     // Get user's codes
-    const { data: codes, error } = await (supabase as any)
+    const { data: codes, error } = await supabase
       .from("invite_codes")
       .select("*")
       .eq("creator_id", user.id)
@@ -393,10 +394,10 @@ export async function getMyInviteCodes(): Promise<{
 
     // Determine codes remaining based on role
     let codesRemaining = 0;
-    if (profile?.role >= 5) {
+    if ((profile?.role ?? 0) >= 5) {
       codesRemaining = -1; // Unlimited for staff
-    } else if (profile?.role >= 1) {
-      codesRemaining = profile.invite_codes_remaining || 0; // Trusted Users
+    } else if ((profile?.role ?? 0) >= 1) {
+      codesRemaining = profile?.invite_codes_remaining || 0; // Trusted Users
     }
     // Regular users (role 0) always get 0
 
@@ -404,7 +405,7 @@ export async function getMyInviteCodes(): Promise<{
       success: true,
       codes: formattedCodes,
       codesRemaining,
-      canGenerateCodes: profile?.role >= 1, // Trusted User or higher
+      canGenerateCodes: (profile?.role ?? 0) >= 1, // Trusted User or higher
     };
   } catch (error) {
     console.error("Get my invite codes error:", error);
@@ -431,7 +432,7 @@ export async function getCodeUses(codeId: string): Promise<{
     }
 
     // Verify ownership or staff access
-    const { data: code } = await (supabase as any)
+    const { data: code } = await supabase
       .from("invite_codes")
       .select("creator_id")
       .eq("id", codeId)
@@ -441,18 +442,18 @@ export async function getCodeUses(codeId: string): Promise<{
       return { success: false, error: "Code not found" };
     }
 
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    const isStaff = profile?.role >= 5;
+    const isStaff = (profile?.role ?? 0) >= 5;
     if (code.creator_id !== user.id && !isStaff) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: uses, error } = await (supabase as any)
+    const { data: uses, error } = await supabase
       .from("invite_code_uses")
       .select(`
         id,
@@ -498,16 +499,16 @@ export async function revokeInviteCode(codeId: string): Promise<InviteResult> {
     }
 
     // Get user role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    const isStaff = profile?.role >= 5;
+    const isStaff = (profile?.role ?? 0) >= 5;
 
     // Get the code
-    const { data: code } = await (supabase as any)
+    const { data: code } = await supabase
       .from("invite_codes")
       .select("creator_id")
       .eq("id", codeId)
@@ -523,7 +524,7 @@ export async function revokeInviteCode(codeId: string): Promise<InviteResult> {
     }
 
     // Revoke the code
-    const { error: updateError } = await (supabase as any)
+    const { error: updateError } = await supabase
       .from("invite_codes")
       .update({
         is_revoked: true,
@@ -574,20 +575,20 @@ export async function adminGetAllInviteCodes(options?: {
     }
 
     // Check staff role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Unauthorized" };
     }
 
     const limit = options?.limit || 50;
     const offset = options?.offset || 0;
 
-    let query = (supabase as any)
+    let query = supabase
       .from("invite_codes")
       .select(
         `
@@ -654,13 +655,13 @@ export async function adminGetInviteStats(): Promise<{
     }
 
     // Check staff role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 5) {
+    if (!profile || (profile.role ?? 0) < 5) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -670,17 +671,17 @@ export async function adminGetInviteStats(): Promise<{
       { count: totalUses },
       { count: usersWithCodes },
     ] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("invite_codes")
         .select("*", { count: "exact", head: true }),
-      (supabase as any)
+      supabase
         .from("invite_codes")
         .select("*", { count: "exact", head: true })
         .eq("is_revoked", false),
-      (supabase as any)
+      supabase
         .from("invite_code_uses")
         .select("*", { count: "exact", head: true }),
-      (supabase as any)
+      supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .gt("invite_codes_remaining", 0),
@@ -719,13 +720,13 @@ export async function adminGrantInviteCodes(
     }
 
     // Check admin role
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || profile.role < 10) {
+    if (!profile || (profile.role ?? 0) < 10) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -734,7 +735,7 @@ export async function adminGrantInviteCodes(
     // request-scoped client, so the previous update silently affected 0 rows and
     // still reported success. The role check above authorises this write.
     const admin = createAdminClient();
-    const { data: targetProfile, error: fetchError } = await (admin as any)
+    const { data: targetProfile, error: fetchError } = await admin
       .from("profiles")
       .select("invite_codes_remaining")
       .eq("id", userId)
@@ -744,7 +745,7 @@ export async function adminGrantInviteCodes(
       return { success: false, error: "User not found" };
     }
 
-    const { error: updateError } = await (admin as any)
+    const { error: updateError } = await admin
       .from("profiles")
       .update({
         invite_codes_remaining: (targetProfile.invite_codes_remaining || 0) + amount,
