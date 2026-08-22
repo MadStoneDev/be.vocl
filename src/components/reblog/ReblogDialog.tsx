@@ -100,9 +100,9 @@ export function ReblogDialog({
       <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-vocl-surface-dark rounded-3xl z-50 flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <IconRefresh size={20} className="text-vocl-primary" />
-            <h2 className="font-semibold text-foreground">Echo</h2>
+            <h2 className="type-display text-xl text-foreground">Echo</h2>
           </div>
           <button
             type="button"
@@ -116,7 +116,7 @@ export function ReblogDialog({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Original Post Preview */}
-          <div className="p-3 rounded-sm bg-background/50 border border-vocl-border">
+          <div className="p-3.5 rounded-2xl bg-background/50 border border-vocl-border">
             <div className="flex gap-3">
               {originalPost.imageUrl && (
                 <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
@@ -140,11 +140,11 @@ export function ReblogDialog({
                       />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="type-meta font-semibold text-foreground">
                     @{originalPost.author.username}
                   </span>
                 </div>
-                <p className="text-sm text-foreground/60 line-clamp-2">
+                <p className="type-body text-foreground/65 line-clamp-2">
                   {originalPost.contentPreview}
                 </p>
               </div>
@@ -153,7 +153,7 @@ export function ReblogDialog({
 
           {/* Add comment */}
           <div>
-            <label className="block text-sm text-foreground/60 mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               Add your thoughts (optional)
             </label>
             <RichTextEditor
@@ -165,16 +165,16 @@ export function ReblogDialog({
 
           {/* Mode Selection */}
           <div>
-            <label className="block text-sm text-foreground/60 mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               When to post
             </label>
-            <div className="flex rounded-sm bg-background/50 p-1">
+            <div className="flex rounded-xl bg-background/50 p-1">
               {modes.map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setMode(id)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg type-meta font-semibold transition-all ${
                     mode === id
                       ? "bg-vocl-primary text-white"
                       : "text-foreground/60 hover:text-foreground"
@@ -197,7 +197,7 @@ export function ReblogDialog({
 
           {/* Queue info */}
           {mode === "queue" && (
-            <p className="text-sm text-foreground/50 p-3 rounded-sm bg-background/30">
+            <p className="type-body text-foreground/55 p-3.5 rounded-2xl bg-background/30">
               This will be added to your queue and posted automatically based on
               your queue settings.
             </p>
@@ -205,7 +205,7 @@ export function ReblogDialog({
 
           {/* Error */}
           {error && (
-            <div className="p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+            <div className="p-3.5 rounded-2xl bg-vocl-like/20 border border-vocl-like/30 text-vocl-like type-body">
               {error}
             </div>
           )}
@@ -218,7 +218,7 @@ export function ReblogDialog({
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-5 py-2.5 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors font-medium"
+              className="px-5 py-2.5 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors type-meta font-semibold"
             >
               Cancel
             </button>
@@ -226,7 +226,7 @@ export function ReblogDialog({
               type="button"
               onClick={handleSubmit}
               disabled={isPending}
-              className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl bg-vocl-primary text-white type-meta font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isPending ? (
                 <>

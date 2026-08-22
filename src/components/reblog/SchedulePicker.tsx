@@ -112,7 +112,7 @@ export function SchedulePicker({
             key={option.label}
             type="button"
             onClick={() => handleQuickOption(option)}
-            className="px-3 py-1.5 rounded-lg bg-vocl-hover text-foreground/70 text-sm hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-vocl-hover text-foreground/70 type-meta font-semibold hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
           >
             {option.label}
           </button>
@@ -131,7 +131,7 @@ export function SchedulePicker({
             value={date}
             onChange={(e) => handleDateChange(e.target.value)}
             min={minDateStr}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary transition-colors text-sm"
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary transition-colors type-body"
           />
         </div>
         <div className="relative">
@@ -142,7 +142,7 @@ export function SchedulePicker({
           <select
             value={time}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary transition-colors text-sm appearance-none cursor-pointer"
+            className="w-full py-2.5 pl-10 pr-3 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary transition-colors type-body appearance-none cursor-pointer"
           >
             {TIME_OPTIONS.map((t) => (
               <option key={t} value={t}>
@@ -158,9 +158,9 @@ export function SchedulePicker({
 
       {/* Preview */}
       {date && time && (
-        <p className="text-sm text-foreground/50">
+        <p className="type-body text-foreground/55">
           Will be posted on{" "}
-          <span className="text-vocl-primary font-medium">
+          <span className="text-vocl-primary font-semibold">
             {new Date(`${date}T${time}`).toLocaleString(undefined, {
               weekday: "long",
               month: "short",
