@@ -53,7 +53,7 @@ export async function setPostAudioReaction(
     }
 
     // Verify the post exists (and is visible to the caller under RLS).
-    const { data: post } = await (supabase as any)
+    const { data: post } = await supabase
       .from("posts")
       .select("id")
       .eq("id", postId)
@@ -61,7 +61,7 @@ export async function setPostAudioReaction(
 
     if (!post) return { success: false, error: "Post not found" };
 
-    const { data: reaction, error } = await (supabase as any)
+    const { data: reaction, error } = await supabase
       .from("post_audio_reactions")
       .upsert(
         {
@@ -89,7 +89,7 @@ export async function setPostAudioReaction(
         const transcript = await transcribeAudio(audioUrl);
         if (!transcript) return;
         const admin = createAdminClient();
-        await (admin as any)
+        await admin
           .from("post_audio_reactions")
           .update({ transcript })
           .eq("id", reactionId);
@@ -119,7 +119,7 @@ export async function removePostAudioReaction(
 
     if (!user) return { success: false, error: "Unauthorized" };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("post_audio_reactions")
       .delete()
       .eq("post_id", postId)
@@ -155,7 +155,7 @@ export async function getPostAudioReactions(
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("post_audio_reactions")
       .select(`
         id,

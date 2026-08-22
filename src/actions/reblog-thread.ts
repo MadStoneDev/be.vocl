@@ -34,7 +34,7 @@ export async function getReblogThread(
     const supabase = await createClient();
 
     // 1. Fetch the given post to determine the original
-    const { data: currentPost, error: fetchError } = await (supabase as any)
+    const { data: currentPost, error: fetchError } = await supabase
       .from("posts")
       .select("id, original_post_id")
       .eq("id", postId)
@@ -47,7 +47,7 @@ export async function getReblogThread(
     const originalId = currentPost.original_post_id || currentPost.id;
 
     // 2. Fetch the original post with author profile
-    const { data: originalPost, error: originalError } = await (supabase as any)
+    const { data: originalPost, error: originalError } = await supabase
       .from("posts")
       .select(`
         id,
@@ -75,7 +75,7 @@ export async function getReblogThread(
     }
 
     // 3. Fetch all reblogs of this original
-    const { data: reblogs, error: reblogsError } = await (supabase as any)
+    const { data: reblogs, error: reblogsError } = await supabase
       .from("posts")
       .select(`
         id,
@@ -104,7 +104,9 @@ export async function getReblogThread(
     }
 
     // 4. Build the tree and compute depths
-    const allPosts = [originalPost, ...(reblogs || [])];
+    // FK-column embed (author:author_id) resolves at runtime but the generated
+    // types can't disambiguate it, so the rows come back as any here.
+    const allPosts: any[] = [originalPost, ...(reblogs || [])];
     const postMap = new Map<string, any>();
     const childrenMap = new Map<string, string[]>();
 

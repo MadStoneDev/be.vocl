@@ -89,7 +89,7 @@ export async function autoFlagPost(
     const supabase = await createClient();
 
     // Get post info
-    const { data: post, error: postError } = await (supabase as any)
+    const { data: post, error: postError } = await supabase
       .from("posts")
       .select("author_id")
       .eq("id", postId)
@@ -100,7 +100,7 @@ export async function autoFlagPost(
     }
 
     // Update post moderation status
-    await (supabase as any)
+    await supabase
       .from("posts")
       .update({
         moderation_status: "flagged",
@@ -110,7 +110,7 @@ export async function autoFlagPost(
       .eq("id", postId);
 
     // Create flag (not report - flags are for posts)
-    const { data: flag, error } = await (supabase as any)
+    const { data: flag, error } = await supabase
       .from("flags")
       .insert({
         flagger_id: null, // Auto-moderation has no flagger
@@ -161,7 +161,7 @@ async function notifyStaffOfFlaggedContent(
     const supabase = await createClient();
 
     // Get staff at or above the role level
-    const { data: staff } = await (supabase as any)
+    const { data: staff } = await supabase
       .from("profiles")
       .select("id")
       .gte("role", roleLevel);
@@ -171,14 +171,14 @@ async function notifyStaffOfFlaggedContent(
     // Create in-app notification for each staff member
     const notifications = staff.map((s: any) => ({
       recipient_id: s.id,
-      notification_type: "moderation",
+      notification_type: "moderation" as const,
       post_id: postId,
       is_read: false,
     }));
 
     // Service-role client — staff notifications carry no actor_id, which the
     // request-client INSERT policy would reject (silent no-op otherwise).
-    await (createAdminClient() as any).from("notifications").insert(notifications);
+    await createAdminClient().from("notifications").insert(notifications);
   } catch (error) {
     console.error("Staff notification error:", error);
   }
@@ -202,7 +202,7 @@ export async function getUserPendingReports(): Promise<{
       return { success: false, hasPendingReports: false };
     }
 
-    const { count, error } = await (supabase as any)
+    const { count, error } = await supabase
       .from("reports")
       .select("*", { count: "exact", head: true })
       .eq("reported_user_id", user.id)

@@ -26,7 +26,7 @@ export async function transcribePostAudio(postId: string): Promise<{ success: bo
     if (!user) return { success: false, error: "Unauthorized" };
 
     const supabase = createAdminClient();
-    const { data: post, error } = await (supabase as any)
+    const { data: post, error } = await supabase
       .from("posts")
       .select("id, post_type, content, author_id")
       .eq("id", postId)
@@ -44,7 +44,7 @@ export async function transcribePostAudio(postId: string): Promise<{ success: bo
     if (!transcript) return { success: false, error: "Transcription failed" };
 
     const updated = { ...content, transcript };
-    const { error: updateErr } = await (supabase as any)
+    const { error: updateErr } = await supabase
       .from("posts")
       .update({ content: updated })
       .eq("id", postId);

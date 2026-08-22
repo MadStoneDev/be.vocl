@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
         if (transactionType === "tip" && transactionId) {
           // Complete the tip
-          await (supabase as any)
+          await supabase
             .from("tips")
             .update({
               status: "completed",
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             .eq("status", "pending");
 
           // Get tip details for notification
-          const { data: tip } = await (supabase as any)
+          const { data: tip } = await supabase
             .from("tips")
             .select("sender_id, recipient_id")
             .eq("id", transactionId)
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
           if (tip) {
             // Create notification
-            await (supabase as any).from("notifications").insert({
+            await supabase.from("notifications").insert({
               recipient_id: tip.recipient_id,
               actor_id: tip.sender_id,
               notification_type: "tip",
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           }
         } else if (transactionType === "verification" && transactionId) {
           // Complete the verification
-          const { data: verification } = await (supabase as any)
+          const { data: verification } = await supabase
             .from("verifications")
             .update({
               status: "completed",
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
           if (verification) {
             // Update user profile to verified
-            await (supabase as any)
+            await supabase
               .from("profiles")
               .update({
                 is_verified: true,
@@ -124,12 +124,12 @@ export async function POST(request: NextRequest) {
         const transactionId = customData.transaction_id;
 
         if (transactionType === "tip" && transactionId) {
-          await (supabase as any)
+          await supabase
             .from("tips")
             .update({ status: "failed" })
             .eq("id", transactionId);
         } else if (transactionType === "verification" && transactionId) {
-          await (supabase as any)
+          await supabase
             .from("verifications")
             .update({ status: "failed" })
             .eq("id", transactionId);

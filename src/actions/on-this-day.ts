@@ -30,7 +30,7 @@ export async function getOnThisDay(): Promise<{
 
     // Grab all published posts for this user (we filter by month/day in JS).
     // For heavy users this could be a lot; cap and rely on the index over author_id.
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("posts")
       .select("id, post_type, content, created_at, like_count, comment_count")
       .eq("author_id", user.id)

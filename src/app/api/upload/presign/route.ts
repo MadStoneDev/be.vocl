@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         }
         // Verify the caller is actually a participant before issuing an upload
         // URL into this conversation's media namespace.
-        const { data: member } = await (supabase as any)
+        const { data: member } = await supabase
           .from("conversation_participants")
           .select("conversation_id")
           .eq("conversation_id", conversationId)

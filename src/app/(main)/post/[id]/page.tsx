@@ -42,20 +42,20 @@ interface PostMeta {
  *  logged-out visitors) to server-render the public view. */
 async function getPostMeta(id: string): Promise<PostMeta | null> {
   const supabase = createAdminClient();
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("posts")
     .select(
       "id, author_id, post_type, content, is_sensitive, exclude_from_public, status, moderation_status, created_at, updated_at, like_count, comment_count, reblog_count, author:author_id ( username, display_name, avatar_url, role, is_discoverable, allow_search_indexing, lock_status )"
     )
     .eq("id", id)
     .maybeSingle();
-  return (data as PostMeta) ?? null;
+  return (data as unknown as PostMeta) ?? null;
 }
 
 /** Tags for a single post — used to server-render the public post view. */
 async function getPostTags(id: string): Promise<Array<{ id: string; name: string }>> {
   const supabase = createAdminClient();
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("post_tags")
     .select("tag:tags!tag_id(id, name)")
     .eq("post_id", id);

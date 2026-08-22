@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Json } from "@/types/database";
 
 export type AuditAction =
   | "ban_user"
@@ -42,7 +43,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
     // role (moderators as well as admins), and can't be tampered with via RLS.
     const supabase = createAdminClient();
 
-    await (supabase as any).from("audit_logs").insert({
+    await supabase.from("audit_logs").insert({
       actor_id: entry.actorId,
       actor_username: entry.actorUsername,
       actor_role: entry.actorRole,
@@ -53,7 +54,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
       target_report_id: entry.targetReportId || null,
       target_flag_id: entry.targetFlagId || null,
       target_appeal_id: entry.targetAppealId || null,
-      details: entry.details || {},
+      details: (entry.details || {}) as Json,
       ip_address: entry.ipAddress || null,
     });
   } catch (error) {
@@ -72,13 +73,13 @@ export async function getActorInfo(userId: string): Promise<{
 } | null> {
   try {
     const supabase = await createClient();
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("profiles")
       .select("username, role")
       .eq("id", userId)
       .single();
 
-    return data ? { username: data.username, role: data.role } : null;
+    return data ? { username: data.username, role: data.role ?? 0 } : null;
   } catch {
     return null;
   }
@@ -92,7 +93,7 @@ export async function getTargetUserInfo(userId: string): Promise<{
 } | null> {
   try {
     const supabase = await createClient();
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("profiles")
       .select("username")
       .eq("id", userId)

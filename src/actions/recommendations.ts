@@ -206,11 +206,11 @@ export async function getPersonalizedFeed(options?: {
     let taggedPostMapping = new Map<string, string[]>();
 
     // Build interest tag weights from liked posts AND get tagged post IDs in parallel
-    const phase2Queries: Promise<any>[] = [];
+    const phase2Queries: PromiseLike<any>[] = [];
 
     if (likedPostIds.length > 0) {
       phase2Queries.push(
-        (supabase as any).from("post_tags").select("post_id, tag_id").in("post_id", likedPostIds)
+        supabase.from("post_tags").select("post_id, tag_id").in("post_id", likedPostIds)
       );
     } else {
       phase2Queries.push(Promise.resolve({ data: [] }));
@@ -221,7 +221,7 @@ export async function getPersonalizedFeed(options?: {
     // We'll also fetch tagged posts if we have followed tags
     if (followedTagIds.length > 0) {
       phase2Queries.push(
-        (supabase as any).from("post_tags").select("post_id, tag_id").in("tag_id", followedTagIds)
+        supabase.from("post_tags").select("post_id, tag_id").in("tag_id", followedTagIds)
       );
     } else {
       phase2Queries.push(Promise.resolve({ data: [] }));
@@ -260,7 +260,7 @@ export async function getPersonalizedFeed(options?: {
     // If we have interest tags that aren't in followed tags, fetch those post mappings too
     const extraInterestTagIds = interestTagIds.filter((id) => !followedTagIds.includes(id));
     if (extraInterestTagIds.length > 0) {
-      const { data: extraTagPosts } = await (supabase as any)
+      const { data: extraTagPosts } = await supabase
         .from("post_tags")
         .select("post_id, tag_id")
         .in("tag_id", extraInterestTagIds);
@@ -275,7 +275,7 @@ export async function getPersonalizedFeed(options?: {
     // Fetch posts for semantically expanded tags
     const semanticTagIds = [...semanticTagWeights.keys()];
     if (semanticTagIds.length > 0) {
-      const { data: semanticTagPosts } = await (supabase as any)
+      const { data: semanticTagPosts } = await supabase
         .from("post_tags")
         .select("post_id, tag_id")
         .in("tag_id", semanticTagIds.slice(0, 200));
@@ -294,12 +294,12 @@ export async function getPersonalizedFeed(options?: {
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     const tagPostIds = [...taggedPostMapping.keys()];
-    const phase3Queries: Promise<any>[] = [];
+    const phase3Queries: PromiseLike<any>[] = [];
 
     // Query 1: Tagged posts (from followed tags + interest tags)
     if (tagPostIds.length > 0) {
       phase3Queries.push(
-        (supabase as any)
+        supabase
           .from("posts")
           .select(POST_SELECT_FIELDS)
           .in("id", tagPostIds.slice(0, 200))
@@ -315,7 +315,7 @@ export async function getPersonalizedFeed(options?: {
     // Query 2: Followed user posts
     if (followedUserIds.length > 0) {
       phase3Queries.push(
-        (supabase as any)
+        supabase
           .from("posts")
           .select(POST_SELECT_FIELDS)
           .in("author_id", followedUserIds)
@@ -329,7 +329,7 @@ export async function getPersonalizedFeed(options?: {
 
     // Query 3: Popular/trending posts (always fetch as fallback)
     phase3Queries.push(
-      (supabase as any)
+      supabase
         .from("posts")
         .select(POST_SELECT_FIELDS)
         .eq("status", "published")
@@ -411,7 +411,7 @@ export async function getPersonalizedFeed(options?: {
     // Read denormalized follower counts in ONE query (replaces per-author counts).
     const [stats, followerCountResult] = await Promise.all([
       batchFetchPostStats(supabase, allPostIds, user.id, { includeTags: true }),
-      (supabase as any).from("profiles").select("id, follower_count").in("id", uniqueAuthorIds),
+      supabase.from("profiles").select("id, follower_count").in("id", uniqueAuthorIds),
     ]);
 
     // Build author follower count map
@@ -426,7 +426,7 @@ export async function getPersonalizedFeed(options?: {
     )];
     const originalAuthorMap = new Map<string, any>();
     if (reblogOriginalIds.length > 0) {
-      const { data: origPosts } = await (supabase as any)
+      const { data: origPosts } = await supabase
         .from("posts")
         .select("id, author:author_id(username, display_name, avatar_url, role)")
         .in("id", reblogOriginalIds);
@@ -442,7 +442,7 @@ export async function getPersonalizedFeed(options?: {
     )];
     const chainAuthorMap = new Map<string, any>();
     if (reblogChainIds.length > 0) {
-      const { data: chainPosts } = await (supabase as any)
+      const { data: chainPosts } = await supabase
         .from("posts")
         .select("id, author:author_id(username, display_name, avatar_url, role)")
         .in("id", reblogChainIds);
@@ -636,7 +636,7 @@ export async function getTrendingFeed(options?: {
     const twoDaysAgo = new Date();
     twoDaysAgo.setHours(twoDaysAgo.getHours() - 48);
 
-    let postsQuery = (supabase as any)
+    let postsQuery = supabase
       .from("posts")
       .select(POST_SELECT_FIELDS)
       .eq("status", "published")
@@ -670,7 +670,7 @@ export async function getTrendingFeed(options?: {
 
     const [stats, trendingTagsResult] = await Promise.all([
       batchFetchPostStats(supabase, allPostIds, user?.id, { includeTags: true }),
-      (supabase as any)
+      supabase
         .from("post_tags")
         .select("tag_id, tags!inner(id, name)")
         .gte("created_at", oneDayAgo.toISOString()),
@@ -762,7 +762,7 @@ export async function getTrendingFeed(options?: {
     )];
     const trendingOrigAuthorMap = new Map<string, any>();
     if (trendingReblogOrigIds.length > 0) {
-      const { data: origPosts } = await (supabase as any)
+      const { data: origPosts } = await supabase
         .from("posts")
         .select("id, author:author_id(username, display_name, avatar_url, role)")
         .in("id", trendingReblogOrigIds);
@@ -778,7 +778,7 @@ export async function getTrendingFeed(options?: {
     )];
     const trendingChainAuthorMap = new Map<string, any>();
     if (trendingChainIds.length > 0) {
-      const { data: chainPosts } = await (supabase as any)
+      const { data: chainPosts } = await supabase
         .from("posts")
         .select("id, author:author_id(username, display_name, avatar_url, role)")
         .in("id", trendingChainIds);

@@ -47,7 +47,7 @@ export async function getPostThread(threadId: string): Promise<{
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(
         `
@@ -147,7 +147,7 @@ export async function getMyCollections(): Promise<{
     }
 
     // Collection heads = my published posts at thread_position 1.
-    const { data: heads, error } = await (supabase as any)
+    const { data: heads, error } = await supabase
       .from("posts")
       .select("thread_id, content, created_at")
       .eq("author_id", user.id)
@@ -168,7 +168,7 @@ export async function getMyCollections(): Promise<{
     const threadIds: string[] = heads.map((h: any) => h.thread_id);
 
     // Count published parts per collection.
-    const { data: members } = await (supabase as any)
+    const { data: members } = await supabase
       .from("posts")
       .select("thread_id")
       .in("thread_id", threadIds)
@@ -207,7 +207,7 @@ export async function getThreadInfo(postId: string): Promise<ThreadInfo> {
   try {
     const supabase = await createClient();
 
-    const { data: post } = await (supabase as any)
+    const { data: post } = await supabase
       .from("posts")
       .select("thread_id, thread_position")
       .eq("id", postId)
@@ -217,7 +217,7 @@ export async function getThreadInfo(postId: string): Promise<ThreadInfo> {
       return { threadId: null, threadPosition: null, threadLength: 0 };
     }
 
-    const { count } = await (supabase as any)
+    const { count } = await supabase
       .from("posts")
       .select("*", { count: "exact", head: true })
       .eq("thread_id", post.thread_id)
@@ -253,7 +253,7 @@ export async function getThreadInfoBatch(
     const supabase = await createClient();
 
     // 1. Fetch thread_id and thread_position for all requested posts
-    const { data: posts } = await (supabase as any)
+    const { data: posts } = await supabase
       .from("posts")
       .select("id, thread_id, thread_position")
       .in("id", postIds);
@@ -273,7 +273,7 @@ export async function getThreadInfoBatch(
 
     // 2. Count thread lengths with individual count queries per thread_id
     const countQueries = threadIds.map((tid: string) =>
-      (supabase as any)
+      supabase
         .from("posts")
         .select("*", { count: "exact", head: true })
         .eq("thread_id", tid)
@@ -292,7 +292,7 @@ export async function getThreadInfoBatch(
       if (post.thread_id) {
         result.set(post.id, {
           threadId: post.thread_id,
-          threadPosition: post.thread_position,
+          threadPosition: post.thread_position ?? 0,
           threadLength: threadLengthMap.get(post.thread_id) || 0,
         });
       }

@@ -12,14 +12,14 @@ export async function GET() {
       return NextResponse.json({ authorized: false });
     }
 
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
     // Require at least moderator role (5) for admin access
-    const authorized = profile?.role >= 5;
+    const authorized = (profile?.role ?? 0) >= 5;
 
     return NextResponse.json({ authorized });
   } catch (error) {

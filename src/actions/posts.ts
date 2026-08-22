@@ -13,6 +13,9 @@ import type {
   ImagePostContent,
   VideoPostContent,
   AudioPostContent,
+  Json,
+  ReportSubject,
+  TablesInsert,
 } from "@/types/database";
 import { processMentions } from "@/actions/mentions";
 import { batchFetchPostStats } from "@/actions/shared/post-stats";
@@ -49,7 +52,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     }
 
     // Check if user is restricted from posting
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("lock_status")
       .eq("id", user.id)
@@ -121,7 +124,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     } else if (publishMode === "queue") {
       status = "queued";
       // Get next queue position
-      const { data: nextPos } = await (supabase as any).rpc("get_next_queue_position", {
+      const { data: nextPos } = await supabase.rpc("get_next_queue_position", {
         p_user_id: user.id,
       });
       queuePosition = nextPos || 1;
@@ -140,7 +143,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     // Determine thread_position if appending to an existing thread
     let threadPosition: number | null = null;
     if (threadId) {
-      const { data: maxPosRow } = await (supabase as any)
+      const { data: maxPosRow } = await supabase
         .from("posts")
         .select("thread_position")
         .eq("thread_id", threadId)
@@ -150,12 +153,12 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       threadPosition = (maxPosRow?.thread_position || 0) + 1;
     }
 
-    const { data: post, error: postError } = await (supabase as any)
+    const { data: post, error: postError } = await supabase
       .from("posts")
       .insert({
         author_id: user.id,
         post_type: postType,
-        content: content,
+        content: content as unknown as Json,
         is_sensitive: finalIsSensitive,
         exclude_from_public: finalExcludeFromPublic,
         status,
@@ -183,7 +186,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
 
     // If starting a new thread, set thread_id to the post's own id and thread_position to 1
     if (startThread && !threadId) {
-      await (supabase as any)
+      await supabase
         .from("posts")
         .update({ thread_id: post.id, thread_position: 1 })
         .eq("id", post.id);
@@ -192,31 +195,31 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     // If content was held (blocked or flagged for manual review), create a
     // report for staff and hold the post out of public view.
     if (heldForReview) {
-      await (supabase as any).from("reports").insert({
+      await supabase.from("reports").insert({
         reporter_id: null, // System report
         reported_user_id: user.id,
         post_id: post.id,
-        subject: reportSubject,
+        subject: reportSubject as ReportSubject,
         comments: moderationReason,
         source: "auto_moderation",
         status: "pending",
       });
 
       // Notify admins about flagged content
-      const { data: admins } = await (supabase as any)
+      const { data: admins } = await supabase
         .from("profiles")
         .select("id")
         .gte("role", 10);
 
       if (admins && admins.length > 0) {
-        const notifications = admins.map((admin: any) => ({
+        const notifications = admins.map((admin): TablesInsert<"notifications"> => ({
           recipient_id: admin.id,
           actor_id: user.id,
           notification_type: "moderation",
           post_id: post.id,
           is_read: false,
         }));
-        await (supabase as any).from("notifications").insert(notifications);
+        await supabase.from("notifications").insert(notifications);
       }
 
       // Return success but inform user their post is under review
@@ -372,7 +375,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     const { postId, content, reblogComment, isSensitive, excludeFromPublic, tags } = input;
 
     // Verify ownership (and fetch the fields needed to re-derive visibility).
-    const { data: existingPost } = await (supabase as any)
+    const { data: existingPost } = await supabase
       .from("posts")
       .select("author_id, post_type, is_sensitive, exclude_from_public")
       .eq("id", postId)
@@ -432,7 +435,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     // Hard rule: sensitive is NEVER public, whatever the visibility toggle says.
     updateData.exclude_from_public = finalIsSensitive ? true : requestedExclude;
 
-    const { error: updateError } = await (supabase as any)
+    const { error: updateError } = await supabase
       .from("posts")
       .update(updateData)
       .eq("id", postId);
@@ -444,7 +447,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     // Update tags if provided
     if (tags !== undefined) {
       // Remove existing tags
-      await (supabase as any).from("post_tags").delete().eq("post_id", postId);
+      await supabase.from("post_tags").delete().eq("post_id", postId);
       // Add new tags
       if (tags.length > 0) {
         await handleTags(supabase, postId, tags);
@@ -471,7 +474,7 @@ export async function deletePost(postId: string): Promise<{ success: boolean; er
     }
 
     // Verify ownership
-    const { data: existingPost } = await (supabase as any)
+    const { data: existingPost } = await supabase
       .from("posts")
       .select("author_id")
       .eq("id", postId)
@@ -482,7 +485,7 @@ export async function deletePost(postId: string): Promise<{ success: boolean; er
     }
 
     // Soft delete - set status to deleted
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({ status: "deleted" })
       .eq("id", postId);
@@ -642,7 +645,7 @@ export async function getPostById(postId: string): Promise<{
     } = await supabase.auth.getUser();
 
     // Get the post
-    const { data: post, error } = await (supabase as any)
+    const { data: post, error } = await supabase
       .from("posts")
       .select(
         `
@@ -656,7 +659,7 @@ export async function getPostById(postId: string): Promise<{
         status,
         moderation_status,
         created_at,
-        author:author_id (
+        author:profiles!posts_author_id_fkey (
           username,
           display_name,
           avatar_url,
@@ -702,11 +705,11 @@ export async function getPostById(postId: string): Promise<{
       },
       postType: post.post_type,
       content: post.content,
-      isSensitive: post.is_sensitive,
+      isSensitive: post.is_sensitive ?? false,
       excludeFromPublic: post.exclude_from_public ?? false,
-      isPinned: post.is_pinned,
+      isPinned: post.is_pinned ?? false,
       isOwn: user?.id === post.author_id,
-      createdAt: post.created_at,
+      createdAt: post.created_at ?? "",
       likeCount: stats.likeCountMap.get(postId) || 0,
       commentCount: stats.commentCountMap.get(postId) || 0,
       reblogCount: stats.reblogCountMap.get(postId) || 0,
@@ -747,7 +750,7 @@ export async function getPostsByUser(
     const offset = options?.offset || 0;
 
     // Get posts
-    const { data: posts, error, count } = await (supabase as any)
+    const { data: posts, error, count } = await supabase
       .from("posts")
       .select(
         `
@@ -855,7 +858,7 @@ export async function getLikedPosts(
     const offset = options?.offset || 0;
 
     // Get liked posts
-    const { data: likes, error, count } = await (supabase as any)
+    const { data: likes, error, count } = await supabase
       .from("likes")
       .select(
         `
@@ -969,7 +972,7 @@ export async function getCommentedPosts(
     const offset = options?.offset || 0;
 
     // Get comments by this user with their associated posts
-    const { data: comments, error, count } = await (supabase as any)
+    const { data: comments, error, count } = await supabase
       .from("comments")
       .select(
         `
@@ -1142,7 +1145,7 @@ export async function getPublicFrontPagePosts(
     const supabase = createAdminClient();
     const limit = options?.limit ?? 24;
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(
         `
@@ -1266,14 +1269,14 @@ export async function getPublicPostsByTag(
     const limit = options?.limit ?? 6;
 
     // Resolve the tag name (case-insensitive) to its id.
-    const { data: tag } = await (supabase as any)
+    const { data: tag } = await supabase
       .from("tags")
       .select("id")
       .ilike("name", tagName)
       .maybeSingle();
     if (!tag) return [];
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(
         `
@@ -1355,7 +1358,7 @@ export async function searchPublicPosts(
     const limit = Math.min(Math.max(options?.limit ?? 24, 1), 50);
     const offset = Math.max(options?.offset ?? 0, 0);
 
-    const { data: ranked, error: rankErr } = await (supabase as any).rpc(
+    const { data: ranked, error: rankErr } = await supabase.rpc(
       "search_public_posts",
       { q, lim: limit, off: offset }
     );
@@ -1369,7 +1372,7 @@ export async function searchPublicPosts(
     );
     const ids = (ranked as Array<{ id: string }>).map((r) => r.id);
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(
         `
@@ -1422,7 +1425,7 @@ export async function searchPublicTags(
   try {
     const supabase = createAdminClient();
     const limit = Math.min(Math.max(options?.limit ?? 12, 1), 50);
-    const { data, error } = await (supabase as any).rpc("search_public_tags", {
+    const { data, error } = await supabase.rpc("search_public_tags", {
       q,
       lim: limit,
     });
@@ -1450,7 +1453,7 @@ export async function searchPublicUsers(
   try {
     const supabase = createAdminClient();
     const limit = Math.min(Math.max(options?.limit ?? 20, 1), 50);
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("profiles")
       .select("username, display_name, avatar_url, bio, is_discoverable, lock_status")
       .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
@@ -1495,7 +1498,7 @@ export async function getPublicTagShelves(options?: {
     const postsPerTag = options?.postsPerTag ?? 6;
 
     // Over-fetch tags — some will have no publicly-visible posts.
-    const { data: tags } = await (supabase as any)
+    const { data: tags } = await supabase
       .from("tags")
       .select("name, post_count")
       .gt("post_count", 0)
@@ -1550,19 +1553,19 @@ export async function getFeedPosts(options?: {
     let followedTagPostIds: string[] = [];
     if (user) {
       const [{ data: follows }, { data: mutes }, { data: mutedTags }, { data: followedTags }] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("follows")
           .select("following_id")
           .eq("follower_id", user.id),
-        (supabase as any)
+        supabase
           .from("mutes")
           .select("muted_id")
           .eq("muter_id", user.id),
-        (supabase as any)
+        supabase
           .from("muted_tags")
           .select("tag_id")
           .eq("profile_id", user.id),
-        (supabase as any)
+        supabase
           .from("followed_tags")
           .select("tag_id")
           .eq("profile_id", user.id),
@@ -1583,7 +1586,7 @@ export async function getFeedPosts(options?: {
       if (followedTagIds.length > 0) {
         // post_tags has no timestamp of its own, so order by the embedded post's
         // created_at (inner join) to grab the most recent tagged posts.
-        const { data: tagPosts } = await (supabase as any)
+        const { data: tagPosts } = await supabase
           .from("post_tags")
           .select("post_id, posts!inner(created_at, status)")
           .in("tag_id", followedTagIds)
@@ -1595,7 +1598,7 @@ export async function getFeedPosts(options?: {
     }
 
     // Build and execute the main posts query
-    let query = (supabase as any)
+    let query = supabase
       .from("posts")
       .select(
         `
@@ -1674,13 +1677,13 @@ export async function getFeedPosts(options?: {
     const [stats, followData, originalPostsData, chainPostsData] = await Promise.all([
       batchFetchPostStats(supabase, postIds, user?.id, { includeTags: true, includeBookmarks: true }),
       user && uniqueAuthorIds.length > 0
-        ? (supabase as any).from("follows").select("following_id").eq("follower_id", user.id).in("following_id", uniqueAuthorIds)
+        ? supabase.from("follows").select("following_id").eq("follower_id", user.id).in("following_id", uniqueAuthorIds)
         : Promise.resolve({ data: [] }),
       reblogOriginalIds.length > 0
-        ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogOriginalIds).then((res: any) => res).catch(() => ({ data: [] }))
+        ? supabase.from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogOriginalIds).then((res: any) => res, () => ({ data: [] }))
         : Promise.resolve({ data: [] }),
       reblogChainIds.length > 0
-        ? (supabase as any).from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogChainIds).then((res: any) => res).catch(() => ({ data: [] }))
+        ? supabase.from("posts").select("id, author:author_id(username, display_name, avatar_url, role)").in("id", reblogChainIds).then((res: any) => res, () => ({ data: [] }))
         : Promise.resolve({ data: [] }),
     ]);
 
@@ -1703,7 +1706,7 @@ export async function getFeedPosts(options?: {
     const threadLengthMap = new Map<string, number>();
     if (threadIds.length > 0) {
       // Single query: fetch all published thread members, tally per thread_id in JS.
-      const { data: threadRows } = await (supabase as any)
+      const { data: threadRows } = await supabase
         .from("posts")
         .select("thread_id")
         .in("thread_id", threadIds)

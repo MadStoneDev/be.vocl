@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       // Service-role client: a system report has reporter_id = null, which the
       // request-client INSERT policy (reporter_id = auth.uid()) rejects — so via
       // the session client the auto-moderation report is never created.
-      await (createAdminClient() as any).from("reports").insert({
+      await createAdminClient().from("reports").insert({
         reporter_id: null, // System report
         reported_user_id: user.id,
         subject: "minor_safety", // Default for auto-moderation

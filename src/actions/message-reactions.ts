@@ -37,7 +37,7 @@ export async function toggleMessageReaction(
     }
 
     // Is this reaction already present?
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("message_reactions")
       .select("id")
       .eq("message_id", messageId)
@@ -46,7 +46,7 @@ export async function toggleMessageReaction(
       .maybeSingle();
 
     if (existing) {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("message_reactions")
         .delete()
         .eq("id", existing.id);
@@ -56,7 +56,7 @@ export async function toggleMessageReaction(
       return { success: true, reacted: false };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("message_reactions")
       .insert({
         message_id: messageId,

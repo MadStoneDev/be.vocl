@@ -36,7 +36,7 @@ export async function getActivityStats(): Promise<{
     }
 
     // Get aggregate stats from user's published posts
-    const { data: posts, error: postsError } = await (supabase as any)
+    const { data: posts, error: postsError } = await supabase
       .from("posts")
       .select("like_count, comment_count, reblog_count")
       .eq("author_id", user.id)
@@ -60,7 +60,7 @@ export async function getActivityStats(): Promise<{
     }
 
     // Get recent notifications as activity feed
-    const { data: notifications, error: notifError } = await (supabase as any)
+    const { data: notifications, error: notifError } = await supabase
       .from("notifications")
       .select(
         `

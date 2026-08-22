@@ -25,7 +25,7 @@ export async function getDrafts(): Promise<DraftsResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select("id, post_type, content, created_at, updated_at, tags")
       .eq("status", "draft")
@@ -54,7 +54,7 @@ export async function getScheduledPosts(): Promise<DraftsResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select("id, post_type, content, created_at, updated_at, scheduled_for, tags")
       .eq("status", "scheduled")
@@ -83,7 +83,7 @@ export async function getQueuedPosts(): Promise<DraftsResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select("id, post_type, content, created_at, updated_at, queue_position, tags")
       .eq("status", "queued")
@@ -113,7 +113,7 @@ export async function deleteDraft(postId: string): Promise<ActionResult> {
     }
 
     // Verify ownership
-    const { data: existingPost } = await (supabase as any)
+    const { data: existingPost } = await supabase
       .from("posts")
       .select("author_id")
       .eq("id", postId)
@@ -124,7 +124,7 @@ export async function deleteDraft(postId: string): Promise<ActionResult> {
     }
 
     // Soft delete - set status to deleted
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({ status: "deleted" })
       .eq("id", postId);
@@ -153,7 +153,7 @@ export async function publishDraft(postId: string): Promise<ActionResult> {
     }
 
     // Verify ownership
-    const { data: existingPost } = await (supabase as any)
+    const { data: existingPost } = await supabase
       .from("posts")
       .select("author_id, status, moderation_status")
       .eq("id", postId)
@@ -181,7 +181,7 @@ export async function publishDraft(postId: string): Promise<ActionResult> {
     // (which order by created_at) instead of being buried at the time it was
     // originally drafted.
     const publishedAt = new Date().toISOString();
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("posts")
       .update({
         status: "published",

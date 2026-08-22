@@ -66,7 +66,7 @@ export async function getPostAnalytics(
     const sinceISO = since.toISOString();
 
     // Fetch all user posts within time range
-    const { data: posts, error } = await (supabase as any)
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(
         "id, post_type, content, created_at, like_count, comment_count, reblog_count, tags"
@@ -225,7 +225,7 @@ export async function getPostDetailAnalytics(
     }
 
     // Fetch the post and verify ownership
-    const { data: post, error: postError } = await (supabase as any)
+    const { data: post, error: postError } = await supabase
       .from("posts")
       .select("id, post_type, content, created_at, author_id, like_count, comment_count, reblog_count")
       .eq("id", postId)
@@ -240,19 +240,19 @@ export async function getPostDetailAnalytics(
     }
 
     // Fetch likes grouped by day
-    const { data: likes } = await (supabase as any)
+    const { data: likes } = await supabase
       .from("likes")
       .select("created_at")
       .eq("post_id", postId);
 
     // Fetch comments with user info grouped by day
-    const { data: comments } = await (supabase as any)
+    const { data: comments } = await supabase
       .from("comments")
       .select("created_at, user_id, profiles:user_id(username)")
       .eq("post_id", postId);
 
     // Fetch reblogs (posts where original_post_id = this post)
-    const { data: reblogs } = await (supabase as any)
+    const { data: reblogs } = await supabase
       .from("posts")
       .select("created_at")
       .eq("original_post_id", postId);
@@ -311,7 +311,7 @@ export async function getPostDetailAnalytics(
           id: post.id,
           postType: post.post_type,
           content: post.content,
-          createdAt: post.created_at,
+          createdAt: post.created_at ?? "",
         },
         totalLikes: post.like_count || 0,
         totalComments: post.comment_count || 0,
@@ -333,7 +333,7 @@ export async function getFollowerCount(): Promise<FollowerCountResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { count, error } = await (supabase as any)
+    const { count, error } = await supabase
       .from("follows")
       .select("id", { count: "exact", head: true })
       .eq("following_id", user.id);

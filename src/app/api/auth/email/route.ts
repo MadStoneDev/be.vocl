@@ -109,15 +109,16 @@ export async function POST(request: NextRequest) {
             try {
               const adminClient = createAdminClient();
               // Use the database function for atomic invite code redemption
-              const { data, error } = await (adminClient as any).rpc("use_invite_code", {
+              const { data, error } = await adminClient.rpc("use_invite_code", {
                 p_code: inviteCode.toUpperCase(),
                 p_user_id: payload.user.id,
               });
 
+              const result = data as { success?: boolean; error?: string } | null;
               if (error) {
                 console.error("Failed to redeem invite code:", error);
-              } else if (!data?.success) {
-                console.error("Invite code redemption failed:", data?.error);
+              } else if (!result?.success) {
+                console.error("Invite code redemption failed:", result?.error);
               } else {
                 console.log(`Invite code ${inviteCode} redeemed by user ${payload.user.id}`);
               }

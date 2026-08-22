@@ -97,15 +97,16 @@ export async function GET(request: Request) {
           if (inviteCode && user) {
             try {
               const adminClient = createAdminClient();
-              const { data, error: redeemError } = await (adminClient as any).rpc("use_invite_code", {
+              const { data, error: redeemError } = await adminClient.rpc("use_invite_code", {
                 p_code: inviteCode.toUpperCase(),
                 p_user_id: user.id,
               });
 
+              const result = data as { success?: boolean; error?: string } | null;
               if (redeemError) {
                 console.error("Failed to redeem invite code:", redeemError);
-              } else if (!data?.success) {
-                console.error("Invite code redemption failed:", data?.error);
+              } else if (!result?.success) {
+                console.error("Invite code redemption failed:", result?.error);
               } else {
                 console.log(`Invite code ${inviteCode} redeemed by user ${user.id}`);
               }

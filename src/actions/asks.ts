@@ -71,7 +71,7 @@ export async function sendAsk(
     }
 
     // Get recipient by username
-    const { data: recipient } = await (supabase as any)
+    const { data: recipient } = await supabase
       .from("profiles")
       .select("id, allow_asks, allow_anonymous_asks")
       .eq("username", recipientUsername)
@@ -111,7 +111,7 @@ export async function sendAsk(
     }
 
     // Create the ask
-    const { data: ask, error } = await (supabase as any)
+    const { data: ask, error } = await supabase
       .from("asks")
       .insert({
         recipient_id: recipient.id,
@@ -131,7 +131,7 @@ export async function sendAsk(
     }
 
     // Create notification for recipient
-    await (supabase as any).from("notifications").insert({
+    await supabase.from("notifications").insert({
       recipient_id: recipient.id,
       actor_id: isAnonymous ? null : user.id,
       notification_type: "ask",
@@ -159,7 +159,7 @@ export async function getMyAsks(): Promise<AskListResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: asks, error } = await (supabase as any)
+    const { data: asks, error } = await supabase
       .from("asks")
       .select(`
         id,
@@ -180,7 +180,7 @@ export async function getMyAsks(): Promise<AskListResult> {
       return { success: false, error: "Failed to fetch asks" };
     }
 
-    return { success: true, asks };
+    return { success: true, asks: asks as unknown as Ask[] };
   } catch (error) {
     console.error("Get asks error:", error);
     return { success: false, error: "An unexpected error occurred" };
@@ -204,7 +204,7 @@ export async function getPendingAskCount(): Promise<{
       return { success: false, count: 0 };
     }
 
-    const { count, error } = await (supabase as any)
+    const { count, error } = await supabase
       .from("asks")
       .select("*", { count: "exact", head: true })
       .eq("recipient_id", user.id)
@@ -247,7 +247,7 @@ export async function answerAsk(
     const answerDuration = hasAudio ? Math.round(audio!.duration) : null;
 
     // Get the ask
-    const { data: ask } = await (supabase as any)
+    const { data: ask } = await supabase
       .from("asks")
       .select("*, sender:profiles!asks_sender_id_fkey(id, username)")
       .eq("id", askId)
@@ -274,7 +274,7 @@ export async function answerAsk(
       answer_audio_duration: answerDuration,
     };
 
-    const { data: post, error: postError } = await (supabase as any)
+    const { data: post, error: postError } = await supabase
       .from("posts")
       .insert({
         author_id: user.id,
@@ -293,7 +293,7 @@ export async function answerAsk(
     }
 
     // Update ask status, persisting the answer audio on the ask row.
-    await (supabase as any)
+    await supabase
       .from("asks")
       .update({
         status: "answered",
@@ -319,17 +319,17 @@ export async function answerAsk(
             answerAudioUrl ? transcribeAudio(answerAudioUrl) : Promise.resolve(null),
           ]);
           if (!questionTranscript && !answerTranscript) return;
-          const { data: fresh } = await (admin as any)
+          const { data: fresh } = await admin
             .from("posts")
             .select("content")
             .eq("id", postId)
             .single();
           const merged = {
-            ...(fresh?.content || content),
+            ...((fresh?.content as Record<string, unknown> | null) || content),
             ...(questionTranscript ? { question_audio_transcript: questionTranscript } : {}),
             ...(answerTranscript ? { answer_audio_transcript: answerTranscript } : {}),
           };
-          await (admin as any).from("posts").update({ content: merged }).eq("id", postId);
+          await admin.from("posts").update({ content: merged }).eq("id", postId);
         } catch {
           // best-effort; ignore
         }
@@ -338,7 +338,7 @@ export async function answerAsk(
 
     // Notify the asker if not anonymous
     if (!ask.is_anonymous && ask.sender_id) {
-      await (supabase as any).from("notifications").insert({
+      await supabase.from("notifications").insert({
         recipient_id: ask.sender_id,
         actor_id: user.id,
         notification_type: "ask",
@@ -369,7 +369,7 @@ export async function deleteAsk(askId: string): Promise<AskResult> {
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("asks")
       .update({
         status: "deleted",
@@ -409,7 +409,7 @@ export async function canSendAskTo(username: string): Promise<{
     }
 
     // Get recipient settings
-    const { data: recipient } = await (supabase as any)
+    const { data: recipient } = await supabase
       .from("profiles")
       .select("id, allow_asks, allow_anonymous_asks")
       .eq("username", username)
@@ -467,7 +467,7 @@ export async function updateAskSettings(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("profiles")
       .update({
         allow_asks: allowAsks,

@@ -28,7 +28,7 @@ export async function initiateTip(
     }
 
     // Get recipient info
-    const { data: recipient } = await (supabase as any)
+    const { data: recipient } = await supabase
       .from("profiles")
       .select("id, username")
       .eq("id", recipientId)
@@ -47,7 +47,7 @@ export async function initiateTip(
     const transactionId = `tip_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // Create a pending tip record
-    const { error } = await (supabase as any).from("tips").insert({
+    const { error } = await supabase.from("tips").insert({
       id: transactionId,
       sender_id: user.id,
       recipient_id: recipientId,
@@ -108,7 +108,7 @@ export async function getTipsReceived(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: tips, error, count } = await (supabase as any)
+    const { data: tips, error, count } = await supabase
       .from("tips")
       .select(
         `
@@ -134,7 +134,7 @@ export async function getTipsReceived(
     }
 
     // Get total amount
-    const { data: totalData } = await (supabase as any)
+    const { data: totalData } = await supabase
       .from("tips")
       .select("amount")
       .eq("recipient_id", user.id)
@@ -197,7 +197,7 @@ export async function getTipsSent(
       return { success: false, error: "Unauthorized" };
     }
 
-    const { data: tips, error, count } = await (supabase as any)
+    const { data: tips, error, count } = await supabase
       .from("tips")
       .select(
         `
@@ -223,7 +223,7 @@ export async function getTipsSent(
       return { success: false, error: "Failed to fetch sent tips" };
     }
 
-    const { data: totalData } = await (supabase as any)
+    const { data: totalData } = await supabase
       .from("tips")
       .select("amount")
       .eq("sender_id", user.id)
@@ -270,7 +270,7 @@ export async function initiateVerification(): Promise<PaymentResult> {
     }
 
     // Check if already verified
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("is_verified")
       .eq("id", user.id)
@@ -281,7 +281,7 @@ export async function initiateVerification(): Promise<PaymentResult> {
     }
 
     // Check for pending verification
-    const { data: pendingVerification } = await (supabase as any)
+    const { data: pendingVerification } = await supabase
       .from("verifications")
       .select("id")
       .eq("user_id", user.id)
@@ -298,7 +298,7 @@ export async function initiateVerification(): Promise<PaymentResult> {
     const transactionId = `verify_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // Create pending verification record
-    const { error } = await (supabase as any).from("verifications").insert({
+    const { error } = await supabase.from("verifications").insert({
       id: transactionId,
       user_id: user.id,
       amount: VERIFICATION_PRODUCT.amount,
@@ -345,7 +345,7 @@ export async function checkVerificationStatus(): Promise<{
       return { success: false, isVerified: false, error: "Unauthorized" };
     }
 
-    const { data: profile } = await (supabase as any)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("is_verified, verified_at")
       .eq("id", user.id)
@@ -354,7 +354,7 @@ export async function checkVerificationStatus(): Promise<{
     return {
       success: true,
       isVerified: profile?.is_verified || false,
-      verifiedAt: profile?.verified_at,
+      verifiedAt: profile?.verified_at ?? undefined,
     };
   } catch (error) {
     console.error("Check verification status error:", error);

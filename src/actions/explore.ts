@@ -120,14 +120,14 @@ export async function getExploreData(): Promise<{
       // (post_tags rows exist for queued/scheduled/draft posts too, so filter by
       // the joined post's status). post_tags has no created_at, so also filter by
       // the joined post's creation time.
-      (supabase as any)
+      supabase
         .from("post_tags")
         .select("tag_id, tags!inner(id, name), posts!inner(created_at, status)")
         .eq("posts.status", "published")
         .gte("posts.created_at", oneDayAgo.toISOString()),
 
       // Popular tags: highest total post count
-      (supabase as any)
+      supabase
         .from("tags")
         .select("id, name, post_count")
         .order("post_count", { ascending: false })
@@ -135,7 +135,7 @@ export async function getExploreData(): Promise<{
 
       // Rising creators: users who joined in last 30 days with engagement
       // Get recent users with their post counts
-      (supabase as any)
+      supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, bio")
         .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
@@ -176,12 +176,12 @@ export async function getExploreData(): Promise<{
     if (creatorIds.length > 0) {
       // Get post counts and follower counts for these creators
       const [postCounts, followerCounts] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("posts")
           .select("author_id")
           .in("author_id", creatorIds)
           .eq("status", "published"),
-        (supabase as any)
+        supabase
           .from("follows")
           .select("following_id")
           .in("following_id", creatorIds),

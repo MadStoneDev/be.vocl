@@ -46,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Public posts: index only Public posts (not sensitive, not opted out) from
     // authors who allow the public web + search indexing and aren't restricted.
-    const { data: posts } = await (supabase as any)
+    const { data: posts } = await supabase
       .from("posts")
       .select(
         "id, updated_at, created_at, author:author_id ( is_discoverable, allow_search_indexing, lock_status )"
@@ -58,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order("created_at", { ascending: false })
       .limit(5000);
 
-    for (const p of (posts ?? []) as Array<{
+    for (const p of (posts ?? []) as unknown as Array<{
       id: string;
       updated_at: string | null;
       created_at: string | null;
@@ -85,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // Public profiles → /profile/[username] (public, indexing-allowed, not restricted).
-    const { data: profiles } = await (supabase as any)
+    const { data: profiles } = await supabase
       .from("profiles")
       .select("username, updated_at, allow_search_indexing, lock_status")
       .eq("is_profile_public", true)
@@ -110,7 +110,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Public tag pages → /discover/tag/[name]. Only tags with published posts;
     // the tag page itself still applies the full public-visibility filters.
-    const { data: tags } = await (supabase as any)
+    const { data: tags } = await supabase
       .from("tags")
       .select("name, post_count, created_at")
       .gt("post_count", 0)
