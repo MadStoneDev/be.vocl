@@ -1751,6 +1751,7 @@ export type Database = {
           comment_count: number
           reblog_count: number
           queued_at: string | null
+          search_vector: string | null
         }
         Insert: {
           id?: string
@@ -1781,6 +1782,7 @@ export type Database = {
           comment_count?: number
           reblog_count?: number
           queued_at?: string | null
+          search_vector?: string | null
         }
         Update: {
           id?: string
@@ -1811,6 +1813,7 @@ export type Database = {
           comment_count?: number
           reblog_count?: number
           queued_at?: string | null
+          search_vector?: string | null
         }
         Relationships: [
           {
@@ -2445,6 +2448,21 @@ export type Database = {
           conv_id: string
         }
         Returns: boolean
+      }
+      search_public_posts: {
+        Args: {
+          q: string
+          lim: number
+          off: number
+        }
+        Returns: Json[]
+      }
+      search_public_tags: {
+        Args: {
+          q: string
+          lim: number
+        }
+        Returns: Json[]
       }
       use_invite_code: {
         Args: {
