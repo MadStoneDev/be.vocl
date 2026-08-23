@@ -7,10 +7,12 @@ import {
   IconAlertTriangle,
   IconWorld,
   IconUsers,
+  IconUserCheck,
   IconBooks,
 } from "@tabler/icons-react";
 import { TagInput } from "../TagInput";
 import type { ComposerState } from "./useComposerState";
+import type { PostAudience } from "@/types/database";
 import type { CommunitySummary } from "@/actions/communities";
 import type { MyCollection } from "@/actions/post-threads";
 
@@ -309,12 +311,13 @@ export function ComposerInspector({
       {/* Audience: who can see this post */}
       <section>
         {(() => {
-          // Sensitive posts are NEVER public — the picker is forced to Members.
+          // Sensitive posts are NEVER public — the Public option is disabled and
+          // a sensitive post sitting on Public is treated as Members.
           const locked = state.isSensitive;
-          const audience: "public" | "members" =
-            !state.excludeFromPublic && !locked ? "public" : "members";
+          const audience: PostAudience =
+            locked && state.audience === "public" ? "members" : state.audience;
           const options: Array<{
-            id: "public" | "members";
+            id: PostAudience;
             icon: typeof IconWorld;
             label: string;
             desc: string;
@@ -329,13 +332,19 @@ export function ComposerInspector({
               id: "members",
               icon: IconUsers,
               label: "Members",
-              desc: "Only logged-in be.vocl members",
+              desc: "Any logged-in be.vocl member",
+            },
+            {
+              id: "followers",
+              icon: IconUserCheck,
+              label: "Followers",
+              desc: "Only people who follow you",
             },
           ];
           return (
             <>
               <h3 className="text-sm font-semibold text-foreground mb-2">Audience</h3>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
                 {options.map((opt) => {
                   const Icon = opt.icon;
                   const active = audience === opt.id;
@@ -347,7 +356,7 @@ export function ComposerInspector({
                       role="radio"
                       aria-checked={active}
                       disabled={disabled}
-                      onClick={() => patch({ excludeFromPublic: opt.id === "members" })}
+                      onClick={() => patch({ audience: opt.id })}
                       className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-colors ${
                         active
                           ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
@@ -362,7 +371,7 @@ export function ComposerInspector({
               </div>
               <p className="text-foreground/45 text-xs mt-1.5">
                 {locked
-                  ? "Sensitive posts are always Members-only — never shown to logged-out visitors."
+                  ? "Sensitive posts are never Public — they’re shown to members or followers only."
                   : options.find((o) => o.id === audience)?.desc}
               </p>
             </>

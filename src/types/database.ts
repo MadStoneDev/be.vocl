@@ -10,6 +10,9 @@ export type PostType = "text" | "image" | "video" | "audio" | "gallery" | "poll"
 export type PostStatus = "draft" | "published" | "queued" | "scheduled" | "deleted";
 export type NotificationType = "follow" | "like" | "comment" | "reblog" | "message" | "mention" | "ask" | "moderation" | "appeal" | "tip" | "system";
 export type LockStatus = "unlocked" | "restricted" | "banned";
+/** Per-post audience tier. public = anyone (incl. logged-out); members = any
+ *  logged-in user; followers = only accounts that follow the author. */
+export type PostAudience = "public" | "members" | "followers";
 export type ReportSubject = "minor_safety" | "non_consensual" | "harassment" | "spam" | "illegal" | "other";
 export type ReportSource = "user_report" | "auto_moderation" | "promise_declined";
 export type ReportStatus = "pending" | "reviewing" | "escalated" | "resolved_ban" | "resolved_restrict" | "resolved_dismissed" | "resolved_approved";

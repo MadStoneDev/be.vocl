@@ -16,6 +16,7 @@ import type {
   Json,
   ReportSubject,
   TablesInsert,
+  PostAudience,
 } from "@/types/database";
 import { processMentions } from "@/actions/mentions";
 import { batchFetchPostStats } from "@/actions/shared/post-stats";
@@ -24,7 +25,9 @@ interface CreatePostInput {
   postType: PostType;
   content: PostContent;
   isSensitive?: boolean;
-  /** Author opted this post out of the public (logged-out) front page / web. */
+  /** Per-post audience tier (public / members / followers). Source of truth. */
+  audience?: PostAudience;
+  /** Legacy boolean mirror. Ignored when `audience` is provided. */
   excludeFromPublic?: boolean;
   tags?: string[];
   publishMode?: "now" | "queue" | "schedule";
@@ -62,7 +65,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       return { success: false, error: "Your account is restricted from posting" };
     }
 
-    const { postType, content, isSensitive, excludeFromPublic, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
+    const { postType, content, isSensitive, audience, excludeFromPublic, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
 
     // Extract media URLs for moderation
     const mediaUrls = extractMediaUrls(postType, content);
@@ -136,9 +139,15 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
     // Auto-tag as sensitive if moderation detected nudity/gore (even if user didn't mark it)
     const finalIsSensitive = isSensitive || autoSensitive;
 
-    // Hard rule: sensitive/NSFW content is NEVER shown to logged-out visitors,
-    // regardless of the author's choice. Otherwise honour the per-post opt-out.
-    const finalExcludeFromPublic = finalIsSensitive ? true : excludeFromPublic ?? false;
+    // Audience is the source of truth (fall back to the legacy boolean).
+    // Hard rule: sensitive/NSFW is NEVER public — a public+sensitive post is
+    // bumped to members. exclude_from_public is the mirror every public surface
+    // reads (the DB trigger keeps it in sync too; we set it here for parity).
+    const requestedAudience: PostAudience =
+      audience ?? (excludeFromPublic ? "members" : "public");
+    const finalAudience: PostAudience =
+      finalIsSensitive && requestedAudience === "public" ? "members" : requestedAudience;
+    const finalExcludeFromPublic = finalAudience !== "public";
 
     // Determine thread_position if appending to an existing thread
     let threadPosition: number | null = null;
@@ -160,6 +169,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         post_type: postType,
         content: content as unknown as Json,
         is_sensitive: finalIsSensitive,
+        audience: finalAudience,
         exclude_from_public: finalExcludeFromPublic,
         status,
         queue_position: queuePosition,
@@ -356,7 +366,9 @@ interface UpdatePostInput {
   content?: PostContent;
   reblogComment?: string | null;
   isSensitive?: boolean;
-  /** Author opted this post out of the public (logged-out) front page / web. */
+  /** Per-post audience tier (public / members / followers). Source of truth. */
+  audience?: PostAudience;
+  /** Legacy boolean mirror. Ignored when `audience` is provided. */
   excludeFromPublic?: boolean;
   tags?: string[];
 }
@@ -372,12 +384,12 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
       return { success: false, error: "Unauthorized" };
     }
 
-    const { postId, content, reblogComment, isSensitive, excludeFromPublic, tags } = input;
+    const { postId, content, reblogComment, isSensitive, audience, excludeFromPublic, tags } = input;
 
     // Verify ownership (and fetch the fields needed to re-derive visibility).
     const { data: existingPost } = await supabase
       .from("posts")
-      .select("author_id, post_type, is_sensitive, exclude_from_public")
+      .select("author_id, post_type, is_sensitive, exclude_from_public, audience")
       .eq("id", postId)
       .single();
 
@@ -430,10 +442,20 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     // found — an author cannot un-flag content moderation considers sensitive.
     const requestedSensitive = isSensitive !== undefined ? isSensitive : !!existingPost.is_sensitive;
     const finalIsSensitive = requestedSensitive || autoSensitive;
-    const requestedExclude = excludeFromPublic !== undefined ? excludeFromPublic : !!existingPost.exclude_from_public;
+    // Audience is the source of truth; fall back to the caller's legacy boolean,
+    // then to the post's existing audience. Hard rule: sensitive is never public.
+    const requestedAudience: PostAudience =
+      audience ??
+      (excludeFromPublic !== undefined
+        ? excludeFromPublic
+          ? "members"
+          : "public"
+        : (existingPost.audience ?? "members"));
+    const finalAudience: PostAudience =
+      finalIsSensitive && requestedAudience === "public" ? "members" : requestedAudience;
     updateData.is_sensitive = finalIsSensitive;
-    // Hard rule: sensitive is NEVER public, whatever the visibility toggle says.
-    updateData.exclude_from_public = finalIsSensitive ? true : requestedExclude;
+    updateData.audience = finalAudience;
+    updateData.exclude_from_public = finalAudience !== "public";
 
     const { error: updateError } = await supabase
       .from("posts")
@@ -459,6 +481,33 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
   } catch (error) {
     console.error("Update post error:", error);
     return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * The current audience tier of a post the caller OWNS. The composer calls this
+ * when opening in edit mode so the Audience selector reflects the real tier —
+ * the render DTOs only carry the exclude_from_public boolean, which can't tell
+ * members from followers. Returns null if not the owner (or not found).
+ */
+export async function getPostAudience(postId: string): Promise<PostAudience | null> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data } = await supabase
+      .from("posts")
+      .select("audience, author_id")
+      .eq("id", postId)
+      .maybeSingle();
+
+    if (!data || data.author_id !== user.id) return null;
+    return data.audience;
+  } catch {
+    return null;
   }
 }
 
@@ -659,6 +708,7 @@ export async function getPostById(postId: string): Promise<{
         status,
         moderation_status,
         created_at,
+        audience,
         author:profiles!posts_author_id_fkey (
           username,
           display_name,
@@ -688,6 +738,22 @@ export async function getPostById(postId: string): Promise<{
       }
       if (!user && !isPubliclyViewable(post, post.author)) {
         return { success: false, error: "Post not found" };
+      }
+      // Followers-only: only the author's followers may view (members-only, by
+      // contrast, is any logged-in user — handled by the page's login gate).
+      if (post.audience === "followers") {
+        if (!user) {
+          return { success: false, error: "Post not found" };
+        }
+        const { data: followRow } = await supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("follower_id", user.id)
+          .eq("following_id", post.author_id)
+          .maybeSingle();
+        if (!followRow) {
+          return { success: false, error: "Post not found" };
+        }
       }
     }
 
@@ -1608,6 +1674,7 @@ export async function getFeedPosts(options?: {
         content,
         is_sensitive,
         exclude_from_public,
+        audience,
         is_pinned,
         created_at,
         original_post_id,
@@ -1646,11 +1713,22 @@ export async function getFeedPosts(options?: {
     query = query.order("created_at", { ascending: false });
     query = query.range(offset, offset + limit - 1); // PostgREST range is inclusive on both ends
 
-    const { data: posts, error } = await query;
+    let { data: posts, error } = await query;
 
     if (error) {
       console.error("Get feed posts error:", error);
       return { success: false, error: "Failed to fetch posts" };
+    }
+
+    // A followers-only post may only reach the author's followers (or the
+    // author). It can arrive here via a followed *tag* whose author the viewer
+    // doesn't follow — drop those; public/members posts are unaffected.
+    // followedIds already includes the viewer's own id.
+    if (posts) {
+      const followedAuthorSet = new Set(followedIds);
+      posts = posts.filter(
+        (p: any) => p.audience !== "followers" || followedAuthorSet.has(p.author_id)
+      );
     }
 
     // Early return if no posts - don't do any more queries

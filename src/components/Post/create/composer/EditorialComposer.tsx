@@ -6,6 +6,7 @@ import { Portal } from "@/components/ui";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { getMyCommunities, type CommunitySummary } from "@/actions/communities";
 import { getMyCollections, type MyCollection } from "@/actions/post-threads";
+import { getPostAudience } from "@/actions/posts";
 import { readingTimeMinutes } from "@/lib/essay";
 import { isDeploymentSkew } from "@/lib/deploymentSkew";
 import type {
@@ -16,6 +17,7 @@ import type {
   GalleryPostContent,
   PollPostContent,
   LinkPreviewData,
+  PostAudience,
 } from "@/types/database";
 import {
   useComposerState,
@@ -36,6 +38,7 @@ export interface ExistingPostData {
   content: any;
   isSensitive: boolean;
   excludeFromPublic?: boolean;
+  audience?: PostAudience;
   tags: Array<{ id: string; name: string }>;
 }
 
@@ -78,7 +81,7 @@ function buildEditInitial(
   const base: Partial<ComposerState> = {
     postType: editType,
     isSensitive: post.isSensitive,
-    excludeFromPublic: post.excludeFromPublic ?? false,
+    audience: post.audience ?? (post.excludeFromPublic ? "members" : "public"),
     tags: tagsToNames(post.tags),
   };
 
@@ -248,6 +251,18 @@ export function EditorialComposer({
     void ensurePostId();
   }, [ensurePostId]);
 
+  // On edit-open, fetch the post's true audience tier. The render DTOs only
+  // carry the exclude_from_public boolean, so a followers-only post would
+  // otherwise seed as Members and silently widen its audience on save.
+  useEffect(() => {
+    if (isEdit && existingPost?.id && existingPost.audience === undefined) {
+      getPostAudience(existingPost.id).then((aud) => {
+        if (aud) patch({ audience: aud });
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, existingPost?.id]);
+
   // Restore a saved draft on first mount (create mode only).
   useEffect(() => {
     if (isEdit || draftHydrated.current) return;
@@ -343,8 +358,9 @@ export function EditorialComposer({
           onEditSuccess?.({
             content: result.updatedContent,
             isSensitive: state.isSensitive,
-            // Mirror the server's hard rule so the in-place UI stays consistent.
-            excludeFromPublic: state.isSensitive ? true : state.excludeFromPublic,
+            // Mirror the server's hard rule so the in-place UI stays consistent:
+            // anything but Public is excluded from the logged-out web.
+            excludeFromPublic: state.isSensitive || state.audience !== "public",
             tags: state.tags.map((name, idx) => ({ id: `temp-${idx}`, name })),
           });
         } else {

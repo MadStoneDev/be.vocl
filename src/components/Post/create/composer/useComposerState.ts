@@ -14,6 +14,7 @@ import type {
   AudioPostContent,
   PollPostContent,
   LinkPreviewData,
+  PostAudience,
 } from "@/types/database";
 
 export type PostType = "text" | "image" | "video" | "audio" | "poll" | "gif";
@@ -35,8 +36,8 @@ export interface ComposerState {
   tags: string[];
   selectedCommunityIds: string[];
   isSensitive: boolean;
-  /** Author opted this post out of the public (logged-out) front page / web. */
-  excludeFromPublic: boolean;
+  /** Per-post audience tier: public / members / followers. */
+  audience: PostAudience;
   contentWarning: string;
   publishMode: PublishMode;
   scheduledDate: string;
@@ -107,8 +108,8 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     selectedCommunityIds: [],
     isSensitive: false,
     // Privacy-first default: posts are Members-only unless the author opts into
-    // Public via the Audience selector.
-    excludeFromPublic: true,
+    // Public (or narrows to Followers) via the Audience selector.
+    audience: "members",
     contentWarning: "",
     publishMode: "now",
     scheduledDate: "",
@@ -198,7 +199,7 @@ const PERSISTED_KEYS: (keyof ComposerState)[] = [
   "tags",
   "selectedCommunityIds",
   "isSensitive",
-  "excludeFromPublic",
+  "audience",
   "contentWarning",
   "publishMode",
   "scheduledDate",
@@ -421,7 +422,7 @@ export function useComposerState(
             postId: editPostId,
             reblogComment: s.content.html || null,
             isSensitive: s.isSensitive,
-            excludeFromPublic: s.excludeFromPublic,
+            audience: s.audience,
             tags: s.tags,
           });
           if (result.success) {
@@ -453,7 +454,7 @@ export function useComposerState(
           postId: editPostId,
           content: updatedContent,
           isSensitive: s.isSensitive,
-          excludeFromPublic: s.excludeFromPublic,
+          audience: s.audience,
           tags: s.tags,
         });
         if (result.success) {
@@ -626,7 +627,7 @@ export function useComposerState(
         postType: actualPostType,
         content: postContent,
         isSensitive: s.isSensitive,
-        excludeFromPublic: s.excludeFromPublic,
+        audience: s.audience,
         tags: s.tags,
         publishMode: s.publishMode,
         scheduledFor:
