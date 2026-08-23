@@ -21,7 +21,7 @@ export function TypingIndicator({ username }: TypingIndicatorProps) {
           style={{ animationDelay: "300ms" }}
         />
       </div>
-      <span className="text-xs text-foreground/40">
+      <span className="type-meta text-foreground/40">
         {username} is typing...
       </span>
     </div>

@@ -95,13 +95,13 @@ export function ConversationList({
         <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
           <IconMessagePlus size={28} className="text-vocl-primary" />
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">No messages yet</h3>
-        <p className="text-sm text-foreground/50 mb-6">
+        <h3 className="type-heading font-semibold text-foreground mb-2">No messages yet</h3>
+        <p className="type-body text-foreground/50 mb-6">
           Start a conversation with someone you follow
         </p>
         <button
           onClick={onNewChat}
-          className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+          className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
         >
           Start chatting
         </button>
@@ -112,7 +112,7 @@ export function ConversationList({
   if (filteredConversations.length === 0 && searchQuery) {
     return (
       <div className="py-12 px-4 text-center">
-        <p className="text-sm text-foreground/50">
+        <p className="type-body text-foreground/50">
           No conversations matching &quot;{searchQuery}&quot;
         </p>
       </div>
@@ -129,7 +129,7 @@ export function ConversationList({
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-[70] w-52 py-1 rounded-sm bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
+            className="fixed z-[70] w-52 py-1 rounded-2xl bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
               top: Math.min(contextMenu.y, window.innerHeight - 280),
@@ -140,7 +140,7 @@ export function ConversationList({
                 onMarkAsRead?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               <IconMailOpened size={18} />
               Mark as read
@@ -150,7 +150,7 @@ export function ConversationList({
                 onMuteNotifications?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               <IconBellOff size={18} />
               Mute notifications
@@ -161,7 +161,7 @@ export function ConversationList({
                 onBlockUser?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
             >
               <IconBan size={18} />
               Block user
@@ -171,7 +171,7 @@ export function ConversationList({
                 onReportUser?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
             >
               <IconFlag size={18} />
               Report user
@@ -181,7 +181,7 @@ export function ConversationList({
                 onDeleteConversation?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-vocl-like hover:bg-vocl-like/10 transition-colors"
             >
               <IconTrash size={18} />
               Delete conversation
@@ -231,19 +231,19 @@ export function ConversationList({
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="font-medium text-foreground truncate">
+              <span className="type-body font-medium text-foreground truncate">
                 @{conversation.participant.username}
               </span>
               {conversation.lastMessage && (
                 <TimeAgo
                   iso={conversation.lastMessage.createdAt}
-                  className="text-xs text-foreground/40 flex-shrink-0 ml-2"
+                  className="type-meta text-foreground/40 flex-shrink-0 ml-2"
                 />
               )}
             </div>
             {conversation.lastMessage && (
               <p
-                className={`text-sm truncate ${
+                className={`type-body truncate ${
                   conversation.lastMessage.isRead
                     ? "text-foreground/50"
                     : "text-foreground font-medium"
@@ -256,8 +256,8 @@ export function ConversationList({
 
           {/* Unread badge */}
           {conversation.unreadCount > 0 && (
-            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-sm bg-vocl-primary flex items-center justify-center">
-              <span className="text-xs font-bold text-white">
+            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-full bg-vocl-primary flex items-center justify-center">
+              <span className="type-meta font-bold text-white">
                 {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
               </span>
             </div>

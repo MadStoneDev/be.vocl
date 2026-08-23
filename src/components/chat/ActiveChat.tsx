@@ -323,7 +323,7 @@ export function ActiveChat({
                     setShowMenu(false);
                     onMarkAsRead?.();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
                 >
                   <IconMailOpened size={18} />
                   Mark as read
@@ -333,7 +333,7 @@ export function ActiveChat({
                     setShowMenu(false);
                     onMuteNotifications?.();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
                 >
                   <IconBellOff size={18} />
                   Mute notifications
@@ -344,7 +344,7 @@ export function ActiveChat({
                     setShowMenu(false);
                     onBlockUser?.();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
                 >
                   <IconBan size={18} />
                   Block user
@@ -354,7 +354,7 @@ export function ActiveChat({
                     setShowMenu(false);
                     onReportUser?.();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
                 >
                   <IconFlag size={18} />
                   Report user
@@ -364,7 +364,7 @@ export function ActiveChat({
                     setShowMenu(false);
                     onDeleteConversation?.();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-vocl-like hover:bg-vocl-like/10 transition-colors"
                 >
                   <IconTrash size={18} />
                   Delete conversation
@@ -408,7 +408,7 @@ export function ActiveChat({
                 </div>
               )}
             </div>
-            <p className="text-foreground/50 text-sm">
+            <p className="text-foreground/60 type-body">
               Start your conversation with @{participant.username}
             </p>
           </div>
@@ -421,7 +421,7 @@ export function ActiveChat({
                   className="flex items-center justify-center my-4"
                   role="separator"
                 >
-                  <span className="px-3 py-1 rounded-full bg-vocl-surface-muted text-foreground/50 text-[11px] font-medium dark:bg-vocl-surface-dark">
+                  <span className="px-3 py-1 rounded-full bg-vocl-surface-muted text-foreground/60 type-meta font-medium dark:bg-vocl-surface-dark">
                     {row.label}
                   </span>
                 </div>

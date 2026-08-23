@@ -188,7 +188,7 @@ export function MessageBubble({
     return (
       <div className={`flex ${isOwn ? "justify-end" : "justify-start"} ${runSpacing} ${avatarGutter}`}>
         <div className="px-4 py-2 rounded-2xl bg-vocl-hover border border-vocl-border">
-          <p className="text-sm text-foreground/40 italic">Message deleted</p>
+          <p className="type-body text-foreground/40 italic">Message deleted</p>
         </div>
       </div>
     );
@@ -238,7 +238,7 @@ export function MessageBubble({
       <div className="relative max-w-[80%]">
         {/* Sender name on the first message of an incoming run */}
         {!isOwn && isFirstInGroup && senderName && (
-          <p className="text-xs font-medium text-foreground/50 mb-0.5 ml-1">
+          <p className="type-meta font-semibold text-foreground/50 mb-0.5 ml-1">
             @{senderName}
           </p>
         )}
@@ -248,7 +248,7 @@ export function MessageBubble({
           className={`relative px-4 py-2.5 rounded-2xl ${tail} ${
             isOwn
               ? "bg-vocl-primary text-white"
-              : "bg-vocl-surface-muted text-neutral-800 dark:bg-vocl-surface-dark dark:text-foreground"
+              : "bg-vocl-surface-muted text-foreground dark:bg-vocl-surface-dark"
           }`}
         >
           {/* Media content */}
@@ -286,14 +286,14 @@ export function MessageBubble({
           {/* Quoted reply preview */}
           {!isEditing && replyTo && (
             <div
-              className={`mb-1.5 pl-2 border-l-2 rounded-r text-xs ${
+              className={`mb-1.5 pl-2 border-l-2 rounded-r type-meta ${
                 isOwn
                   ? "border-white/50 bg-white/10"
                   : "border-vocl-primary bg-vocl-primary/10"
               } py-1 pr-2`}
             >
               <span
-                className={`block font-medium ${
+                className={`block font-semibold ${
                   isOwn ? "text-white/80" : "text-vocl-primary"
                 }`}
               >
@@ -315,20 +315,20 @@ export function MessageBubble({
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full p-2 rounded-lg bg-white/10 text-white text-sm resize-none focus:outline-none"
+                className="w-full p-2 rounded-lg bg-white/10 text-white type-body resize-none focus:outline-none"
                 rows={2}
                 autoFocus
               />
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-3 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  className="px-3 py-1 type-meta font-semibold rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveEdit}
-                  className="px-3 py-1 text-xs rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                  className="px-3 py-1 type-meta font-semibold rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
                 >
                   Save
                 </button>
@@ -336,7 +336,7 @@ export function MessageBubble({
             </div>
           ) : (
             content && (
-              <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+              <p className="type-body whitespace-pre-wrap break-words">{content}</p>
             )
           )}
 
@@ -388,7 +388,7 @@ export function MessageBubble({
                 type="button"
                 onClick={() => onToggleReaction?.(id, r.emoji)}
                 aria-pressed={r.reactedByMe}
-                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors ${
+                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full type-meta border transition-colors ${
                   r.reactedByMe
                     ? "bg-vocl-primary/20 border-vocl-primary/50 text-foreground"
                     : "bg-vocl-surface-muted border-vocl-border text-foreground/70 hover:bg-vocl-hover dark:bg-vocl-surface-dark"
@@ -465,14 +465,14 @@ export function MessageBubble({
                           setIsEditing(true);
                           setShowMenu(false);
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
                       >
                         <IconPencil size={14} />
                         Edit
                       </button>
                       <button
                         onClick={handleDelete}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 type-body text-vocl-like hover:bg-vocl-like/10 transition-colors"
                       >
                         <IconTrash size={14} />
                         Delete

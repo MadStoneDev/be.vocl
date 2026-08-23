@@ -108,12 +108,12 @@ export function NewChatModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconMessagePlus size={20} className="text-vocl-primary" />
-            <h2 className="font-semibold text-foreground">New Message</h2>
+            <h2 className="type-display text-xl text-foreground">New Message</h2>
           </div>
           <button
             onClick={handleClose}
@@ -135,7 +135,7 @@ export function NewChatModal({
               placeholder="Search for a user..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-3 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+              className="w-full py-3 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-foreground type-body border border-vocl-border placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
               autoFocus
             />
           </div>
@@ -144,7 +144,7 @@ export function NewChatModal({
         {/* Error */}
         {error && (
           <div className="px-4 pb-2">
-            <p className="text-sm text-vocl-like">{error}</p>
+            <p className="type-body text-vocl-like">{error}</p>
           </div>
         )}
 
@@ -161,7 +161,7 @@ export function NewChatModal({
                   key={user.id}
                   onClick={() => handleStartConversation(user.id)}
                   disabled={isCreating === user.id}
-                  className="w-full flex items-center gap-3 p-3 rounded-sm hover:bg-vocl-hover transition-colors disabled:opacity-50"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                     {user.avatarUrl ? (
@@ -180,10 +180,10 @@ export function NewChatModal({
                     )}
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="font-medium text-foreground truncate">
+                    <p className="type-body font-medium text-foreground truncate">
                       {user.displayName || user.username}
                     </p>
-                    <p className="text-sm text-foreground/50 truncate">
+                    <p className="type-meta text-foreground/50 truncate">
                       @{user.username}
                     </p>
                   </div>
@@ -203,13 +203,13 @@ export function NewChatModal({
             </div>
           ) : searchQuery.trim() ? (
             <div className="text-center py-8 px-4">
-              <p className="text-foreground/50 text-sm">
+              <p className="text-foreground/50 type-body">
                 No users found for "{searchQuery}"
               </p>
             </div>
           ) : (
             <div className="text-center py-8 px-4">
-              <p className="text-foreground/50 text-sm">
+              <p className="text-foreground/50 type-body">
                 Search for someone to start a conversation
               </p>
             </div>

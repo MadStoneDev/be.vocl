@@ -473,7 +473,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
               placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2.5 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-neutral-800 border border-vocl-border placeholder:text-neutral-500 focus:outline-none focus:border-vocl-primary transition-colors text-sm dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
+              className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-foreground border border-vocl-border placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body dark:bg-vocl-surface-dark"
             />
           </div>
         </div>
@@ -487,10 +487,10 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
           </div>
         ) : conversationsError ? (
           <div className="text-center py-16 px-4">
-            <p className="text-foreground/50 text-sm">{conversationsError}</p>
+            <p className="text-foreground/60 type-body">{conversationsError}</p>
             <button
               onClick={() => refreshConversations()}
-              className="mt-4 px-4 py-2 rounded-xl bg-vocl-primary text-white text-sm"
+              className="mt-4 px-4 py-2 rounded-xl bg-vocl-primary text-white type-meta font-semibold"
             >
               Try again
             </button>
@@ -516,10 +516,10 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
                         size="sm"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="type-body font-medium text-foreground truncate">
                           {conv?.participant.username || "Conversation"}
                         </p>
-                        <p className="text-sm text-foreground/60 truncate">{r.content}</p>
+                        <p className="type-meta text-foreground/60 truncate">{r.content}</p>
                       </div>
                     </button>
                   );
@@ -583,25 +583,25 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       </div>
       {conversations.length > 0 ? (
         <>
-          <h3 className="text-lg font-medium text-foreground mb-2">
+          <h3 className="type-heading font-semibold text-foreground mb-2">
             Select a conversation
           </h3>
-          <p className="text-sm text-foreground/50 mb-6 max-w-xs">
+          <p className="type-body text-foreground/60 mb-6 max-w-xs">
             Choose a conversation from the list, or start a new one.
           </p>
           <button
             onClick={handleNewChat}
-            className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white type-body font-semibold hover:bg-vocl-primary-hover transition-colors"
           >
             New message
           </button>
         </>
       ) : (
         <>
-          <h3 className="text-lg font-medium text-foreground mb-2">
+          <h3 className="type-heading font-semibold text-foreground mb-2">
             Welcome to Messages
           </h3>
-          <p className="text-sm text-foreground/50 max-w-xs">
+          <p className="type-body text-foreground/60 max-w-xs">
             Start a conversation from the panel on the left, or from anyone&apos;s
             profile. Your chats will appear here.
           </p>
