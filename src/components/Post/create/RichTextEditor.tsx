@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -10,8 +10,11 @@ import {
   IconItalic,
   IconStrikethrough,
   IconLink,
+  IconLinkOff,
   IconList,
   IconListNumbers,
+  IconCheck,
+  IconX,
 } from "@tabler/icons-react";
 import { isValidUrl } from "@/lib/sanitize";
 
@@ -61,6 +64,11 @@ export function RichTextEditor({
     },
   });
 
+  // Inline link editor (replaces window.prompt / window.alert).
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkError, setLinkError] = useState<string | null>(null);
+
   // Sync content prop into the editor when it changes externally
   // (e.g. when EditPostModal loads existing post data after mount)
   useEffect(() => {
@@ -96,16 +104,38 @@ export function RichTextEditor({
     </button>
   );
 
-  const addLink = () => {
-    const url = window.prompt("Enter URL:");
-    if (url) {
-      // Validate URL to prevent XSS via javascript: or data: protocols
-      if (!isValidUrl(url)) {
-        window.alert("Invalid URL. Please enter a valid http or https URL.");
-        return;
-      }
-      editor.chain().focus().setLink({ href: url }).run();
+  const openLink = () => {
+    // Pre-fill with the existing link under the cursor, if any.
+    setLinkUrl((editor.getAttributes("link").href as string) || "");
+    setLinkError(null);
+    setLinkOpen(true);
+  };
+
+  const closeLink = () => {
+    setLinkOpen(false);
+    setLinkUrl("");
+    setLinkError(null);
+    editor.chain().focus().run();
+  };
+
+  const applyLink = () => {
+    const url = linkUrl.trim();
+    if (!url) {
+      closeLink();
+      return;
     }
+    // Validate to prevent XSS via javascript: / data: protocols.
+    if (!isValidUrl(url)) {
+      setLinkError("Enter a valid http:// or https:// URL.");
+      return;
+    }
+    editor.chain().focus().setLink({ href: url }).run();
+    closeLink();
+  };
+
+  const removeLink = () => {
+    editor.chain().focus().unsetLink().run();
+    closeLink();
   };
 
   return (
@@ -135,8 +165,8 @@ export function RichTextEditor({
         </ToolbarButton>
         <div className="w-px h-5 bg-vocl-border mx-1" />
         <ToolbarButton
-          onClick={addLink}
-          isActive={editor.isActive("link")}
+          onClick={openLink}
+          isActive={editor.isActive("link") || linkOpen}
           title="Add link"
         >
           <IconLink size={18} />
@@ -157,6 +187,64 @@ export function RichTextEditor({
           <IconListNumbers size={18} />
         </ToolbarButton>
       </div>
+
+      {/* Inline link editor (replaces the browser prompt) */}
+      {linkOpen && (
+        <div className="border-b border-vocl-border bg-vocl-surface-dark/50 p-2">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="url"
+              inputMode="url"
+              autoFocus
+              value={linkUrl}
+              onChange={(e) => {
+                setLinkUrl(e.target.value);
+                if (linkError) setLinkError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyLink();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  closeLink();
+                }
+              }}
+              placeholder="https://example.com"
+              className="min-w-0 flex-1 rounded-xl border border-vocl-border bg-background px-3 py-1.5 type-body text-foreground outline-none transition-colors placeholder:text-foreground/40 focus:border-vocl-primary"
+            />
+            <button
+              type="button"
+              onClick={applyLink}
+              title="Apply link"
+              className="flex-shrink-0 rounded-xl bg-vocl-primary p-2 text-white transition-opacity hover:opacity-90"
+            >
+              <IconCheck size={18} />
+            </button>
+            {editor.isActive("link") && (
+              <button
+                type="button"
+                onClick={removeLink}
+                title="Remove link"
+                className="flex-shrink-0 rounded-xl p-2 text-foreground/60 transition-colors hover:bg-vocl-hover hover:text-vocl-like"
+              >
+                <IconLinkOff size={18} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={closeLink}
+              title="Cancel"
+              className="flex-shrink-0 rounded-xl p-2 text-foreground/60 transition-colors hover:bg-vocl-hover hover:text-foreground"
+            >
+              <IconX size={18} />
+            </button>
+          </div>
+          {linkError && (
+            <p className="mt-1.5 pl-1 type-meta text-vocl-like">{linkError}</p>
+          )}
+        </div>
+      )}
 
       {/* Editor */}
       <div className="p-4 bg-background/50">
