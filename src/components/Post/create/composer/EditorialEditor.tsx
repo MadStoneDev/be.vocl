@@ -158,7 +158,7 @@ export function EditorialEditor({
   };
 
   const BtnClass = (active: boolean) =>
-    `flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+    `flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
       active
         ? "bg-[var(--vocl-primary)] text-white"
         : "text-foreground/70 hover:bg-[var(--vocl-hover)] hover:text-foreground"
@@ -234,24 +234,24 @@ export function EditorialEditor({
               }
             }}
             placeholder="https://example.com"
-            className="flex-1 bg-transparent px-2 py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none"
+            className="flex-1 bg-transparent px-2 py-1.5 type-body text-foreground placeholder:text-foreground/40 focus:outline-none"
           />
           <button
             type="button"
             onClick={applyLink}
-            className="px-3 py-1.5 rounded-lg bg-[var(--vocl-primary)] text-white text-sm font-medium hover:bg-[var(--vocl-primary-hover)] transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-[var(--vocl-primary)] text-white type-body font-medium hover:bg-[var(--vocl-primary-hover)] transition-colors"
           >
             Apply
           </button>
           <button
             type="button"
             onClick={() => setLinkPopover(false)}
-            className="px-2 py-1.5 rounded-lg text-foreground/60 hover:text-foreground text-sm"
+            className="px-2 py-1.5 rounded-lg text-foreground/60 hover:text-foreground type-body"
           >
             Cancel
           </button>
           {linkError && (
-            <span className="absolute -bottom-5 left-2 text-xs text-[var(--vocl-primary)]">
+            <span className="absolute -bottom-5 left-2 type-meta text-[var(--vocl-primary)]">
               {linkError}
             </span>
           )}

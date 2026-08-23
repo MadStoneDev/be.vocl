@@ -126,12 +126,12 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
           <button
             type="button"
             onClick={start}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs font-medium"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white type-meta font-medium"
           >
             <IconMicrophone size={14} /> Start
           </button>
-          <span className="text-xs text-neutral-600">Up to {MAX_DURATION}s</span>
-          <button type="button" onClick={onCancel} className="ml-auto text-neutral-500 hover:text-rose-500">
+          <span className="type-meta text-foreground/60">Up to {MAX_DURATION}s</span>
+          <button type="button" onClick={onCancel} className="ml-auto text-foreground/45 hover:text-rose-500">
             <IconX size={14} />
           </button>
         </>
@@ -142,13 +142,13 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500" />
           </span>
-          <span className="text-xs text-neutral-700 font-mono">
+          <span className="type-meta text-foreground/70 font-mono">
             {seconds}s / {MAX_DURATION}s
           </span>
           <button
             type="button"
             onClick={stop}
-            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs"
+            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white type-meta"
           >
             <IconPlayerStopFilled size={12} /> Stop
           </button>
@@ -157,14 +157,14 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
       {state === "uploading" && (
         <>
           <IconLoader2 size={14} className="animate-spin text-vocl-primary" />
-          <span className="text-xs text-neutral-600">Uploading…</span>
+          <span className="type-meta text-foreground/60">Uploading…</span>
         </>
       )}
       {state === "error" && (
         <>
           <IconAlertCircle size={14} className="text-rose-500" />
-          <span className="text-xs text-rose-500">{error}</span>
-          <button type="button" onClick={onCancel} className="ml-auto text-xs text-neutral-500">
+          <span className="type-meta text-rose-500">{error}</span>
+          <button type="button" onClick={onCancel} className="ml-auto type-meta text-foreground/45">
             Cancel
           </button>
         </>

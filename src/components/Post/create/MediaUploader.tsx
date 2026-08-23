@@ -121,7 +121,7 @@ export function MediaUploader({
     <div className="space-y-4">
       {/* Reorder hint (galleries only) */}
       {mediaType === "image" && uploadedUrls.length > 1 && (
-        <p className="text-xs text-foreground/45">
+        <p className="type-meta text-foreground/45">
           Drag to reorder — the first image is the cover.
         </p>
       )}
@@ -160,7 +160,7 @@ export function MediaUploader({
                       <span className="absolute top-2 left-2 w-6 h-6 rounded-md bg-black/55 text-white flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
                         <IconGripVertical size={15} />
                       </span>
-                      <span className="absolute bottom-2 left-2 min-w-[20px] h-5 px-1 rounded-md bg-black/55 text-white text-[11px] font-semibold flex items-center justify-center">
+                      <span className="absolute bottom-2 left-2 min-w-[20px] h-5 px-1 rounded-md bg-black/55 text-white type-meta font-semibold flex items-center justify-center">
                         {index + 1}
                       </span>
                     </>
@@ -225,7 +225,7 @@ export function MediaUploader({
           {isUploading ? (
             <div className="space-y-3">
               <IconLoader2 size={40} className="mx-auto text-vocl-primary animate-spin" />
-              <p className="text-foreground/60">
+              <p className="type-body text-foreground/60">
                 Uploading... {progress?.percent || 0}%
               </p>
               <div className="w-48 h-1.5 mx-auto bg-vocl-hover-strong rounded-full overflow-hidden">
@@ -241,25 +241,25 @@ export function MediaUploader({
                 <Icon size={32} className="text-vocl-primary" />
               </div>
               <div>
-                <p className="text-foreground font-medium">
+                <p className="type-body text-foreground font-medium">
                   Drop {mediaType === "image" ? "images" : mediaType === "video" ? "a video" : "an audio file"} here
                 </p>
-                <p className="text-foreground/40 text-sm mt-1">
+                <p className="type-body text-foreground/40 mt-1">
                   or click to browse
                 </p>
               </div>
               {mediaType === "image" && (
-                <p className="text-foreground/30 text-xs">
+                <p className="type-meta text-foreground/30">
                   Up to {maxFiles} images • JPG, PNG, GIF, WebP
                 </p>
               )}
               {mediaType === "video" && (
-                <p className="text-foreground/30 text-xs">
+                <p className="type-meta text-foreground/30">
                   MP4, WebM • Max 100MB
                 </p>
               )}
               {mediaType === "audio" && (
-                <p className="text-foreground/30 text-xs">
+                <p className="type-meta text-foreground/30">
                   MP3, WAV, OGG • Max 50MB
                 </p>
               )}
@@ -269,7 +269,7 @@ export function MediaUploader({
       )}
 
       {error && (
-        <p className="text-vocl-like text-sm">{error}</p>
+        <p className="type-meta text-vocl-like">{error}</p>
       )}
     </div>
   );

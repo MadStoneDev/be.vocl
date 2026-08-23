@@ -75,7 +75,7 @@ export function QueueControls({
   return (
     <div className="flex flex-col gap-4">
       {/* Main controls */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
+      <div className="flex items-center justify-between p-4 rounded-2xl bg-vocl-surface-dark border border-vocl-border">
         <div className="flex items-center gap-4">
           {/* Pause/Resume button */}
           <button
@@ -99,7 +99,7 @@ export function QueueControls({
           </button>
 
           {/* Status */}
-          <div className="flex items-center gap-2 text-sm text-foreground/60">
+          <div className="flex items-center gap-2 type-body text-foreground/60">
             <div
               className={`w-2 h-2 rounded-full ${
                 settings.paused ? "bg-amber-500" : "bg-green-500"
@@ -113,7 +113,7 @@ export function QueueControls({
         <button
           type="button"
           onClick={() => setShowSettings(!showSettings)}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconSettings size={20} />
         </button>
@@ -121,39 +121,39 @@ export function QueueControls({
 
       {/* Queue info — order-3 so the settings panel can sit above it */}
       <div className="order-3 grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="text-2xl font-bold text-foreground">
+        <div className="p-4 rounded-2xl bg-vocl-surface-dark border border-vocl-border text-center">
+          <p className="type-display font-bold text-foreground">
             {loading ? "—" : queueCount}
           </p>
-          <p className="text-sm text-foreground/50">
+          <p className="type-meta text-foreground/50">
             {queueCount === 1 ? "Post in queue" : "Posts in queue"}
           </p>
         </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="text-2xl font-bold text-foreground">
+        <div className="p-4 rounded-2xl bg-vocl-surface-dark border border-vocl-border text-center">
+          <p className="type-display font-bold text-foreground">
             {loading ? "—" : settings.postsPerDay}
           </p>
-          <p className="text-sm text-foreground/50">Posts per day</p>
+          <p className="type-meta text-foreground/50">Posts per day</p>
         </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="text-2xl font-bold text-foreground">
+        <div className="p-4 rounded-2xl bg-vocl-surface-dark border border-vocl-border text-center">
+          <p className="type-display font-bold text-foreground">
             {loading ? "—" : daysToEmpty === 0 ? "-" : `~${daysToEmpty}d`}
           </p>
-          <p className="text-sm text-foreground/50">Until empty</p>
+          <p className="type-meta text-foreground/50">Until empty</p>
         </div>
       </div>
 
       {/* Settings panel — order-2 so it opens directly under the controls bar */}
       {showSettings && (
-        <div className="order-2 p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-4">
-          <h3 className="font-medium text-foreground flex items-center gap-2">
+        <div className="order-2 p-4 rounded-2xl bg-vocl-surface-dark border border-vocl-border space-y-4">
+          <h3 className="type-heading font-semibold text-foreground flex items-center gap-2">
             <IconClock size={18} />
             Queue Settings
           </h3>
 
           {/* Posts per day */}
           <div>
-            <label className="block text-sm text-foreground/60 mb-2">
+            <label className="block type-meta text-foreground/60 mb-2">
               Posts per day
             </label>
             <input
@@ -174,7 +174,7 @@ export function QueueControls({
           {/* Time window */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-foreground/60 mb-2">
+              <label className="block type-meta text-foreground/60 mb-2">
                 Start time
               </label>
               <input
@@ -190,7 +190,7 @@ export function QueueControls({
               />
             </div>
             <div>
-              <label className="block text-sm text-foreground/60 mb-2">
+              <label className="block type-meta text-foreground/60 mb-2">
                 End time
               </label>
               <input
@@ -207,7 +207,7 @@ export function QueueControls({
             </div>
           </div>
 
-          <p className="text-xs text-foreground/40">
+          <p className="type-meta text-foreground/40">
             Posts will be published evenly between {localSettings.windowStart}{" "}
             and {localSettings.windowEnd} in your timezone.
           </p>

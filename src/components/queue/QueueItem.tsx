@@ -162,19 +162,19 @@ export function QueueItem({
               <span className="cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/50">
                 <IconGripVertical size={18} />
               </span>
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 text-xs font-semibold text-vocl-primary">
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 type-meta font-semibold text-vocl-primary">
                 {displayNumber ?? post.queuePosition}
               </span>
             </>
           )}
           {scheduledFor && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/60">
+            <span className="inline-flex items-center gap-1 type-meta font-medium text-foreground/60">
               <IconClock size={13} className="text-foreground/40" />
               {formatQueueSlot(scheduledFor)}
             </span>
           )}
           {isReblog && (
-            <span className="inline-flex items-center gap-1 text-xs text-foreground/50">
+            <span className="inline-flex items-center gap-1 type-meta text-foreground/50">
               <IconRefresh size={12} />
               Reblog of @{post.originalPost!.author.username}
             </span>
@@ -183,7 +183,7 @@ export function QueueItem({
         <div className="flex items-center gap-1.5">
           <Link
             href={`/create?edit=${post.id}`}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-hover text-foreground/70 hover:text-foreground hover:bg-vocl-hover-strong text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-vocl-hover text-foreground/70 hover:text-foreground hover:bg-vocl-hover-strong type-meta font-medium transition-colors"
             title="Edit"
           >
             <IconPencil size={14} />
@@ -193,7 +193,7 @@ export function QueueItem({
             type="button"
             onClick={handlePublishNow}
             disabled={isPublishing || isRemoving}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 text-xs font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 type-meta font-medium transition-colors disabled:opacity-50"
             title="Publish now"
           >
             {isPublishing ? <IconLoader2 size={14} className="animate-spin" /> : <IconSend size={14} />}
@@ -203,7 +203,7 @@ export function QueueItem({
             type="button"
             onClick={handleRemove}
             disabled={isPublishing || isRemoving}
-            className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+            className="w-8 h-8 inline-flex items-center justify-center rounded-xl text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
             title="Remove from queue"
           >
             {isRemoving ? <IconLoader2 size={14} className="animate-spin" /> : <IconTrash size={14} />}
@@ -214,7 +214,7 @@ export function QueueItem({
       {/* Reblog comment (if present) */}
       {isReblog && post.reblogCommentHtml && (
         <div
-          className="px-4 py-3 text-sm text-foreground/80 border-b border-vocl-border"
+          className="px-4 py-3 type-body text-foreground/80 border-b border-vocl-border"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.reblogCommentHtml) }}
         />
       )}
@@ -233,7 +233,7 @@ export function QueueItem({
               />
             </div>
           )}
-          <span className="text-xs text-foreground/70">
+          <span className="type-meta text-foreground/70">
             @{post.originalPost!.author.username}
           </span>
         </div>

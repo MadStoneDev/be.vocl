@@ -73,10 +73,10 @@ export function QueueList({
         <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4">
           <IconMoodEmpty size={32} className="text-foreground/30" />
         </div>
-        <h3 className="text-lg font-medium text-foreground/70 mb-2">
+        <h3 className="type-heading font-semibold text-foreground/70 mb-2">
           Your queue is empty
         </h3>
-        <p className="text-sm text-foreground/50 max-w-sm">
+        <p className="type-body text-foreground/50 max-w-sm">
           Add posts to your queue by clicking &quot;Add to queue&quot; when reblogging.
           They&apos;ll be published automatically based on your schedule.
         </p>

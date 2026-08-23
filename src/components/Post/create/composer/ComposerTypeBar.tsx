@@ -50,7 +50,7 @@ export function ComposerTypeBar({
             aria-label={label}
             title={label}
             onClick={() => onPostTypeChange(type)}
-            className={`flex flex-1 md:flex-none items-center justify-center md:justify-start gap-2 px-0 md:px-3.5 h-9 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
+            className={`flex flex-1 md:flex-none items-center justify-center md:justify-start gap-2 px-0 md:px-3.5 h-9 rounded-full type-body font-medium whitespace-nowrap transition-colors border ${
               active
                 ? "text-white border-transparent"
                 : "text-foreground/70 border-[var(--vocl-border)] hover:bg-[var(--vocl-hover)] hover:text-foreground"

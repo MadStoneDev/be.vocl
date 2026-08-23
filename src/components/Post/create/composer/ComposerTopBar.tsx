@@ -83,7 +83,7 @@ export function ComposerTopBar({
           be.vocl
         </span>
         {draftLabel && (
-          <span className="hidden sm:inline text-xs text-foreground/45 truncate">
+          <span className="hidden sm:inline type-meta text-foreground/45 truncate">
             {draftLabel}
           </span>
         )}
@@ -95,7 +95,7 @@ export function ComposerTopBar({
         <button
           type="button"
           onClick={onTogglePreview}
-          className={`flex items-center gap-1.5 px-3 h-9 rounded-full text-sm border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 h-9 rounded-full type-body border transition-colors ${
             showPreview
               ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
               : "border-[var(--vocl-border)] text-foreground/80 hover:bg-[var(--vocl-hover)]"
@@ -111,7 +111,7 @@ export function ComposerTopBar({
             type="button"
             onClick={onSubmit}
             disabled={isPending}
-            className={`flex items-center gap-1.5 px-4 h-9 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${
+            className={`flex items-center gap-1.5 px-4 h-9 type-body font-semibold text-white transition-colors disabled:opacity-60 ${
               mode === "create" ? "pr-3 rounded-l-full" : "rounded-full"
             }`}
             style={{ backgroundColor: "var(--vocl-primary)" }}
@@ -171,10 +171,10 @@ export function ComposerTopBar({
                       }
                     />
                     <span className="flex-1">
-                      <span className="block text-sm font-medium text-foreground">
+                      <span className="block type-body font-medium text-foreground">
                         {label}
                       </span>
-                      <span className="block text-xs text-foreground/45">
+                      <span className="block type-meta text-foreground/45">
                         {sub}
                       </span>
                     </span>

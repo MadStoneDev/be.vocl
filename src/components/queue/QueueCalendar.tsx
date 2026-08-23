@@ -268,17 +268,17 @@ export function QueueCalendar({
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
           disabled={weekOffset <= 0}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <IconChevronLeft size={20} />
         </button>
-        <span className="text-sm font-medium text-foreground/80">
+        <span className="type-body font-medium text-foreground/80">
           {headerLabel}
         </span>
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconChevronRight size={20} />
         </button>
@@ -300,11 +300,11 @@ export function QueueCalendar({
             >
               {/* Day header */}
               <div className="text-center mb-2">
-                <div className="text-[10px] uppercase tracking-wider text-foreground/40">
+                <div className="type-meta uppercase tracking-wider text-foreground/40">
                   {DAY_NAMES[day.getDay()]}
                 </div>
                 <div
-                  className={`text-sm font-semibold ${
+                  className={`type-heading font-semibold ${
                     isToday ? "text-vocl-primary" : "text-foreground/70"
                   }`}
                 >
@@ -320,7 +320,7 @@ export function QueueCalendar({
                   return (
                     <div
                       key={`${slot.type}-${"id" in slot.post ? slot.post.id : idx}-${idx}`}
-                      className={`rounded-lg px-1.5 py-1 text-[10px] leading-tight flex items-start gap-1 ${
+                      className={`rounded-lg px-1.5 py-1 type-meta leading-tight flex items-start gap-1 ${
                         isQueued
                           ? "bg-vocl-primary/15 text-vocl-primary"
                           : "bg-green-500/15 text-green-400"
@@ -329,7 +329,7 @@ export function QueueCalendar({
                     >
                       <Icon size={12} className="shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <div className="text-[9px] opacity-70">
+                        <div className="type-meta opacity-70">
                           {formatTime(slot.time)}
                         </div>
                         <div className="truncate">
@@ -340,7 +340,7 @@ export function QueueCalendar({
                   );
                 })}
                 {daySlots.length === 0 && (
-                  <div className="text-[10px] text-foreground/20 text-center pt-4">
+                  <div className="type-meta text-foreground/20 text-center pt-4">
                     No posts
                   </div>
                 )}
@@ -351,13 +351,13 @@ export function QueueCalendar({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 justify-center text-xs text-foreground/50">
+      <div className="flex items-center gap-4 justify-center type-meta text-foreground/50">
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-vocl-primary/40" />
+          <div className="w-2.5 h-2.5 rounded bg-vocl-primary/40" />
           <span>Queued</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-green-500/40" />
+          <div className="w-2.5 h-2.5 rounded bg-green-500/40" />
           <span>Scheduled</span>
         </div>
         <div className="flex items-center gap-1.5">

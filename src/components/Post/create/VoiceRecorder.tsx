@@ -247,7 +247,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
   return (
     <div className="space-y-3">
       {state === "idle" && (
-        <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
+        <div className="rounded-2xl bg-background/50 border border-vocl-border p-6 text-center">
           <button
             type="button"
             onClick={startRecording}
@@ -256,25 +256,25 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
             <span className="w-16 h-16 rounded-full bg-vocl-primary/20 group-hover:bg-vocl-primary/30 transition-colors flex items-center justify-center">
               <IconMicrophone size={28} className="text-vocl-primary" />
             </span>
-            <span className="text-sm font-medium text-foreground">Start recording</span>
+            <span className="type-body font-medium text-foreground">Start recording</span>
           </button>
-          <p className="text-xs text-foreground/40 mt-2">
+          <p className="type-meta text-foreground/40 mt-2">
             Up to {MAX_DURATION_SECONDS / 60} minutes
           </p>
         </div>
       )}
 
       {state === "recording" && (
-        <div className="rounded-xl bg-background/50 border border-rose-500/30 p-6">
+        <div className="rounded-2xl bg-background/50 border border-rose-500/30 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500" />
               </span>
-              <span className="text-sm font-medium text-foreground">Recording…</span>
+              <span className="type-body font-medium text-foreground">Recording…</span>
             </div>
-            <span className="font-mono text-sm text-foreground/70">
+            <span className="font-mono type-meta text-foreground/70">
               {formatTime(seconds)} / {formatTime(MAX_DURATION_SECONDS)}
             </span>
           </div>
@@ -289,7 +289,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
           <button
             type="button"
             onClick={stopRecording}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-500 text-white font-medium hover:bg-rose-600 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-500 text-white type-body font-medium hover:bg-rose-600 transition-colors"
           >
             <IconPlayerStopFilled size={18} /> Stop
           </button>
@@ -297,7 +297,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "preview" && previewUrl && (
-        <div className="rounded-xl bg-background/50 border border-vocl-border p-4 space-y-3">
+        <div className="rounded-2xl bg-background/50 border border-vocl-border p-4 space-y-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -306,7 +306,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
             >
               {isPlaying ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />}
             </button>
-            <span className="font-mono text-sm text-foreground/80">{formatTime(seconds)}</span>
+            <span className="font-mono type-meta text-foreground/80">{formatTime(seconds)}</span>
             <audio
               ref={previewAudioRef}
               src={previewUrl}
@@ -326,7 +326,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
           <button
             type="button"
             onClick={uploadRecording}
-            className="w-full px-4 py-2 rounded-xl bg-vocl-primary text-white text-sm font-medium hover:bg-vocl-primary-hover"
+            className="w-full px-4 py-2 rounded-xl bg-vocl-primary text-white type-body font-medium hover:bg-vocl-primary-hover"
           >
             Use this recording
           </button>
@@ -334,22 +334,22 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "uploading" && (
-        <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
+        <div className="rounded-2xl bg-background/50 border border-vocl-border p-6 text-center">
           <IconLoader2 size={24} className="animate-spin text-vocl-primary mx-auto mb-2" />
-          <p className="text-sm text-foreground/70">Uploading…</p>
+          <p className="type-body text-foreground/70">Uploading…</p>
         </div>
       )}
 
       {state === "uploaded" && uploadedUrl && (
-        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-emerald-300">
+        <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 type-body text-emerald-300">
             <IconCheck size={18} />
             Recording ready ({formatTime(seconds)})
           </div>
           <button
             type="button"
             onClick={discard}
-            className="text-xs text-foreground/60 hover:text-rose-400"
+            className="type-meta text-foreground/60 hover:text-rose-400"
           >
             Re-record
           </button>
@@ -357,15 +357,15 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "error" && error && (
-        <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm text-rose-300">
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 p-4 space-y-3">
+          <div className="flex items-center gap-2 type-body text-rose-300">
             <IconAlertCircle size={18} />
             <span>{error}</span>
           </div>
           <button
             type="button"
             onClick={() => setState("idle")}
-            className="text-xs text-foreground/60 hover:text-foreground"
+            className="type-meta text-foreground/60 hover:text-foreground"
           >
             Try again
           </button>

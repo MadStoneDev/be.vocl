@@ -183,7 +183,7 @@ export function TagInput({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-vocl-primary/20 text-vocl-primary text-sm"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-vocl-primary/20 text-vocl-primary type-meta"
           >
             <IconHash size={14} />
             {tag}
@@ -241,7 +241,7 @@ export function TagInput({
               }, 200);
             }}
             placeholder={placeholder}
-            className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors text-sm"
+            className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body"
             maxLength={30}
             autoComplete="off"
           />
@@ -267,14 +267,14 @@ export function TagInput({
                       : "text-foreground/80 hover:bg-vocl-hover"
                   }`}
                 >
-                  <span className="flex items-center gap-2 text-sm">
+                  <span className="flex items-center gap-2 type-body">
                     <IconHash size={14} className="text-vocl-primary shrink-0" />
                     {suggestion.name}
                     {suggestion.isOwn && (
                       <IconUser size={12} className="text-vocl-primary/60" title="Used by you" />
                     )}
                   </span>
-                  <span className="text-xs text-foreground/40">
+                  <span className="type-meta text-foreground/40">
                     {suggestion.postCount} {suggestion.postCount === 1 ? "post" : "posts"}
                   </span>
                 </button>
@@ -295,7 +295,7 @@ export function TagInput({
                       : "text-foreground/60 hover:bg-vocl-hover"
                   }`}
                 >
-                  <span className="text-sm">
+                  <span className="type-body">
                     Create <span className="text-vocl-primary font-medium">#{queryNormalized}</span>
                   </span>
                 </button>
@@ -305,7 +305,7 @@ export function TagInput({
         </div>
       )}
 
-      <p className="text-foreground/30 text-xs">
+      <p className="type-meta text-foreground/30">
         {tags.length}/{maxTags} tags • Press Enter or comma to add
       </p>
     </div>
