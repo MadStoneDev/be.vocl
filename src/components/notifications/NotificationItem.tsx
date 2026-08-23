@@ -249,12 +249,12 @@ export function NotificationItem({
       {/* Content */}
       <div className="flex-1 min-w-0">
         {grouped ? (
-          <p className="text-sm text-foreground">
+          <p className="type-body text-foreground">
             <span className="font-semibold">{grouped.lead}</span>{" "}
             <span className="text-foreground/70">{grouped.rest}</span>
           </p>
         ) : (
-          <p className="text-sm text-foreground">
+          <p className="type-body text-foreground">
             <span className="font-semibold">@{actor.username}</span>{" "}
             <span className="text-foreground/70">
               {config.getText(actor.username).replace(actor.username, "").trim()}
@@ -264,18 +264,18 @@ export function NotificationItem({
 
         {/* Comment/message content */}
         {content && (
-          <p className="mt-1 text-sm text-foreground/50 line-clamp-2">{content}</p>
+          <p className="mt-1 type-body text-foreground/50 line-clamp-2">{content}</p>
         )}
 
         {/* Post preview */}
         {postPreview && !content && (
-          <p className="mt-1 text-sm text-foreground/40 line-clamp-1 italic">
+          <p className="mt-1 type-body text-foreground/40 line-clamp-1 italic">
             &quot;{postPreview}&quot;
           </p>
         )}
 
         {/* Timestamp */}
-        <p className="mt-1 text-xs text-foreground/30">{createdAt}</p>
+        <p className="mt-1 type-meta text-foreground/30">{createdAt}</p>
       </div>
 
       {/* Unread indicator */}

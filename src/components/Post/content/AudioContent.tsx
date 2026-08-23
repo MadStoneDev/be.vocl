@@ -157,12 +157,12 @@ export function AudioContent({
             <button
               type="button"
               onClick={() => setShowTranscript((v) => !v)}
-              className="text-xs font-medium text-vocl-primary hover:underline"
+              className="type-meta font-medium text-vocl-primary hover:underline"
             >
               {showTranscript ? "Hide transcript" : isVoiceNote ? "Show transcript" : "Show captions"}
             </button>
             {showTranscript && (
-              <p className="mt-2 text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+              <p className="mt-2 type-body text-foreground/80 whitespace-pre-wrap leading-relaxed">
                 {transcript}
               </p>
             )}
@@ -181,7 +181,7 @@ export function AudioContent({
                 <Link
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className={`px-2 py-1 text-xs font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
+                  className={`px-2 py-1 type-meta font-medium rounded-lg bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
                     isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-100 sm:opacity-0"
                   }`}
                   style={{ maxWidth: "150px" }}
@@ -234,18 +234,18 @@ export function AudioContent({
         <div className="flex-1 flex flex-col justify-center min-w-0">
           {spotifyData ? (
             <>
-              <h3 className="font-semibold text-foreground truncate">
+              <h3 className="type-heading font-semibold text-foreground truncate">
                 {spotifyData.name}
               </h3>
-              <p className="text-foreground/60 text-sm truncate">
+              <p className="type-body text-foreground/60 truncate">
                 {spotifyData.artist}
               </p>
-              <p className="text-foreground/40 text-xs truncate">
+              <p className="type-meta text-foreground/45 truncate">
                 {spotifyData.album}
               </p>
             </>
           ) : (
-            <h3 className="font-semibold text-foreground">Audio Track</h3>
+            <h3 className="type-heading font-semibold text-foreground">Audio Track</h3>
           )}
 
           {/* Progress bar */}
@@ -260,7 +260,7 @@ export function AudioContent({
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <div className="flex justify-between text-xs text-foreground/40">
+              <div className="flex justify-between type-meta text-foreground/45">
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(duration)}</span>
               </div>
@@ -300,7 +300,7 @@ export function AudioContent({
               <Link
                 key={tag.id}
                 href={`/tag/${encodeURIComponent(tag.name)}`}
-                className={`px-2 py-1 text-xs font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
+                className={`px-2 py-1 type-meta font-medium rounded-lg bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
                   isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
                 }`}
                 style={{ maxWidth: "150px" }}

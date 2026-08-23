@@ -35,11 +35,11 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-foreground mb-2">
+          <h3 className="type-heading font-semibold text-foreground mb-2">
             Community Promise
           </h3>
 
-          <p className="text-sm text-foreground/70 mb-4 leading-relaxed">
+          <p className="type-body text-foreground/70 mb-4 leading-relaxed">
             be.vocl values creative freedom, but has{" "}
             <span className="font-semibold text-vocl-like">zero tolerance</span>{" "}
             for illegal content—especially anything harmful to minors.
@@ -48,11 +48,11 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
           <div className="bg-background/50 rounded-xl p-4 mb-4 border border-vocl-border">
             <div className="flex items-center gap-2 mb-2">
               <IconAlertTriangle size={16} className="text-amber-500" />
-              <span className="text-sm font-medium text-foreground">
+              <span className="type-body font-medium text-foreground">
                 By continuing, I acknowledge that:
               </span>
             </div>
-            <ul className="text-sm text-foreground/60 space-y-1 ml-6">
+            <ul className="type-body text-foreground/60 space-y-1 ml-6">
               <li>
                 • I will never post content that presents harm to children in
                 any context
@@ -74,7 +74,7 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
           </div>
 
           {error && (
-            <p className="text-sm text-vocl-like mb-3">{error}</p>
+            <p className="type-body text-vocl-like mb-3">{error}</p>
           )}
 
           <button

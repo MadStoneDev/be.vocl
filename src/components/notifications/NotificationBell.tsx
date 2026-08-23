@@ -27,7 +27,7 @@ export function NotificationBell({ unreadCount, onClick }: NotificationBellProps
     <Link
       href="/notifications"
       onClick={onClick}
-      className="relative p-2 rounded-sm hover:bg-vocl-hover-strong transition-colors group"
+      className="relative p-2 rounded-xl hover:bg-vocl-hover-strong transition-colors group"
     >
       <IconBell
         size={24}
@@ -39,7 +39,7 @@ export function NotificationBell({ unreadCount, onClick }: NotificationBellProps
       {/* Badge */}
       {unreadCount > 0 && (
         <span
-          className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full bg-vocl-like text-white text-xs font-bold transition-transform ${
+          className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full bg-vocl-like text-white type-meta font-bold transition-transform ${
             isAnimating ? "scale-125" : "scale-100"
           }`}
         >

@@ -107,13 +107,13 @@ export function PostAudioReactions({
   }, [postId, load]);
 
   return (
-    <div className="bg-vocl-surface border-t border-neutral-200/70">
+    <div className="bg-vocl-surface border-t border-vocl-border">
       {/* Affordance row */}
       <div className="flex items-center gap-2 px-3 py-2">
         <button
           type="button"
           onClick={toggleOpen}
-          className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-vocl-primary transition-colors"
+          className="inline-flex items-center gap-1.5 type-body text-foreground/60 hover:text-vocl-primary transition-colors"
           aria-expanded={open}
           aria-label={`${count} voice reaction${count === 1 ? "" : "s"}`}
         >
@@ -135,7 +135,7 @@ export function PostAudioReactions({
               setOpen(true);
               if (!loaded) void load();
             }}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-primary/10 text-vocl-primary text-xs font-medium hover:bg-vocl-primary/20 transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-primary/10 text-vocl-primary type-meta font-medium hover:bg-vocl-primary/20 transition-colors"
           >
             <IconMicrophone size={14} />
             {myReactionId ? "Re-react" : "Speak"}
@@ -153,13 +153,13 @@ export function PostAudioReactions({
           {recording && isLoggedIn && (
             <div className="rounded-xl border border-vocl-border p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-neutral-600">
+                <span className="type-meta font-medium text-foreground/70">
                   Record your reaction
                 </span>
                 <button
                   type="button"
                   onClick={() => setRecording(false)}
-                  className="text-neutral-400 hover:text-neutral-700"
+                  className="text-foreground/45 hover:text-foreground"
                   aria-label="Cancel"
                 >
                   <IconX size={16} />
@@ -177,11 +177,11 @@ export function PostAudioReactions({
           {/* List */}
           {loading ? (
             <div className="flex items-center justify-center py-4">
-              <IconLoader2 size={20} className="animate-spin text-neutral-400" />
+              <IconLoader2 size={20} className="animate-spin text-foreground/45" />
             </div>
           ) : reactions.length === 0 ? (
             !recording && (
-              <p className="text-center text-neutral-400 text-sm py-3">
+              <p className="text-center text-foreground/45 type-body py-3">
                 No voice reactions yet.
               </p>
             )
@@ -208,12 +208,12 @@ export function PostAudioReactions({
                       {r.reactor ? (
                         <Link
                           href={`/profile/${r.reactor.username}`}
-                          className="font-medium text-sm text-neutral-800 hover:text-vocl-primary transition-colors truncate"
+                          className="type-body font-medium text-foreground hover:text-vocl-primary transition-colors truncate"
                         >
                           {r.reactor.username}
                         </Link>
                       ) : (
-                        <span className="font-medium text-sm text-neutral-500">
+                        <span className="type-body font-medium text-foreground/60">
                           Someone
                         </span>
                       )}
@@ -222,7 +222,7 @@ export function PostAudioReactions({
                           type="button"
                           onClick={handleRemove}
                           disabled={busy}
-                          className="ml-auto inline-flex items-center gap-1 text-xs text-neutral-400 hover:text-vocl-like transition-colors disabled:opacity-50"
+                          className="ml-auto inline-flex items-center gap-1 type-meta text-foreground/45 hover:text-vocl-like transition-colors disabled:opacity-50"
                         >
                           <IconTrash size={13} /> Remove
                         </button>
@@ -236,7 +236,7 @@ export function PostAudioReactions({
                       />
                     </div>
                     {r.transcript && (
-                      <p className="mt-1 text-xs text-neutral-500 italic whitespace-pre-wrap leading-relaxed">
+                      <p className="mt-1 type-meta text-foreground/60 italic whitespace-pre-wrap leading-relaxed">
                         &ldquo;{r.transcript}&rdquo;
                       </p>
                     )}

@@ -61,7 +61,7 @@ export function VoiceClipPlayer({
   return (
     <div
       className={`inline-flex items-center gap-2.5 px-3 py-2 rounded-full max-w-full ${
-        isDark ? "bg-vocl-hover-strong" : "bg-neutral-200"
+        isDark ? "bg-vocl-hover-strong" : "bg-vocl-hover"
       }`}
     >
       <button
@@ -75,8 +75,8 @@ export function VoiceClipPlayer({
 
       {label && (
         <span
-          className={`text-xs font-medium shrink-0 ${
-            isDark ? "text-foreground/70" : "text-neutral-600"
+          className={`type-meta font-medium shrink-0 ${
+            isDark ? "text-foreground/70" : "text-foreground/60"
           }`}
         >
           {label}
@@ -86,7 +86,7 @@ export function VoiceClipPlayer({
       <div
         onClick={handleSeek}
         className={`relative h-1.5 w-24 sm:w-32 rounded-full overflow-hidden cursor-pointer ${
-          isDark ? "bg-vocl-border" : "bg-neutral-300"
+          isDark ? "bg-vocl-border" : "bg-vocl-border"
         }`}
       >
         <div
@@ -96,8 +96,8 @@ export function VoiceClipPlayer({
       </div>
 
       <span
-        className={`text-xs font-mono shrink-0 tabular-nums ${
-          isDark ? "text-foreground/60" : "text-neutral-500"
+        className={`type-meta font-mono shrink-0 tabular-nums ${
+          isDark ? "text-foreground/60" : "text-foreground/60"
         }`}
       >
         {playing || current > 0 ? formatTime(current) : formatTime(total)}

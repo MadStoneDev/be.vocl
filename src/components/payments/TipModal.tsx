@@ -133,12 +133,12 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-sm bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconCoin size={20} className="text-yellow-500" />
-            <h2 className="font-semibold text-foreground">Send a Tip</h2>
+            <h2 className="type-display text-xl text-foreground">Send a Tip</h2>
           </div>
           <button
             onClick={onClose}
@@ -168,10 +168,10 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
             )}
           </div>
           <div>
-            <p className="font-medium text-foreground">
+            <p className="type-body font-medium text-foreground">
               {recipient.displayName || recipient.username}
             </p>
-            <p className="text-sm text-foreground/50">@{recipient.username}</p>
+            <p className="type-meta text-foreground/60">@{recipient.username}</p>
           </div>
         </div>
 
@@ -180,10 +180,10 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
             <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center mb-4">
               <IconCheck size={32} className="text-green-500" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
+            <h3 className="type-heading font-semibold text-foreground mb-2">
               Tip Sent!
             </h3>
-            <p className="text-sm text-foreground/50">
+            <p className="type-body text-foreground/60">
               Thank you for supporting @{recipient.username}
             </p>
           </div>
@@ -191,7 +191,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
           <>
             {/* Tip tiers */}
             <div className="p-4">
-              <p className="text-sm text-foreground/60 mb-3">
+              <p className="type-body text-foreground/60 mb-3">
                 Choose an amount
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -200,7 +200,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                     key={tier.id}
                     onClick={() => setSelectedTier(tier.id)}
                     disabled={isProcessing}
-                    className={`p-4 rounded-sm border transition-all ${
+                    className={`p-4 rounded-xl border transition-all ${
                       selectedTier === tier.id
                         ? "border-vocl-primary bg-vocl-primary/10"
                         : "border-vocl-border hover:border-vocl-hover-strong bg-vocl-hover"
@@ -218,7 +218,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                     <p className="text-lg font-bold text-foreground">
                       ${tier.amount}
                     </p>
-                    <p className="text-xs text-foreground/50">{tier.label}</p>
+                    <p className="type-meta text-foreground/50">{tier.label}</p>
                   </button>
                 ))}
               </div>
@@ -226,7 +226,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
 
             {/* Optional message */}
             <div className="px-4 pb-4">
-              <label className="block text-sm text-foreground/60 mb-2">
+              <label className="block type-body text-foreground/60 mb-2">
                 Add a message (optional)
               </label>
               <textarea
@@ -236,7 +236,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
                 maxLength={280}
                 rows={2}
                 disabled={isProcessing}
-                className="w-full px-3 py-2 rounded-sm bg-background border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none disabled:opacity-50"
+                className="w-full px-3 py-2 rounded-xl bg-background border border-vocl-border text-foreground type-body placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none disabled:opacity-50"
               />
             </div>
 
@@ -245,7 +245,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
               <button
                 onClick={handleTip}
                 disabled={!selectedTier || isProcessing}
-                className="w-full py-3 rounded-sm bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white type-body font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>

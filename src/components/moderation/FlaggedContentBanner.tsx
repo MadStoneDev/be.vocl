@@ -11,10 +11,10 @@ export function FlaggedContentBanner() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-foreground mb-1">
+          <h3 className="type-heading font-semibold text-foreground mb-1">
             Content Under Review
           </h3>
-          <p className="text-sm text-foreground/60">
+          <p className="type-body text-foreground/60">
             A post you recently shared may have broken our terms and conditions.
             We are reviewing this and will update you on our decision.
           </p>

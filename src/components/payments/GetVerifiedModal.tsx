@@ -116,7 +116,7 @@ export function GetVerifiedModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export function GetVerifiedModal({
               size={20}
               className="text-vocl-primary"
             />
-            <h2 className="font-semibold text-foreground">Get Verified</h2>
+            <h2 className="type-display text-xl text-foreground">Get Verified</h2>
           </div>
           <button
             onClick={onClose}
@@ -143,10 +143,10 @@ export function GetVerifiedModal({
                 className="text-vocl-primary"
               />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">
+            <h3 className="type-heading text-xl font-semibold text-foreground mb-2">
               You&apos;re Verified!
             </h3>
-            <p className="text-sm text-foreground/50">
+            <p className="type-body text-foreground/60">
               Your verification badge is now active
             </p>
           </div>
@@ -160,10 +160,10 @@ export function GetVerifiedModal({
                   className="text-vocl-primary"
                 />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <h3 className="type-heading font-semibold text-foreground mb-2">
                 Stand out on be.vocl
               </h3>
-              <p className="text-sm text-foreground/60">
+              <p className="type-body text-foreground/60">
                 One-time purchase • ${VERIFICATION_PRODUCT.amount}
               </p>
             </div>
@@ -173,14 +173,14 @@ export function GetVerifiedModal({
               {BENEFITS.map((benefit, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 rounded-sm bg-vocl-hover"
+                  className="flex items-start gap-3 p-3 rounded-xl bg-vocl-hover"
                 >
                   <div className="mt-0.5">{benefit.icon}</div>
                   <div>
-                    <p className="font-medium text-foreground text-sm">
+                    <p className="type-body font-medium text-foreground">
                       {benefit.title}
                     </p>
-                    <p className="text-xs text-foreground/50">
+                    <p className="type-meta text-foreground/50">
                       {benefit.description}
                     </p>
                   </div>
@@ -193,7 +193,7 @@ export function GetVerifiedModal({
               <button
                 onClick={handleVerify}
                 disabled={isProcessing}
-                className="w-full py-3 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-vocl-primary text-white type-body font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <>
@@ -207,7 +207,7 @@ export function GetVerifiedModal({
                   </>
                 )}
               </button>
-              <p className="text-xs text-foreground/40 text-center mt-3">
+              <p className="type-meta text-foreground/45 text-center mt-3">
                 Secure payment powered by Paddle
               </p>
             </div>

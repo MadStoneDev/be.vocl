@@ -143,12 +143,12 @@ export function ReportModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 bg-background border border-vocl-border rounded-sm shadow-2xl">
+      <div className="relative w-full max-w-md mx-4 bg-background border border-vocl-border rounded-2xl shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div className="flex items-center gap-2">
             <IconFlag size={20} className="text-vocl-like" />
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="type-display text-xl text-foreground">
               {submitted
                 ? isPostFlag
                   ? "Flag Submitted"
@@ -173,10 +173,10 @@ export function ReportModal({
               <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
                 <IconCheck size={32} className="text-green-500" />
               </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">
+              <h3 className="type-heading font-semibold text-foreground mb-2">
                 Thank you for reporting
               </h3>
-              <p className="text-sm text-foreground/60">
+              <p className="type-body text-foreground/60">
                 Our team will review this report and take appropriate action.
                 Your report is anonymous to the reported user.
               </p>
@@ -184,7 +184,7 @@ export function ReportModal({
           ) : (
             <>
               {reportedUsername && (
-                <p className="text-sm text-foreground/60 mb-4">
+                <p className="type-body text-foreground/60 mb-4">
                   Reporting{" "}
                   <span className="font-medium text-foreground">
                     @{reportedUsername}
@@ -195,23 +195,23 @@ export function ReportModal({
 
               {/* Subject selection */}
               <div className="space-y-2 mb-4">
-                <label className="text-sm font-medium text-foreground">
+                <label className="type-body font-medium text-foreground">
                   What's the issue?
                 </label>
                 {subjects.map((subject) => (
                   <button
                     key={subject.value}
                     onClick={() => setSelectedSubject(subject.value)}
-                    className={`w-full text-left p-3 rounded-sm border transition-colors ${
+                    className={`w-full text-left p-3 rounded-xl border transition-colors ${
                       selectedSubject === subject.value
                         ? "border-vocl-primary bg-vocl-primary/10"
                         : "border-vocl-border hover:border-vocl-hover-strong"
                     }`}
                   >
-                    <div className="font-medium text-sm text-foreground">
+                    <div className="type-body font-medium text-foreground">
                       {subject.label}
                     </div>
-                    <div className="text-xs text-foreground/50 mt-0.5">
+                    <div className="type-meta text-foreground/50 mt-0.5">
                       {subject.description}
                     </div>
                   </button>
@@ -220,7 +220,7 @@ export function ReportModal({
 
               {/* Additional comments */}
               <div className="mb-4">
-                <label className="text-sm font-medium text-foreground block mb-2">
+                <label className="type-body font-medium text-foreground block mb-2">
                   Additional details (optional)
                 </label>
                 <textarea
@@ -228,12 +228,12 @@ export function ReportModal({
                   onChange={(e) => setComments(e.target.value)}
                   placeholder="Provide any additional context..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-sm bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                 />
               </div>
 
               {error && (
-                <p className="text-sm text-vocl-like mb-4">{error}</p>
+                <p className="type-body text-vocl-like mb-4">{error}</p>
               )}
             </>
           )}
@@ -244,14 +244,14 @@ export function ReportModal({
           <div className="flex gap-3 p-4 border-t border-vocl-border">
             <button
               onClick={handleClose}
-              className="flex-1 py-2.5 px-4 rounded-sm border border-vocl-border text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-vocl-border text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors type-meta font-semibold"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!selectedSubject || isSubmitting}
-              className="flex-1 py-2.5 px-4 rounded-sm bg-vocl-like text-white font-medium hover:bg-vocl-like/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-vocl-like text-white type-meta font-semibold hover:bg-vocl-like/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Submitting..." : "Submit Report"}
             </button>

@@ -80,10 +80,10 @@ export function NotificationList({
         <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4">
           <IconBellOff size={32} className="text-foreground/30" />
         </div>
-        <h3 className="text-lg font-medium text-foreground/70 mb-2">
+        <h3 className="type-heading font-semibold text-foreground/70 mb-2">
           No notifications yet
         </h3>
-        <p className="text-sm text-foreground/50 max-w-sm">
+        <p className="type-body text-foreground/50 max-w-sm">
           When someone interacts with your posts or follows you, you&apos;ll see it
           here.
         </p>
@@ -106,7 +106,7 @@ export function NotificationList({
       {Object.entries(groupedNotifications).map(([date, items]) => (
         <div key={date}>
           {/* Date header */}
-          <h3 className="text-xs font-medium text-foreground/40 uppercase tracking-wider mb-3 px-2">
+          <h3 className="type-meta font-semibold text-foreground/40 uppercase tracking-wide mb-3 px-2">
             {date}
           </h3>
 
