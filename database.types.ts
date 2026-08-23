@@ -1752,6 +1752,7 @@ export type Database = {
           reblog_count: number
           queued_at: string | null
           search_vector: string | null
+          audience: Database["public"]["Enums"]["post_audience"]
         }
         Insert: {
           id?: string
@@ -1783,6 +1784,7 @@ export type Database = {
           reblog_count?: number
           queued_at?: string | null
           search_vector?: string | null
+          audience?: Database["public"]["Enums"]["post_audience"]
         }
         Update: {
           id?: string
@@ -1814,6 +1816,7 @@ export type Database = {
           reblog_count?: number
           queued_at?: string | null
           search_vector?: string | null
+          audience?: Database["public"]["Enums"]["post_audience"]
         }
         Relationships: [
           {
@@ -2486,6 +2489,7 @@ export type Database = {
       lock_status: "unlocked" | "restricted" | "banned"
       moderation_status: "pending" | "approved" | "flagged" | "removed"
       notification_type: "follow" | "like" | "comment" | "reblog" | "message" | "mention" | "ask" | "ask_answered" | "moderation" | "appeal" | "tip" | "system"
+      post_audience: "public" | "members" | "followers"
       post_status: "draft" | "published" | "queued" | "scheduled" | "deleted"
       post_type: "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask"
       report_source: "user_report" | "auto_moderation" | "promise_declined"
@@ -2631,6 +2635,7 @@ export const Constants = {
       lock_status: ["unlocked", "restricted", "banned"],
       moderation_status: ["pending", "approved", "flagged", "removed"],
       notification_type: ["follow", "like", "comment", "reblog", "message", "mention", "ask", "ask_answered", "moderation", "appeal", "tip", "system"],
+      post_audience: ["public", "members", "followers"],
       post_status: ["draft", "published", "queued", "scheduled", "deleted"],
       post_type: ["text", "image", "video", "audio", "gallery", "poll", "ask"],
       report_source: ["user_report", "auto_moderation", "promise_declined"],
