@@ -211,13 +211,13 @@ export function RichTextEditor({
                 }
               }}
               placeholder="https://example.com"
-              className="min-w-0 flex-1 rounded-xl border border-vocl-border bg-background px-3 py-1.5 type-body text-foreground outline-none transition-colors placeholder:text-foreground/40 focus:border-vocl-primary"
+              className="min-w-0 flex-1 rounded-lg border border-vocl-border bg-background px-3 py-1.5 type-body text-foreground outline-none transition-colors placeholder:text-foreground/40 focus:border-vocl-primary"
             />
             <button
               type="button"
               onClick={applyLink}
               title="Apply link"
-              className="flex-shrink-0 rounded-xl bg-vocl-primary p-2 text-white transition-opacity hover:opacity-90"
+              className="flex-shrink-0 rounded-lg bg-vocl-primary p-2 text-white transition-opacity hover:opacity-90"
             >
               <IconCheck size={18} />
             </button>
@@ -226,7 +226,7 @@ export function RichTextEditor({
                 type="button"
                 onClick={removeLink}
                 title="Remove link"
-                className="flex-shrink-0 rounded-xl p-2 text-foreground/60 transition-colors hover:bg-vocl-hover hover:text-vocl-like"
+                className="flex-shrink-0 rounded-lg p-2 text-foreground/60 transition-colors hover:bg-vocl-hover hover:text-vocl-like"
               >
                 <IconLinkOff size={18} />
               </button>
@@ -235,7 +235,7 @@ export function RichTextEditor({
               type="button"
               onClick={closeLink}
               title="Cancel"
-              className="flex-shrink-0 rounded-xl p-2 text-foreground/60 transition-colors hover:bg-vocl-hover hover:text-foreground"
+              className="flex-shrink-0 rounded-lg p-2 text-foreground/60 transition-colors hover:bg-vocl-hover hover:text-foreground"
             >
               <IconX size={18} />
             </button>

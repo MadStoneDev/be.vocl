@@ -183,7 +183,7 @@ export function QueueItem({
         <div className="flex items-center gap-1.5">
           <Link
             href={`/create?edit=${post.id}`}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-vocl-hover text-foreground/70 hover:text-foreground hover:bg-vocl-hover-strong type-meta font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-hover text-foreground/70 hover:text-foreground hover:bg-vocl-hover-strong type-meta font-medium transition-colors"
             title="Edit"
           >
             <IconPencil size={14} />
@@ -193,7 +193,7 @@ export function QueueItem({
             type="button"
             onClick={handlePublishNow}
             disabled={isPublishing || isRemoving}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 type-meta font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 type-meta font-medium transition-colors disabled:opacity-50"
             title="Publish now"
           >
             {isPublishing ? <IconLoader2 size={14} className="animate-spin" /> : <IconSend size={14} />}
@@ -203,7 +203,7 @@ export function QueueItem({
             type="button"
             onClick={handleRemove}
             disabled={isPublishing || isRemoving}
-            className="w-8 h-8 inline-flex items-center justify-center rounded-xl text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+            className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
             title="Remove from queue"
           >
             {isRemoving ? <IconLoader2 size={14} className="animate-spin" /> : <IconTrash size={14} />}

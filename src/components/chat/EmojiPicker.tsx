@@ -54,7 +54,7 @@ export function EmojiPicker({ isOpen, onClose, onSelect }: EmojiPickerProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute bottom-full right-0 mb-2 w-72 bg-vocl-surface-dark border border-vocl-border rounded-2xl shadow-xl overflow-hidden z-50 text-foreground">
+    <div className="absolute bottom-full right-0 mb-2 w-72 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl overflow-hidden z-50 text-foreground">
       {/* Header */}
       <div className="flex items-center justify-between p-2 border-b border-vocl-border">
         <span className="type-heading font-semibold text-foreground">Emojis</span>

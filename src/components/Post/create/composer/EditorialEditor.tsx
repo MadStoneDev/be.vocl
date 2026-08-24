@@ -158,7 +158,7 @@ export function EditorialEditor({
   };
 
   const BtnClass = (active: boolean) =>
-    `flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
+    `flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
       active
         ? "bg-[var(--vocl-primary)] text-white"
         : "text-foreground/70 hover:bg-[var(--vocl-hover)] hover:text-foreground"

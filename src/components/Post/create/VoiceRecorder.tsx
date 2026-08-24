@@ -247,7 +247,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
   return (
     <div className="space-y-3">
       {state === "idle" && (
-        <div className="rounded-2xl bg-background/50 border border-vocl-border p-6 text-center">
+        <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
           <button
             type="button"
             onClick={startRecording}
@@ -265,7 +265,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "recording" && (
-        <div className="rounded-2xl bg-background/50 border border-rose-500/30 p-6">
+        <div className="rounded-xl bg-background/50 border border-rose-500/30 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
@@ -297,7 +297,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "preview" && previewUrl && (
-        <div className="rounded-2xl bg-background/50 border border-vocl-border p-4 space-y-3">
+        <div className="rounded-xl bg-background/50 border border-vocl-border p-4 space-y-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -334,14 +334,14 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "uploading" && (
-        <div className="rounded-2xl bg-background/50 border border-vocl-border p-6 text-center">
+        <div className="rounded-xl bg-background/50 border border-vocl-border p-6 text-center">
           <IconLoader2 size={24} className="animate-spin text-vocl-primary mx-auto mb-2" />
           <p className="type-body text-foreground/70">Uploading…</p>
         </div>
       )}
 
       {state === "uploaded" && uploadedUrl && (
-        <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 flex items-center justify-between">
+        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4 flex items-center justify-between">
           <div className="flex items-center gap-2 type-body text-emerald-300">
             <IconCheck size={18} />
             Recording ready ({formatTime(seconds)})
@@ -357,7 +357,7 @@ export function VoiceRecorder({ postId, onComplete, onClear, uploadedUrl }: Voic
       )}
 
       {state === "error" && error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 p-4 space-y-3">
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-4 space-y-3">
           <div className="flex items-center gap-2 type-body text-rose-300">
             <IconAlertCircle size={18} />
             <span>{error}</span>

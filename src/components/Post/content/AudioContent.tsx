@@ -181,7 +181,7 @@ export function AudioContent({
                 <Link
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className={`px-2 py-1 type-meta font-medium rounded-lg bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
+                  className={`px-2 py-1 type-meta font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
                     isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-100 sm:opacity-0"
                   }`}
                   style={{ maxWidth: "150px" }}
@@ -300,7 +300,7 @@ export function AudioContent({
               <Link
                 key={tag.id}
                 href={`/tag/${encodeURIComponent(tag.name)}`}
-                className={`px-2 py-1 type-meta font-medium rounded-lg bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
+                className={`px-2 py-1 type-meta font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
                   isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
                 }`}
                 style={{ maxWidth: "150px" }}

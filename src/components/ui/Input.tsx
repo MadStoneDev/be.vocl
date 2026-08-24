@@ -31,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={`
-              w-full bg-vocl-hover border border-vocl-border rounded-xl
+              w-full bg-vocl-hover border border-vocl-border rounded-lg
               px-4 py-2.5
               text-foreground placeholder:text-foreground/50
               transition-all duration-150

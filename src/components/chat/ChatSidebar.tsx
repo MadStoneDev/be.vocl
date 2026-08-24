@@ -473,7 +473,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
               placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-vocl-surface-muted text-foreground border border-vocl-border placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body dark:bg-vocl-surface-dark"
+              className="w-full py-2.5 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-foreground border border-vocl-border placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body dark:bg-vocl-surface-dark"
             />
           </div>
         </div>

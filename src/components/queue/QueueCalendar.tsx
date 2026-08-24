@@ -268,7 +268,7 @@ export function QueueCalendar({
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
           disabled={weekOffset <= 0}
-          className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <IconChevronLeft size={20} />
         </button>
@@ -278,7 +278,7 @@ export function QueueCalendar({
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
-          className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconChevronRight size={20} />
         </button>
@@ -353,11 +353,11 @@ export function QueueCalendar({
       {/* Legend */}
       <div className="flex items-center gap-4 justify-center type-meta text-foreground/50">
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded bg-vocl-primary/40" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-vocl-primary/40" />
           <span>Queued</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded bg-green-500/40" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-green-500/40" />
           <span>Scheduled</span>
         </div>
         <div className="flex items-center gap-1.5">

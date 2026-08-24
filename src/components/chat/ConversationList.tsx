@@ -101,7 +101,7 @@ export function ConversationList({
         </p>
         <button
           onClick={onNewChat}
-          className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+          className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
         >
           Start chatting
         </button>
@@ -129,7 +129,7 @@ export function ConversationList({
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-[70] w-52 py-1 rounded-2xl bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
+            className="fixed z-[70] w-52 py-1 rounded-sm bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
               top: Math.min(contextMenu.y, window.innerHeight - 280),
@@ -256,7 +256,7 @@ export function ConversationList({
 
           {/* Unread badge */}
           {conversation.unreadCount > 0 && (
-            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-full bg-vocl-primary flex items-center justify-center">
+            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-sm bg-vocl-primary flex items-center justify-center">
               <span className="type-meta font-bold text-white">
                 {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
               </span>

@@ -94,7 +94,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
   if (!isOpen) return null;
 
   return (
-    <div className={inline ? "bg-vocl-surface-dark border border-vocl-border rounded-2xl shadow-xl overflow-hidden text-foreground" : "absolute bottom-full left-0 right-0 mb-2 bg-vocl-surface-dark border border-vocl-border rounded-2xl shadow-xl overflow-hidden z-50 text-foreground"}>
+    <div className={inline ? "bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl overflow-hidden text-foreground" : "absolute bottom-full left-0 right-0 mb-2 bg-vocl-surface-dark border border-vocl-border rounded-xl shadow-xl overflow-hidden z-50 text-foreground"}>
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-vocl-border">
         <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export function GifPicker({ isOpen, onClose, onSelect, inline }: GifPickerProps)
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search GIFs..."
-            className="w-full py-2 pl-9 pr-3 rounded-xl bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-vocl-primary type-body"
+            className="w-full py-2 pl-9 pr-3 rounded-lg bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-vocl-primary type-body"
             autoFocus
           />
         </div>
