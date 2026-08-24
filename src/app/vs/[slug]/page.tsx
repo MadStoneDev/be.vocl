@@ -179,7 +179,7 @@ export default async function ComparisonPage({
         </section>
 
         {/* Bottom line */}
-        <section className="mt-14 rounded-2xl border border-vocl-border bg-vocl-hover/40 p-6 sm:p-8">
+        <section className="mt-14 rounded-sm border border-vocl-border bg-vocl-hover/40 p-6 sm:p-8">
           <h2 className="type-display text-xl font-bold text-foreground">
             The bottom line
           </h2>

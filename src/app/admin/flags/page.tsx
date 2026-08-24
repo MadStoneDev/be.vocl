@@ -213,7 +213,7 @@ export default function AdminFlagsPage() {
           {flags.map((flag) => (
             <div
               key={flag.id}
-              className="bg-vocl-surface-dark rounded-2xl p-5 border border-white/5"
+              className="bg-vocl-surface-dark rounded-sm p-5 border border-white/5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -353,7 +353,7 @@ export default function AdminFlagsPage() {
               setShowEscalate(false);
             }}
           />
-          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-4">
                 {showEscalate ? "Escalate Flag" : "Review Flag"}

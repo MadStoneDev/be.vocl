@@ -181,7 +181,7 @@ export function NotificationItem({
     ? buildGroupedText(type, actor.username, otherActors.length)
     : null;
 
-  const baseClassName = `group flex items-start gap-3 p-4 rounded-2xl transition-all cursor-pointer ${
+  const baseClassName = `group flex items-start gap-3 p-4 rounded-sm transition-all cursor-pointer ${
     isRead
       ? "bg-transparent hover:bg-vocl-hover"
       : "bg-vocl-primary/5 hover:bg-vocl-primary/10"

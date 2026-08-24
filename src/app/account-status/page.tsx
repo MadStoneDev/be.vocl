@@ -110,7 +110,7 @@ export default function AccountStatusPage() {
       <title>Account status | be.vocl</title>
       <div className="w-full max-w-lg">
         {/* Status Card */}
-        <div className="bg-vocl-surface-dark rounded-2xl border border-vocl-border overflow-hidden">
+        <div className="bg-vocl-surface-dark rounded-sm border border-vocl-border overflow-hidden">
           {/* Header */}
           <div className={`p-6 ${isBanned ? "bg-vocl-like/10" : "bg-amber-500/10"}`}>
             <div className="flex items-center gap-3">

@@ -107,7 +107,7 @@ export default async function TagPage({
         {posts.length > 0 ? (
           <FrontPageGrid posts={posts} />
         ) : (
-          <div className="rounded-2xl border border-vocl-border py-16 text-center">
+          <div className="rounded-sm border border-vocl-border py-16 text-center">
             <p className="text-foreground/50">
               No public posts tagged #{name} yet.
             </p>

@@ -263,7 +263,7 @@ export default function AdminInvitesPage() {
           <p className="text-foreground/50">No invite codes found</p>
         </div>
       ) : (
-        <div className="bg-vocl-surface-dark rounded-2xl border border-white/5 overflow-hidden">
+        <div className="bg-vocl-surface-dark rounded-sm border border-white/5 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -376,7 +376,7 @@ export default function AdminInvitesPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowGenerateModal(false)}
           />
-          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-2xl shadow-2xl">
+          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-4">
                 Generate Invite Codes
@@ -527,7 +527,7 @@ export default function AdminInvitesPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowGrantModal(false)}
           />
-          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-2xl shadow-2xl">
+          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-4">
                 Grant Invite Codes to User

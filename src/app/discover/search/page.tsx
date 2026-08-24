@@ -94,7 +94,7 @@ export default async function PublicSearchPage({
         )}
 
         {nothing && (
-          <div className="rounded-2xl border border-vocl-border py-16 text-center">
+          <div className="rounded-sm border border-vocl-border py-16 text-center">
             <p className="type-body text-foreground/60">
               Nothing public matches “{query}” yet.
             </p>
@@ -140,7 +140,7 @@ export default async function PublicSearchPage({
                 <Link
                   key={u.username}
                   href={`/u/${u.username}`}
-                  className="flex items-center gap-3 rounded-2xl border border-vocl-border bg-background p-3 transition-colors hover:border-vocl-primary"
+                  className="flex items-center gap-3 rounded-sm border border-vocl-border bg-background p-3 transition-colors hover:border-vocl-primary"
                 >
                   <Avatar src={u.avatarUrl} username={u.username} size="md" className="flex-shrink-0" />
                   <div className="min-w-0">

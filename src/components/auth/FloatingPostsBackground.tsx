@@ -429,7 +429,7 @@ function AudioPostCard({ post }: { post: FloatingPost }) {
 function PostCard({ post }: { post: FloatingPost }) {
   return (
     <div
-      className="absolute w-72 sm:w-80 rounded-2xl bg-vocl-surface shadow-xl overflow-hidden pointer-events-none border border-neutral-200/30"
+      className="absolute w-72 sm:w-80 rounded-sm bg-vocl-surface shadow-xl overflow-hidden pointer-events-none border border-neutral-200/30"
       style={{
         left: `${post.x}%`,
         top: `${post.y}%`,

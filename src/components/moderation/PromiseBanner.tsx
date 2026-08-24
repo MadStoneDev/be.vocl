@@ -28,7 +28,7 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
   };
 
   return (
-    <div className="bg-gradient-to-r from-vocl-primary/10 to-amber-500/10 border border-vocl-primary/20 rounded-2xl p-5 mb-6">
+    <div className="bg-gradient-to-r from-vocl-primary/10 to-amber-500/10 border border-vocl-primary/20 rounded-sm p-5 mb-6">
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0 w-12 h-12 rounded-full bg-vocl-primary/20 flex items-center justify-center">
           <IconShieldCheck size={24} className="text-vocl-primary" />

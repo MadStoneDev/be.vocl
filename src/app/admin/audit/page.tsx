@@ -67,7 +67,7 @@ export default function AdminAuditPage() {
       ) : logs.length === 0 ? (
         <div className="text-center py-20 text-foreground/50">No actions recorded yet</div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-white/5">
+        <div className="overflow-x-auto rounded-sm border border-white/5">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-foreground/50 border-b border-white/5">

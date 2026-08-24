@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
           <p className="text-foreground/50">No users found</p>
         </div>
       ) : (
-        <div className="bg-vocl-surface-dark rounded-2xl border border-white/5 overflow-hidden">
+        <div className="bg-vocl-surface-dark rounded-sm border border-white/5 overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5">
@@ -324,7 +324,7 @@ export default function AdminUsersPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setSelectedUser(null)}
           />
-          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-2xl shadow-2xl">
+          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-4">
                 Ban @{selectedUser.username}

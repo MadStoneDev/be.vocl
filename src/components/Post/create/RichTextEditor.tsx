@@ -139,7 +139,7 @@ export function RichTextEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-vocl-border overflow-hidden has-[:focus]:ring-2 has-[:focus]:ring-vocl-primary has-[:focus]:border-vocl-primary transition-colors">
+    <div className="rounded-sm border border-vocl-border overflow-hidden has-[:focus]:ring-2 has-[:focus]:ring-vocl-primary has-[:focus]:border-vocl-primary transition-colors">
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-vocl-border bg-vocl-surface-dark/50">
         <ToolbarButton

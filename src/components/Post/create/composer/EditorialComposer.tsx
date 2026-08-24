@@ -389,7 +389,7 @@ export function EditorialComposer({
       />
 
       {/* Panel */}
-      <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-3xl border border-[var(--vocl-border)] bg-background shadow-2xl overflow-hidden">
+      <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-sm border border-[var(--vocl-border)] bg-background shadow-2xl overflow-hidden">
         {skewBlocked && (
           <div className="flex items-center justify-between gap-3 border-b border-vocl-border bg-vocl-primary/10 px-4 py-3">
             <span className="type-body text-sm text-foreground/80">
@@ -519,7 +519,7 @@ export function EditorialComposer({
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowDiscardConfirm(false)}
           />
-          <div className="relative w-full max-w-sm mx-4 rounded-2xl bg-vocl-surface-dark border border-[var(--vocl-border)] shadow-2xl p-6">
+          <div className="relative w-full max-w-sm mx-4 rounded-sm bg-vocl-surface-dark border border-[var(--vocl-border)] shadow-2xl p-6">
             <h2 className="text-lg font-semibold text-foreground">Discard this post?</h2>
             <p className="mt-2 text-sm text-foreground/60">
               Your draft won&apos;t be saved.
@@ -573,7 +573,7 @@ function ComposerPreview({
         <img
           src={state.mediaUrls[0]}
           alt={state.altTexts[0] || ""}
-          className="w-full rounded-2xl mb-6"
+          className="w-full rounded-sm mb-6"
         />
       )}
       {state.postType === "image" && state.selectedUnsplash && !state.mediaUrls[0] && (
@@ -581,19 +581,19 @@ function ComposerPreview({
         <img
           src={state.selectedUnsplash.urls.regular}
           alt={state.altTexts[0] || ""}
-          className="w-full rounded-2xl mb-6"
+          className="w-full rounded-sm mb-6"
         />
       )}
       {state.postType === "image" && state.imageLinkUrl && !state.mediaUrls[0] && !state.selectedUnsplash && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={state.imageLinkUrl} alt={state.altTexts[0] || ""} className="w-full rounded-2xl mb-6" />
+        <img src={state.imageLinkUrl} alt={state.altTexts[0] || ""} className="w-full rounded-sm mb-6" />
       )}
       {state.postType === "gif" && state.selectedGifUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={state.selectedGifUrl} alt={state.altTexts[0] || ""} className="w-full rounded-2xl mb-6" />
+        <img src={state.selectedGifUrl} alt={state.altTexts[0] || ""} className="w-full rounded-sm mb-6" />
       )}
       {state.postType === "video" && state.mediaUrls[0] && (
-        <video src={state.mediaUrls[0]} controls className="w-full rounded-2xl mb-6" />
+        <video src={state.mediaUrls[0]} controls className="w-full rounded-sm mb-6" />
       )}
 
       {/* Poll preview */}

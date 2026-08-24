@@ -59,7 +59,7 @@ export function FeedTabs({
     }`;
 
   return (
-    <div className="flex items-center gap-1 sm:rounded-2xl bg-vocl-surface-dark/50 p-1 mb-6">
+    <div className="flex items-center gap-1 sm:rounded-sm bg-vocl-surface-dark/50 p-1 mb-6">
       {/* Sort tabs (teal = "what") */}
       <div className="flex flex-1">
         {tabs.map((tab) => {

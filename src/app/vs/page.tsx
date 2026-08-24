@@ -53,7 +53,7 @@ export default function ComparisonsIndex() {
             <li key={c.slug}>
               <Link
                 href={`/vs/${c.slug}`}
-                className="group flex h-full flex-col rounded-2xl border border-vocl-border p-6 transition-colors hover:bg-vocl-hover"
+                className="group flex h-full flex-col rounded-sm border border-vocl-border p-6 transition-colors hover:bg-vocl-hover"
               >
                 <h2 className="type-display text-xl font-bold text-foreground">
                   be.vocl <span className="text-foreground/40">vs</span>{" "}

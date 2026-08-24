@@ -129,7 +129,7 @@ export default async function DiscoverPage() {
         {posts.length > 0 ? (
           <FrontPageGrid posts={posts} />
         ) : (
-          <div className="rounded-2xl border border-vocl-border py-16 text-center">
+          <div className="rounded-sm border border-vocl-border py-16 text-center">
             <p className="text-foreground/50">
               Nothing public to show yet. Be the first to share your voice.
             </p>

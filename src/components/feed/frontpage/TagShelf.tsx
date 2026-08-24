@@ -49,7 +49,7 @@ export function TagShelf({
         {posts.map((post) => (
           <div
             key={post.id}
-            className="w-[16rem] shrink-0 snap-start rounded-2xl border border-vocl-border p-4 sm:w-[18rem]"
+            className="w-[16rem] shrink-0 snap-start rounded-sm border border-vocl-border p-4 sm:w-[18rem]"
           >
             <FrontPageTile post={post} prominence="standard" />
           </div>

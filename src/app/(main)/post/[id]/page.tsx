@@ -263,7 +263,7 @@ export default async function PostPage({ params }: Props) {
         )}
         <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
           {renderPublicPost(publicPost, author)}
-          <div className="mt-8 rounded-2xl border border-vocl-border p-6 text-center">
+          <div className="mt-8 rounded-sm border border-vocl-border p-6 text-center">
             <p className="type-body text-foreground/70">
               Join be.vocl to like, reply and follow{" "}
               <Link

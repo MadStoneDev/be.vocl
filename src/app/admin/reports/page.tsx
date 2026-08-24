@@ -175,7 +175,7 @@ export default function AdminReportsPage() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className="bg-vocl-surface-dark rounded-2xl p-5 border border-white/5"
+              className="bg-vocl-surface-dark rounded-sm p-5 border border-white/5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -269,7 +269,7 @@ export default function AdminReportsPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setSelectedReport(null)}
           />
-          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-2xl shadow-2xl">
+          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-4">Review Report</h2>
 

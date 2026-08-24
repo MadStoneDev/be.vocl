@@ -128,7 +128,7 @@ export default function AdminDashboard() {
           <Link
             key={stat.label}
             href={stat.href}
-            className="bg-vocl-surface-dark rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-colors"
+            className="bg-vocl-surface-dark rounded-sm p-5 border border-white/5 hover:border-white/10 transition-colors"
           >
             <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center mb-3`}>
               <stat.icon size={20} className={stat.color} />
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-vocl-surface-dark rounded-2xl p-6 border border-white/5">
+      <div className="bg-vocl-surface-dark rounded-sm p-6 border border-white/5">
         <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link

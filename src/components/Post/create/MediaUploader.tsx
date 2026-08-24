@@ -202,7 +202,7 @@ export function MediaUploader({
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${
+          className={`relative border-2 border-dashed rounded-sm p-8 text-center transition-colors ${
             dragOver
               ? "border-vocl-primary bg-vocl-primary/10"
               : "border-vocl-border hover:border-vocl-border"

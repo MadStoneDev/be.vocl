@@ -157,7 +157,7 @@ export function KeyboardShortcuts() {
       onClick={() => setShowCheatSheet(false)}
     >
       <div
-        className="bg-vocl-surface-dark rounded-2xl p-6 max-w-md w-full border border-white/10"
+        className="bg-vocl-surface-dark rounded-sm p-6 max-w-md w-full border border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">

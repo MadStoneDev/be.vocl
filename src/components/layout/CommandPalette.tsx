@@ -337,7 +337,7 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
                 initial="hidden"
                 animate="show"
                 exit="hidden"
-                className="w-full max-w-xl bg-background border border-vocl-border rounded-2xl shadow-2xl overflow-hidden"
+                className="w-full max-w-xl bg-background border border-vocl-border rounded-sm shadow-2xl overflow-hidden"
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {/* Search input */}

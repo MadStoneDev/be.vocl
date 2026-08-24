@@ -51,7 +51,7 @@ export function TrustSection() {
           {PROMISES.map(({ icon: Icon, title, body }) => (
             <div
               key={title}
-              className="rounded-2xl border border-vocl-border bg-background p-6"
+              className="rounded-sm border border-vocl-border bg-background p-6"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-vocl-primary/10 text-vocl-primary">
                 <Icon size={22} stroke={1.75} />

@@ -11,7 +11,7 @@ export default function CreateLoading() {
       </div>
 
       {/* Editor area */}
-      <div className="bg-vocl-surface-dark rounded-2xl p-6 space-y-4">
+      <div className="bg-vocl-surface-dark rounded-sm p-6 space-y-4">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-40 w-full rounded-xl" />
         <div className="flex gap-2">

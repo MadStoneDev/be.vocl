@@ -150,7 +150,7 @@ export function QueueItem({
 
   return (
     <div
-      className={`group rounded-2xl bg-vocl-surface-dark border border-vocl-border transition-all overflow-hidden ${
+      className={`group rounded-sm bg-vocl-surface-dark border border-vocl-border transition-all overflow-hidden ${
         isDragging ? "opacity-50 scale-[0.98]" : "hover:border-vocl-border"
       }`}
     >
