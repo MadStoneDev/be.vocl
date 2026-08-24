@@ -57,7 +57,6 @@ export function ChatInput({
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle GIF selection
   const handleGifSelect = async (gifUrl: string) => {
@@ -119,20 +118,11 @@ export function ChatInput({
     }
   }, [message]);
 
-  // Handle typing indicator
+  // Refresh the typing indicator on each keystroke. Stop-typing is driven by
+  // useTypingPresence's own inactivity timer, so no local timeout is needed.
   const handleChange = (value: string) => {
     setMessage(value);
-
-    // Debounce typing indicator
-    if (onTyping) {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      onTyping();
-      typingTimeoutRef.current = setTimeout(() => {
-        // Stop typing after 2 seconds of inactivity
-      }, 2000);
-    }
+    onTyping?.();
   };
 
   // Handle file selection

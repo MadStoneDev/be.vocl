@@ -274,15 +274,37 @@ export function useMessages(
             // Carry the raw ISO timestamp; components format it.
             createdAt: newMessage.created_at,
             reactions: [],
-            // Reply preview for realtime inserts is resolved lazily; the
-            // sender's own optimistic copy carries it, and a full reload
-            // (on conversation open) backfills it for receivers.
             replyTo: undefined,
           };
           // Dedup by id so realtime echoes / multi-tab inserts don't append twice.
-          setMessages((prev) =>
-            prev.some((m) => m.id === mapped.id) ? prev : [...prev, mapped]
-          );
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === mapped.id)) return prev;
+            // Backfill the reply preview from a message already in the thread so a
+            // live-received reply shows its quote immediately (mirrors the
+            // optimistic-send path) instead of only after a reload.
+            const replyToId = newMessage.reply_to_id;
+            if (replyToId) {
+              const target = prev.find((m) => m.id === replyToId);
+              if (target) {
+                mapped.replyTo = {
+                  id: target.id,
+                  senderId: target.senderId,
+                  preview: target.isDeleted
+                    ? "Deleted message"
+                    : target.content
+                      ? target.content.slice(0, 120)
+                      : target.mediaType === "audio"
+                        ? "Voice message"
+                        : target.mediaType === "image"
+                          ? "Photo"
+                          : target.mediaType === "video"
+                            ? "Video"
+                            : "Attachment",
+                };
+              }
+            }
+            return [...prev, mapped];
+          });
           // Mark as read only for messages we didn't send.
           if (newMessage.sender_id !== currentUserId) {
             markConversationAsRead(conversationId);
