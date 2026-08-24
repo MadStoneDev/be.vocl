@@ -88,7 +88,7 @@ export function ConfirmDialog({
       {/* Dialog */}
       <div
         ref={dialogRef}
-        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface-dark rounded-sm shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-sm mx-4 bg-vocl-surface-dark rounded-2xl shadow-2xl overflow-hidden"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
@@ -115,7 +115,7 @@ export function ConfirmDialog({
           {/* Title */}
           <h2
             id="dialog-title"
-            className="text-lg font-semibold text-foreground text-center mb-2"
+            className="type-heading font-semibold text-foreground text-center mb-2"
           >
             {title}
           </h2>
@@ -123,7 +123,7 @@ export function ConfirmDialog({
           {/* Message */}
           <p
             id="dialog-description"
-            className="text-sm text-foreground/60 text-center mb-6"
+            className="type-body text-foreground/60 text-center mb-6"
           >
             {message}
           </p>
@@ -133,14 +133,14 @@ export function ConfirmDialog({
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-2.5 px-4 rounded-sm border border-vocl-border text-foreground/80 font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-vocl-border text-foreground/80 font-semibold hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
             >
               {cancelText}
             </button>
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className={`flex-1 py-2.5 px-4 rounded-sm text-white font-medium transition-colors disabled:opacity-50 ${styles.button} flex items-center justify-center gap-2`}
+              className={`flex-1 py-2.5 px-4 rounded-xl text-white font-semibold transition-colors disabled:opacity-50 ${styles.button} flex items-center justify-center gap-2`}
             >
               {isLoading ? (
                 <>

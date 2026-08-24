@@ -92,7 +92,7 @@ export function Dialog({
         onKeyDown={handleKeyDown}
         className={`
           relative w-full ${sizeClasses[size]} mx-4
-          bg-vocl-surface-dark border border-vocl-border rounded-sm
+          bg-vocl-surface-dark border border-vocl-border rounded-2xl
           shadow-2xl
           animate-in zoom-in-95 fade-in duration-200
           focus:outline-none
@@ -101,7 +101,7 @@ export function Dialog({
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-vocl-border">
-            <h2 id="dialog-title" className="text-lg font-semibold text-foreground">
+            <h2 id="dialog-title" className="type-heading font-semibold text-foreground">
               {title}
             </h2>
             <button
