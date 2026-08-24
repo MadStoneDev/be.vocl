@@ -187,21 +187,22 @@ export function MessageBubble({
   if (isDeleted) {
     return (
       <div className={`flex ${isOwn ? "justify-end" : "justify-start"} ${runSpacing} ${avatarGutter}`}>
-        <div className="px-4 py-2 rounded-2xl bg-vocl-hover border border-vocl-border">
+        <div className="px-4 py-2 rounded-sm bg-vocl-hover border border-vocl-border">
           <p className="type-body text-foreground/40 italic">Message deleted</p>
         </div>
       </div>
     );
   }
 
-  // Corner radii: only the last bubble in a run gets the "tail".
+  // Corner radii: squared bubbles; only the last bubble in a run gets the
+  // squared "tail" (its bottom corner goes fully sharp against the sender's side).
   const tail = isOwn
     ? isLastInGroup
-      ? "rounded-br-md"
-      : "rounded-br-2xl"
+      ? "rounded-br-none"
+      : "rounded-br-sm"
     : isLastInGroup
-      ? "rounded-bl-md"
-      : "rounded-bl-2xl";
+      ? "rounded-bl-none"
+      : "rounded-bl-sm";
 
   return (
     <motion.div
@@ -245,7 +246,7 @@ export function MessageBubble({
 
         {/* Message bubble */}
         <div
-          className={`relative px-4 py-2.5 rounded-2xl ${tail} ${
+          className={`relative px-4 py-2.5 rounded-sm ${tail} ${
             isOwn
               ? "bg-vocl-primary text-white"
               : "bg-vocl-surface-muted text-foreground dark:bg-vocl-surface-dark"
