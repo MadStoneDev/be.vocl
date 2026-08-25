@@ -124,10 +124,10 @@ export default function AccountStatusPage() {
                 </div>
               )}
               <div>
-                <h1 className="text-xl font-bold text-foreground">
+                <h1 className="type-display text-xl font-bold text-foreground">
                   {isBanned ? "Account Banned" : "Account Restricted"}
                 </h1>
-                <p className="text-sm text-foreground/60">
+                <p className="type-body text-foreground/60">
                   {isBanned
                     ? "Your account has been suspended"
                     : "Your account has limited functionality"}
@@ -141,7 +141,7 @@ export default function AccountStatusPage() {
             {/* Reason */}
             {banReason && (
               <div>
-                <h2 className="text-sm font-medium text-foreground/50 mb-2">Reason</h2>
+                <h2 className="type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">Reason</h2>
                 <p className="text-foreground bg-vocl-hover rounded-xl p-4">
                   {banReason}
                 </p>
@@ -150,7 +150,7 @@ export default function AccountStatusPage() {
 
             {/* What this means */}
             <div>
-              <h2 className="text-sm font-medium text-foreground/50 mb-2">
+              <h2 className="type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
                 What this means
               </h2>
               <ul className="space-y-2 text-foreground/80">
@@ -192,64 +192,64 @@ export default function AccountStatusPage() {
             <div className="border-t border-vocl-border pt-6">
               <div className="flex items-center gap-2 mb-4">
                 <IconMessageReport size={20} className="text-vocl-primary" />
-                <h2 className="font-medium text-foreground">Appeal</h2>
+                <h2 className="type-heading font-semibold text-foreground">Appeal</h2>
               </div>
 
               {appealsBlocked ? (
                 <div className="bg-vocl-like/10 rounded-xl p-4">
-                  <p className="text-vocl-like font-medium">Appeals Blocked</p>
-                  <p className="text-sm text-foreground/60 mt-1">
+                  <p className="text-vocl-like font-semibold">Appeals Blocked</p>
+                  <p className="type-body text-foreground/60 mt-1">
                     Your ability to submit appeals has been revoked due to previous abuse.
                   </p>
                 </div>
               ) : appealInfo.status === "pending" ? (
                 <div className="bg-amber-500/10 rounded-xl p-4">
-                  <div className="flex items-center gap-2 text-amber-500 font-medium">
+                  <div className="flex items-center gap-2 text-amber-500 font-semibold">
                     <IconClock size={18} />
                     <span>Appeal Pending</span>
                   </div>
-                  <p className="text-sm text-foreground/60 mt-2">
+                  <p className="type-body text-foreground/60 mt-2">
                     Your appeal is being reviewed by our team. You will receive an email
                     when a decision has been made.
                   </p>
                   {appealInfo.reason && (
                     <div className="mt-3 pt-3 border-t border-amber-500/20">
-                      <p className="text-xs text-foreground/40 mb-1">Your appeal:</p>
-                      <p className="text-sm text-foreground/70">{appealInfo.reason}</p>
+                      <p className="type-meta text-foreground/40 mb-1">Your appeal:</p>
+                      <p className="type-body text-foreground/70">{appealInfo.reason}</p>
                     </div>
                   )}
                 </div>
               ) : appealInfo.status === "approved" ? (
                 <div className="bg-green-500/10 rounded-xl p-4">
-                  <div className="flex items-center gap-2 text-green-500 font-medium">
+                  <div className="flex items-center gap-2 text-green-500 font-semibold">
                     <IconCheck size={18} />
                     <span>Appeal Approved</span>
                   </div>
-                  <p className="text-sm text-foreground/60 mt-2">
+                  <p className="type-body text-foreground/60 mt-2">
                     Your appeal has been approved. Your account restrictions will be lifted shortly.
                   </p>
                   {appealInfo.reviewNotes && (
                     <div className="mt-3 pt-3 border-t border-green-500/20">
-                      <p className="text-xs text-foreground/40 mb-1">Staff response:</p>
-                      <p className="text-sm text-foreground/70">{appealInfo.reviewNotes}</p>
+                      <p className="type-meta text-foreground/40 mb-1">Staff response:</p>
+                      <p className="type-body text-foreground/70">{appealInfo.reviewNotes}</p>
                     </div>
                   )}
                 </div>
               ) : appealInfo.status === "denied" ? (
                 <div className="space-y-4">
                   <div className="bg-vocl-like/10 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-vocl-like font-medium">
+                    <div className="flex items-center gap-2 text-vocl-like font-semibold">
                       <IconX size={18} />
                       <span>Previous Appeal Denied</span>
                     </div>
                     {appealInfo.reviewNotes && (
                       <div className="mt-3 pt-3 border-t border-vocl-like/20">
-                        <p className="text-xs text-foreground/40 mb-1">Staff response:</p>
-                        <p className="text-sm text-foreground/70">{appealInfo.reviewNotes}</p>
+                        <p className="type-meta text-foreground/40 mb-1">Staff response:</p>
+                        <p className="type-body text-foreground/70">{appealInfo.reviewNotes}</p>
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-foreground/60">
+                  <p className="type-body text-foreground/60">
                     You may submit another appeal if you have new information.
                   </p>
                 </div>
@@ -266,12 +266,12 @@ export default function AccountStatusPage() {
                     className="w-full px-4 py-3 rounded-xl bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                   />
                   {submitError && (
-                    <p className="text-sm text-vocl-like">{submitError}</p>
+                    <p className="type-body text-vocl-like">{submitError}</p>
                   )}
                   <button
                     onClick={handleSubmitAppeal}
                     disabled={isSubmitting || !appealReason.trim()}
-                    className="w-full px-4 py-3 bg-vocl-primary text-white rounded-xl font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
+                    className="w-full px-4 py-3 bg-vocl-primary text-white rounded-xl font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors"
                   >
                     {isSubmitting ? "Submitting..." : "Submit Appeal"}
                   </button>
@@ -280,8 +280,8 @@ export default function AccountStatusPage() {
 
               {submitSuccess && (
                 <div className="bg-green-500/10 rounded-xl p-4 mt-4">
-                  <p className="text-green-500 font-medium">Appeal Submitted</p>
-                  <p className="text-sm text-foreground/60 mt-1">
+                  <p className="text-green-500 font-semibold">Appeal Submitted</p>
+                  <p className="type-body text-foreground/60 mt-1">
                     We'll review your appeal and get back to you via email.
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export default function AccountStatusPage() {
         </div>
 
         {/* Help text */}
-        <p className="text-center text-sm text-foreground/40 mt-6">
+        <p className="text-center type-meta text-foreground/40 mt-6">
           If you believe this is an error, please contact support at{" "}
           <a href="mailto:support@vocl.app" className="text-vocl-primary hover:underline">
             support@vocl.app

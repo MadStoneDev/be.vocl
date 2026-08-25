@@ -235,7 +235,7 @@ export default function TermsOfServicePage() {
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-vocl-border">
-          <div className="flex flex-wrap gap-4 text-sm text-foreground/60">
+          <div className="flex flex-wrap gap-4 type-body text-foreground/60">
             <Link href="/privacy" className="hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
