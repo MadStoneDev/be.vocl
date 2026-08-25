@@ -110,6 +110,69 @@ function ogImage(p: PostMeta): string | null {
   return c.urls?.[0] || c.url || c.thumbnail_url || c.album_art_url || null;
 }
 
+/** schema.org media object(s) for the Article node, keyed by post type, so
+ *  search/answer engines understand image/video/audio posts as real media. */
+function mediaSchema(p: PostMeta, headline: string): Record<string, unknown> {
+  const c = (p.content || {}) as any;
+  const uploadDate = p.created_at;
+  switch (p.post_type) {
+    case "image":
+    case "gallery": {
+      const urls: string[] = Array.isArray(c.urls)
+        ? c.urls
+        : Array.isArray(c.items)
+          ? c.items.map((it: any) => it.url).filter(Boolean)
+          : [];
+      if (!urls.length) return {};
+      const alts: string[] = Array.isArray(c.alt_texts) ? c.alt_texts : [];
+      return {
+        image: urls.map((url, i) => ({
+          "@type": "ImageObject",
+          url,
+          contentUrl: url,
+          ...(alts[i] ? { caption: alts[i], name: alts[i] } : {}),
+        })),
+      };
+    }
+    case "video": {
+      const contentUrl = c.url as string | undefined;
+      const embedUrl = c.embed_url as string | undefined;
+      if (!contentUrl && !embedUrl) return {};
+      const thumb = c.thumbnail_url || ogImage(p);
+      return {
+        video: {
+          "@type": "VideoObject",
+          name: headline,
+          description: postDescription(p),
+          uploadDate,
+          ...(thumb ? { thumbnailUrl: [thumb] } : {}),
+          ...(contentUrl ? { contentUrl } : {}),
+          ...(embedUrl ? { embedUrl } : {}),
+          ...(typeof c.duration === "number" && c.duration > 0
+            ? { duration: `PT${Math.round(c.duration)}S` }
+            : {}),
+        },
+      };
+    }
+    case "audio": {
+      const contentUrl = c.url || c.spotify_data?.external_url;
+      if (!contentUrl) return {};
+      const thumb = c.album_art_url || c.spotify_data?.album_art;
+      return {
+        audio: {
+          "@type": "AudioObject",
+          name: c.spotify_data?.name || headline,
+          uploadDate,
+          contentUrl,
+          ...(thumb ? { thumbnailUrl: thumb } : {}),
+        },
+      };
+    }
+    default:
+      return {};
+  }
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const p = await getPostMeta(id);
@@ -183,6 +246,7 @@ export default async function PostPage({ params }: Props) {
   // Article + Breadcrumb JSON-LD for public posts (SEO + answer/generative engines).
   const postUrl = p ? `${APP_URL}/post/${p.id}` : APP_URL;
   const articleImage = p ? ogImage(p) : undefined;
+  const media = p && isPub ? mediaSchema(p, postTitle(p).split(" — ")[0]) : {};
   const jsonLd =
     p && isPub
       ? {
@@ -197,7 +261,11 @@ export default async function PostPage({ params }: Props) {
               mainEntityOfPage: postUrl,
               datePublished: p.created_at,
               dateModified: p.updated_at || p.created_at,
-              ...(articleImage ? { image: articleImage } : {}),
+              ...(Object.keys(media).length
+                ? media
+                : articleImage
+                  ? { image: articleImage }
+                  : {}),
               ...(tags.length ? { keywords: tags.map((t) => t.name).join(", ") } : {}),
               author: {
                 "@type": "Person",
