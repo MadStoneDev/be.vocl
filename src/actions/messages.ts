@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimiters } from "@/lib/rate-limit";
+import type { TablesInsert } from "@/types/database";
 
 /**
  * SECURITY (SEC-13): sanitize raw values before interpolating them into a
@@ -486,27 +487,37 @@ export async function sendMessage(
       return { success: false, error: "Access denied" };
     }
 
-    // Check if either user has blocked the other
-    const { data: otherPart } = await supabase
+    // Every OTHER member of the conversation — 1 for a DM, N for a group.
+    // (No .single(): that throws the moment a group has ≥3 people.)
+    const { data: otherRows } = await supabase
       .from("conversation_participants")
-      .select("profile_id")
+      .select("profile_id, is_muted")
       .eq("conversation_id", conversationId)
-      .neq("profile_id", user.id)
-      .single();
+      .neq("profile_id", user.id);
+    const otherParticipants = otherRows ?? [];
+    const otherIds = otherParticipants.map((p) => p.profile_id);
 
-    if (otherPart) {
-      const { data: block } = await supabase
+    // Members in a block relationship with the sender (either direction).
+    const blockedIds = new Set<string>();
+    if (otherIds.length > 0) {
+      const idList = otherIds.map((id) => sanitizeFilterTerm(id)).join(",");
+      const me = sanitizeFilterTerm(user.id);
+      const { data: blocks } = await supabase
         .from("blocks")
-        .select("blocker_id")
+        .select("blocker_id, blocked_id")
         .or(
-          `and(blocker_id.eq.${sanitizeFilterTerm(user.id)},blocked_id.eq.${sanitizeFilterTerm(otherPart.profile_id)}),and(blocker_id.eq.${sanitizeFilterTerm(otherPart.profile_id)},blocked_id.eq.${sanitizeFilterTerm(user.id)})`
-        )
-        .limit(1)
-        .maybeSingle();
-
-      if (block) {
-        return { success: false, error: "Unable to send message" };
+          `and(blocker_id.eq.${me},blocked_id.in.(${idList})),and(blocked_id.eq.${me},blocker_id.in.(${idList}))`
+        );
+      for (const b of blocks ?? []) {
+        blockedIds.add(b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
       }
+    }
+
+    // DM: a block hard-stops the send (preserves 1:1 behaviour). Group: one
+    // blocked pair must NOT nuke the thread — the message still sends; blocked
+    // members simply aren't notified (filtered in the notification step below).
+    if (otherParticipants.length === 1 && blockedIds.size > 0) {
+      return { success: false, error: "Unable to send message" };
     }
 
     // Create message
@@ -535,22 +546,20 @@ export async function sendMessage(
       .update({ updated_at: new Date().toISOString() })
       .eq("id", conversationId);
 
-    // Create notification for the other participant — unless they've muted this
-    // conversation.
-    const { data: otherParticipant } = await supabase
-      .from("conversation_participants")
-      .select("profile_id, is_muted")
-      .eq("conversation_id", conversationId)
-      .neq("profile_id", user.id)
-      .single();
-
-    if (otherParticipant && !otherParticipant.is_muted) {
-      await supabase.from("notifications").insert({
-        recipient_id: otherParticipant.profile_id,
+    // Notify every other member who hasn't muted the conversation and isn't in a
+    // block relationship with the sender (reuses the participant list fetched
+    // above — no per-recipient round trips).
+    const recipients = otherParticipants.filter(
+      (p) => !p.is_muted && !blockedIds.has(p.profile_id)
+    );
+    if (recipients.length > 0) {
+      const notifications: TablesInsert<"notifications">[] = recipients.map((p) => ({
+        recipient_id: p.profile_id,
         actor_id: user.id,
         notification_type: "message",
         message_id: message.id,
-      });
+      }));
+      await supabase.from("notifications").insert(notifications);
     }
 
     revalidatePath("/");
