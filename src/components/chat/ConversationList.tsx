@@ -11,17 +11,21 @@ import {
   IconBellOff,
   IconBan,
   IconFlag,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import { TimeAgo } from "@/components/ui/TimeAgo";
 
 interface Conversation {
   id: string;
+  isGroup?: boolean;
+  name?: string | null;
   participant: {
     id: string;
     username: string;
     avatarUrl?: string;
     isOnline?: boolean;
   };
+  participants?: Array<{ id: string; username: string; avatarUrl?: string }>;
   lastMessage?: {
     content: string;
     senderId: string;
@@ -85,9 +89,13 @@ export function ConversationList({
     setContextMenu({ conversationId, x: e.clientX, y: e.clientY });
   }, []);
   // Filter conversations by search query
-  const filteredConversations = conversations.filter((conv) =>
-    conv.participant.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConversations = conversations.filter((conv) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      conv.participant.username.toLowerCase().includes(q) ||
+      (conv.name ? conv.name.toLowerCase().includes(q) : false)
+    );
+  });
 
   if (filteredConversations.length === 0 && !searchQuery) {
     return (
@@ -207,7 +215,11 @@ export function ConversationList({
           {/* Avatar with online indicator */}
           <div className="relative flex-shrink-0">
             <div className="w-12 h-12 rounded-full overflow-hidden">
-              {conversation.participant.avatarUrl ? (
+              {conversation.isGroup ? (
+                <div className="w-full h-full bg-vocl-primary/15 flex items-center justify-center">
+                  <IconUsersGroup size={22} className="text-vocl-primary" />
+                </div>
+              ) : conversation.participant.avatarUrl ? (
                 <Image
                   src={conversation.participant.avatarUrl}
                   alt={conversation.participant.username}
@@ -223,7 +235,7 @@ export function ConversationList({
                 </div>
               )}
             </div>
-            {conversation.participant.isOnline && (
+            {!conversation.isGroup && conversation.participant.isOnline && (
               <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background" />
             )}
           </div>
@@ -232,7 +244,9 @@ export function ConversationList({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-0.5">
               <span className="type-body font-medium text-foreground truncate">
-                @{conversation.participant.username}
+                {conversation.isGroup
+                  ? conversation.name || "Group"
+                  : `@${conversation.participant.username}`}
               </span>
               {conversation.lastMessage && (
                 <TimeAgo

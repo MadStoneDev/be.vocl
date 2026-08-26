@@ -12,6 +12,7 @@ import {
   IconBan,
   IconFlag,
   IconLoader2,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -117,6 +118,10 @@ interface Participant {
 interface ActiveChatProps {
   conversationId: string;
   participant: Participant;
+  /** Group conversation flag + name + all other members (for groups). */
+  isGroup?: boolean;
+  groupName?: string | null;
+  members?: Participant[];
   messages: Message[];
   currentUserId: string;
   isTyping: boolean;
@@ -142,6 +147,9 @@ interface ActiveChatProps {
 export function ActiveChat({
   conversationId,
   participant,
+  isGroup = false,
+  groupName,
+  members,
   messages,
   currentUserId,
   isTyping,
@@ -216,6 +224,17 @@ export function ActiveChat({
 
   const rows = useMemo(() => buildRows(messages), [messages]);
 
+  // Per-sender lookup for group bubbles (name + avatar by senderId).
+  const senderMap = useMemo(() => {
+    const m = new Map<string, Participant>();
+    for (const p of members ?? []) m.set(p.id, p);
+    return m;
+  }, [members]);
+  const senderNameFor = (senderId: string) =>
+    (isGroup ? senderMap.get(senderId)?.username : undefined) ?? participant.username;
+  const senderAvatarFor = (senderId: string) =>
+    (isGroup ? senderMap.get(senderId)?.avatarUrl : undefined) ?? participant.avatarUrl;
+
   // Scroll to the latest message. Jump instantly on the first paint of a
   // conversation, then animate smoothly for subsequent new messages so it
   // isn't jarring.
@@ -268,7 +287,11 @@ export function ActiveChat({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="relative flex-shrink-0">
             <div className="w-10 h-10 rounded-full overflow-hidden">
-              {participant.avatarUrl ? (
+              {isGroup ? (
+                <div className="w-full h-full bg-vocl-primary/15 flex items-center justify-center">
+                  <IconUsersGroup size={20} className="text-vocl-primary" />
+                </div>
+              ) : participant.avatarUrl ? (
                 <Image
                   src={participant.avatarUrl}
                   alt={participant.username}
@@ -284,17 +307,21 @@ export function ActiveChat({
                 </div>
               )}
             </div>
-            {participant.isOnline && (
+            {!isGroup && participant.isOnline && (
               <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
             )}
           </div>
 
           <div className="flex-1 min-w-0">
             <p className="type-heading text-foreground truncate leading-tight">
-              @{participant.username}
+              {isGroup ? groupName || "Group" : `@${participant.username}`}
             </p>
             <p className="type-meta uppercase tracking-widest text-foreground/40">
-              {participant.isOnline ? "Online" : "Offline"}
+              {isGroup
+                ? `${(members?.length ?? 0) + 1} members`
+                : participant.isOnline
+                  ? "Online"
+                  : "Offline"}
             </p>
           </div>
         </div>
@@ -439,8 +466,8 @@ export function ActiveChat({
                   isEdited={row.message.isEdited}
                   isDeleted={row.message.isDeleted}
                   createdAt={row.message.createdAt}
-                  senderName={participant.username}
-                  senderAvatarUrl={participant.avatarUrl}
+                  senderName={senderNameFor(row.message.senderId)}
+                  senderAvatarUrl={senderAvatarFor(row.message.senderId)}
                   isFirstInGroup={row.isFirstInGroup}
                   isLastInGroup={row.isLastInGroup}
                   reactions={row.message.reactions}
@@ -451,7 +478,7 @@ export function ActiveChat({
                             row.message.replyTo.senderId === currentUserId
                               ? "You"
                               : row.message.replyTo.senderName ||
-                                participant.username,
+                                senderNameFor(row.message.replyTo.senderId),
                           preview: row.message.replyTo.preview,
                         }
                       : undefined

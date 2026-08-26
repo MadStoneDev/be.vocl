@@ -550,6 +550,9 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     <ActiveChat
       conversationId={activeConversation.id}
       participant={activeConversation.participant as Participant}
+      isGroup={activeConversation.isGroup}
+      groupName={activeConversation.name}
+      members={(activeConversation.participants as Participant[] | undefined) ?? []}
       messages={chatMessages}
       currentUserId={currentUserId || ""}
       isTyping={isParticipantTyping}
