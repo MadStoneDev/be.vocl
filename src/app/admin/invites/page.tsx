@@ -175,7 +175,7 @@ export default function AdminInvitesPage() {
     <div>
       <title>Admin — Invites | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Invite Codes</h1>
+        <h1 className="type-display text-2xl font-bold text-foreground">Invite Codes</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowGrantModal(true)}
@@ -189,7 +189,7 @@ export default function AdminInvitesPage() {
               setShowGenerateModal(true);
               setGeneratedCodes([]);
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
           >
             <IconPlus size={18} />
             <span className="hidden sm:inline">Generate</span>
@@ -201,20 +201,20 @@ export default function AdminInvitesPage() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
-            <div className="text-2xl font-bold text-foreground">{stats.totalCodes}</div>
-            <div className="text-sm text-foreground/50">Total Codes</div>
+            <div className="type-display text-2xl font-bold text-foreground">{stats.totalCodes}</div>
+            <div className="type-body text-foreground/50">Total Codes</div>
           </div>
           <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
-            <div className="text-2xl font-bold text-green-500">{stats.activeCodes}</div>
-            <div className="text-sm text-foreground/50">Active Codes</div>
+            <div className="type-display text-2xl font-bold text-green-500">{stats.activeCodes}</div>
+            <div className="type-body text-foreground/50">Active Codes</div>
           </div>
           <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
-            <div className="text-2xl font-bold text-vocl-primary">{stats.totalUses}</div>
-            <div className="text-sm text-foreground/50">Total Redemptions</div>
+            <div className="type-display text-2xl font-bold text-vocl-primary">{stats.totalUses}</div>
+            <div className="type-body text-foreground/50">Total Redemptions</div>
           </div>
           <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
-            <div className="text-2xl font-bold text-foreground">{stats.usersWithCodes}</div>
-            <div className="text-sm text-foreground/50">Users with Codes</div>
+            <div className="type-display text-2xl font-bold text-foreground">{stats.usersWithCodes}</div>
+            <div className="type-body text-foreground/50">Users with Codes</div>
           </div>
         </div>
       )}
@@ -234,7 +234,7 @@ export default function AdminInvitesPage() {
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
           />
         </div>
-        <label className="flex items-center gap-2 text-sm text-foreground/60">
+        <label className="flex items-center gap-2 type-body text-foreground/60">
           <input
             type="checkbox"
             checked={showRevoked}
@@ -260,7 +260,7 @@ export default function AdminInvitesPage() {
       ) : filteredCodes.length === 0 ? (
         <div className="text-center py-20">
           <IconTicket size={48} className="mx-auto mb-4 text-foreground/20" />
-          <p className="text-foreground/50">No invite codes found</p>
+          <p className="type-body text-foreground/50">No invite codes found</p>
         </div>
       ) : (
         <div className="bg-vocl-surface-dark rounded-sm border border-white/5 overflow-hidden">
@@ -268,22 +268,22 @@ export default function AdminInvitesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                  <th className="text-left px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Code
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                  <th className="text-left px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Creator
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                  <th className="text-left px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Uses
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                  <th className="text-left px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Expires
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                  <th className="text-left px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Status
                   </th>
-                  <th className="text-right px-4 py-3 text-sm font-medium text-foreground/50">
+                  <th className="text-right px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Actions
                   </th>
                 </tr>
@@ -297,7 +297,7 @@ export default function AdminInvitesPage() {
                     <tr key={code.id} className="border-b border-white/5 last:border-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <code className="font-mono text-sm text-vocl-primary bg-vocl-primary/10 px-2 py-1 rounded">
+                          <code className="font-mono type-body text-vocl-primary bg-vocl-primary/10 px-2 py-1 rounded">
                             {code.code}
                           </code>
                           <button
@@ -313,38 +313,38 @@ export default function AdminInvitesPage() {
                           </button>
                         </div>
                         {code.note && (
-                          <div className="text-xs text-foreground/40 mt-1">{code.note}</div>
+                          <div className="type-meta text-foreground/40 mt-1">{code.note}</div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-foreground/70">
+                      <td className="px-4 py-3 type-body text-foreground/70">
                         {code.creatorUsername ? `@${code.creatorUsername}` : "System"}
                       </td>
-                      <td className="px-4 py-3 text-sm">
+                      <td className="px-4 py-3 type-body">
                         <span className="text-foreground">{code.uses}</span>
                         <span className="text-foreground/40">
                           {" / "}
                           {code.maxUses ?? "∞"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-foreground/50">
+                      <td className="px-4 py-3 type-body text-foreground/50">
                         {formatDate(code.expiresAt)}
                       </td>
                       <td className="px-4 py-3">
                         {code.isRevoked ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-vocl-like/20 text-vocl-like">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold bg-vocl-like/20 text-vocl-like">
                             <IconX size={12} />
                             Revoked
                           </span>
                         ) : isExpired ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-500">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold bg-amber-500/20 text-amber-500">
                             Expired
                           </span>
                         ) : isExhausted ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold bg-purple-500/20 text-purple-500">
                             Exhausted
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-500">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold bg-green-500/20 text-green-500">
                             <IconCheck size={12} />
                             Active
                           </span>
@@ -354,7 +354,7 @@ export default function AdminInvitesPage() {
                         {!code.isRevoked && (
                           <button
                             onClick={() => handleRevoke(code.id)}
-                            className="px-3 py-1.5 text-xs font-medium text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20"
+                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20"
                           >
                             Revoke
                           </button>
@@ -378,14 +378,14 @@ export default function AdminInvitesPage() {
           />
           <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">
+              <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Generate Invite Codes
               </h2>
 
               {generatedCodes.length > 0 ? (
                 // Show generated codes
                 <div>
-                  <p className="text-sm text-foreground/60 mb-4">
+                  <p className="type-body text-foreground/60 mb-4">
                     Generated {generatedCodes.length} code(s):
                   </p>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -413,7 +413,7 @@ export default function AdminInvitesPage() {
                       const allCodes = generatedCodes.join("\n");
                       copyToClipboard(allCodes);
                     }}
-                    className="w-full mt-4 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover"
+                    className="w-full mt-4 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover"
                   >
                     Copy All Codes
                   </button>
@@ -428,7 +428,7 @@ export default function AdminInvitesPage() {
                 // Show generation form
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-body text-foreground/50 block mb-2">
                       Quantity
                     </label>
                     <input
@@ -442,7 +442,7 @@ export default function AdminInvitesPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-body text-foreground/50 block mb-2">
                       Max Uses (empty = unlimited)
                     </label>
                     <input
@@ -458,7 +458,7 @@ export default function AdminInvitesPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-body text-foreground/50 block mb-2">
                       Expires In (days, empty = never)
                     </label>
                     <input
@@ -476,7 +476,7 @@ export default function AdminInvitesPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-body text-foreground/50 block mb-2">
                       Note (optional)
                     </label>
                     <input
@@ -498,7 +498,7 @@ export default function AdminInvitesPage() {
                     <button
                       onClick={handleGenerate}
                       disabled={generating}
-                      className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {generating ? (
                         <>
@@ -529,13 +529,13 @@ export default function AdminInvitesPage() {
           />
           <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">
+              <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Grant Invite Codes to User
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-foreground/50 block mb-2">
+                  <label className="type-body text-foreground/50 block mb-2">
                     Search User
                   </label>
                   <div className="relative">
@@ -579,11 +579,11 @@ export default function AdminInvitesPage() {
                               size="sm"
                             />
                             <div>
-                              <div className="font-medium text-foreground">
+                              <div className="type-body font-semibold text-foreground">
                                 @{user.username}
                               </div>
                               {user.displayName && (
-                                <div className="text-xs text-foreground/50">
+                                <div className="type-meta text-foreground/50">
                                   {user.displayName}
                                 </div>
                               )}
@@ -596,7 +596,7 @@ export default function AdminInvitesPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-foreground/50 block mb-2">
+                  <label className="type-body text-foreground/50 block mb-2">
                     Number of Codes to Grant
                   </label>
                   <input
@@ -619,7 +619,7 @@ export default function AdminInvitesPage() {
                   <button
                     onClick={handleGrantCodes}
                     disabled={granting || !grantUserId}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {granting ? (
                       <>

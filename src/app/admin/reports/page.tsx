@@ -34,7 +34,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
     <div className="rounded-xl border border-white/10 bg-vocl-surface-dark p-3 space-y-3 max-h-80 overflow-y-auto">
       {type === "text" && (c.html || c.plain) && (
         <div
-          className="text-sm text-foreground/90 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5"
+          className="type-body text-foreground/90 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5"
           dangerouslySetInnerHTML={{
             __html: sanitizeHtmlWithSafeLinks(c.html || `<p>${c.plain || ""}</p>`),
           }}
@@ -58,7 +58,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
           href={c.embed_url || c.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-vocl-primary text-sm underline break-all"
+          className="text-vocl-primary type-body underline break-all"
         >
           {c.embed_url || c.url}
         </a>
@@ -66,7 +66,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
       {type === "audio" && c.url && <audio controls src={c.url} className="w-full" />}
       {c.caption_html && (
         <div
-          className="text-xs text-foreground/60 border-t border-white/10 pt-2"
+          className="type-meta text-foreground/60 border-t border-white/10 pt-2"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(c.caption_html) }}
         />
       )}
@@ -146,7 +146,7 @@ export default function AdminReportsPage() {
     <div>
       <title>Admin — Reports | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Reports</h1>
+        <h1 className="type-display text-2xl font-bold text-foreground">Reports</h1>
 
         {/* Status Filter */}
         <select
@@ -181,7 +181,7 @@ export default function AdminReportsPage() {
                 <div className="flex-1 min-w-0">
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       report.source === "auto_moderation"
                         ? "bg-amber-500/20 text-amber-500"
                         : "bg-vocl-primary/20 text-vocl-primary"
@@ -195,10 +195,10 @@ export default function AdminReportsPage() {
                         "User Report"
                       )}
                     </span>
-                    <span className="text-xs text-foreground/50">
+                    <span className="type-meta text-foreground/50">
                       {formatDate(report.createdAt)}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       report.status === "pending"
                         ? "bg-amber-500/20 text-amber-500"
                         : report.status === "reviewing"
@@ -217,7 +217,7 @@ export default function AdminReportsPage() {
                   </div>
 
                   {/* Reported User */}
-                  <div className="flex items-center gap-2 text-sm text-foreground/70 mb-2">
+                  <div className="flex items-center gap-2 type-body text-foreground/70 mb-2">
                     <span>Reported:</span>
                     <div className="flex items-center gap-1.5">
                       <div className="w-5 h-5 rounded-full bg-vocl-surface-dark overflow-hidden">
@@ -235,13 +235,13 @@ export default function AdminReportsPage() {
                           </div>
                         )}
                       </div>
-                      <span className="font-medium">@{report.reportedUser.username}</span>
+                      <span className="font-semibold">@{report.reportedUser.username}</span>
                     </div>
                   </div>
 
                   {/* Comments */}
                   {report.comments && (
-                    <p className="text-sm text-foreground/60 line-clamp-2">
+                    <p className="type-body text-foreground/60 line-clamp-2">
                       {report.comments}
                     </p>
                   )}
@@ -251,7 +251,7 @@ export default function AdminReportsPage() {
                 {report.status === "pending" && (
                   <button
                     onClick={() => setSelectedReport(report)}
-                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
+                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
                   >
                     Review
                   </button>
@@ -271,33 +271,33 @@ export default function AdminReportsPage() {
           />
           <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">Review Report</h2>
+              <h2 className="type-heading text-xl font-bold text-foreground mb-4">Review Report</h2>
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="text-sm text-foreground/50">Subject</label>
-                  <p className="text-foreground font-medium">
+                  <label className="type-meta font-semibold text-foreground/50">Subject</label>
+                  <p className="text-foreground font-semibold">
                     {SUBJECT_LABELS[selectedReport.subject] || selectedReport.subject}
                   </p>
                 </div>
 
                 <div>
-                  <label className="text-sm text-foreground/50">Reported User</label>
-                  <p className="text-foreground font-medium">
+                  <label className="type-meta font-semibold text-foreground/50">Reported User</label>
+                  <p className="text-foreground font-semibold">
                     @{selectedReport.reportedUser.username}
                   </p>
                 </div>
 
                 {selectedReport.comments && (
                   <div>
-                    <label className="text-sm text-foreground/50">Details</label>
+                    <label className="type-meta font-semibold text-foreground/50">Details</label>
                     <p className="text-foreground">{selectedReport.comments}</p>
                   </div>
                 )}
 
                 {selectedReport.post && (
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-meta font-semibold text-foreground/50 block mb-2">
                       Reported content
                     </label>
                     <PostContentPreview post={selectedReport.post} />
@@ -305,7 +305,7 @@ export default function AdminReportsPage() {
                 )}
 
                 <div>
-                  <label className="text-sm text-foreground/50 block mb-2">
+                  <label className="type-meta font-semibold text-foreground/50 block mb-2">
                     Resolution Notes
                   </label>
                   <textarea
@@ -322,7 +322,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_approved")}
                   disabled={resolving}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-600/90 disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-3 bg-green-600 text-white rounded-xl type-meta font-semibold hover:bg-green-600/90 disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Approve &amp; publish post
@@ -333,7 +333,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_ban")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl font-medium hover:bg-vocl-like/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                 >
                   <IconX size={18} />
                   Ban User
@@ -341,7 +341,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_restrict")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl type-meta font-semibold hover:bg-amber-500/90 disabled:opacity-50"
                 >
                   <IconAlertTriangle size={18} />
                   Restrict
@@ -349,7 +349,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_dismissed")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-medium hover:bg-white/20 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 text-foreground rounded-xl type-meta font-semibold hover:bg-white/20 disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Dismiss

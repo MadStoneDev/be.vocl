@@ -97,12 +97,12 @@ export default function AdminLayout({
               className="flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
             >
               <IconArrowLeft size={20} />
-              <span className="text-sm hidden sm:inline">Back to feed</span>
+              <span className="type-body hidden sm:inline">Back to feed</span>
             </Link>
             <div className="h-6 w-px bg-white/10" />
             <div className="flex items-center gap-2">
               <IconShieldCheck size={20} className="text-vocl-primary" />
-              <span className="font-semibold text-foreground">Admin</span>
+              <span className="type-heading font-semibold text-foreground">Admin</span>
             </div>
           </div>
 
@@ -142,12 +142,12 @@ export default function AdminLayout({
                     href={item.href}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                       isActive
-                        ? "bg-vocl-primary/10 text-vocl-primary font-medium"
+                        ? "bg-vocl-primary/10 text-vocl-primary font-semibold"
                         : "text-foreground/60 hover:text-foreground hover:bg-white/5"
                     }`}
                   >
                     <Icon size={20} />
-                    <span className="text-sm">{item.label}</span>
+                    <span className="type-body">{item.label}</span>
                   </Link>
                 </li>
               );
@@ -176,7 +176,7 @@ export default function AdminLayout({
                 }`}
               >
                 <Icon size={22} />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="type-meta font-semibold">{item.label}</span>
               </Link>
             );
           })}

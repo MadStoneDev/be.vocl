@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
     <div>
       <title>Admin — Users | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Users</h1>
+        <h1 className="type-display text-2xl font-bold text-foreground">Users</h1>
       </div>
 
       {/* Filters */}
@@ -163,22 +163,22 @@ export default function AdminUsersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
                   User
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
                   Role
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
                   Status
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
                   Reports
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-foreground/50">
+                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
                   Joined
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-foreground/50">
+                <th className="text-right px-4 py-3 type-meta font-semibold text-foreground/50">
                   Actions
                 </th>
               </tr>
@@ -194,11 +194,11 @@ export default function AdminUsersPage() {
                         size="sm"
                       />
                       <div>
-                        <div className="font-medium text-foreground">
+                        <div className="font-semibold text-foreground">
                           @{user.username}
                         </div>
                         {user.displayName && (
-                          <div className="text-xs text-foreground/50">
+                          <div className="type-meta text-foreground/50">
                             {user.displayName}
                           </div>
                         )}
@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold ${
                         user.lockStatus === "banned"
                           ? "bg-vocl-like/20 text-vocl-like"
                           : user.lockStatus === "restricted"
@@ -240,7 +240,7 @@ export default function AdminUsersPage() {
                       onClick={() => handleToggleNsfw(user.id, !user.isNsfw)}
                       disabled={actionLoading}
                       title="Toggle NSFW account flag"
-                      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
+                      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full type-meta font-semibold transition-colors disabled:opacity-50 ${
                         user.isNsfw
                           ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
                           : "bg-white/5 text-foreground/40 hover:bg-white/10"
@@ -251,14 +251,14 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     {user.reportCount > 0 ? (
-                      <span className="text-amber-500 font-medium">
+                      <span className="type-meta font-semibold text-amber-500">
                         {user.reportCount}
                       </span>
                     ) : (
-                      <span className="text-foreground/30">0</span>
+                      <span className="type-meta text-foreground/30">0</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-foreground/50">
+                  <td className="px-4 py-3 type-meta text-foreground/50">
                     {formatDate(user.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -268,14 +268,14 @@ export default function AdminUsersPage() {
                           <button
                             onClick={() => handleRestrict(user.id)}
                             disabled={actionLoading}
-                            className="px-3 py-1.5 text-xs font-medium text-amber-500 bg-amber-500/10 rounded-lg hover:bg-amber-500/20 disabled:opacity-50"
+                            className="px-3 py-1.5 type-meta font-semibold text-amber-500 bg-amber-500/10 rounded-lg hover:bg-amber-500/20 disabled:opacity-50"
                           >
                             Restrict
                           </button>
                           <button
                             onClick={() => setSelectedUser(user)}
                             disabled={actionLoading}
-                            className="px-3 py-1.5 text-xs font-medium text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20 disabled:opacity-50"
+                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20 disabled:opacity-50"
                           >
                             Ban
                           </button>
@@ -286,14 +286,14 @@ export default function AdminUsersPage() {
                           <button
                             onClick={() => handleUnlock(user.id)}
                             disabled={actionLoading}
-                            className="px-3 py-1.5 text-xs font-medium text-green-500 bg-green-500/10 rounded-lg hover:bg-green-500/20 disabled:opacity-50"
+                            className="px-3 py-1.5 type-meta font-semibold text-green-500 bg-green-500/10 rounded-lg hover:bg-green-500/20 disabled:opacity-50"
                           >
                             Unlock
                           </button>
                           <button
                             onClick={() => setSelectedUser(user)}
                             disabled={actionLoading}
-                            className="px-3 py-1.5 text-xs font-medium text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20 disabled:opacity-50"
+                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20 disabled:opacity-50"
                           >
                             Ban
                           </button>
@@ -303,7 +303,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleUnlock(user.id)}
                           disabled={actionLoading}
-                          className="px-3 py-1.5 text-xs font-medium text-green-500 bg-green-500/10 rounded-lg hover:bg-green-500/20 disabled:opacity-50"
+                          className="px-3 py-1.5 type-meta font-semibold text-green-500 bg-green-500/10 rounded-lg hover:bg-green-500/20 disabled:opacity-50"
                         >
                           Unban
                         </button>
@@ -326,12 +326,12 @@ export default function AdminUsersPage() {
           />
           <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">
+              <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Ban @{selectedUser.username}
               </h2>
 
               <div className="mb-4">
-                <label className="text-sm text-foreground/50 block mb-2">
+                <label className="type-meta font-semibold text-foreground/50 block mb-2">
                   Ban Reason (required)
                 </label>
                 <textarea
@@ -346,14 +346,14 @@ export default function AdminUsersPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setSelectedUser(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-foreground hover:bg-white/5"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 type-meta font-semibold text-foreground hover:bg-white/5"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleBan}
                   disabled={actionLoading || !banReason.trim()}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-like text-white font-medium hover:bg-vocl-like/90 disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-like text-white type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                 >
                   {actionLoading ? "Banning..." : "Ban User"}
                 </button>

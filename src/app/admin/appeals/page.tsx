@@ -74,7 +74,7 @@ export default function AdminAppealsPage() {
     <div>
       <title>Admin — Appeals | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Appeals</h1>
+        <h1 className="type-display text-2xl font-bold text-foreground">Appeals</h1>
 
         {/* Status Filter */}
         <select
@@ -109,7 +109,7 @@ export default function AdminAppealsPage() {
                 <div className="flex-1 min-w-0">
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       appeal.status === "pending"
                         ? "bg-amber-500/20 text-amber-500"
                         : appeal.status === "approved"
@@ -120,11 +120,11 @@ export default function AdminAppealsPage() {
                     }`}>
                       {appeal.status}
                     </span>
-                    <span className="text-xs text-foreground/50">
+                    <span className="type-meta text-foreground/50">
                       {formatDate(appeal.createdAt)}
                     </span>
                     {appeal.appealsBlocked && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
+                      <span className="px-2 py-0.5 rounded-full type-meta font-semibold bg-purple-500/20 text-purple-500">
                         Appeals Blocked
                       </span>
                     )}
@@ -148,10 +148,10 @@ export default function AdminAppealsPage() {
                       )}
                     </div>
                     <div>
-                      <div className="font-medium text-foreground">
+                      <div className="font-semibold text-foreground">
                         @{appeal.user.username}
                       </div>
-                      <div className="text-xs text-foreground/50">
+                      <div className="type-meta text-foreground/50">
                         Currently: {appeal.user.lockStatus}
                       </div>
                     </div>
@@ -159,15 +159,15 @@ export default function AdminAppealsPage() {
 
                   {/* Reason */}
                   <div className="bg-white/5 rounded-xl p-3 mb-3">
-                    <p className="text-sm text-foreground">
+                    <p className="type-body text-foreground">
                       {appeal.reason}
                     </p>
                   </div>
 
                   {/* Review notes if reviewed */}
                   {appeal.reviewNotes && (
-                    <div className="text-sm text-foreground/60">
-                      <span className="font-medium">Staff notes:</span>{" "}
+                    <div className="type-body text-foreground/60">
+                      <span className="font-semibold">Staff notes:</span>{" "}
                       {appeal.reviewNotes}
                     </div>
                   )}
@@ -177,7 +177,7 @@ export default function AdminAppealsPage() {
                 {appeal.status === "pending" && (
                   <button
                     onClick={() => setSelectedAppeal(appeal)}
-                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
+                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
                   >
                     Review
                   </button>
@@ -197,20 +197,20 @@ export default function AdminAppealsPage() {
           />
           <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">
+              <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Review Appeal from @{selectedAppeal.user.username}
               </h2>
 
               <div className="space-y-4 mb-6">
                 <div className="bg-white/5 rounded-xl p-4">
-                  <label className="text-sm text-foreground/50 block mb-1">
+                  <label className="type-meta font-semibold text-foreground/50 block mb-1">
                     Appeal Reason
                   </label>
                   <p className="text-foreground">{selectedAppeal.reason}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm text-foreground/50 block mb-2">
+                  <label className="type-meta font-semibold text-foreground/50 block mb-2">
                     Your Response (will be sent to user)
                   </label>
                   <textarea
@@ -227,7 +227,7 @@ export default function AdminAppealsPage() {
                 <button
                   onClick={() => handleReview("approved")}
                   disabled={reviewing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-xl font-medium hover:bg-green-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-xl type-meta font-semibold hover:bg-green-500/90 disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Approve
@@ -235,7 +235,7 @@ export default function AdminAppealsPage() {
                 <button
                   onClick={() => handleReview("denied")}
                   disabled={reviewing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl font-medium hover:bg-vocl-like/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                 >
                   <IconX size={18} />
                   Deny
@@ -243,7 +243,7 @@ export default function AdminAppealsPage() {
                 <button
                   onClick={() => handleReview("blocked")}
                   disabled={reviewing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500 text-white rounded-xl type-meta font-semibold hover:bg-purple-500/90 disabled:opacity-50"
                 >
                   <IconBan size={18} />
                   Block Appeals

@@ -39,7 +39,7 @@ export default function AdminEmailPage() {
       <title>Admin — Email | be.vocl</title>
       <div className="flex items-center gap-3 mb-6">
         <IconMail size={28} className="text-vocl-primary" />
-        <h1 className="text-2xl font-bold text-foreground">Email Management</h1>
+        <h1 className="type-display text-foreground">Email Management</h1>
       </div>
 
       {/* Tabs */}
@@ -53,10 +53,10 @@ export default function AdminEmailPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg type-meta font-semibold transition-colors shrink-0 ${
               activeTab === tab.id
                 ? "bg-vocl-primary text-white"
-                : "text-foreground/70 hover:bg-white/5"
+                : "text-foreground/60 hover:bg-white/5"
             }`}
           >
             <tab.icon size={18} />
@@ -170,26 +170,26 @@ function ComposeTab() {
       <div className="space-y-6">
         {/* Template Type */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
             Template Type
           </label>
           <div className="flex gap-2">
             <button
               onClick={() => setTemplateType("announcement")}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-4 rounded-lg type-meta font-semibold transition-colors ${
                 templateType === "announcement"
                   ? "bg-vocl-primary text-white"
-                  : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                  : "bg-white/5 text-foreground/60 hover:bg-white/10"
               }`}
             >
               Announcement
             </button>
             <button
               onClick={() => setTemplateType("founder_message")}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 px-4 rounded-lg type-meta font-semibold transition-colors ${
                 templateType === "founder_message"
                   ? "bg-vocl-primary text-white"
-                  : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                  : "bg-white/5 text-foreground/60 hover:bg-white/10"
               }`}
             >
               Founder Message
@@ -199,27 +199,27 @@ function ComposeTab() {
 
         {/* Recipients */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
             Recipients
           </label>
           <div className="space-y-3">
             <div className="flex gap-2">
               <button
                 onClick={() => setRecipientType("all")}
-                className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-2 px-4 rounded-lg type-meta font-semibold transition-colors ${
                   recipientType === "all"
                     ? "bg-vocl-primary text-white"
-                    : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                    : "bg-white/5 text-foreground/60 hover:bg-white/10"
                 }`}
               >
                 All Users
               </button>
               <button
                 onClick={() => setRecipientType("tags")}
-                className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-2 px-4 rounded-lg type-meta font-semibold transition-colors ${
                   recipientType === "tags"
                     ? "bg-vocl-primary text-white"
-                    : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                    : "bg-white/5 text-foreground/60 hover:bg-white/10"
                 }`}
               >
                 By Tag
@@ -238,10 +238,10 @@ function ComposeTab() {
                           : [...prev, tag.id]
                       );
                     }}
-                    className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                    className={`px-3 py-1.5 rounded-full type-meta transition-colors ${
                       selectedTags.includes(tag.id)
                         ? "text-white"
-                        : "bg-white/5 text-foreground/70 hover:bg-white/10"
+                        : "bg-white/5 text-foreground/60 hover:bg-white/10"
                     }`}
                     style={{
                       backgroundColor: selectedTags.includes(tag.id)
@@ -258,7 +258,7 @@ function ComposeTab() {
               </div>
             )}
 
-            <p className="text-sm text-foreground/50">
+            <p className="type-meta text-foreground/60">
               {isLoadingRecipients ? (
                 <IconLoader2 size={14} className="inline animate-spin mr-1" />
               ) : (
@@ -271,7 +271,7 @@ function ComposeTab() {
 
         {/* Subject */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
             Subject
           </label>
           <input
@@ -285,7 +285,7 @@ function ComposeTab() {
 
         {/* Content */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
             Content
           </label>
           <textarea
@@ -295,7 +295,7 @@ function ComposeTab() {
             rows={8}
             className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
           />
-          <p className="text-xs text-foreground/40 mt-1">
+          <p className="type-meta text-foreground/45 mt-1">
             Use line breaks to create paragraphs
           </p>
         </div>
@@ -303,7 +303,7 @@ function ComposeTab() {
         {/* CTA */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               Button Text (optional)
             </label>
             <input
@@ -315,7 +315,7 @@ function ComposeTab() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               Button URL (optional)
             </label>
             <input
@@ -333,7 +333,7 @@ function ComposeTab() {
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
                   Founder Name
                 </label>
                 <input
@@ -345,7 +345,7 @@ function ComposeTab() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
                   Title
                 </label>
                 <input
@@ -358,7 +358,7 @@ function ComposeTab() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
                 Custom Signature (optional)
               </label>
               <textarea
@@ -376,7 +376,7 @@ function ComposeTab() {
         <div className="flex gap-3">
           <button
             onClick={() => setShowPreview(true)}
-            className="flex-1 py-2.5 rounded-lg bg-white/5 text-foreground font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-white/5 text-foreground font-semibold hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
           >
             <IconEye size={18} />
             Preview
@@ -384,7 +384,7 @@ function ComposeTab() {
           <button
             onClick={handleSend}
             disabled={isSending || !subject || !content || recipientCount === 0}
-            className="flex-1 py-2.5 rounded-lg bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSending ? (
               <IconLoader2 size={18} className="animate-spin" />
@@ -398,7 +398,7 @@ function ComposeTab() {
 
       {/* Preview Panel */}
       <div className="bg-vocl-surface-dark rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <h3 className="type-heading font-semibold text-foreground mb-4 flex items-center gap-2">
           <IconEye size={20} />
           Preview
         </h3>
@@ -549,7 +549,7 @@ function TemplatesTab() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Template List */}
       <div className="lg:col-span-1 space-y-2">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Email Templates</h3>
+        <h3 className="type-heading font-semibold text-foreground mb-4">Email Templates</h3>
         {templates.map((template) => (
           <button
             key={template.id}
@@ -560,8 +560,8 @@ function TemplatesTab() {
                 : "bg-white/5 hover:bg-white/10"
             }`}
           >
-            <p className="font-medium text-foreground">{template.name}</p>
-            <p className="text-sm text-foreground/50">{template.description}</p>
+            <p className="font-semibold text-foreground">{template.name}</p>
+            <p className="type-meta text-foreground/60">{template.description}</p>
           </button>
         ))}
       </div>
@@ -569,7 +569,7 @@ function TemplatesTab() {
       {/* Template Preview */}
       <div className="lg:col-span-2">
         <div className="bg-vocl-surface-dark rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
+          <h3 className="type-heading font-semibold text-foreground mb-4">
             {selectedTemplate ? "Template Preview" : "Select a template"}
           </h3>
           {selectedTemplate ? (
@@ -577,7 +577,7 @@ function TemplatesTab() {
               <TemplatePreview templateId={selectedTemplate} />
             </div>
           ) : (
-            <p className="text-foreground/50 text-center py-20">
+            <p className="type-body text-foreground/60 text-center py-20">
               Select a template from the list to preview it
             </p>
           )}
@@ -983,10 +983,10 @@ function TagsTab() {
   return (
     <div className="max-w-2xl">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-foreground">User Tags</h3>
+        <h3 className="type-heading font-semibold text-foreground">User Tags</h3>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
         >
           {showCreateForm ? <IconX size={18} /> : <IconPlus size={18} />}
           {showCreateForm ? "Cancel" : "Create Tag"}
@@ -997,7 +997,7 @@ function TagsTab() {
       {showCreateForm && (
         <div className="bg-vocl-surface-dark rounded-xl p-4 mb-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               Tag Name
             </label>
             <input
@@ -1009,7 +1009,7 @@ function TagsTab() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               Description (optional)
             </label>
             <input
@@ -1021,7 +1021,7 @@ function TagsTab() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
               Color
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -1040,7 +1040,7 @@ function TagsTab() {
           <button
             onClick={handleCreateTag}
             disabled={isCreating}
-            className="w-full py-2.5 rounded-lg bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-lg bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isCreating ? (
               <IconLoader2 size={18} className="animate-spin" />
@@ -1055,7 +1055,7 @@ function TagsTab() {
       {/* Tags List */}
       <div className="space-y-2">
         {tags.length === 0 ? (
-          <p className="text-foreground/50 text-center py-8">
+          <p className="type-body text-foreground/60 text-center py-8">
             No tags created yet. Create one to start grouping users.
           </p>
         ) : (
@@ -1070,19 +1070,19 @@ function TagsTab() {
                   style={{ backgroundColor: tag.color ?? undefined }}
                 />
                 <div>
-                  <p className="font-medium text-foreground">{tag.name}</p>
+                  <p className="font-semibold text-foreground">{tag.name}</p>
                   {tag.description && (
-                    <p className="text-sm text-foreground/50">{tag.description}</p>
+                    <p className="type-meta text-foreground/60">{tag.description}</p>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-foreground/50">
+                <span className="type-meta text-foreground/60">
                   {tag.userCount} users
                 </span>
                 <button
                   onClick={() => handleDeleteTag(tag.id, tag.name)}
-                  className="p-2 rounded-lg text-foreground/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                  className="p-2 rounded-lg text-foreground/60 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                 >
                   <IconTrash size={18} />
                 </button>
@@ -1136,10 +1136,10 @@ function HistoryTab() {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-foreground mb-6">Email History</h3>
+      <h3 className="type-heading font-semibold text-foreground mb-6">Email History</h3>
 
       {history.length === 0 ? (
-        <p className="text-foreground/50 text-center py-12">
+        <p className="type-body text-foreground/60 text-center py-12">
           No emails sent yet
         </p>
       ) : (
@@ -1150,16 +1150,16 @@ function HistoryTab() {
               className="flex items-center justify-between p-4 rounded-xl bg-white/5"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">
+                <p className="font-semibold text-foreground truncate">
                   {record.subject}
                 </p>
-                <p className="text-sm text-foreground/50">
+                <p className="type-meta text-foreground/60">
                   {record.templateType.replace("_", " ")} • {record.recipientCount} recipients
                   {record.sentBy && ` • sent by @${record.sentBy.username}`}
                 </p>
               </div>
               <div className="text-right shrink-0 ml-4">
-                <p className={`text-sm font-medium ${
+                <p className={`type-meta font-semibold ${
                   record.status === "completed"
                     ? "text-green-400"
                     : record.status === "failed"
@@ -1168,7 +1168,7 @@ function HistoryTab() {
                 }`}>
                   {record.status}
                 </p>
-                <p className="text-xs text-foreground/40">
+                <p className="type-meta text-foreground/45">
                   {formatDate(record.createdAt)}
                 </p>
               </div>

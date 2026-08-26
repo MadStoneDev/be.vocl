@@ -182,8 +182,8 @@ export default function AdminFlagsPage() {
       <title>Admin — Flags | be.vocl</title>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Flags</h1>
-          <p className="text-sm text-foreground/50 mt-1">Post content flags from users</p>
+          <h1 className="type-display text-2xl font-bold text-foreground">Flags</h1>
+          <p className="type-body text-foreground/50 mt-1">Post content flags from users</p>
         </div>
 
         {/* Status Filter */}
@@ -219,7 +219,7 @@ export default function AdminFlagsPage() {
                 <div className="flex-1 min-w-0">
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       !flag.flagger_id
                         ? "bg-amber-500/20 text-amber-500"
                         : "bg-vocl-primary/20 text-vocl-primary"
@@ -233,10 +233,10 @@ export default function AdminFlagsPage() {
                         "User Flag"
                       )}
                     </span>
-                    <span className="text-xs text-foreground/50">
+                    <span className="type-meta text-foreground/50">
                       {formatDate(flag.created_at)}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       flag.status === "pending"
                         ? "bg-amber-500/20 text-amber-500"
                         : flag.status === "reviewing"
@@ -250,19 +250,19 @@ export default function AdminFlagsPage() {
                       {flag.status.replace("resolved_", "")}
                     </span>
                     {flag.assigned_role > ROLES.JUNIOR_MOD && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
+                      <span className="px-2 py-0.5 rounded-full type-meta font-semibold bg-purple-500/20 text-purple-500">
                         {ROLE_NAMES[flag.assigned_role as keyof typeof ROLE_NAMES] || `Role ${flag.assigned_role}`}+
                       </span>
                     )}
                   </div>
 
                   {/* Subject */}
-                  <div className="font-semibold text-foreground mb-1">
+                  <div className="type-heading font-semibold text-foreground mb-1">
                     {SUBJECT_LABELS[flag.subject] || flag.subject}
                   </div>
 
                   {/* Post Info */}
-                  <div className="flex items-center gap-2 text-sm text-foreground/70 mb-2">
+                  <div className="flex items-center gap-2 type-body text-foreground/70 mb-2">
                     <span>Post by:</span>
                     <Link
                       href={`/@${flag.post.author.username}`}
@@ -283,7 +283,7 @@ export default function AdminFlagsPage() {
                           </div>
                         )}
                       </div>
-                      <span className="font-medium">@{flag.post.author.username}</span>
+                      <span className="font-semibold">@{flag.post.author.username}</span>
                     </Link>
                     <span className="flex items-center gap-1 text-foreground/50">
                       {PostTypeIcon(flag.post.post_type)}
@@ -292,20 +292,20 @@ export default function AdminFlagsPage() {
                   </div>
 
                   {/* Post Preview */}
-                  <p className="text-sm text-foreground/60 line-clamp-2 mb-2">
+                  <p className="type-body text-foreground/60 line-clamp-2 mb-2">
                     {getPostPreview(flag.post)}
                   </p>
 
                   {/* Comments */}
                   {flag.comments && (
-                    <p className="text-sm text-foreground/50 italic">
+                    <p className="type-body text-foreground/50 italic">
                       "{flag.comments}"
                     </p>
                   )}
 
                   {/* Escalation info */}
                   {flag.escalated_at && (
-                    <div className="mt-2 text-xs text-red-400">
+                    <div className="mt-2 type-meta text-red-400">
                       Escalated: {flag.escalation_reason}
                     </div>
                   )}
@@ -316,7 +316,7 @@ export default function AdminFlagsPage() {
                   {flag.status === "pending" && (
                     <button
                       onClick={() => handleClaim(flag.id)}
-                      className="px-4 py-2 bg-vocl-primary text-white rounded-xl text-sm font-medium hover:bg-vocl-primary-hover transition-colors"
+                      className="px-4 py-2 bg-vocl-primary text-white rounded-xl type-body font-semibold hover:bg-vocl-primary-hover transition-colors"
                     >
                       Claim
                     </button>
@@ -324,7 +324,7 @@ export default function AdminFlagsPage() {
                   {(flag.status === "pending" || flag.status === "reviewing" || flag.status === "escalated") && (
                     <button
                       onClick={() => setSelectedFlag(flag)}
-                      className="px-4 py-2 bg-white/10 text-foreground rounded-xl text-sm font-medium hover:bg-white/20 transition-colors"
+                      className="px-4 py-2 bg-white/10 text-foreground rounded-xl type-body font-semibold hover:bg-white/20 transition-colors"
                     >
                       Review
                     </button>
@@ -332,7 +332,7 @@ export default function AdminFlagsPage() {
                   <Link
                     href={`/post/${flag.post_id}`}
                     target="_blank"
-                    className="px-4 py-2 bg-white/5 text-foreground/70 rounded-xl text-sm font-medium hover:bg-white/10 transition-colors text-center"
+                    className="px-4 py-2 bg-white/5 text-foreground/70 rounded-xl type-body font-semibold hover:bg-white/10 transition-colors text-center"
                   >
                     View Post
                   </Link>
@@ -355,14 +355,14 @@ export default function AdminFlagsPage() {
           />
           <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">
+              <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 {showEscalate ? "Escalate Flag" : "Review Flag"}
               </h2>
 
               {showEscalate ? (
                 <div className="space-y-4 mb-6">
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-body text-foreground/50 block mb-2">
                       Escalate to
                     </label>
                     <select
@@ -380,7 +380,7 @@ export default function AdminFlagsPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-foreground/50 block mb-2">
+                    <label className="type-body text-foreground/50 block mb-2">
                       Reason for escalation
                     </label>
                     <textarea
@@ -395,14 +395,14 @@ export default function AdminFlagsPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowEscalate(false)}
-                      className="flex-1 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-medium hover:bg-white/20"
+                      className="flex-1 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-semibold hover:bg-white/20"
                     >
                       Back
                     </button>
                     <button
                       onClick={handleEscalate}
                       disabled={resolving || !escalationTarget || !escalationReason.trim()}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl font-medium hover:bg-red-500/90 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-500/90 disabled:opacity-50"
                     >
                       <IconArrowUp size={18} />
                       Escalate
@@ -413,35 +413,35 @@ export default function AdminFlagsPage() {
                 <>
                   <div className="space-y-4 mb-6">
                     <div>
-                      <label className="text-sm text-foreground/50">Subject</label>
-                      <p className="text-foreground font-medium">
+                      <label className="type-meta font-semibold uppercase tracking-wide text-foreground/50">Subject</label>
+                      <p className="type-body text-foreground font-semibold">
                         {SUBJECT_LABELS[selectedFlag.subject] || selectedFlag.subject}
                       </p>
                     </div>
 
                     <div>
-                      <label className="text-sm text-foreground/50">Post Author</label>
-                      <p className="text-foreground font-medium">
+                      <label className="type-meta font-semibold uppercase tracking-wide text-foreground/50">Post Author</label>
+                      <p className="type-body text-foreground font-semibold">
                         @{selectedFlag.post.author.username}
                       </p>
                     </div>
 
                     <div>
-                      <label className="text-sm text-foreground/50">Post Type</label>
-                      <p className="text-foreground font-medium capitalize">
+                      <label className="type-meta font-semibold uppercase tracking-wide text-foreground/50">Post Type</label>
+                      <p className="type-body text-foreground font-semibold capitalize">
                         {selectedFlag.post.post_type}
                       </p>
                     </div>
 
                     {selectedFlag.comments && (
                       <div>
-                        <label className="text-sm text-foreground/50">Flagger Comments</label>
-                        <p className="text-foreground">{selectedFlag.comments}</p>
+                        <label className="type-meta font-semibold uppercase tracking-wide text-foreground/50">Flagger Comments</label>
+                        <p className="type-body text-foreground">{selectedFlag.comments}</p>
                       </div>
                     )}
 
                     <div>
-                      <label className="text-sm text-foreground/50 block mb-2">
+                      <label className="type-body text-foreground/50 block mb-2">
                         Resolution Notes
                       </label>
                       <textarea
@@ -458,7 +458,7 @@ export default function AdminFlagsPage() {
                     <button
                       onClick={() => handleResolve("resolved_removed")}
                       disabled={resolving}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl font-medium hover:bg-vocl-like/90 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                     >
                       <IconX size={18} />
                       Remove Post
@@ -466,7 +466,7 @@ export default function AdminFlagsPage() {
                     <button
                       onClick={() => handleResolve("resolved_flagged")}
                       disabled={resolving}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-500/90 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-500/90 disabled:opacity-50"
                     >
                       <IconAlertTriangle size={18} />
                       Mark Sensitive
@@ -474,7 +474,7 @@ export default function AdminFlagsPage() {
                     <button
                       onClick={() => handleResolve("resolved_dismissed")}
                       disabled={resolving}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-medium hover:bg-white/20 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-semibold hover:bg-white/20 disabled:opacity-50"
                     >
                       <IconCheck size={18} />
                       Dismiss
@@ -484,7 +484,7 @@ export default function AdminFlagsPage() {
                   {escalationTargets.length > 0 && (
                     <button
                       onClick={() => setShowEscalate(true)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/20 text-red-400 rounded-xl font-medium hover:bg-red-500/30 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/20 text-red-400 rounded-xl font-semibold hover:bg-red-500/30 transition-colors"
                     >
                       <IconArrowUp size={18} />
                       Escalate to Higher Level

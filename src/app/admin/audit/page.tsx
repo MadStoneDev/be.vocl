@@ -52,8 +52,8 @@ export default function AdminAuditPage() {
     <div>
       <title>Admin — Audit Log | be.vocl</title>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Audit Log</h1>
-        <p className="text-sm text-foreground/50 mt-1">
+        <h1 className="type-display text-2xl font-bold text-foreground">Audit Log</h1>
+        <p className="type-body text-foreground/50 mt-1">
           Every moderation action, most recent first.
         </p>
       </div>
@@ -68,14 +68,14 @@ export default function AdminAuditPage() {
         <div className="text-center py-20 text-foreground/50">No actions recorded yet</div>
       ) : (
         <div className="overflow-x-auto rounded-sm border border-white/5">
-          <table className="w-full text-sm">
+          <table className="w-full type-body">
             <thead>
               <tr className="text-left text-foreground/50 border-b border-white/5">
-                <th className="px-4 py-3 font-medium">When</th>
-                <th className="px-4 py-3 font-medium">Moderator</th>
-                <th className="px-4 py-3 font-medium">Action</th>
-                <th className="px-4 py-3 font-medium">Target</th>
-                <th className="px-4 py-3 font-medium">Details</th>
+                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">When</th>
+                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Moderator</th>
+                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Action</th>
+                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Target</th>
+                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -89,7 +89,7 @@ export default function AdminAuditPage() {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full type-meta font-semibold ${
                         STRONG.has(log.action)
                           ? "bg-vocl-like/15 text-vocl-like"
                           : "bg-white/5 text-foreground/70"
@@ -113,7 +113,7 @@ export default function AdminAuditPage() {
                   </td>
                   <td className="px-4 py-3 text-foreground/40 max-w-xs">
                     {log.details && Object.keys(log.details).length > 0 ? (
-                      <code className="text-xs break-words">
+                      <code className="type-meta break-words">
                         {JSON.stringify(log.details)}
                       </code>
                     ) : null}

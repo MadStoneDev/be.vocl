@@ -120,7 +120,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <title>Admin | be.vocl</title>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Dashboard</h1>
+      <h1 className="type-display text-2xl font-bold text-foreground mb-6">Dashboard</h1>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -133,52 +133,52 @@ export default function AdminDashboard() {
             <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center mb-3`}>
               <stat.icon size={20} className={stat.color} />
             </div>
-            <div className="text-2xl font-bold text-foreground mb-1">
+            <div className="type-display text-2xl font-bold text-foreground mb-1">
               {stat.value}
             </div>
-            <div className="text-sm text-foreground/50">{stat.label}</div>
+            <div className="type-body text-foreground/50">{stat.label}</div>
           </Link>
         ))}
       </div>
 
       {/* Quick Actions */}
       <div className="bg-vocl-surface-dark rounded-sm p-6 border border-white/5">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
+        <h2 className="type-heading text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             href="/admin/reports?status=pending"
             className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
             <IconFlag size={20} className="text-amber-500" />
-            <span className="text-foreground">Review reports</span>
+            <span className="type-body text-foreground">Review reports</span>
           </Link>
           <Link
             href="/admin/flags?status=pending"
             className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
             <IconFlagExclamation size={20} className="text-orange-500" />
-            <span className="text-foreground">Review flags</span>
+            <span className="type-body text-foreground">Review flags</span>
           </Link>
           <Link
             href="/admin/appeals?status=pending"
             className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
             <IconMessageReport size={20} className="text-blue-500" />
-            <span className="text-foreground">Review appeals</span>
+            <span className="type-body text-foreground">Review appeals</span>
           </Link>
           <Link
             href="/admin/users"
             className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
             <IconUsers size={20} className="text-vocl-primary" />
-            <span className="text-foreground">Manage users</span>
+            <span className="type-body text-foreground">Manage users</span>
           </Link>
           <Link
             href="/admin/invites"
             className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
             <IconTicket size={20} className="text-green-500" />
-            <span className="text-foreground">Generate invites</span>
+            <span className="type-body text-foreground">Generate invites</span>
           </Link>
         </div>
       </div>
