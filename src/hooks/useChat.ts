@@ -29,7 +29,10 @@ interface LastMessage {
 
 interface Conversation {
   id: string;
+  isGroup?: boolean;
+  name?: string | null;
   participant: Participant;
+  participants?: Participant[];
   lastMessage?: LastMessage;
   unreadCount: number;
   isMuted?: boolean;

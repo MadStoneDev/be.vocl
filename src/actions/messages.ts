@@ -64,12 +64,19 @@ interface Message {
 
 interface Conversation {
   id: string;
+  /** Group conversation (vs a 1:1 DM). */
+  isGroup?: boolean;
+  /** Group name (null for DMs). */
+  name?: string | null;
+  /** The peer for a DM, or the first other member for a group (fallback avatar). */
   participant: {
     id: string;
     username: string;
     avatarUrl?: string;
     isOnline?: boolean;
   };
+  /** Every OTHER member of the conversation. */
+  participants?: Array<{ id: string; username: string; avatarUrl?: string }>;
   lastMessage?: {
     content: string;
     senderId: string;
@@ -144,12 +151,25 @@ export async function getConversations(): Promise<{
       .in("conversation_id", conversationIds)
       .neq("profile_id", user.id);
 
-    // Build lookup maps for O(1) access
-    const participantMap = new Map<string, any>();
+    // Build lookup maps for O(1) access. A conversation can have many other
+    // members (groups), so map to an ARRAY, not a single profile.
+    const participantMap = new Map<string, any[]>();
     for (const p of allParticipants || []) {
       if (p.profile) {
-        participantMap.set(p.conversation_id, p.profile);
+        const arr = participantMap.get(p.conversation_id) ?? [];
+        arr.push(p.profile);
+        participantMap.set(p.conversation_id, arr);
       }
+    }
+
+    // Group metadata (is_group / name) for these conversations.
+    const { data: convRows } = await supabase
+      .from("conversations")
+      .select("id, is_group, name")
+      .in("id", conversationIds);
+    const convMetaMap = new Map<string, { is_group: boolean; name: string | null }>();
+    for (const c of convRows ?? []) {
+      convMetaMap.set(c.id, { is_group: c.is_group, name: c.name });
     }
 
     const lastMessageMap = new Map<string, any>();
@@ -217,20 +237,32 @@ export async function getConversations(): Promise<{
     // Build conversations array
     const conversations: Conversation[] = [];
     for (const part of participations) {
-      const participant = participantMap.get(part.conversation_id);
-      if (!participant) continue;
+      const others = participantMap.get(part.conversation_id) ?? [];
+      const meta = convMetaMap.get(part.conversation_id);
+      const isGroup = meta?.is_group ?? false;
+      // A DM with no resolvable peer is broken; a group can legitimately stand
+      // even if it momentarily has no other members.
+      if (others.length === 0 && !isGroup) continue;
 
+      const primary = others[0];
       const lastMessage = lastMessageMap.get(part.conversation_id);
       const lastReadAt = part.last_read_at;
 
       conversations.push({
         id: part.conversation_id,
+        isGroup,
+        name: meta?.name ?? null,
         participant: {
-          id: participant.id,
-          username: participant.username,
-          avatarUrl: participant.avatar_url,
+          id: primary?.id ?? part.conversation_id,
+          username: primary?.username ?? (meta?.name || "Group"),
+          avatarUrl: primary?.avatar_url,
           isOnline: false,
         },
+        participants: others.map((o) => ({
+          id: o.id,
+          username: o.username,
+          avatarUrl: o.avatar_url,
+        })),
         lastMessage: lastMessage
           ? {
               content: lastMessage.content,
@@ -616,17 +648,28 @@ export async function startConversation(
     if (myConversations && myConversations.length > 0) {
       const myConversationIds = myConversations.map((c: any) => c.conversation_id);
 
-      // Single query to check if target user is in any of these conversations
-      const { data: sharedConversation } = await supabase
+      // Conversations shared with the target user.
+      const { data: shared } = await supabase
         .from("conversation_participants")
         .select("conversation_id")
         .eq("profile_id", participantId)
-        .in("conversation_id", myConversationIds)
-        .limit(1)
-        .single();
+        .in("conversation_id", myConversationIds);
+      const sharedIds = (shared ?? []).map((s) => s.conversation_id);
 
-      if (sharedConversation) {
-        return { success: true, conversationId: sharedConversation.conversation_id };
+      if (sharedIds.length > 0) {
+        // Only reuse an existing 1:1 DM — never a shared GROUP (a group both of
+        // you happen to be in is not "the DM"). Also avoids .single() throwing
+        // when a DM and a shared group both match.
+        const { data: existingDm } = await supabase
+          .from("conversations")
+          .select("id")
+          .in("id", sharedIds)
+          .eq("is_group", false)
+          .limit(1)
+          .maybeSingle();
+        if (existingDm) {
+          return { success: true, conversationId: existingDm.id };
+        }
       }
     }
 
@@ -686,6 +729,97 @@ export async function startConversation(
     return { success: true, conversationId: conversation.id };
   } catch (error) {
     console.error("Start conversation error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Create a group conversation. The creator becomes the owner; the invitees are
+ * added as members. Blocks are respected (blocked people aren't added); DM
+ * privacy is NOT applied to group invites (the creator chooses the members).
+ */
+export async function createGroup(
+  name: string,
+  participantIds: string[]
+): Promise<{ success: boolean; conversationId?: string; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const trimmedName = name.trim();
+    if (!trimmedName) return { success: false, error: "Group name is required" };
+    if (trimmedName.length > 80) {
+      return { success: false, error: "Group name is too long (80 characters max)." };
+    }
+
+    // Dedupe, drop self + blanks.
+    const uniqueIds = [...new Set(participantIds.filter((id) => id && id !== user.id))];
+    if (uniqueIds.length < 2) {
+      return { success: false, error: "A group needs at least two other people." };
+    }
+    if (uniqueIds.length > 49) {
+      return { success: false, error: "Groups are limited to 50 members." };
+    }
+
+    // Don't add anyone in a block relationship with the creator.
+    const idList = uniqueIds.map((id) => sanitizeFilterTerm(id)).join(",");
+    const me = sanitizeFilterTerm(user.id);
+    const { data: blocks } = await supabase
+      .from("blocks")
+      .select("blocker_id, blocked_id")
+      .or(
+        `and(blocker_id.eq.${me},blocked_id.in.(${idList})),and(blocked_id.eq.${me},blocker_id.in.(${idList}))`
+      );
+    const blocked = new Set<string>();
+    for (const b of blocks ?? []) {
+      blocked.add(b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
+    }
+
+    // Keep only real, non-blocked profiles (avoids FK errors on junk ids).
+    const candidateIds = uniqueIds.filter((id) => !blocked.has(id));
+    const { data: validProfiles } = await supabase
+      .from("profiles")
+      .select("id")
+      .in("id", candidateIds.length > 0 ? candidateIds : ["00000000-0000-0000-0000-000000000000"]);
+    const memberIds = (validProfiles ?? []).map((p) => p.id);
+    if (memberIds.length < 2) {
+      return {
+        success: false,
+        error: "A group needs at least two other people you haven't blocked.",
+      };
+    }
+
+    // Create the group + membership via the admin client (RLS only lets a user
+    // insert their own participant row).
+    const admin = createAdminClient();
+    const { data: conversation, error: convError } = await admin
+      .from("conversations")
+      .insert({ is_group: true, name: trimmedName, owner_id: user.id })
+      .select("id")
+      .single();
+    if (convError || !conversation) {
+      console.error("Create group error:", convError);
+      return { success: false, error: "Failed to create group" };
+    }
+
+    const rows = [user.id, ...memberIds].map((profile_id) => ({
+      conversation_id: conversation.id,
+      profile_id,
+    }));
+    const { error: partError } = await admin
+      .from("conversation_participants")
+      .insert(rows);
+    if (partError) {
+      console.error("Create group participants error:", partError);
+      return { success: false, error: "Failed to add members" };
+    }
+
+    return { success: true, conversationId: conversation.id };
+  } catch (error) {
+    console.error("Create group error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
