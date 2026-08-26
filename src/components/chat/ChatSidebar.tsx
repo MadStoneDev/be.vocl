@@ -45,6 +45,8 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   }, [searchQuery]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  // A just-created conversation to open once it lands in the refreshed list.
+  const [pendingSelectId, setPendingSelectId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -193,6 +195,17 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     }
   }, [conversations]);
 
+  // Open a just-created conversation as soon as the refreshed list contains it.
+  useEffect(() => {
+    if (!pendingSelectId) return;
+    const conv = conversations.find((c) => c.id === pendingSelectId);
+    if (conv) {
+      setActiveConversation(conv);
+      setView("chat");
+      setPendingSelectId(null);
+    }
+  }, [pendingSelectId, conversations]);
+
   // Handle back to list
   const handleBack = useCallback(() => {
     setView("list");
@@ -330,14 +343,14 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     setShowNewChatModal(true);
   }, []);
 
-  // Handle conversation created from new chat modal
+  // Handle conversation created from the new chat / new group modal. A
+  // brand-new conversation isn't in the list yet, so mark it pending and let the
+  // effect below open it the moment the refreshed list includes it (robust to
+  // timing — no stale-closure setTimeout guess).
   const handleConversationCreated = useCallback((conversationId: string) => {
+    setPendingSelectId(conversationId);
     refreshConversations();
-    // Find and select the new conversation after refresh
-    setTimeout(() => {
-      handleSelectConversation(conversationId);
-    }, 500);
-  }, [refreshConversations, handleSelectConversation]);
+  }, [refreshConversations]);
 
   // Handle mark as read
   const handleMarkAsRead = useCallback((conversationId: string) => {
