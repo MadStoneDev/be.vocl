@@ -74,6 +74,8 @@ export async function updateSession(request: NextRequest) {
     "/auth/callback",
     "/terms",
     "/privacy",
+    // The private-beta landing (where the beta gate sends users without access).
+    "/beta-closed",
     // Crawl-control + discovery files must be reachable by logged-out bots.
     "/sitemap.xml",
     "/robots.txt",
