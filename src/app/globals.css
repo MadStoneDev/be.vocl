@@ -115,6 +115,29 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
+/* Image loading skeleton — a soft shimmer shown until the picture paints, so a
+   post's media reads as "loading" rather than "broken/blank". */
+@keyframes img-shimmer {
+  100% { transform: translateX(100%); }
+}
+.img-skeleton {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--vocl-hover);
+}
+.img-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--vocl-hover-strong), transparent);
+  animation: img-shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .img-skeleton::after { animation: none; }
+}
+
 /* Smooth color transition when toggling themes (not on every element to avoid jank) */
 html.theme-transition,
 html.theme-transition body {

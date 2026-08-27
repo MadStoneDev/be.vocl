@@ -25,6 +25,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
+  const [loaded, setLoaded] = useState<Record<number, boolean>>({});
 
   const openLightbox = (index: number) => {
     setCurrentIndex(index);
@@ -38,6 +39,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
       const clamped = Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, natural));
       setAspectRatios((prev) => ({ ...prev, [index]: clamped }));
     }
+    setLoaded((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
   }, []);
 
   const scrollBy = (direction: "left" | "right") => {
@@ -98,6 +100,7 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
                 className="relative w-full overflow-hidden bg-vocl-surface-dark/40"
                 style={{ aspectRatio: `${aspectRatios[index] ?? DEFAULT_ASPECT}` }}
               >
+                {!loaded[index] && <div className="img-skeleton" aria-hidden="true" />}
                 <Image
                   src={src}
                   alt={`${alt} ${index + 1}`}
