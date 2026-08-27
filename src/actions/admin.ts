@@ -382,6 +382,7 @@ export interface UserWithDetails {
   role: number;
   lockStatus: string;
   isNsfw: boolean;
+  betaAccess: boolean;
   createdAt: string;
   reportCount: number;
 }
@@ -409,7 +410,7 @@ export async function getUsers(options?: {
 
     let query = supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, role, lock_status, is_nsfw, created_at", {
+      .select("id, username, display_name, avatar_url, role, lock_status, is_nsfw, beta_access, created_at", {
         count: "exact",
       })
       .order("created_at", { ascending: false })
@@ -451,6 +452,7 @@ export async function getUsers(options?: {
       role: u.role || 0,
       lockStatus: u.lock_status || "unlocked",
       isNsfw: u.is_nsfw ?? false,
+      betaAccess: u.beta_access ?? false,
       createdAt: u.created_at,
       reportCount: countMap.get(u.id) || 0,
     }));
@@ -664,6 +666,40 @@ export async function unlockUser(
     return { success: true };
   } catch (error) {
     console.error("Unlock user error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Grant/revoke private-beta access for a user. Admin-only. beta_access is a
+ * service-role-only column (privileged-column trigger), so it must be written
+ * through the admin client.
+ */
+export async function setBetaAccess(
+  userId: string,
+  value: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await requireRole(ROLES.ADMIN);
+  if (!auth.authorized || !auth.userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const adminSupabase = createAdminClient();
+    const { error } = await adminSupabase
+      .from("profiles")
+      .update({ beta_access: value })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Set beta access error:", error);
+      return { success: false, error: "Failed to update beta access" };
+    }
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Set beta access error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }

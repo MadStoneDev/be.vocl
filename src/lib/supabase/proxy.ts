@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isBetaGateEnabled, canAccessBeta } from "@/lib/beta";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -126,11 +127,27 @@ export async function updateSession(request: NextRequest) {
   if (user && !isPublicRoute && !isAccountStatusRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("lock_status, role")
+      .select("lock_status, role, beta_access")
       .eq("id", user.id)
       .single();
 
-    const lockStatus = (profile as { lock_status?: string } | null)?.lock_status || "unlocked";
+    const prof = profile as
+      | { lock_status?: string; role?: number | null; beta_access?: boolean }
+      | null;
+
+    // Private-beta gate — active only on a deployment that sets
+    // BETA_ACCESS_REQUIRED (the beta environment). Admins and beta_access users
+    // pass; everyone else is sent to the private-beta landing. On live (var
+    // unset) this is a no-op. /beta-closed itself is a public route, so this
+    // block never runs there — no redirect loop.
+    if (isBetaGateEnabled() && !canAccessBeta(prof?.role, prof?.beta_access)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/beta-closed";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    const lockStatus = prof?.lock_status || "unlocked";
 
     // Banned users can only access account-status page
     if (lockStatus === "banned") {

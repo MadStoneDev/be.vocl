@@ -18,6 +18,7 @@ import {
   unlockUser,
   setUserRole,
   setUserNsfw,
+  setBetaAccess,
   type UserWithDetails,
 } from "@/actions/admin";
 
@@ -103,6 +104,13 @@ export default function AdminUsersPage() {
   const handleToggleNsfw = async (userId: string, isNsfw: boolean) => {
     setActionLoading(true);
     await setUserNsfw(userId, isNsfw);
+    loadUsers();
+    setActionLoading(false);
+  };
+
+  const handleToggleBeta = async (userId: string, value: boolean) => {
+    setActionLoading(true);
+    await setBetaAccess(userId, value);
     loadUsers();
     setActionLoading(false);
   };
@@ -247,6 +255,18 @@ export default function AdminUsersPage() {
                       }`}
                     >
                       NSFW
+                    </button>
+                    <button
+                      onClick={() => handleToggleBeta(user.id, !user.betaAccess)}
+                      disabled={actionLoading}
+                      title="Toggle private-beta access"
+                      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full type-meta font-semibold transition-colors disabled:opacity-50 ${
+                        user.betaAccess
+                          ? "bg-vocl-primary/20 text-vocl-primary hover:bg-vocl-primary/30"
+                          : "bg-white/5 text-foreground/40 hover:bg-white/10"
+                      }`}
+                    >
+                      BETA
                     </button>
                   </td>
                   <td className="px-4 py-3">

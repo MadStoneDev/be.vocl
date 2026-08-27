@@ -1963,6 +1963,7 @@ export type Database = {
           dm_privacy: string
           is_profile_public: boolean
           date_of_birth: string | null
+          beta_access: boolean
         }
         Insert: {
           id: string
@@ -2018,6 +2019,7 @@ export type Database = {
           dm_privacy?: string
           is_profile_public?: boolean
           date_of_birth?: string | null
+          beta_access?: boolean
         }
         Update: {
           id?: string
@@ -2073,6 +2075,7 @@ export type Database = {
           dm_privacy?: string
           is_profile_public?: boolean
           date_of_birth?: string | null
+          beta_access?: boolean
         }
         Relationships: [
           {
