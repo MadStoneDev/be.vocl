@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES, canModerateUser, getEscalationTargets } from "@/constants/roles";
 import { logAuditEvent, getActorInfo } from "@/lib/audit";
-import type { FlagSubject, FlagStatus, TablesInsert } from "@/types/database";
+import type { FlagSubject, FlagStatus, TablesInsert, TablesUpdate } from "@/types/database";
 
 interface FlagResult {
   success: boolean;
@@ -395,7 +395,7 @@ export async function resolveFlag(
           patch.created_at = goLive;
         }
 
-        await adminSupabase.from("posts").update(patch).eq("id", flag.post_id);
+        await adminSupabase.from("posts").update(patch as TablesUpdate<"posts">).eq("id", flag.post_id);
 
         await logAuditEvent({
           actorId: user.id,

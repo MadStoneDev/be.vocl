@@ -40,7 +40,6 @@ export async function getActivityStats(): Promise<{
       .from("posts")
       .select("like_count, comment_count, reblog_count")
       .eq("author_id", user.id)
-      .eq("is_deleted", false)
       .eq("status", "published");
 
     if (postsError) {

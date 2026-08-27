@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import type { TablesUpdate } from "@/types/database";
 
 export type EmailFrequency = "immediate" | "daily" | "off";
 
@@ -111,7 +112,7 @@ export async function updateNotificationSettings(
 
     const { error } = await supabase
       .from("profiles")
-      .update(updates)
+      .update(updates as TablesUpdate<"profiles">)
       .eq("id", user.id);
 
     if (error) {
