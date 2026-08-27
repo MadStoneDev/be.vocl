@@ -37,12 +37,18 @@
   --vocl-action-bar: #1f1f1f;
 
   /* ---- Light theme (default) ---- */
-  --background: #f4f4f5;
-  --foreground: #18181b;
+  /* Warm paper ground + warm ink (was cold #f4f4f5 / #18181b) — "Elevated
+     Editorial": a considered neutral, not a default grey. */
+  --background: #F7F5F0;
+  --foreground: #1B1917;
   --vocl-surface-dark: #ffffff;
   --vocl-border: rgba(0, 0, 0, 0.08);
   --vocl-hover: rgba(0, 0, 0, 0.04);
   --vocl-hover-strong: rgba(0, 0, 0, 0.07);
+  /* Soft editorial depth for FLOATING surfaces (modals, dropdowns, composer,
+     hover-lift). The feed stays boxless + hairline for structure. */
+  --shadow: 0 1px 2px rgba(41, 37, 31, 0.05), 0 6px 20px -10px rgba(41, 37, 31, 0.15);
+  --shadow-lg: 0 2px 4px rgba(41, 37, 31, 0.06), 0 24px 48px -20px rgba(41, 37, 31, 0.22);
 
   /* Tell the browser the page is light so its own chrome — the mobile
      address-bar tint and the canvas/backdrop painted outside the body —
@@ -51,12 +57,15 @@
 }
 
 .dark {
-  --background: #1a1a1a;
-  --foreground: #ededed;
-  --vocl-surface-dark: #2a2a2a;
+  /* Warm near-black (was flat #1a1a1a) + warm off-white ink + warm card. */
+  --background: #161513;
+  --foreground: #ECEAE5;
+  --vocl-surface-dark: #232120;
   --vocl-border: rgba(255, 255, 255, 0.06);
   --vocl-hover: rgba(255, 255, 255, 0.05);
   --vocl-hover-strong: rgba(255, 255, 255, 0.10);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 28px 56px -22px rgba(0, 0, 0, 0.72);
   color-scheme: dark;
 }
 
@@ -95,6 +104,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Editorial elevation — apply to floating/interactive surfaces to add a tier of
+   soft depth (Concept 1). Theme-aware via the --shadow vars above. */
+.elevate {
+  box-shadow: var(--shadow);
+}
+.elevate-lg {
+  box-shadow: var(--shadow-lg);
 }
 
 /* Smooth color transition when toggling themes (not on every element to avoid jank) */
