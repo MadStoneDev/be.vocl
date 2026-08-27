@@ -142,7 +142,7 @@ export function NewChatModal({
         />
 
         {/* Modal */}
-        <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-sm shadow-xl overflow-hidden">
+        <div className="relative w-full max-w-md bg-background border border-vocl-border rounded-sm elevate-lg overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-vocl-border">
             <div className="flex items-center gap-2">

@@ -93,7 +93,7 @@ export function Dialog({
         className={`
           relative w-full ${sizeClasses[size]} mx-4
           bg-vocl-surface-dark border border-vocl-border rounded-sm
-          shadow-2xl
+          elevate-lg
           animate-in zoom-in-95 fade-in duration-200
           focus:outline-none
         `}
