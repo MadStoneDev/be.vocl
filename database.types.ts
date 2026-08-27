@@ -693,18 +693,35 @@ export type Database = {
           id: string
           created_at: string | null
           updated_at: string | null
+          is_group: boolean
+          name: string | null
+          owner_id: string | null
         }
         Insert: {
           id?: string
           created_at?: string | null
           updated_at?: string | null
+          is_group?: boolean
+          name?: string | null
+          owner_id?: string | null
         }
         Update: {
           id?: string
           created_at?: string | null
           updated_at?: string | null
+          is_group?: boolean
+          name?: string | null
+          owner_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       data_export_requests: {
         Row: {
