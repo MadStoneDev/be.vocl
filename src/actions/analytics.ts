@@ -69,10 +69,9 @@ export async function getPostAnalytics(
     const { data: posts, error } = await supabase
       .from("posts")
       .select(
-        "id, post_type, content, created_at, like_count, comment_count, reblog_count, tags"
+        "id, post_type, content, created_at, like_count, comment_count, reblog_count"
       )
       .eq("author_id", user.id)
-      .eq("is_deleted", false)
       .gte("created_at", sinceISO)
       .order("created_at", { ascending: false });
 

@@ -11,7 +11,7 @@ import {
 } from "@/constants/roles";
 import { logAuditEvent, getActorInfo, getTargetUserInfo } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { ReportStatus, LockStatus, AppealStatus } from "@/types/database";
+import type { ReportStatus, LockStatus, AppealStatus, TablesUpdate } from "@/types/database";
 import {
   sendAccountBannedEmail,
   sendAccountRestrictedEmail,
@@ -310,7 +310,7 @@ export async function resolveReport(
 
         await adminSupabase
           .from("posts")
-          .update(postPatch)
+          .update(postPatch as TablesUpdate<"posts">)
           .eq("id", report.post_id);
 
         await logAuditEvent({

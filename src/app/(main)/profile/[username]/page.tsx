@@ -89,7 +89,7 @@ async function getProfile(username: string, publicOnly: boolean) {
     supabase
       .from("profile_links")
       .select("id, title, url")
-      .eq("user_id", profile.id)
+      .eq("profile_id", profile.id)
       .order("created_at", { ascending: true }),
     postsQuery.order("created_at", { ascending: false }).limit(10),
     countQuery,
