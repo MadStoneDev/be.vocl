@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   // Output mode for containerized deployments (Railway, Docker, etc.)
   output: "standalone",
 
+  // The build's own TypeScript pass is the most memory-hungry phase of
+  // `next build` and OOMs on the (memory-limited) Coolify build container —
+  // `npm ci` + compile succeed, then it dies at "Running TypeScript". We already
+  // type-check separately (npx tsc --noEmit locally + the CI typecheck gate), so
+  // skip the redundant in-build check to keep the build within the container's
+  // memory. (Alternative if you'd rather keep it: raise the build container RAM.)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // Security headers
   async headers() {
     return [
