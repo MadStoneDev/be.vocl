@@ -468,6 +468,136 @@ export async function getUsers(options?: {
   }
 }
 
+export interface UserDetail {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  timezone: string | null;
+  createdAt: string | null;
+  // Account / auth (email lives in Supabase auth, not profiles)
+  email: string | null;
+  emailConfirmed: boolean;
+  lastSignInAt: string | null;
+  mfaEnabled: boolean;
+  onboardingCompleted: boolean;
+  inviteCodeUsed: string | null;
+  inviteCodesRemaining: number | null;
+  // Safety & status
+  role: number;
+  lockStatus: string;
+  bannedAt: string | null;
+  banReason: string | null;
+  appealsBlocked: boolean;
+  isVerified: boolean;
+  isNsfw: boolean;
+  betaAccess: boolean;
+  dateOfBirth: string | null;
+  age: number | null;
+  isProfilePublic: boolean;
+  isDiscoverable: boolean;
+  // Footprint
+  followerCount: number;
+  postCount: number;
+  reportCount: number;
+}
+
+function ageFromDob(dob: string | null): number | null {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age >= 0 && age < 150 ? age : null;
+}
+
+/**
+ * Full detail on a single user for the admin user modal. Pulls the profile,
+ * the auth record (email / last sign-in / 2FA — admin client only), and post +
+ * report counts. Deliberately does NOT expose DM contents; IP / login history
+ * is out of scope here (gate + audit separately if ever needed).
+ */
+export async function getUserDetail(
+  userId: string
+): Promise<{ success: boolean; user?: UserDetail; error?: string }> {
+  const auth = await requireRole();
+  if (!auth.authorized) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select(
+        "id, username, display_name, avatar_url, bio, timezone, created_at, onboarding_completed, invite_code_used, invite_codes_remaining, role, lock_status, banned_at, ban_reason, appeals_blocked, is_verified, is_nsfw, beta_access, date_of_birth, is_profile_public, is_discoverable, follower_count"
+      )
+      .eq("id", userId)
+      .single();
+
+    if (!profile) {
+      return { success: false, error: "User not found" };
+    }
+
+    const adminSupabase = createAdminClient();
+    const { data: authData } = await adminSupabase.auth.admin.getUserById(userId);
+    const authUser = authData?.user;
+
+    const [{ count: postCount }, { count: reportCount }] = await Promise.all([
+      supabase
+        .from("posts")
+        .select("*", { count: "exact", head: true })
+        .eq("author_id", userId)
+        .eq("status", "published"),
+      supabase
+        .from("reports")
+        .select("*", { count: "exact", head: true })
+        .eq("reported_user_id", userId),
+    ]);
+
+    return {
+      success: true,
+      user: {
+        id: profile.id,
+        username: profile.username,
+        displayName: profile.display_name,
+        avatarUrl: profile.avatar_url,
+        bio: profile.bio,
+        timezone: profile.timezone,
+        createdAt: profile.created_at,
+        email: authUser?.email ?? null,
+        emailConfirmed: !!authUser?.email_confirmed_at,
+        lastSignInAt: authUser?.last_sign_in_at ?? null,
+        mfaEnabled: (authUser?.factors?.length ?? 0) > 0,
+        onboardingCompleted: profile.onboarding_completed ?? false,
+        inviteCodeUsed: profile.invite_code_used,
+        inviteCodesRemaining: profile.invite_codes_remaining,
+        role: profile.role ?? 0,
+        lockStatus: profile.lock_status ?? "unlocked",
+        bannedAt: profile.banned_at,
+        banReason: profile.ban_reason,
+        appealsBlocked: profile.appeals_blocked ?? false,
+        isVerified: profile.is_verified ?? false,
+        isNsfw: profile.is_nsfw,
+        betaAccess: profile.beta_access,
+        dateOfBirth: profile.date_of_birth,
+        age: ageFromDob(profile.date_of_birth),
+        isProfilePublic: profile.is_profile_public,
+        isDiscoverable: profile.is_discoverable,
+        followerCount: profile.follower_count ?? 0,
+        postCount: postCount ?? 0,
+        reportCount: reportCount ?? 0,
+      },
+    };
+  } catch (error) {
+    console.error("Get user detail error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
 export async function banUser(
   userId: string,
   reason: string,
