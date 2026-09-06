@@ -20,6 +20,8 @@ interface MediaUploaderProps {
   onUploadComplete: (urls: string[]) => void;
   maxFiles?: number;
   existingUrls?: string[];
+  /** Hide the drop zone (e.g. when another add-method owns the shared tray). */
+  hideDropzone?: boolean;
 }
 
 export function MediaUploader({
@@ -28,9 +30,20 @@ export function MediaUploader({
   onUploadComplete,
   maxFiles = 10,
   existingUrls = [],
+  hideDropzone = false,
 }: MediaUploaderProps) {
   const { upload, isUploading, progress, error } = useUpload();
   const [uploadedUrls, setUploadedUrls] = useState<string[]>(existingUrls);
+
+  // Mirror externally-managed media (images added via Link/Unsplash land in the
+  // parent's list, not through this uploader) so the shared tray stays in sync.
+  // Compare by content to avoid a render loop when our own onUploadComplete
+  // round-trips back through existingUrls.
+  useEffect(() => {
+    setUploadedUrls((prev) =>
+      prev.join("|") === existingUrls.join("|") ? prev : existingUrls
+    );
+  }, [existingUrls]);
 
   // Surface upload failures — otherwise a rejected file (e.g. an unsupported
   // format or empty content-type from a mobile picker) fails silently and it
@@ -194,7 +207,7 @@ export function MediaUploader({
       )}
 
       {/* Upload area */}
-      {uploadedUrls.length < maxFiles && (
+      {!hideDropzone && uploadedUrls.length < maxFiles && (
         <div
           onDragOver={(e) => {
             e.preventDefault();

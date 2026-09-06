@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   IconX,
@@ -71,6 +71,64 @@ const modeButton = (
 
 export function ComposerHero({ state, patch }: ComposerHeroProps) {
   const { postType, postId } = state;
+  const [linkBusy, setLinkBusy] = useState(false);
+
+  // Add an image by URL — re-hosted so it survives the original link rotting —
+  // and append it to the shared media tray.
+  const addLink = async () => {
+    const url = state.imageLinkUrl.trim();
+    if (!url || state.imageLinkError || linkBusy || state.mediaUrls.length >= 10) return;
+    setLinkBusy(true);
+    try {
+      const res = await fetch("/api/upload/from-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, postId: state.postId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        patch({ imageLinkError: data.error || "Couldn't add that image." });
+      } else {
+        patch({
+          mediaUrls: [...state.mediaUrls, data.publicUrl],
+          altTexts: [...state.altTexts, ""],
+          imageLinkUrl: "",
+          imageLinkError: null,
+        });
+      }
+    } catch {
+      patch({ imageLinkError: "Couldn't add that image." });
+    } finally {
+      setLinkBusy(false);
+    }
+  };
+
+  // Append an Unsplash photo to the shared tray, record its per-image credit,
+  // and ping Unsplash's download endpoint (required by their API guidelines).
+  const addUnsplash = async (photo: any) => {
+    const url = photo.urls.regular;
+    if (state.mediaUrls.includes(url) || state.mediaUrls.length >= 10) return;
+    patch({
+      mediaUrls: [...state.mediaUrls, url],
+      altTexts: [...state.altTexts, photo.alt_description || ""],
+      mediaAttributions: {
+        ...state.mediaAttributions,
+        [url]: {
+          photographer: photo.user.name,
+          photographer_username: photo.user.username,
+          profile_url: `${photo.user.links.html}?utm_source=bevocl&utm_medium=referral`,
+          photo_id: photo.id,
+        },
+      },
+    });
+    try {
+      await fetch("/api/unsplash/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ downloadLocation: photo.links.download_location }),
+      });
+    } catch {}
+  };
 
   // Debounced Spotify search
   useEffect(() => {
@@ -131,40 +189,47 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
           )}
           {modeButton(
             state.imageMode === "link",
-            () => patch({ imageMode: "link", mediaUrls: [] }),
+            () => patch({ imageMode: "link", imageLinkError: null }),
             <IconLink size={16} />,
             "Link"
           )}
           {modeButton(
             state.imageMode === "unsplash",
-            () => patch({ imageMode: "unsplash", mediaUrls: [], imageLinkUrl: "" }),
+            () => patch({ imageMode: "unsplash", imageLinkUrl: "", imageLinkError: null }),
             <IconCamera size={16} />,
             "Unsplash"
           )}
         </div>
 
-        {state.imageMode === "upload" && postId && (
+        {postId && (
           <MediaUploader
             postId={postId}
             mediaType="image"
             existingUrls={state.mediaUrls}
             maxFiles={10}
+            hideDropzone={state.imageMode !== "upload"}
             onUploadComplete={(urls) => {
               // Keep each image's alt text with its image across add/remove/reorder
               // by matching on the URL rather than position.
               const altByUrl = new Map(
                 state.mediaUrls.map((u, i) => [u, state.altTexts[i] ?? ""])
               );
+              // Drop attribution for any image no longer in the tray.
+              const attrs: ComposerState["mediaAttributions"] = {};
+              for (const u of urls) {
+                const a = state.mediaAttributions[u];
+                if (a) attrs[u] = a;
+              }
               patch({
                 mediaUrls: urls,
                 altTexts: urls.map((u) => altByUrl.get(u) ?? ""),
+                mediaAttributions: attrs,
               });
             }}
           />
         )}
 
-        {state.imageMode === "upload" &&
-          state.mediaUrls.length > 0 &&
+        {state.mediaUrls.length > 0 &&
           state.mediaUrls.map((url, index) => (
             <div key={url} className="flex items-start gap-2">
               <div className="relative w-10 h-10 rounded-md overflow-hidden bg-black/20 flex-shrink-0">
@@ -180,62 +245,73 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                     next[index] = v;
                     patch({ altTexts: next });
                   },
-                  "Alt text"
+                  state.mediaAttributions[url]
+                    ? `Alt text · photo by ${state.mediaAttributions[url].photographer} (Unsplash)`
+                    : "Alt text"
                 )}
               </div>
             </div>
           ))}
 
         {state.imageMode === "link" && (
-          <div className="space-y-3">
-            <input
-              type="url"
-              value={state.imageLinkUrl}
-              onChange={(e) => {
-                const value = e.target.value;
-                let error: string | null = null;
-                if (value.trim()) {
-                  try {
-                    const url = new URL(value);
-                    if (!url.protocol.startsWith("http")) {
-                      error = "Please enter a valid HTTP or HTTPS URL";
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={state.imageLinkUrl}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  let error: string | null = null;
+                  if (value.trim()) {
+                    try {
+                      const u = new URL(value);
+                      if (!u.protocol.startsWith("http")) {
+                        error = "Please enter a valid HTTP or HTTPS URL";
+                      }
+                    } catch {
+                      error = "Please enter a valid URL";
                     }
-                  } catch {
-                    error = "Please enter a valid URL";
                   }
+                  patch({ imageLinkUrl: value, imageLinkError: error });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addLink();
+                  }
+                }}
+                placeholder="Paste image URL (https://example.com/image.jpg)"
+                className={`flex-1 min-w-0 py-3 px-4 rounded-xl bg-[var(--vocl-hover)] border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
+                  state.imageLinkError
+                    ? "border-vocl-like"
+                    : "border-[var(--vocl-border)] focus:border-[var(--vocl-primary)]"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={addLink}
+                disabled={
+                  !state.imageLinkUrl.trim() ||
+                  !!state.imageLinkError ||
+                  linkBusy ||
+                  state.mediaUrls.length >= 10
                 }
-                patch({ imageLinkUrl: value, imageLinkError: error });
-              }}
-              placeholder="Paste image URL (https://example.com/image.jpg)"
-              className={`w-full py-3 px-4 rounded-xl bg-[var(--vocl-hover)] border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
-                state.imageLinkError
-                  ? "border-vocl-like"
-                  : "border-[var(--vocl-border)] focus:border-[var(--vocl-primary)]"
-              }`}
-            />
+                className="px-4 rounded-xl bg-[var(--vocl-primary)] text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 inline-flex items-center gap-2 flex-shrink-0"
+              >
+                {linkBusy ? (
+                  <IconLoader2 size={16} className="animate-spin" />
+                ) : (
+                  <IconPlus size={16} />
+                )}
+                Add
+              </button>
+            </div>
             {state.imageLinkError && (
               <p className="text-xs text-vocl-like">{state.imageLinkError}</p>
             )}
-            {state.imageLinkUrl && !state.imageLinkError && (
-              <>
-                <div className="rounded-xl overflow-hidden border border-[var(--vocl-border)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={state.imageLinkUrl}
-                    alt="Preview"
-                    className="w-full max-h-72 object-contain bg-black/20"
-                    onError={() =>
-                      patch({ imageLinkError: "Could not load image from this URL" })
-                    }
-                  />
-                </div>
-                {altTextField(
-                  state.altTexts[0] || "",
-                  (v) => patch({ altTexts: [v] }),
-                  "Alt text"
-                )}
-              </>
-            )}
+            <p className="type-meta text-foreground/40">
+              We re-host the image so it stays live even if the original link goes away.
+            </p>
           </div>
         )}
 
@@ -259,85 +335,38 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 <IconLoader2 size={24} className="animate-spin text-[var(--vocl-primary)]" />
               </div>
             )}
-            {state.selectedUnsplash && (
-              <>
-                <div className="relative rounded-xl overflow-hidden border border-[var(--vocl-primary)]/50">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={state.selectedUnsplash.urls.small}
-                    alt={state.selectedUnsplash.alt_description || ""}
-                    className="w-full max-h-72 object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-3 py-2 text-xs text-white">
-                    Photo by{" "}
-                    <a
-                      href={`${state.selectedUnsplash.user.links.html}?utm_source=bevocl&utm_medium=referral`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                    >
-                      {state.selectedUnsplash.user.name}
-                    </a>{" "}
-                    on{" "}
-                    <a
-                      href="https://unsplash.com/?utm_source=bevocl&utm_medium=referral"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                    >
-                      Unsplash
-                    </a>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => patch({ selectedUnsplash: null, altTexts: [] })}
-                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
-                  >
-                    <IconX size={14} />
-                  </button>
-                </div>
-                {altTextField(
-                  state.altTexts[0] || "",
-                  (v) => patch({ altTexts: [v] }),
-                  "Alt text"
-                )}
-              </>
-            )}
-            {!state.selectedUnsplash && state.unsplashResults.length > 0 && (
+            {state.unsplashResults.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 max-h-[65vh] overflow-y-auto">
-                {state.unsplashResults.map((photo: any) => (
-                  <button
-                    key={photo.id}
-                    type="button"
-                    onClick={async () => {
-                      patch({
-                        selectedUnsplash: photo,
-                        altTexts: [photo.alt_description || ""],
-                      });
-                      try {
-                        await fetch("/api/unsplash/download", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            downloadLocation: photo.links.download_location,
-                          }),
-                        });
-                      } catch {}
-                    }}
-                    className="relative rounded-lg overflow-hidden hover:opacity-80 transition-opacity aspect-square"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={photo.urls.small}
-                      alt={photo.alt_description || ""}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 text-[10px] text-white truncate">
-                      {photo.user.name}
-                    </div>
-                  </button>
-                ))}
+                {state.unsplashResults.map((photo: any) => {
+                  const added = state.mediaUrls.includes(photo.urls.regular);
+                  return (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      disabled={added || state.mediaUrls.length >= 10}
+                      onClick={() => addUnsplash(photo)}
+                      className={`relative rounded-lg overflow-hidden transition-opacity aspect-square disabled:cursor-default ${
+                        added ? "ring-2 ring-[var(--vocl-primary)]" : "hover:opacity-80"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.urls.small}
+                        alt={photo.alt_description || ""}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                      {added && (
+                        <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
+                          <IconCheck size={22} className="text-white" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 text-[10px] text-white truncate">
+                        {photo.user.name}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

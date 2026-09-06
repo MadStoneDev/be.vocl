@@ -63,10 +63,23 @@ export interface TextPostContent {
   reading_time_minutes?: number;
 }
 
+export interface UnsplashAttribution {
+  photographer: string;
+  photographer_username: string;
+  profile_url: string;
+  photo_id: string;
+}
+
 export interface ImagePostContent {
   urls: string[];
   alt_texts: string[];
   caption_html?: string;
+  /**
+   * Per-image Unsplash credit, aligned by index with `urls` (null for images
+   * that didn't come from Unsplash). Only present when at least one image is
+   * from Unsplash. Legacy posts may instead carry a single `unsplash_attribution`.
+   */
+  unsplash_attributions?: (UnsplashAttribution | null)[];
 }
 
 export type VideoEmbedPlatform = 'youtube' | 'vimeo' | 'rumble' | 'dailymotion';

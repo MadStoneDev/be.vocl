@@ -15,6 +15,7 @@ import type {
   PollPostContent,
   LinkPreviewData,
   PostAudience,
+  UnsplashAttribution,
 } from "@/types/database";
 
 export type PostType = "text" | "image" | "video" | "audio" | "poll" | "gif";
@@ -54,6 +55,8 @@ export interface ComposerState {
   imageMode: "upload" | "link" | "unsplash";
   imageLinkUrl: string;
   imageLinkError: string | null;
+  /** Per-image Unsplash credit, keyed by image URL so it survives reorder. */
+  mediaAttributions: Record<string, UnsplashAttribution>;
 
   // Video
   videoMode: "embed" | "upload";
@@ -122,6 +125,7 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     imageMode: "upload",
     imageLinkUrl: "",
     imageLinkError: null,
+    mediaAttributions: {},
     videoMode: "embed",
     videoEmbedUrl: "",
     videoEmbedError: null,
@@ -211,6 +215,7 @@ const PERSISTED_KEYS: (keyof ComposerState)[] = [
   "pollAllowMultiple",
   "imageMode",
   "imageLinkUrl",
+  "mediaAttributions",
   "videoMode",
   "videoEmbedUrl",
   "audioMode",
@@ -323,9 +328,6 @@ export function useComposerState(
       audioMode,
       selectedTrack,
       recordedAudioUrl,
-      imageMode,
-      imageLinkUrl,
-      selectedUnsplash,
       selectedGifUrl,
       pollQuestion,
       pollOptions,
@@ -362,14 +364,9 @@ export function useComposerState(
         }
       }
     } else if (postType === "image") {
-      if (imageMode === "upload" && mediaUrls.length === 0) {
-        return "Please upload at least one image";
-      }
-      if (imageMode === "link" && !imageLinkUrl.trim()) {
-        return "Please enter an image URL";
-      }
-      if (imageMode === "unsplash" && !selectedUnsplash) {
-        return "Please search and select a photo from Unsplash";
+      // All sources (upload / link / Unsplash) now feed the shared media tray.
+      if (mediaUrls.length === 0) {
+        return "Please add at least one image";
       }
     }
     if (postType === "gif" && !selectedGifUrl) {
@@ -495,30 +492,10 @@ export function useComposerState(
         }
 
         case "image": {
-          let imageUrls: string[];
-
-          if (s.imageMode === "link") {
-            const rehostRes = await fetch("/api/upload/from-url", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                url: s.imageLinkUrl.trim(),
-                postId: s.postId,
-              }),
-            });
-
-            if (!rehostRes.ok) {
-              const data = await rehostRes.json();
-              return { success: false, error: data.error || "Failed to download image" };
-            }
-
-            const { publicUrl } = await rehostRes.json();
-            imageUrls = [publicUrl];
-          } else if (s.imageMode === "unsplash" && s.selectedUnsplash) {
-            imageUrls = [s.selectedUnsplash.urls.regular];
-          } else {
-            imageUrls = s.mediaUrls;
-          }
+          // Every source (upload / link / Unsplash) has already resolved to a
+          // real URL in the shared media tray by this point, so the submit path
+          // is uniform.
+          const imageUrls = s.mediaUrls;
 
           postContent = {
             urls: imageUrls,
@@ -526,13 +503,10 @@ export function useComposerState(
             caption_html: s.content.html || undefined,
           } as ImagePostContent;
 
-          if (s.imageMode === "unsplash" && s.selectedUnsplash) {
-            (postContent as any).unsplash_attribution = {
-              photographer: s.selectedUnsplash.user.name,
-              photographer_username: s.selectedUnsplash.user.username,
-              profile_url: `${s.selectedUnsplash.user.links.html}?utm_source=bevocl&utm_medium=referral`,
-              photo_id: s.selectedUnsplash.id,
-            };
+          // Per-image Unsplash credit, aligned by index with urls.
+          const attributions = imageUrls.map((u) => s.mediaAttributions[u] ?? null);
+          if (attributions.some((a) => a !== null)) {
+            (postContent as ImagePostContent).unsplash_attributions = attributions;
           }
           if (imageUrls.length > 1) {
             actualPostType = "gallery";
