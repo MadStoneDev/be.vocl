@@ -219,7 +219,7 @@ export function AccountSwitcher({
                             onClick={() => handleRemove(a.id)}
                             title="Remove from this device"
                             aria-label={`Remove @${a.username} from this device`}
-                            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm text-foreground/35 opacity-0 group-hover:opacity-100 hover:text-vocl-like hover:bg-vocl-like/10 transition-all"
+                            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm text-foreground/35 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 hover:text-vocl-like hover:bg-vocl-like/10 transition-all"
                           >
                             <IconX size={15} />
                           </button>
