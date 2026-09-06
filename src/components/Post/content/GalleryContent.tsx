@@ -80,9 +80,11 @@ export function GalleryContent({ images, caption, alt = "Gallery image", priorit
           </>
         )}
 
-        {/* Horizontal Carousel */}
+        {/* Horizontal Carousel — data-no-swipe so its own touch-scroll isn't
+            hijacked by a parent tab/feed swipe handler. */}
         <div
           ref={scrollContainerRef}
+          data-no-swipe
           className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-1"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >

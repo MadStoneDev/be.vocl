@@ -4,6 +4,7 @@ import { useEffect, useCallback } from "react";
 import Image from "next/image";
 import { IconX, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { Portal } from "@/components/ui";
+import { useSwipe } from "@/hooks/useSwipe";
 
 interface ImageLightboxProps {
   images: string[];
@@ -29,6 +30,9 @@ export function ImageLightbox({
   const goToNext = useCallback(() => {
     onNavigate(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
   }, [currentIndex, images.length, onNavigate]);
+
+  // Swipe left/right to move between images on touch devices.
+  const swipe = useSwipe({ onSwipeLeft: goToNext, onSwipeRight: goToPrevious });
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -98,7 +102,10 @@ export function ImageLightbox({
 
       {/* Main Image — only the image itself blocks the close-on-backdrop click;
           clicking anywhere around it (including letterbox space) closes. */}
-      <div className="relative flex items-center justify-center max-w-[90vw] max-h-[85vh]">
+      <div
+        className="relative flex items-center justify-center max-w-[90vw] max-h-[85vh]"
+        {...swipe}
+      >
         <Image
           src={images[currentIndex]}
           alt={`${alt} ${currentIndex + 1}`}

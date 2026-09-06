@@ -25,6 +25,7 @@ import { followUser, unfollowUser, blockUser, muteUser, isMutual } from "@/actio
 import { startConversation } from "@/actions/messages";
 import { toast } from "@/components/ui";
 import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
+import { useSwipe } from "@/hooks/useSwipe";
 
 interface ProfileData {
   id: string;
@@ -262,6 +263,30 @@ export function ProfileClient() {
     setFollowersModalOpen(true);
   };
 
+  // Swipe between the visible profile tabs on touch devices (mirrors the feed).
+  // Only cycles tabs the viewer can actually see — privacy-gated ones are skipped.
+  const goProfileTab = useCallback(
+    (dir: 1 | -1) => {
+      if (!profile) return;
+      const order: TabId[] = [
+        "posts",
+        ...((profile.showLikes || isOwnProfile ? ["likes"] : []) as TabId[]),
+        ...((profile.showComments || isOwnProfile ? ["comments"] : []) as TabId[]),
+        ...((profile.showFollowers || isOwnProfile ? ["followers"] : []) as TabId[]),
+        ...((profile.showFollowing || isOwnProfile ? ["following"] : []) as TabId[]),
+      ];
+      const i = order.indexOf(activeTab);
+      if (i === -1) return;
+      const next = order[Math.min(order.length - 1, Math.max(0, i + dir))];
+      if (next !== activeTab) setActiveTab(next);
+    },
+    [profile, isOwnProfile, activeTab]
+  );
+  const tabSwipe = useSwipe({
+    onSwipeLeft: () => goProfileTab(1),
+    onSwipeRight: () => goProfileTab(-1),
+  });
+
   // Render a post
   const renderPost = (post: PostData) => {
     const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery" | "poll" | "ask";
@@ -462,7 +487,7 @@ export function ProfileClient() {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-4 sm:mt-6 px-2 sm:px-6">
+      <div className="mt-4 sm:mt-6 px-2 sm:px-6" {...tabSwipe}>
         <div className="max-w-5xl mx-auto space-y-2 sm:space-y-6">
           {activeTab === "posts" && (
             <>
