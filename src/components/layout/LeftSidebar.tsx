@@ -27,6 +27,7 @@ import {
   IconMoon,
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
+import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 import Logo from "@/components/logo";
 import { OPEN_COMMAND_PALETTE_EVENT } from "./commandPaletteEvents";
 import { useModKey } from "@/lib/platform";
@@ -373,21 +374,9 @@ export function LeftSidebar({
           </span>
         </button>
 
-        {/* Logout */}
+        {/* Accounts — switch between saved accounts, add another, or log out */}
         {username && (
-          <button
-            type="button"
-            onClick={handleLogout}
-            title={collapsed ? "Logout" : undefined}
-            className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-all duration-300 ${
-              collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
-            }`}
-          >
-            <IconLogout size={22} aria-hidden="true" className="flex-shrink-0" />
-            <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-              Logout
-            </span>
-          </button>
+          <AccountSwitcher collapsed={collapsed} username={username} />
         )}
       </div>
     </aside>
