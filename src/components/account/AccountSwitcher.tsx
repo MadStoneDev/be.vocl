@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import {
   IconX,
   IconPlus,
@@ -28,7 +27,6 @@ export function AccountSwitcher({
   collapsed: boolean;
   username: string;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -62,8 +60,9 @@ export function AccountSwitcher({
     setError(null);
     const res = await switchAccount(id);
     if (res.success) {
-      setOpen(false);
-      router.refresh();
+      // Hard reload: the browser Supabase client caches the session in memory,
+      // so a soft router.refresh() would keep showing the previous account.
+      window.location.reload();
     } else {
       setError(res.error || "Couldn't switch accounts.");
       setBusyId(null);
@@ -87,24 +86,22 @@ export function AccountSwitcher({
     setAddBusy(true);
     setError(null);
     const res = await addAccount(email, password);
-    setAddBusy(false);
     if (res.success) {
-      setOpen(false);
-      router.refresh();
-    } else {
-      setError(res.error || "Couldn't add that account.");
+      // Hard reload so the new session (cookies) is picked up everywhere.
+      window.location.reload();
+      return; // keep the busy spinner while the page reloads
     }
+    setAddBusy(false);
+    setError(res.error || "Couldn't add that account.");
   };
 
   const handleLogout = async () => {
     setBusyId("__logout__");
     const res = await logoutCurrentAccount();
     if (res.success && res.switched) {
-      setOpen(false);
-      router.refresh();
+      window.location.reload();
     } else {
-      router.push("/login");
-      router.refresh();
+      window.location.href = "/login";
     }
   };
 
