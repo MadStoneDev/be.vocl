@@ -189,7 +189,7 @@ function PostHeader({
   isPublic,
 }: PostHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-1 sm:px-1.5 pt-1 pb-2.5 border-b border-vocl-border z-50">
+    <div className="flex items-center justify-between pl-3 pr-1 sm:pl-4 sm:pr-1.5 pt-1 pb-2.5 border-b border-vocl-border z-50">
       <div className="flex items-center gap-3">
         <Link
           href={`/profile/${author.username}`}
@@ -1161,7 +1161,7 @@ export const Post = memo(function Post({
         {/* Editorial dateline — marks the start of each post in the single-column
             reader so consecutive posts don't read as one continuous piece. */}
         {!hideHeader && !bare && kicker && (
-          <div className="px-1 sm:px-1.5 pt-3 type-meta uppercase tracking-wide text-vocl-primary font-semibold">
+          <div className="pl-3 pr-1 sm:pl-4 sm:pr-1.5 pt-3 type-meta uppercase tracking-wide text-vocl-primary font-semibold">
             {kicker}
           </div>
         )}

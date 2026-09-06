@@ -7,7 +7,6 @@ import {
   IconLogout,
   IconLoader2,
   IconCheck,
-  IconUsers,
   IconArrowsExchange,
 } from "@tabler/icons-react";
 import { Avatar, Portal } from "@/components/ui";
@@ -21,11 +20,13 @@ import {
 } from "@/actions/accounts";
 
 export function AccountSwitcher({
-  collapsed,
+  collapsed = false,
   username,
+  variant = "sidebar",
 }: {
-  collapsed: boolean;
+  collapsed?: boolean;
   username: string;
+  variant?: "sidebar" | "menu-item";
 }) {
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
@@ -107,25 +108,36 @@ export function AccountSwitcher({
 
   return (
     <>
-      {/* Sidebar trigger — replaces the old Logout button */}
-      <button
-        type="button"
-        onClick={openModal}
-        title={collapsed ? "Accounts" : undefined}
-        aria-label="Switch or add account"
-        className={`flex items-center mt-1 w-full rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
-          collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
-        }`}
-      >
-        <IconArrowsExchange size={22} aria-hidden="true" className="flex-shrink-0" />
-        <span
-          className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-            collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"
+      {/* Trigger */}
+      {variant === "menu-item" ? (
+        <button
+          type="button"
+          onClick={openModal}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
+        >
+          <IconArrowsExchange size={18} className="text-foreground/55" />
+          Accounts
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={openModal}
+          title={collapsed ? "Accounts" : undefined}
+          aria-label="Switch or add account"
+          className={`flex items-center mt-1 w-full rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
+            collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           }`}
         >
-          Accounts
-        </span>
-      </button>
+          <IconArrowsExchange size={22} aria-hidden="true" className="flex-shrink-0" />
+          <span
+            className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+              collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"
+            }`}
+          >
+            Accounts
+          </span>
+        </button>
+      )}
 
       {open && (
         <Portal>
@@ -136,38 +148,47 @@ export function AccountSwitcher({
             />
             <div className="relative w-full max-w-sm bg-background border border-vocl-border rounded-sm elevate-lg overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-vocl-border">
-                <div className="flex items-center gap-2">
-                  <IconUsers size={20} className="text-vocl-primary" />
-                  <h2 className="type-display text-xl text-foreground">Accounts</h2>
+              <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4">
+                <div className="min-w-0">
+                  <h2 className="type-display text-xl text-foreground leading-none">
+                    {adding ? "Add account" : "Accounts"}
+                  </h2>
+                  <p className="mt-1.5 type-meta text-foreground/50">
+                    {adding
+                      ? "Sign in — you'll stay signed in here too."
+                      : `Signed in as @${username}`}
+                  </p>
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="p-2 rounded-full hover:bg-vocl-hover transition-colors"
+                  aria-label="Close"
+                  className="-mr-1 -mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors"
                 >
-                  <IconX size={20} className="text-foreground/60" />
+                  <IconX size={18} />
                 </button>
               </div>
 
               {error && (
-                <div className="px-4 pt-3">
-                  <p className="type-body text-vocl-like">{error}</p>
+                <div className="mx-5 mb-3 rounded-sm border border-vocl-like/30 bg-vocl-like/10 px-3 py-2">
+                  <p className="type-meta text-vocl-like">{error}</p>
                 </div>
               )}
 
               {/* Account list */}
               {!adding && (
-                <div className="max-h-72 overflow-y-auto p-2">
+                <div className="max-h-72 overflow-y-auto px-3 pb-1">
                   {loading ? (
-                    <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center justify-center py-10">
                       <IconLoader2 size={22} className="animate-spin text-vocl-primary" />
                     </div>
                   ) : (
                     accounts.map((a) => (
                       <div
                         key={a.id}
-                        className={`flex items-center gap-3 p-2.5 rounded-sm ${
-                          a.isActive ? "bg-vocl-primary/10" : "hover:bg-vocl-hover"
+                        className={`group flex items-center gap-3 px-2.5 py-2.5 rounded-sm transition-colors ${
+                          a.isActive
+                            ? "bg-vocl-primary/10 ring-1 ring-inset ring-vocl-primary/25"
+                            : "hover:bg-vocl-hover"
                         }`}
                       >
                         <button
@@ -176,25 +197,31 @@ export function AccountSwitcher({
                           onClick={() => handleSwitch(a.id)}
                           className="flex flex-1 items-center gap-3 min-w-0 text-left disabled:cursor-default"
                         >
-                          <Avatar src={a.avatarUrl} username={a.username || "?"} size="sm" />
-                          <span className="type-body font-medium text-foreground truncate">
-                            @{a.username}
+                          <Avatar src={a.avatarUrl} username={a.username || "?"} size="md" />
+                          <span className="flex flex-col min-w-0">
+                            <span className="type-body font-semibold text-foreground truncate">
+                              @{a.username}
+                            </span>
+                            <span className="type-meta text-foreground/45">
+                              {a.isActive ? "Current session" : "Tap to switch"}
+                            </span>
                           </span>
                         </button>
                         {busyId === a.id ? (
                           <IconLoader2 size={18} className="animate-spin text-vocl-primary flex-shrink-0" />
                         ) : a.isActive ? (
-                          <span className="flex items-center gap-1 type-meta font-semibold text-vocl-primary flex-shrink-0">
-                            <IconCheck size={15} /> Active
+                          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-vocl-primary text-white">
+                            <IconCheck size={14} stroke={3} />
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleRemove(a.id)}
                             title="Remove from this device"
-                            className="p-1.5 rounded-full text-foreground/40 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors flex-shrink-0"
+                            aria-label={`Remove @${a.username} from this device`}
+                            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm text-foreground/35 opacity-0 group-hover:opacity-100 hover:text-vocl-like hover:bg-vocl-like/10 transition-all"
                           >
-                            <IconX size={16} />
+                            <IconX size={15} />
                           </button>
                         )}
                       </div>
@@ -205,11 +232,7 @@ export function AccountSwitcher({
 
               {/* Add form */}
               {adding && (
-                <form onSubmit={handleAdd} className="p-4 space-y-3">
-                  <p className="type-meta text-foreground/55">
-                    Sign in to another account to add it. You&apos;ll stay signed in to
-                    this one too.
-                  </p>
+                <form onSubmit={handleAdd} className="px-5 pb-5 space-y-3">
                   <input
                     type="email"
                     required
@@ -227,11 +250,11 @@ export function AccountSwitcher({
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full py-2.5 px-3 rounded-sm bg-vocl-hover text-foreground type-body border border-vocl-border placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setAdding(false)}
-                      className="flex-1 py-2.5 rounded-sm type-meta font-semibold text-foreground/70 hover:bg-vocl-hover transition-colors"
+                      className="flex-1 py-2.5 rounded-sm type-meta font-semibold text-foreground/70 border border-vocl-border hover:bg-vocl-hover transition-colors"
                     >
                       Back
                     </button>
@@ -249,16 +272,16 @@ export function AccountSwitcher({
 
               {/* Footer actions */}
               {!adding && (
-                <div className="border-t border-vocl-border p-2">
+                <div className="border-t border-vocl-border p-3">
                   <button
                     type="button"
                     onClick={() => {
                       setAdding(true);
                       setError(null);
                     }}
-                    className="flex w-full items-center gap-3 p-2.5 rounded-sm text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                    className="flex w-full items-center gap-3 px-2.5 py-2.5 rounded-sm text-foreground/80 hover:bg-vocl-hover transition-colors"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-vocl-hover">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-vocl-hover text-foreground/70">
                       <IconPlus size={18} />
                     </span>
                     <span className="type-body font-medium">Add another account</span>
@@ -267,9 +290,9 @@ export function AccountSwitcher({
                     type="button"
                     onClick={handleLogout}
                     disabled={busyId === "__logout__"}
-                    className="flex w-full items-center gap-3 p-2.5 rounded-sm text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+                    className="flex w-full items-center gap-3 px-2.5 py-2.5 rounded-sm text-foreground/80 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-vocl-hover">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-vocl-hover">
                       {busyId === "__logout__" ? (
                         <IconLoader2 size={18} className="animate-spin" />
                       ) : (

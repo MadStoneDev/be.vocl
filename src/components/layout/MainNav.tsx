@@ -8,7 +8,6 @@ import {
   IconPlus,
   IconSettings,
   IconShield,
-  IconLogout,
   IconDots,
   IconMaximize,
   IconMinimize,
@@ -20,7 +19,7 @@ import {
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
-import { createClient } from "@/lib/supabase/client";
+import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 
 interface MainNavProps {
   username?: string;
@@ -69,12 +68,6 @@ export function MainNav({
     } catch {
       // Fullscreen API not supported or denied
     }
-  };
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    window.location.href = "/login";
   };
 
   return (
@@ -206,17 +199,14 @@ export function MainNav({
                     Settings
                   </Link>
 
-                  {/* Logout */}
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      handleLogout();
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
-                  >
-                    <IconLogout size={18} className="text-vocl-like" />
-                    Logout
-                  </button>
+                  {/* Accounts — switch / add / log out (keeps the menu mounted
+                      so the modal survives; the modal owns log-out) */}
+                  <div className="mt-1 pt-1 border-t border-vocl-border">
+                    <AccountSwitcher
+                      variant="menu-item"
+                      username={username ?? ""}
+                    />
+                  </div>
                 </div>
               </>
             )}
