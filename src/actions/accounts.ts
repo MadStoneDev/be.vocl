@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createIsolatedClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
 
 /**
@@ -209,7 +210,14 @@ export async function switchAccount(
   }
 }
 
-/** Remove a saved account from the switcher (must not be the active one). */
+/**
+ * Remove a saved account from the switcher AND log it out. We revoke the
+ * account's session server-side using an isolated client (its own in-memory
+ * storage — never the active user's cookies), restoring the stored token just
+ * long enough to sign it out with scope "local" (this session only; the user's
+ * other devices stay signed in). The active account can't be removed here —
+ * that's what the footer "Log out" is for.
+ */
 export async function removeAccount(
   targetId: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -221,7 +229,31 @@ export async function removeAccount(
     if (user?.id === targetId) {
       return { success: false, error: "Log out of this account to remove it." };
     }
+
     const store = await readStore();
+    const target = store.find((a) => a.id === targetId);
+
+    // Best-effort revoke: restore the session in an isolated client, then sign
+    // it out. If the stored token is already dead, there's nothing to revoke —
+    // we still drop it from the store below.
+    if (target) {
+      try {
+        const isolated = createIsolatedClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          { auth: { persistSession: false, autoRefreshToken: false } }
+        );
+        const { data, error } = await isolated.auth.refreshSession({
+          refresh_token: target.refreshToken,
+        });
+        if (!error && data.session) {
+          await isolated.auth.signOut({ scope: "local" });
+        }
+      } catch (revokeErr) {
+        console.error("Remove account revoke error:", revokeErr);
+      }
+    }
+
     await writeStore(store.filter((a) => a.id !== targetId));
     return { success: true };
   } catch (err) {
