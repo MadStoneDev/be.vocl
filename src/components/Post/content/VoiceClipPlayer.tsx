@@ -60,15 +60,15 @@ export function VoiceClipPlayer({
 
   return (
     <div
-      className={`inline-flex items-center gap-2.5 px-3 py-2 rounded-full max-w-full ${
-        isDark ? "bg-vocl-hover-strong" : "bg-vocl-hover"
+      className={`inline-flex items-center gap-2.5 px-3 py-2 border border-rule max-w-full ${
+        isDark ? "bg-panel" : "bg-panel"
       }`}
     >
       <button
         type="button"
         onClick={toggle}
         aria-label={playing ? "Pause voice clip" : "Play voice clip"}
-        className="shrink-0 w-8 h-8 rounded-full bg-vocl-primary text-white flex items-center justify-center hover:bg-vocl-primary-hover transition-colors"
+        className="shrink-0 w-8 h-8 border border-rule text-accent flex items-center justify-center hover:bg-vocl-hover transition-colors"
       >
         {playing ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
       </button>
@@ -85,12 +85,10 @@ export function VoiceClipPlayer({
 
       <div
         onClick={handleSeek}
-        className={`relative h-1.5 w-24 sm:w-32 rounded-full overflow-hidden cursor-pointer ${
-          isDark ? "bg-vocl-border" : "bg-vocl-border"
-        }`}
+        className="relative h-[3px] w-24 sm:w-32 overflow-hidden cursor-pointer bg-rule"
       >
         <div
-          className="h-full bg-vocl-primary transition-[width] motion-reduce:transition-none"
+          className="h-full bg-accent transition-[width] motion-reduce:transition-none"
           style={{ width: `${progress}%` }}
         />
       </div>

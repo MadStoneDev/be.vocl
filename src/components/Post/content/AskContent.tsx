@@ -23,8 +23,8 @@ export function AskContent({ content, article }: AskContentProps) {
     return (
       <div className="space-y-5">
         {/* Question — editorial aside / pull quote */}
-        <div className="border-l-4 border-vocl-primary pl-4">
-          <p className="type-meta uppercase tracking-widest text-vocl-primary font-semibold mb-1">
+        <div className="border-l-2 border-accent pl-4">
+          <p className="kicker kicker-accent mb-1">
             {askerLabel}
           </p>
           {content.question_html ? (
@@ -71,7 +71,7 @@ export function AskContent({ content, article }: AskContentProps) {
   return (
     <div>
       {/* Question section */}
-      <div className="p-4 bg-vocl-hover border-b border-vocl-border">
+      <div className="p-4 bg-panel border-b border-rule">
         <div className="flex items-start gap-3">
           {/* Asker avatar or anonymous icon */}
           {content.is_anonymous ? (

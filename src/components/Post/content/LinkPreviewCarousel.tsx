@@ -35,8 +35,8 @@ function PreviewCard({
   // the reading column (no opaque white-on-white surface); the feed keeps the
   // solid card. Both are theme-aware.
   const c = article
-    ? { wrap: "rounded-lg border-vocl-border bg-transparent", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/60", icon: "text-foreground/40" }
-    : { wrap: "rounded-sm border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
+    ? { wrap: "rounded-none border-vocl-border bg-transparent", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/60", icon: "text-foreground/40" }
+    : { wrap: "rounded-none border-vocl-border bg-vocl-surface-dark", img: "bg-vocl-hover", site: "text-foreground/55", title: "text-foreground", desc: "text-foreground/55", icon: "text-foreground/45" };
 
   const card = (
     <div className={`relative overflow-hidden border ${c.wrap}`}>
@@ -79,7 +79,7 @@ function PreviewCard({
               alt=""
               width={14}
               height={14}
-              className="rounded-sm flex-shrink-0"
+              className="rounded-none flex-shrink-0"
               unoptimized
             />
           ) : (
@@ -129,12 +129,12 @@ function PreviewCard({
 
 function LoadingSkeleton() {
   return (
-    <div className="rounded-xl overflow-hidden border border-vocl-border bg-vocl-hover animate-pulse">
+    <div className="rounded-none overflow-hidden border border-vocl-border bg-vocl-hover animate-pulse">
       <div className="w-full aspect-video bg-vocl-hover" />
       <div className="p-3 space-y-2">
-        <div className="h-3 bg-vocl-hover rounded w-1/3" />
-        <div className="h-4 bg-vocl-hover rounded w-3/4" />
-        <div className="h-3 bg-vocl-hover rounded w-full" />
+        <div className="h-3 bg-vocl-hover rounded-none w-1/3" />
+        <div className="h-4 bg-vocl-hover rounded-none w-3/4" />
+        <div className="h-3 bg-vocl-hover rounded-none w-full" />
       </div>
     </div>
   );
