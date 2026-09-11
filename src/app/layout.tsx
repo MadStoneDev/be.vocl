@@ -1,21 +1,39 @@
 import type { Metadata } from "next";
-import { Gloock, Lexend } from "next/font/google";
+import { Gloock, Source_Serif_4, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { QueryProvider, ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui";
 import { Analytics } from "@/components/analytics/Analytics";
 import { ACCENT_BOOT_SCRIPT } from "@/lib/accent";
 import "./globals.css";
 
+// Broadsheet type system (design/broadsheet-foundation):
+//   Display — Gloock (headlines, wordmark, masthead tagline)
+//   Body    — Source Serif 4 (post content, decks, captions; regular + italic)
+//   UI/meta — IBM Plex Sans (bylines, nav, buttons, kickers)
+//   Mono    — IBM Plex Mono (edition slugs, placeholder labels, spec/footer lines)
 const gloock = Gloock({
   variable: "--font-gloock--display",
   subsets: ["latin"],
   weight: "400",
 });
 
-const lexend = Lexend({
-  variable: "--font-lexend-sans",
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: ["200", "400", "700"],
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+});
+
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bevocl.com";
@@ -54,7 +72,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${gloock.variable} ${lexend.variable} antialiased`}
+        className={`${gloock.variable} ${sourceSerif.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
       >
         {/* Apply the saved UI accent before first paint (no colour flash). */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_BOOT_SCRIPT }} />
