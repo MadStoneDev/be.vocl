@@ -111,12 +111,13 @@ export function PollContent({ postId, content, article }: PollContentProps) {
       {/* Question */}
       <h3 className={t.question}>{content.question}</h3>
 
-      {/* Options */}
-      <div className="space-y-2">
+      {/* Options — broadsheet: a label/percentage row over a thin 3px rule-bar
+          (accent for the leading option, meta-dim otherwise). Before voting,
+          a square radio indicator makes each row selectable. */}
+      <div className="space-y-3.5">
         {(Array.isArray(content.options) ? content.options : []).map((option, index) => {
           const isSelected = selectedOption === index;
           const percentage = results?.percentages[index] || 0;
-          const voteCount = results?.votes[index] || 0;
           const isWinner =
             showResults &&
             results &&
@@ -128,94 +129,73 @@ export function PollContent({ postId, content, article }: PollContentProps) {
               key={index}
               onClick={() => !hasVoted && !isExpired && setSelectedOption(index)}
               disabled={hasVoted || isExpired || isLoading}
-              className={`relative w-full text-left p-3 rounded-sm transition-all overflow-hidden ${
-                hasVoted || isExpired
-                  ? "cursor-default"
-                  : `cursor-pointer ${t.optionHover}`
-              } ${
-                isSelected && !hasVoted
-                  ? "ring-2 ring-vocl-primary bg-vocl-primary/10"
-                  : t.optionBg
+              className={`group w-full text-left transition-colors ${
+                hasVoted || isExpired ? "cursor-default" : "cursor-pointer"
               }`}
             >
-              {/* Progress bar background */}
-              {showResults && (
-                <div
-                  className={`absolute inset-y-0 left-0 transition-all duration-500 ${
-                    isWinner ? "bg-vocl-primary/20" : t.barOther
-                  }`}
-                  style={{ width: `${percentage}%` }}
-                />
-              )}
-
-              {/* Content */}
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {/* Checkbox/Radio indicator */}
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      isSelected
-                        ? "border-vocl-primary bg-vocl-primary"
-                        : t.indicator
-                    }`}
-                  >
-                    {isSelected && (
-                      <IconCheck size={12} className="text-white" />
-                    )}
-                  </div>
-
+              <div className="flex items-center justify-between gap-3 mb-1.5">
+                <span className="flex items-center gap-2 min-w-0">
+                  {!showResults && (
+                    <span
+                      className={`w-3.5 h-3.5 flex-none border flex items-center justify-center ${
+                        isSelected ? "border-accent bg-accent" : "border-rule group-hover:border-meta"
+                      }`}
+                    >
+                      {isSelected && <IconCheck size={10} className="text-white" />}
+                    </span>
+                  )}
                   <span
-                    className={`font-medium ${
-                      isWinner ? t.optionTextWinner : t.optionText
+                    className={`font-sans text-[11px] tracking-[0.1em] uppercase truncate ${
+                      isWinner ? "text-ink" : "text-editorial-body"
                     }`}
                   >
                     {option}
                   </span>
-                </div>
-
+                </span>
                 {showResults && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className={t.meta}>{voteCount}</span>
-                    <span
-                      className={`font-semibold ${
-                        isWinner ? "text-vocl-primary" : t.metaStrong
-                      }`}
-                    >
-                      {percentage}%
-                    </span>
-                  </div>
+                  <span
+                    className={`font-sans text-[11px] tracking-[0.1em] tabular-nums ${
+                      isWinner ? "text-accent" : "text-meta"
+                    }`}
+                  >
+                    {percentage}%
+                  </span>
                 )}
               </div>
+              {showResults && (
+                <div className="h-[3px] w-full bg-rule">
+                  <div
+                    className={`h-[3px] transition-all duration-500 ${isWinner ? "bg-accent" : "bg-meta-dim"}`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              )}
             </button>
           );
         })}
       </div>
 
       {/* Vote button / Results */}
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-5 flex items-center justify-between gap-3">
         {!hasVoted && !isExpired ? (
           <button
             onClick={handleVote}
             disabled={selectedOption === null || isLoading}
-            className="px-4 py-2 bg-vocl-primary text-white rounded-sm font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-vocl-primary/90 transition-colors"
+            className="bg-accent text-white px-5 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-[0.88] transition-opacity"
           >
-            {isLoading ? "Voting..." : "Vote"}
+            {isLoading ? "Voting…" : "Vote"}
           </button>
         ) : (
           <span />
         )}
 
-        <div className={`flex items-center gap-2 text-sm ${t.meta}`}>
-          {results && (
-            <span>
-              {results.totalVotes} vote{results.totalVotes !== 1 ? "s" : ""}
-            </span>
-          )}
+        <div className="byline text-meta flex items-center gap-2">
+          {results && <span>{results.totalVotes} voted</span>}
           {content.expires_at && (
             <>
-              <span>•</span>
+              <span aria-hidden="true">·</span>
               <span className="flex items-center gap-1">
-                <IconClock size={14} />
+                <IconClock size={13} />
                 {getExpirationText()}
               </span>
             </>
