@@ -25,6 +25,7 @@ import {
   IconMinimize,
   IconSun,
   IconMoon,
+  IconPencil,
 } from "@tabler/icons-react";
 import { Avatar } from "@/components/ui";
 import Logo from "@/components/logo";
@@ -169,14 +170,30 @@ export function LeftSidebar({
         </Link>
       </div>
 
+      {/* Masthead-level Write button (broadsheet: outline, never a floating
+          pink circle). Replaces the old CreatePostFAB for desktop. */}
+      {username && (
+        <div className={`pt-3 ${collapsed ? "px-2" : "px-3"}`}>
+          <Link
+            href="/create"
+            aria-label="Write a post"
+            title={collapsed ? "Write" : undefined}
+            className={`flex items-center justify-center border border-foreground text-ink hover:bg-vocl-hover transition-colors font-sans font-medium uppercase tracking-[0.16em] text-xs ${
+              collapsed ? "py-2.5 px-0" : "py-2.5 px-4 gap-2"
+            }`}
+          >
+            <IconPencil size={16} aria-hidden="true" className="flex-shrink-0" />
+            {!collapsed && <span>Write</span>}
+          </Link>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className={`flex-1 py-4 transition-all duration-300 ${collapsed ? "px-2" : "px-3"}`}>
         {!collapsed && (
-          <p className="px-3 mb-2 type-meta uppercase tracking-[0.2em] text-foreground/40 font-semibold">
-            Sections
-          </p>
+          <p className="px-3 mb-3 slug text-meta-dim">Sections</p>
         )}
-        <ul className="space-y-1">
+        <ul className="space-y-0.5">
           {navItems.map((item, index) => {
             const isActive = item.href
               ? pathname === item.href || pathname.startsWith(item.href + "/")
@@ -185,11 +202,45 @@ export function LeftSidebar({
             const badgeCount = item.badge ?? 0;
             const showBadge = badgeCount > 0;
             const badgeTone = (item as { badgeTone?: "alert" | "count" }).badgeTone ?? "alert";
-            const badgeClass =
-              badgeTone === "count"
-                ? "bg-vocl-hover-strong text-foreground/80 border border-vocl-border"
-                : "bg-vocl-like text-white";
             const badgeNoun = badgeTone === "count" ? "in queue" : "unread";
+            const hint = (item as { hint?: string }).hint;
+
+            // Broadsheet rail item: monochrome, radius 0, 2px accent left bar
+            // when active; counts render as a right-aligned mono aside, not a
+            // coloured pill (collapsed falls back to a small accent tick).
+            const base = `relative flex items-center border-l-2 transition-colors duration-200 ${
+              collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
+            }`;
+            const state = isActive
+              ? "border-accent text-ink font-medium"
+              : "border-transparent text-meta hover:text-ink hover:bg-vocl-hover";
+
+            const inner = (
+              <>
+                <span className={`relative inline-flex flex-shrink-0 ${isActive ? "text-accent" : "text-meta"}`}>
+                  <Icon size={22} aria-hidden="true" />
+                  {showBadge && collapsed && (
+                    <span
+                      className="absolute -top-2 -right-2.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center bg-accent text-white text-[9px] font-mono"
+                      aria-hidden="true"
+                    >
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </span>
+                  )}
+                </span>
+                <span className={`text-sm whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+                  {item.label}
+                </span>
+                {!collapsed && hint && (
+                  <kbd className="ml-auto slug text-meta-dim">{hint}</kbd>
+                )}
+                {!collapsed && showBadge && (
+                  <span className="ml-auto slug text-meta-dim" aria-label={`${badgeCount} ${badgeNoun}`}>
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </span>
+                )}
+              </>
+            );
 
             if (item.action) {
               return (
@@ -198,34 +249,10 @@ export function LeftSidebar({
                     type="button"
                     onClick={item.action}
                     title={collapsed ? item.label : undefined}
-                    aria-label={
-                      showBadge
-                        ? `${item.label}, ${badgeCount} ${badgeNoun}`
-                        : item.label
-                    }
-                    className={`relative w-full flex items-center rounded-sm hover:bg-vocl-hover transition-all duration-300 ${
-                      collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
-                    }`}
+                    aria-label={showBadge ? `${item.label}, ${badgeCount} ${badgeNoun}` : item.label}
+                    className={`w-full ${base} ${state}`}
                   >
-                    <span className="relative inline-flex flex-shrink-0 text-foreground/70">
-                      <Icon size={22} aria-hidden="true" />
-                      {showBadge && (
-                        <span
-                          className={`absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold ${badgeClass}`}
-                          aria-hidden="true"
-                        >
-                          {badgeCount > 99 ? "99+" : badgeCount}
-                        </span>
-                      )}
-                    </span>
-                    <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-                      {item.label}
-                    </span>
-                    {(item as any).hint && !collapsed && (
-                      <kbd className="ml-auto px-1.5 py-0.5 rounded-md bg-vocl-hover border border-vocl-border text-[10px] font-mono text-foreground/40">
-                        {(item as any).hint}
-                      </kbd>
-                    )}
+                    {inner}
                   </button>
                 </li>
               );
@@ -237,28 +264,9 @@ export function LeftSidebar({
                   href={item.href!}
                   title={collapsed ? item.label : undefined}
                   aria-current={isActive ? "page" : undefined}
-                  className={`relative flex items-center rounded-sm transition-all duration-300 ${
-                    collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
-                  } ${
-                    isActive
-                      ? "bg-vocl-hover font-semibold text-vocl-primary"
-                      : "text-foreground/80 hover:bg-vocl-hover"
-                  }`}
+                  className={`${base} ${state}`}
                 >
-                  <span className={`relative inline-flex flex-shrink-0 ${isActive ? "text-vocl-primary" : "text-foreground/70"}`}>
-                    <Icon size={22} aria-hidden="true" />
-                    {showBadge && (
-                      <span
-                        className={`absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold ${badgeClass}`}
-                        aria-label={`${badgeCount} ${badgeNoun}`}
-                      >
-                        {badgeCount > 99 ? "99+" : badgeCount}
-                      </span>
-                    )}
-                  </span>
-                  <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-                    {item.label}
-                  </span>
+                  {inner}
                 </Link>
               </li>
             );
@@ -294,16 +302,16 @@ export function LeftSidebar({
           href="/settings"
           title={collapsed ? "Settings" : undefined}
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
-          className={`flex items-center rounded-sm transition-all duration-300 ${
+          className={`flex items-center border-l-2 transition-colors duration-200 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           } ${role >= 5 ? "mt-1" : ""} ${
             pathname.startsWith("/settings")
-              ? "bg-vocl-primary/10 text-vocl-primary"
-              : "text-foreground/70 hover:text-foreground hover:bg-vocl-hover"
+              ? "border-accent text-ink font-medium [&_svg]:text-accent"
+              : "border-transparent text-meta hover:text-ink hover:bg-vocl-hover"
           }`}
         >
           <IconSettings size={22} aria-hidden="true" className="flex-shrink-0" />
-          <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+          <span className={`text-sm whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
             Settings
           </span>
         </Link>
@@ -314,12 +322,12 @@ export function LeftSidebar({
             href={`/profile/${username}`}
             title={collapsed ? `@${username}` : undefined}
             aria-label="Your profile"
-            className={`flex items-center mt-1 rounded-sm transition-all duration-300 ${
+            className={`flex items-center mt-1 border-l-2 transition-colors duration-200 ${
               collapsed ? "justify-center px-0 py-2.5" : "gap-3 pl-1 pr-3 py-2.5"
             } ${
               pathname === `/profile/${username}`
-                ? "bg-vocl-primary/10 text-vocl-primary"
-                : "text-foreground/70 hover:text-foreground hover:bg-vocl-hover"
+                ? "border-accent text-ink font-medium"
+                : "border-transparent text-meta hover:text-ink hover:bg-vocl-hover"
             }`}
           >
             <Avatar
@@ -327,24 +335,24 @@ export function LeftSidebar({
               username={username}
               size="sm"
             />
-            <span className={`text-sm font-medium truncate whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+            <span className={`text-sm truncate whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
               @{username}
             </span>
           </Link>
         ) : (
-          <div className={`flex items-center mt-1 rounded-sm text-foreground/70 transition-all duration-300 ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
+          <div className={`flex items-center mt-1 border-l-2 border-transparent text-meta transition-all duration-300 ${collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"}`}>
             <div className="w-8 h-8 rounded-full bg-vocl-hover-strong animate-pulse flex-shrink-0" />
             <span className={`h-4 w-20 bg-vocl-hover-strong rounded animate-pulse transition-all duration-300 ${collapsed ? "hidden" : ""}`} />
           </div>
         )}
 
-        {/* Theme toggle (FND-1) */}
+        {/* Edition toggle — dark = late edition, light = newsprint edition */}
         <button
           type="button"
           onClick={toggleTheme}
-          title={collapsed ? (showDark ? "Light mode" : "Dark mode") : undefined}
-          aria-label={showDark ? "Switch to light mode" : "Switch to dark mode"}
-          className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
+          title={collapsed ? (showDark ? "Newsprint edition" : "Late edition") : undefined}
+          aria-label={showDark ? "Switch to newsprint edition" : "Switch to late (dark) edition"}
+          className={`flex items-center mt-1 w-full border-l-2 border-transparent text-meta hover:text-ink hover:bg-vocl-hover transition-colors duration-200 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           }`}
         >
@@ -353,8 +361,8 @@ export function LeftSidebar({
           ) : (
             <IconMoon size={22} aria-hidden="true" className="flex-shrink-0" />
           )}
-          <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-            {showDark ? "Light mode" : "Dark mode"}
+          <span className={`text-sm whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+            {showDark ? "Newsprint edition" : "Late edition"}
           </span>
         </button>
 
@@ -363,12 +371,12 @@ export function LeftSidebar({
           type="button"
           onClick={toggleFullscreen}
           title={collapsed ? (isFullscreen ? "Exit Fullscreen" : "Fullscreen") : undefined}
-          className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-all duration-300 ${
+          className={`flex items-center mt-1 w-full border-l-2 border-transparent text-meta hover:text-ink hover:bg-vocl-hover transition-colors duration-200 ${
             collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
           }`}
         >
           {isFullscreen ? <IconMinimize size={22} aria-hidden="true" className="flex-shrink-0" /> : <IconMaximize size={22} aria-hidden="true" className="flex-shrink-0" />}
-          <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+          <span className={`text-sm whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
             {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </span>
         </button>
@@ -379,12 +387,12 @@ export function LeftSidebar({
             type="button"
             onClick={handleLogout}
             title={collapsed ? "Logout" : undefined}
-            className={`flex items-center mt-1 w-full rounded-sm text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-all duration-300 ${
+            className={`flex items-center mt-1 w-full border-l-2 border-transparent text-meta hover:text-vocl-like hover:bg-vocl-like/10 transition-colors duration-200 ${
               collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
             }`}
           >
             <IconLogout size={22} aria-hidden="true" className="flex-shrink-0" />
-            <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+            <span className={`text-sm whitespace-nowrap transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
               Logout
             </span>
           </button>

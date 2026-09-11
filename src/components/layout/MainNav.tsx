@@ -103,7 +103,7 @@ export function MainNav({
           <Link
             href="/create"
             aria-label="Create post"
-            className="flex items-center justify-center w-9 h-9 rounded-sm bg-vocl-primary text-white hover:bg-vocl-primary-hover transition-colors"
+            className="flex items-center justify-center w-9 h-9 bg-accent text-white hover:opacity-[0.88] transition-opacity"
           >
             <IconPlus size={18} aria-hidden="true" />
           </Link>

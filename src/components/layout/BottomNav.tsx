@@ -85,13 +85,13 @@ export function BottomNav({
                 type="button"
                 onClick={item.action}
                 aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
-                className="relative flex items-center justify-center w-12 h-12 transition-colors text-foreground/60 hover:text-vocl-primary"
+                className="relative flex items-center justify-center w-12 h-12 transition-colors text-meta hover:text-ink"
               >
                 <span className="relative inline-flex">
                   <Icon size={26} aria-hidden="true" />
                   {showBadge && (
                     <span
-                      className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold"
+                      className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 flex items-center justify-center bg-accent text-white text-[9px] font-mono"
                       aria-hidden="true"
                     >
                       {badgeCount > 99 ? "99+" : badgeCount}
@@ -108,7 +108,7 @@ export function BottomNav({
                 key={item.href}
                 href={item.href!}
                 aria-label="Create post"
-                className="flex items-center justify-center w-12 h-12 rounded-sm bg-vocl-primary text-white shadow-lg shadow-vocl-primary/30"
+                className="flex items-center justify-center w-12 h-12 bg-accent text-white"
               >
                 <Icon size={26} aria-hidden="true" />
               </Link>
@@ -121,17 +121,15 @@ export function BottomNav({
               href={item.href!}
               aria-current={isActive ? "page" : undefined}
               aria-label={showBadge ? `${item.label}, ${badgeCount} unread` : item.label}
-              className={`relative flex items-center justify-center w-12 h-12 transition-all ${
-                isActive
-                  ? "text-vocl-primary scale-110"
-                  : "text-foreground/70 hover:text-vocl-primary"
+              className={`relative flex items-center justify-center w-12 h-12 transition-colors ${
+                isActive ? "text-accent" : "text-meta hover:text-ink"
               }`}
             >
               <span className="relative inline-flex">
                 <Icon size={26} aria-hidden="true" />
                 {showBadge && (
                   <span
-                    className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-vocl-like text-white text-[10px] font-bold"
+                    className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 flex items-center justify-center bg-accent text-white text-[9px] font-mono"
                     aria-hidden="true"
                   >
                     {badgeCount > 99 ? "99+" : badgeCount}

@@ -1,13 +1,5 @@
 "use client";
 
-import {
-  IconClock,
-  IconTrendingUp,
-  IconFlame,
-  IconLayoutList,
-  IconNews,
-} from "@tabler/icons-react";
-
 export type FeedTab = "chronological" | "engagement" | "trending";
 export type FeedLayout = "reader" | "frontpage";
 
@@ -28,84 +20,58 @@ export function FeedTabs({
   showLayoutToggle = false,
 }: FeedTabsProps) {
   const tabs = [
-    {
-      id: "chronological" as const,
-      label: "Latest",
-      icon: IconClock,
-      description: "Most recent posts first",
-    },
-    {
-      id: "engagement" as const,
-      label: "For You",
-      icon: IconTrendingUp,
-      description: "Posts you might like",
-    },
-    {
-      id: "trending" as const,
-      label: "Trending",
-      icon: IconFlame,
-      description: "What everyone is talking about",
-    },
+    { id: "chronological" as const, label: "Latest", description: "Most recent posts first" },
+    { id: "engagement" as const, label: "For You", description: "Posts you might like" },
+    { id: "trending" as const, label: "Trending", description: "What everyone is talking about" },
   ];
 
   const layoutOptions = [
-    { id: "reader" as const, label: "Reader", icon: IconLayoutList, description: "Single column" },
-    { id: "frontpage" as const, label: "Front Page", icon: IconNews, description: "Broadsheet layout" },
+    { id: "reader" as const, label: "Reader", description: "Single column" },
+    { id: "frontpage" as const, label: "Front Page", description: "Broadsheet layout" },
   ];
 
-  const segmentClass = (active: boolean, activeBg: string) =>
-    `flex items-center justify-center gap-2 py-3 px-4 sm:rounded-xl text-sm font-medium transition-all ${
-      active ? `${activeBg} text-white shadow-lg` : "text-foreground/60 hover:text-foreground"
-    }`;
-
+  // Broadsheet section tabs: uppercase Plex Sans, 2px accent underline when
+  // active, never pills. Rules, not fills. The row carries a 1px top rule and a
+  // 3px double bottom rule to seat it in the masthead.
   return (
-    <div className="flex items-center gap-1 sm:rounded-sm bg-vocl-surface-dark/50 p-1 mb-6">
-      {/* Sort tabs (teal = "what") */}
-      <div className="flex flex-1">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onTabChange(tab.id)}
-              title={tab.description}
-              aria-pressed={activeTab === tab.id}
-              className={`flex-1 ${segmentClass(activeTab === tab.id, "bg-vocl-primary")}`}
-            >
-              <Icon size={18} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+    <div className="flex items-center justify-between gap-6 py-3 mb-6 border-t border-rule rule-double-b overflow-x-auto">
+      {/* Sort tabs */}
+      <div className="flex gap-6 sm:gap-7 flex-shrink-0">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onTabChange(tab.id)}
+            title={tab.description}
+            aria-pressed={activeTab === tab.id}
+            data-active={activeTab === tab.id}
+            className="section-tab whitespace-nowrap hover:text-ink transition-colors"
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Layout toggle (pink = "how"), wide screens only, with a separator */}
+      {/* Layout toggle (Front Page / Reader), wide screens only */}
       {showLayoutToggle && onLayoutChange && (
-        <>
-          <span
-            aria-hidden="true"
-            className="hidden lg:block w-px self-stretch my-1.5 bg-vocl-border"
-          />
-          <div className="hidden lg:flex">
-            {layoutOptions.map((opt) => {
-              const Icon = opt.icon;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onLayoutChange(opt.id)}
-                  title={opt.description}
-                  aria-pressed={layout === opt.id}
-                  className={segmentClass(layout === opt.id, "bg-vocl-primary")}
-                >
-                  <Icon size={18} />
-                  <span>{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </>
+        <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
+          {layoutOptions.map((opt, i) => (
+            <span key={opt.id} className="flex items-center gap-4">
+              {i > 0 && <span aria-hidden="true" className="text-rule">|</span>}
+              <button
+                type="button"
+                onClick={() => onLayoutChange(opt.id)}
+                title={opt.description}
+                aria-pressed={layout === opt.id}
+                className={`slug whitespace-nowrap transition-colors ${
+                  layout === opt.id ? "text-ink" : "hover:text-ink"
+                }`}
+              >
+                {opt.label}
+              </button>
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );

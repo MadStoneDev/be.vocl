@@ -75,11 +75,8 @@ export function FrontPageGrid({
       {/* Section rule + kicker */}
       {standards.length > 0 && (
         <>
-          <div className="mt-10 mb-6 flex items-center gap-3">
-            <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
-              More stories
-            </span>
-            <span className="h-px flex-1 bg-vocl-border" />
+          <div className="mt-10 mb-6 border-b border-rule pb-3">
+            <span className="slug text-meta">More stories</span>
           </div>
 
           {/* Standards river */}

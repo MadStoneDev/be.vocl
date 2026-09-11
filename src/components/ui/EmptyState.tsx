@@ -7,30 +7,37 @@ interface EmptyStateProps {
   action?: ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+interface EmptyStateProps2 extends EmptyStateProps {
+  /** Small uppercase kicker above the headline (e.g. "Nothing in the mailbag"). */
+  kicker?: string;
+}
+
+/**
+ * Editorial empty state (design/broadsheet-foundation): a mono kicker, a Gloock
+ * headline and a serif standfirst — the paper telling you a section is quiet,
+ * not an icon-in-a-circle. `icon` is accepted for back-compat but no longer
+ * rendered as a coloured disc.
+ */
+export function EmptyState({ kicker, title, description, action }: EmptyStateProps2) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      {icon && (
-        <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4 text-foreground/60">
-          {icon}
-        </div>
-      )}
-      <h3 className="type-heading font-semibold text-foreground mb-2">{title}</h3>
+      {kicker && <p className="slug text-meta-dim mb-4">{kicker}</p>}
+      <h3 className="type-display text-ink mb-3 max-w-[18ch]">{title}</h3>
       {description && (
-        <p className="type-body text-foreground/60 max-w-sm mb-6">{description}</p>
+        <p className="editorial-body text-meta max-w-[52ch] mb-6">{description}</p>
       )}
       {action}
     </div>
   );
 }
 
-// Pre-built empty states
+// Pre-built empty states — editorial voice, as on the artboards.
 export function EmptyFeed() {
   return (
     <EmptyState
-      icon={<span className="text-3xl">📭</span>}
-      title="Your feed is empty"
-      description="Follow some creators to see their posts here, or create your first post!"
+      kicker="Nothing on the wire yet"
+      title="A blank front page."
+      description="Follow some voices or open a desk, and tonight's edition fills itself."
     />
   );
 }
@@ -38,9 +45,9 @@ export function EmptyFeed() {
 export function EmptyNotifications() {
   return (
     <EmptyState
-      icon={<span className="text-3xl">🔔</span>}
-      title="No notifications yet"
-      description="When someone interacts with your content, you'll see it here."
+      kicker="Notifications"
+      title="No word from the wire."
+      description="Likes, replies and voice reactions get filed here as they come in."
     />
   );
 }
@@ -48,9 +55,9 @@ export function EmptyNotifications() {
 export function EmptyQueue() {
   return (
     <EmptyState
-      icon={<span className="text-3xl">📋</span>}
-      title="Queue is empty"
-      description="Echo posts to your queue to schedule them for later."
+      kicker="Nothing set for tomorrow's edition"
+      title="The spike is empty."
+      description="Add posts with “Add to queue” when you write or reblog. They go out on your schedule."
     />
   );
 }
@@ -58,9 +65,9 @@ export function EmptyQueue() {
 export function EmptyMessages() {
   return (
     <EmptyState
-      icon={<span className="text-3xl">💬</span>}
-      title="No messages yet"
-      description="Start a conversation with someone you follow."
+      kicker="Messages"
+      title="Nothing in the mailbag."
+      description="When someone writes to you it lands here, and nowhere else."
     />
   );
 }
@@ -68,9 +75,9 @@ export function EmptyMessages() {
 export function EmptySearch({ query }: { query: string }) {
   return (
     <EmptyState
-      icon={<span className="text-3xl">🔍</span>}
-      title="No results found"
-      description={`We couldn't find anything for "${query}". Try a different search term.`}
+      kicker="Search"
+      title="No matches in this edition."
+      description={`Nothing filed for "${query}". Try a #section instead, or read the index on The Newsstand.`}
     />
   );
 }
@@ -78,9 +85,9 @@ export function EmptySearch({ query }: { query: string }) {
 export function EmptyPosts() {
   return (
     <EmptyState
-      icon={<span className="text-3xl">✨</span>}
-      title="No posts yet"
-      description="This user hasn't posted anything yet."
+      kicker="Posts"
+      title="Nothing in print yet."
+      description="This columnist hasn't filed anything the public can read."
     />
   );
 }
