@@ -35,9 +35,9 @@ export function FollowButton({
   };
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs gap-1.5",
-    md: "px-4 py-2 text-sm gap-2",
-    lg: "px-5 py-2.5 text-base gap-2",
+    sm: "px-3 py-1.5 text-[11px] gap-1.5",
+    md: "px-4 py-2 text-xs gap-2",
+    lg: "px-5 py-2.5 text-xs gap-2",
   };
 
   const iconSizes = {
@@ -53,14 +53,14 @@ export function FollowButton({
         disabled={isLoading}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
-        className={`flex items-center justify-center rounded-full transition-all disabled:opacity-50 ${
+        className={`flex items-center justify-center border transition-colors disabled:opacity-50 ${
           sizeClasses[size]
         } ${
           isFollowing
             ? isHovering
-              ? "bg-vocl-like/20 text-vocl-like"
-              : "bg-vocl-hover-strong text-foreground/70"
-            : "bg-vocl-primary/20 text-vocl-primary hover:bg-vocl-primary/30"
+              ? "border-vocl-like text-vocl-like"
+              : "border-vocl-border text-meta"
+            : "border-accent text-accent hover:bg-accent/10"
         }`}
       >
         {isLoading ? (
@@ -84,14 +84,14 @@ export function FollowButton({
       disabled={isLoading}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className={`flex items-center justify-center rounded-xl font-semibold transition-all disabled:opacity-50 ${
+      className={`flex items-center justify-center font-sans font-medium uppercase tracking-[0.16em] transition-opacity disabled:opacity-50 ${
         sizeClasses[size]
       } ${
         isFollowing
           ? isHovering
-            ? "bg-vocl-like/20 text-vocl-like border border-vocl-like/30"
-            : "bg-vocl-hover-strong text-foreground border border-vocl-border hover:border-vocl-like/30"
-          : "bg-vocl-primary text-white hover:bg-vocl-primary-hover shadow-lg shadow-vocl-primary/25"
+            ? "border border-vocl-like text-vocl-like"
+            : "border border-foreground text-foreground hover:bg-vocl-hover"
+          : "bg-accent text-white hover:opacity-[0.88]"
       }`}
     >
       {isLoading ? (

@@ -10,18 +10,14 @@ interface PinnedPostProps {
 export function PinnedPost({ children }: PinnedPostProps) {
   return (
     <div className="relative">
-      {/* Pinned badge */}
-      <div className="absolute -top-3 right-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-primary text-white text-xs font-medium shadow-lg">
-        <IconPin size={12} />
+      {/* Pinned marker — a kicker, not a floating pill. */}
+      <div className="flex items-center gap-1.5 mb-2 kicker kicker-accent">
+        <IconPin size={11} />
         <span>Pinned</span>
       </div>
 
-      {/* Post wrapper with subtle highlight — square to match the editorial
-          post border, with just the bottom-right corner curved to echo the
-          reblog button that sits there. */}
-      <div className="ring-2 ring-vocl-primary/30 rounded-br-[50px]">
-        {children}
-      </div>
+      {/* Editorial highlight: a 2px accent left rule, radius 0 — no ring/shadow. */}
+      <div className="border-l-2 border-accent pl-4">{children}</div>
     </div>
   );
 }

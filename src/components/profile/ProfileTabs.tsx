@@ -110,7 +110,6 @@ export function ProfileTabs({
       {/* Tab buttons */}
       <div className="relative flex border-b border-vocl-border" role="tablist" aria-label="Profile content">
         {tabs.map((tab, index) => {
-          const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           const count = counts[tab.id];
           const tabId = `profile-tab-${tab.id}`;
@@ -131,28 +130,19 @@ export function ProfileTabs({
               onKeyDown={(e) => handleKeyDown(e, index)}
               disabled={tab.isPrivate}
               aria-disabled={tab.isPrivate}
-              className={`relative flex-1 flex items-center justify-center gap-2 py-4 type-meta uppercase tracking-widest font-semibold transition-colors ${
+              className={`relative flex-1 flex items-center justify-center gap-2 py-4 font-sans uppercase text-[11.5px] tracking-[0.18em] transition-colors ${
                 tab.isPrivate
-                  ? "text-foreground/20 cursor-not-allowed"
+                  ? "text-meta-dim cursor-not-allowed"
                   : isActive
-                  ? "text-vocl-primary"
-                  : "text-foreground/50 hover:text-foreground/70"
+                  ? "text-ink"
+                  : "text-meta hover:text-ink"
               }`}
             >
-              {tab.isPrivate ? (
-                <IconLock size={18} aria-hidden="true" />
-              ) : (
-                <Icon size={18} aria-hidden="true" />
-              )}
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sr-only sm:hidden">{tab.label}</span>
+              {tab.isPrivate && <IconLock size={13} aria-hidden="true" />}
+              <span>{tab.label}</span>
               {!tab.isPrivate && count > 0 && (
                 <span
-                  className={`text-xs px-1.5 py-0.5 rounded-sm tabular-nums ${
-                    isActive
-                      ? "bg-vocl-primary/20 text-vocl-primary"
-                      : "bg-vocl-hover-strong text-foreground/50"
-                  }`}
+                  className="slug text-meta-dim tabular-nums"
                   aria-label={`${count} ${tab.label.toLowerCase()}`}
                 >
                   {formatCount(count)}
@@ -164,7 +154,7 @@ export function ProfileTabs({
 
         {/* Animated indicator */}
         <div
-          className="absolute -bottom-px h-0.5 bg-vocl-primary transition-all duration-300 ease-out"
+          className="absolute -bottom-px h-0.5 bg-accent transition-all duration-300 ease-out"
           style={{
             left: indicatorStyle.left,
             width: indicatorStyle.width,

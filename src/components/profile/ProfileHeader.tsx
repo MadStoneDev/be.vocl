@@ -131,10 +131,8 @@ export function ProfileHeader({
 
         {/* Masthead */}
         <div className="relative px-4 sm:px-6 pt-6">
-          {/* Eyebrow */}
-          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
-            {eyebrow}
-          </span>
+          {/* Eyebrow / kicker */}
+          <span className="kicker kicker-accent">{eyebrow}</span>
           <div className="mt-2 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             {/* Portrait and info */}
             <div className="flex items-center gap-4">
@@ -142,7 +140,7 @@ export function ProfileHeader({
               <div className="relative">
                 <button
                   onClick={onAvatarClick}
-                  className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-full overflow-hidden border border-vocl-border shadow-sm cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:ring-offset-2 focus:ring-offset-background"
+                  className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-full overflow-hidden border border-vocl-border cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
                   aria-label="View profile picture"
                 >
                   {avatarUrl ? (
@@ -156,8 +154,8 @@ export function ProfileHeader({
                       priority
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                      <span className="text-3xl sm:text-4xl font-bold text-white">
+                    <div className="absolute inset-0 bg-panel flex items-center justify-center">
+                      <span className="font-display text-3xl sm:text-4xl text-ink">
                         {username.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -175,8 +173,8 @@ export function ProfileHeader({
                   {isVerified && <VerificationBadge size={22} />}
                   <StaffBadge role={role} size={22} />
                 </h1>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm sm:text-base text-foreground/50">@{username}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="byline text-meta">@{username}</p>
                   {isMutualProp && <MutualBadge />}
                 </div>
               </div>
@@ -188,57 +186,57 @@ export function ProfileHeader({
                 <motion.button
                   whileTap={tapScale}
                   onClick={onSettings}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-sm bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 border border-foreground text-foreground font-sans font-medium uppercase tracking-[0.16em] text-xs hover:bg-vocl-hover transition-colors"
                 >
-                  <IconSettings size={18} />
+                  <IconSettings size={16} />
                   <span>Edit profile</span>
                 </motion.button>
               ) : (
                 <>
-                  {/* Follow/Unfollow button */}
+                  {/* Follow/Unfollow — the single accent action (outline once following) */}
                   <motion.button
                     whileTap={tapScale}
                     transition={spring}
                     onClick={handleFollowToggle}
                     disabled={isLoading}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-sm font-semibold transition-all disabled:opacity-50 ${
+                    className={`flex items-center gap-2 px-5 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs transition-opacity disabled:opacity-50 ${
                       isFollowing
-                        ? "bg-vocl-hover-strong text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                        : "bg-vocl-primary text-white hover:bg-vocl-primary-hover shadow-lg shadow-vocl-primary/25"
+                        ? "border border-foreground text-foreground hover:bg-vocl-hover"
+                        : "bg-accent text-white hover:opacity-[0.88]"
                     }`}
                   >
                     {isLoading ? (
-                      <IconLoader2 size={18} className="animate-spin" />
+                      <IconLoader2 size={16} className="animate-spin" />
                     ) : isFollowing ? (
-                      <IconUserMinus size={18} />
+                      <IconUserMinus size={16} />
                     ) : (
-                      <IconUserPlus size={18} />
+                      <IconUserPlus size={16} />
                     )}
                     <span>{isFollowing ? "Following" : "Follow"}</span>
                   </motion.button>
 
-                  {/* Tip button */}
+                  {/* Tip button — outline (no gradient) */}
                   {onTip && (
                     <motion.button
                       whileTap={tapScale}
                       onClick={onTip}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-yellow-500 font-medium hover:from-yellow-500/20 hover:to-orange-500/20 transition-all border border-yellow-500/20"
+                      className="flex items-center gap-2 px-4 py-2.5 border border-vocl-border text-meta font-sans font-medium uppercase tracking-[0.16em] text-xs hover:text-ink hover:bg-vocl-hover transition-colors"
                       title="Send a tip"
                     >
-                      <IconCoin size={18} />
+                      <IconCoin size={16} />
                       <span>Tip</span>
                     </motion.button>
                   )}
 
-                  {/* Ask button */}
+                  {/* Ask button — outline */}
                   {allowsAsks && onAsk && (
                     <motion.button
                       whileTap={tapScale}
                       onClick={onAsk}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover transition-colors"
+                      className="flex items-center gap-2 px-4 py-2.5 border border-vocl-border text-meta font-sans font-medium uppercase tracking-[0.16em] text-xs hover:text-ink hover:bg-vocl-hover transition-colors"
                       title="Send an ask"
                     >
-                      <IconMessageQuestion size={18} />
+                      <IconMessageQuestion size={16} />
                       <span className="hidden sm:inline">Ask</span>
                     </motion.button>
                   )}
@@ -247,7 +245,7 @@ export function ProfileHeader({
                   <div className="relative">
                     <button
                       onClick={() => setShowMenu(!showMenu)}
-                      className="p-2.5 rounded-sm bg-vocl-hover-strong text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                      className="p-2.5 border border-vocl-border text-meta hover:text-ink hover:bg-vocl-hover transition-colors"
                     >
                       <IconDots size={20} />
                     </button>
@@ -258,7 +256,7 @@ export function ProfileHeader({
                           className="fixed inset-0 z-[110]"
                           onClick={() => setShowMenu(false)}
                         />
-                        <div className="absolute right-0 mt-2 w-48 py-2 rounded-sm bg-background border border-vocl-border shadow-xl z-[120]">
+                        <div className="absolute right-0 mt-2 w-48 py-2 bg-background border border-vocl-border z-[120]">
                           {onMessage && (
                             <button
                               onClick={() => {
@@ -321,11 +319,7 @@ export function ProfileHeader({
           </div>
 
           {/* Bio — serif standfirst / lead */}
-          {bio && (
-            <p className="mt-5 font-serif text-lg leading-relaxed text-foreground/85 max-w-2xl">
-              {bio}
-            </p>
-          )}
+          {bio && <p className="mt-5 editorial-deck max-w-[58ch]">{bio}</p>}
 
           {/* "By the numbers" — ruled editorial stat bar */}
           {stats && (
@@ -336,12 +330,10 @@ export function ProfileHeader({
                   onClick={() => onStatClick?.(item.key)}
                   className="group flex flex-1 flex-col items-center py-3 transition-colors hover:bg-vocl-hover"
                 >
-                  <span className="type-heading text-foreground tabular-nums group-hover:text-vocl-primary transition-colors">
+                  <span className="type-heading text-ink tabular-nums group-hover:text-accent transition-colors">
                     {formatCount(stats[item.key])}
                   </span>
-                  <span className="type-meta uppercase tracking-widest text-foreground/50 mt-0.5">
-                    {item.label}
-                  </span>
+                  <span className="byline text-meta mt-1">{item.label}</span>
                 </button>
               ))}
             </div>

@@ -11,24 +11,22 @@ export default function ProfileError({
 }) {
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-      <div className="text-5xl mb-4">👤</div>
-      <h2 className="text-xl font-semibold text-foreground mb-2">
-        Profile not available
-      </h2>
-      <p className="text-neutral-400 mb-6">
+      <p className="slug text-meta-dim mb-4">Profile</p>
+      <h2 className="type-display text-ink mb-3">This edition isn&apos;t available.</h2>
+      <p className="editorial-body text-meta max-w-[52ch] mx-auto mb-6">
         This profile couldn&apos;t be loaded. It may be private or temporarily unavailable.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button
           onClick={reset}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-xl transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-accent hover:opacity-[0.88] text-white font-sans font-medium uppercase tracking-[0.16em] text-xs transition-opacity"
         >
           <IconRefresh className="w-4 h-4" />
           Try again
         </button>
         <Link
           href="/feed"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/15 text-foreground rounded-xl transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-foreground text-foreground font-sans font-medium uppercase tracking-[0.16em] text-xs hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft className="w-4 h-4" />
           Back to feed

@@ -36,22 +36,22 @@ export function ProfileLinks({ links }: ProfileLinksProps) {
   if (links.length === 0) return null;
 
   return (
-    <div className="mt-4 space-y-2">
-      <h3 className="text-xs font-medium text-foreground/40 uppercase tracking-wider flex items-center gap-2">
-        <IconLink size={14} />
+    <div className="mt-6">
+      <h3 className="slug text-meta-dim flex items-center gap-2 pb-3 border-b border-rule">
+        <IconLink size={13} />
         Links
       </h3>
-      <div className="space-y-1.5">
+      <div>
         {links.map((link) => (
           <a
             key={link.id}
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-3 p-3 rounded-sm bg-vocl-hover hover:bg-vocl-hover-strong border border-vocl-border hover:border-vocl-border transition-all"
+            className="group flex items-center gap-3 py-3 border-b border-rule hover:bg-vocl-hover transition-colors"
           >
             {/* Favicon */}
-            <div className="w-8 h-8 rounded-lg bg-vocl-hover-strong flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-8 h-8 bg-panel flex items-center justify-center overflow-hidden flex-shrink-0">
               <img
                 src={getFaviconUrl(link.url)}
                 alt=""
@@ -64,10 +64,10 @@ export function ProfileLinks({ links }: ProfileLinksProps) {
 
             {/* Link info */}
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-foreground text-sm truncate">
+              <p className="text-sm text-ink truncate group-hover:text-accent transition-colors">
                 {link.title}
               </p>
-              <p className="text-xs text-foreground/40 truncate">
+              <p className="byline text-meta truncate mt-0.5 normal-case tracking-normal">
                 {getDisplayDomain(link.url)}
               </p>
             </div>
@@ -75,7 +75,7 @@ export function ProfileLinks({ links }: ProfileLinksProps) {
             {/* External link icon */}
             <IconExternalLink
               size={16}
-              className="text-foreground/30 group-hover:text-vocl-primary transition-colors flex-shrink-0"
+              className="text-meta-dim group-hover:text-accent transition-colors flex-shrink-0"
             />
           </a>
         ))}
