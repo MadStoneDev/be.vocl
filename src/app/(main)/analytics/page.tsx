@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  IconChartBar,
   IconHeart,
   IconMessage,
   IconRepeat,
@@ -12,8 +11,6 @@ import {
   IconMusic,
   IconLayoutGrid,
   IconFileText,
-  IconUsers,
-  IconTrendingUp,
   IconCalendar,
   IconChevronDown,
   IconChevronUp,
@@ -75,14 +72,6 @@ interface PostDetailData {
   }>;
   topCommenters: Array<{ username: string; commentCount: number }>;
 }
-
-const postTypeColors: Record<string, string> = {
-  text: "bg-vocl-primary",
-  image: "bg-green-500",
-  video: "bg-blue-500",
-  audio: "bg-purple-500",
-  gallery: "bg-amber-500",
-};
 
 const postTypeIcons: Record<string, React.ReactNode> = {
   text: <IconFileText className="w-4 h-4" />,
@@ -183,25 +172,20 @@ export default function AnalyticsPage() {
   return (
     <div className="py-6">
       <title>Analytics | be.vocl</title>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-sm bg-vocl-primary/20 flex items-center justify-center">
-            <IconChartBar className="w-5 h-5 text-vocl-primary" />
-          </div>
-          <h1 className="type-display text-3xl font-bold text-foreground">Analytics</h1>
+      <div className="flex items-end justify-between mb-6 border-b border-rule pb-5">
+        <div>
+          <p className="kicker kicker-accent">By the numbers</p>
+          <h1 className="type-display text-ink mt-2">Analytics</h1>
         </div>
 
-        {/* Time Range Selector */}
-        <div className="flex gap-1 bg-vocl-surface-dark rounded-sm p-1 border border-vocl-border">
+        {/* Time Range Selector — text tabs */}
+        <div className="flex gap-5">
           {(["7d", "30d", "90d"] as TimeRange[]).map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                timeRange === range
-                  ? "bg-vocl-primary text-white"
-                  : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
-              }`}
+              data-active={timeRange === range}
+              className="section-tab hover:text-ink transition-colors"
             >
               {range}
             </button>
@@ -215,49 +199,26 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-              <div className="flex items-center gap-2 text-foreground/50 mb-1">
-                <IconTrendingUp className="w-4 h-4" />
-                <span className="text-xs">Total Engagement</span>
+          {/* Summary — ruled figures */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-rule rule-double-b">
+            {[
+              { label: "Total engagement", value: totalEngagement },
+              { label: "Likes", value: totalLikes },
+              { label: "Comments", value: totalComments },
+              { label: "Followers", value: followerCount },
+            ].map((s, i) => (
+              <div key={s.label} className={`py-4 px-4 ${i > 0 ? "border-l border-rule" : ""}`}>
+                <p className="font-display text-3xl leading-none text-ink tabular-nums">
+                  {s.value.toLocaleString()}
+                </p>
+                <p className="byline text-meta mt-2">{s.label}</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">
-                {totalEngagement.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-              <div className="flex items-center gap-2 text-foreground/50 mb-1">
-                <IconHeart className="w-4 h-4" />
-                <span className="text-xs">Likes</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {totalLikes.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-              <div className="flex items-center gap-2 text-foreground/50 mb-1">
-                <IconMessage className="w-4 h-4" />
-                <span className="text-xs">Comments</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {totalComments.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-              <div className="flex items-center gap-2 text-foreground/50 mb-1">
-                <IconUsers className="w-4 h-4" />
-                <span className="text-xs">Followers</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {followerCount.toLocaleString()}
-              </p>
-            </div>
+            ))}
           </div>
 
           {/* Post Type Breakdown */}
-          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+          <div className="rounded-none bg-panel border border-rule p-5">
+            <h2 className="slug text-meta mb-4">
               Post Type Breakdown
             </h2>
             {postTypeBreakdown.length === 0 ? (
@@ -283,11 +244,9 @@ export default function AnalyticsPage() {
                         {item.count} ({item.percentage}%)
                       </span>
                     </div>
-                    <div className="w-full h-2.5 bg-vocl-hover rounded-full overflow-hidden">
+                    <div className="w-full h-[3px] bg-rule overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all ${
-                          postTypeColors[item.postType] || "bg-vocl-primary"
-                        }`}
+                        className="h-full bg-accent transition-all"
                         style={{ width: `${item.percentage}%` }}
                       />
                     </div>
@@ -298,8 +257,8 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Posts */}
-          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+          <div className="rounded-none bg-panel border border-rule p-5">
+            <h2 className="slug text-meta mb-4">
               Top Posts
             </h2>
             {topPosts.length === 0 ? (
@@ -314,7 +273,7 @@ export default function AnalyticsPage() {
                     <div key={post.id}>
                       <button
                         onClick={() => togglePostDetail(post.id)}
-                        className="w-full flex items-start gap-3 p-3 rounded-sm hover:bg-vocl-hover transition-colors text-left"
+                        className="w-full flex items-start gap-3 p-3 rounded-none hover:bg-vocl-hover transition-colors text-left"
                       >
                         <span className="text-sm font-bold text-foreground/30 w-6 text-right mt-0.5">
                           {index + 1}
@@ -367,7 +326,7 @@ export default function AnalyticsPage() {
 
                       {/* Expanded Detail Panel */}
                       {isExpanded && (
-                        <div className="mx-3 mb-2 p-4 rounded-sm bg-vocl-hover border border-vocl-border space-y-4">
+                        <div className="mx-3 mb-2 p-4 rounded-none bg-vocl-hover border border-rule space-y-4">
                           {postDetailLoading ? (
                             <div className="flex justify-center py-4">
                               <LoadingSpinner size="sm" />
@@ -380,7 +339,7 @@ export default function AnalyticsPage() {
                                   Engagement Breakdown
                                 </h3>
                                 <div className="grid grid-cols-3 gap-3">
-                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-vocl-border text-center">
+                                  <div className="p-3 rounded-none bg-panel border border-rule text-center">
                                     <IconHeart className="w-4 h-4 text-red-400 mx-auto mb-1" />
                                     <p className="text-lg font-bold text-foreground">
                                       {postDetail.totalLikes}
@@ -389,7 +348,7 @@ export default function AnalyticsPage() {
                                       Likes
                                     </p>
                                   </div>
-                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-vocl-border text-center">
+                                  <div className="p-3 rounded-none bg-panel border border-rule text-center">
                                     <IconMessage className="w-4 h-4 text-blue-400 mx-auto mb-1" />
                                     <p className="text-lg font-bold text-foreground">
                                       {postDetail.totalComments}
@@ -398,7 +357,7 @@ export default function AnalyticsPage() {
                                       Comments
                                     </p>
                                   </div>
-                                  <div className="p-3 rounded-lg bg-vocl-surface-dark border border-vocl-border text-center">
+                                  <div className="p-3 rounded-none bg-panel border border-rule text-center">
                                     <IconRepeat className="w-4 h-4 text-green-400 mx-auto mb-1" />
                                     <p className="text-lg font-bold text-foreground">
                                       {postDetail.totalReblogs}
@@ -419,7 +378,7 @@ export default function AnalyticsPage() {
                                   <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                       <thead>
-                                        <tr className="border-b border-vocl-border">
+                                        <tr className="border-b border-rule">
                                           <th className="text-left py-2 pr-4 text-foreground/50 font-medium">
                                             Date
                                           </th>
@@ -447,7 +406,7 @@ export default function AnalyticsPage() {
                                             return (
                                               <tr
                                                 key={day.date}
-                                                className="border-b border-vocl-border last:border-0"
+                                                className="border-b border-rule last:border-0"
                                               >
                                                 <td className="py-2 pr-4 text-foreground/70">
                                                   {formatDate(day.date)}
@@ -485,7 +444,7 @@ export default function AnalyticsPage() {
                                       (commenter) => (
                                         <div
                                           key={commenter.username}
-                                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-vocl-surface-dark border border-vocl-border"
+                                          className="flex items-center justify-between px-3 py-2 rounded-none bg-panel border border-rule"
                                         >
                                           <Link
                                             href={`/profile/${commenter.username}`}
@@ -531,8 +490,8 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Top Tags */}
-          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+          <div className="rounded-none bg-panel border border-rule p-5">
+            <h2 className="slug text-meta mb-4">
               Top Tags
             </h2>
             {topTags.length === 0 ? (
@@ -544,7 +503,7 @@ export default function AnalyticsPage() {
                 {topTags.map((tag) => (
                   <div
                     key={tag.tag}
-                    className="p-3 rounded-sm bg-vocl-hover border border-vocl-border"
+                    className="p-3 rounded-none bg-vocl-hover border border-rule"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <IconHash className="w-4 h-4 text-vocl-primary" />
@@ -576,10 +535,10 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Engagement Over Time */}
-          <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-5">
+          <div className="rounded-none bg-panel border border-rule p-5">
             <div className="flex items-center gap-2 mb-4">
               <IconCalendar className="w-5 h-5 text-foreground/50" />
-              <h2 className="text-lg font-semibold text-foreground">
+              <h2 className="slug text-meta">
                 Engagement Over Time
               </h2>
             </div>
@@ -591,7 +550,7 @@ export default function AnalyticsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-vocl-border">
+                    <tr className="border-b border-rule">
                       <th className="text-left py-2 pr-4 text-foreground/50 font-medium">
                         Date
                       </th>
@@ -615,7 +574,7 @@ export default function AnalyticsPage() {
                       return (
                         <tr
                           key={day.date}
-                          className="border-b border-vocl-border last:border-0"
+                          className="border-b border-rule last:border-0"
                         >
                           <td className="py-2 pr-4 text-foreground/70">
                             {formatDate(day.date)}

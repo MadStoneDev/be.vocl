@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IconCoin, IconLoader2, IconArrowDownLeft, IconArrowUpRight } from "@tabler/icons-react";
+import { IconLoader2, IconArrowDownLeft, IconArrowUpRight } from "@tabler/icons-react";
 import { getTipsReceived, getTipsSent } from "@/actions/payments";
 
 type Tab = "received" | "sent";
@@ -55,45 +55,38 @@ export default function TipsPage() {
   return (
     <div className="py-6 px-4 max-w-2xl mx-auto">
       <title>Tips | be.vocl</title>
-      <header className="mb-6">
-        <h1 className="type-display text-3xl font-bold text-foreground flex items-center gap-2">
-          <IconCoin size={26} className="text-amber-400" />
-          Tips
-        </h1>
-        <p className="text-sm text-foreground/60 mt-1">
-          Support — and be supported.
-        </p>
+      <header className="mb-6 border-b border-rule pb-5">
+        <p className="kicker kicker-accent">The ledger</p>
+        <h1 className="type-display text-ink mt-2">Tips</h1>
+        <p className="editorial-deck text-meta mt-2">Support — and be supported.</p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-          <div className="flex items-center gap-2 text-xs text-foreground/50 mb-1">
-            <IconArrowDownLeft size={14} className="text-emerald-400" /> Received
+      <div className="grid grid-cols-2 border-t border-rule rule-double-b mb-6">
+        <div className="py-4 px-4">
+          <div className="byline text-meta mb-2 flex items-center gap-1.5">
+            <IconArrowDownLeft size={13} aria-hidden="true" /> Received
           </div>
-          <p className="text-xl font-bold text-foreground">
+          <p className="font-display text-3xl leading-none text-ink tabular-nums">
             ${(receivedTotal / 100).toFixed(2)}
           </p>
         </div>
-        <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-          <div className="flex items-center gap-2 text-xs text-foreground/50 mb-1">
-            <IconArrowUpRight size={14} className="text-rose-400" /> Sent
+        <div className="py-4 px-4 border-l border-rule">
+          <div className="byline text-meta mb-2 flex items-center gap-1.5">
+            <IconArrowUpRight size={13} aria-hidden="true" /> Sent
           </div>
-          <p className="text-xl font-bold text-foreground">
+          <p className="font-display text-3xl leading-none text-ink tabular-nums">
             ${(sentTotal / 100).toFixed(2)}
           </p>
         </div>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-6 mb-5 border-b border-rule">
         {(["received", "sent"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-sm text-sm font-medium capitalize transition-colors ${
-              tab === t
-                ? "bg-vocl-primary text-white"
-                : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
-            }`}
+            data-active={tab === t}
+            className="section-tab capitalize hover:text-ink transition-colors"
           >
             {t}
           </button>
@@ -102,18 +95,18 @@ export default function TipsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <IconLoader2 size={28} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={28} className="animate-spin text-accent" />
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-sm bg-vocl-hover border border-vocl-border p-10 text-center">
-          <p className="text-foreground/50">
+        <div className="border-y border-rule py-12 text-center">
+          <p className="editorial-body text-meta">
             {tab === "received"
               ? "No tips received yet."
               : "You haven't sent any tips yet."}
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="border-t border-rule">
           {items.map((tip) => {
             const username =
               tab === "received"
@@ -126,7 +119,7 @@ export default function TipsPage() {
             return (
               <div
                 key={tip.id}
-                className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border"
+                className="flex items-center gap-3 py-3.5 border-b border-rule"
               >
                 <Link
                   href={`/profile/${username}`}
@@ -135,36 +128,32 @@ export default function TipsPage() {
                   {avatarUrl ? (
                     <Image src={avatarUrl} alt={username} fill className="object-cover" />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold">
+                    <div className="absolute inset-0 bg-panel flex items-center justify-center font-display text-ink">
                       {username.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-foreground/50">
+                    <span className="byline text-meta">
                       {tab === "received" ? "From" : "To"}
                     </span>
                     <Link
                       href={`/profile/${username}`}
-                      className="font-medium text-foreground hover:text-vocl-primary truncate"
+                      className="text-ink hover:text-accent truncate transition-colors"
                     >
                       @{username}
                     </Link>
                   </div>
                   {tip.message && (
-                    <p className="text-xs text-foreground/70 mt-0.5 line-clamp-2">
+                    <p className="editorial-caption not-italic text-meta mt-0.5 line-clamp-2">
                       {tip.message}
                     </p>
                   )}
-                  <p className="text-xs text-foreground/40 mt-0.5">{tip.createdAt}</p>
+                  <p className="slug text-meta-dim mt-1">{tip.createdAt}</p>
                 </div>
-                <p
-                  className={`text-sm font-bold ${
-                    tab === "received" ? "text-emerald-400" : "text-rose-400"
-                  }`}
-                >
-                  {tab === "received" ? "+" : "-"}${(tip.amount / 100).toFixed(2)}
+                <p className="font-display text-lg text-ink tabular-nums">
+                  {tab === "received" ? "+" : "−"}${(tip.amount / 100).toFixed(2)}
                 </p>
               </div>
             );

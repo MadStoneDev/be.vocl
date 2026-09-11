@@ -10,16 +10,14 @@ export default function NotificationsError({
 }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-      <div className="text-5xl mb-4">🔔</div>
-      <h2 className="text-xl font-semibold text-foreground mb-2">
-        Couldn&apos;t load notifications
-      </h2>
-      <p className="text-foreground/60 mb-6">
+      <p className="kicker kicker-accent mb-3">Off the wire</p>
+      <h2 className="type-display text-ink">Couldn&apos;t load notifications.</h2>
+      <p className="editorial-body text-meta mt-3 mx-auto max-w-[46ch]">
         We had trouble fetching your notifications. Please try again.
       </p>
       <button
         onClick={reset}
-        className="inline-flex items-center gap-2 px-5 py-2.5 bg-vocl-primary hover:bg-vocl-primary-hover text-white rounded-xl transition-colors"
+        className="mt-6 inline-flex items-center gap-2 bg-accent px-6 py-3 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88]"
       >
         <IconRefresh className="w-4 h-4" />
         Refresh

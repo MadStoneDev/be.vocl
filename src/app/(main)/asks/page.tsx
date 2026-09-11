@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
-  IconMessageQuestion,
   IconLoader2,
   IconTrash,
   IconSend,
@@ -136,36 +135,26 @@ export default function AsksPage() {
       <title>Asks | be.vocl</title>
     <div className="max-w-2xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
-            <IconMessageQuestion size={24} className="text-vocl-primary" />
-          </div>
-          <div>
-            <h1 className="type-display text-3xl font-bold text-foreground">Ask Inbox</h1>
-            {asks.length > 0 && (
-              <p className="text-sm text-foreground/50">
-                {asks.length} pending ask{asks.length !== 1 ? "s" : ""}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      <header className="mb-6 border-b border-rule pb-5">
+        <p className="kicker kicker-accent">Correspondence</p>
+        <h1 className="type-display text-ink mt-2">Ask Inbox</h1>
+        {asks.length > 0 && (
+          <p className="slug text-meta-dim mt-2">
+            {asks.length} pending ask{asks.length !== 1 ? "s" : ""}
+          </p>
+        )}
+      </header>
 
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : asks.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mx-auto mb-4">
-            <IconMessageQuestion size={32} className="text-foreground/30" />
-          </div>
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            No asks yet
-          </h3>
-          <p className="text-foreground/50">
+        <div className="border-y border-rule py-16 text-center">
+          <p className="kicker kicker-accent mb-3">The mailbag</p>
+          <h3 className="type-display text-ink">Nothing in the mailbag.</h3>
+          <p className="editorial-body text-meta mt-3 mx-auto max-w-[46ch]">
             When someone sends you a question, it will appear here.
           </p>
         </div>
@@ -174,10 +163,10 @@ export default function AsksPage() {
           {asks.map((ask) => (
             <div
               key={ask.id}
-              className="bg-vocl-surface-dark rounded-sm overflow-hidden"
+              className="bg-vocl-surface-dark rounded-none overflow-hidden"
             >
               {/* Ask header */}
-              <div className="p-4 border-b border-vocl-border">
+              <div className="p-4 border-b border-rule">
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
                   {ask.is_anonymous || !ask.sender ? (
@@ -268,7 +257,7 @@ export default function AsksPage() {
                   )}
 
                   {error && (
-                    <div className="p-3 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
+                    <div className="p-3 rounded-none bg-vocl-like/20 border border-vocl-like/30 text-vocl-like text-sm">
                       {error}
                     </div>
                   )}
@@ -278,7 +267,7 @@ export default function AsksPage() {
                       type="button"
                       onClick={cancelAnswer}
                       disabled={isSubmitting}
-                      className="px-4 py-2 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                      className="px-4 py-2 rounded-none text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
                     >
                       Cancel
                     </button>
@@ -289,7 +278,7 @@ export default function AsksPage() {
                         isSubmitting ||
                         (!answerContent.plain.trim() && !answerAudioUrl)
                       }
-                      className="flex items-center gap-2 px-5 py-2 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-5 py-2 rounded-none bg-accent text-white font-medium hover:opacity-[0.88] transition-colors disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <>
@@ -311,7 +300,7 @@ export default function AsksPage() {
                     type="button"
                     onClick={() => handleDelete(ask.id)}
                     disabled={deletingId === ask.id}
-                    className="flex items-center gap-2 px-4 py-2 rounded-sm text-foreground/60 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 rounded-none text-foreground/60 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
                   >
                     {deletingId === ask.id ? (
                       <IconLoader2 size={18} className="animate-spin" />
@@ -323,7 +312,7 @@ export default function AsksPage() {
                   <button
                     type="button"
                     onClick={() => setAnsweringId(ask.id)}
-                    className="flex items-center gap-2 px-5 py-2 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+                    className="flex items-center gap-2 px-5 py-2 rounded-none bg-accent text-white font-medium hover:opacity-[0.88] transition-colors"
                   >
                     <IconSend size={18} />
                     Answer
