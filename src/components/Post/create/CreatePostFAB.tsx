@@ -1,38 +1,28 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { IconPlus } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 interface CreatePostFABProps {
   className?: string;
   hidden?: boolean;
 }
 
-export function CreatePostFAB({ className = "", hidden = false }: CreatePostFABProps) {
+/**
+ * The broadsheet redesign removes the floating pink "+" circle (explicitly
+ * banned by the brief). Desktop compose now lives as a masthead-level outline
+ * "Write" button in the Sections rail (LeftSidebar); mobile keeps its top-bar
+ * and bottom-nav compose entries. This component is retained as a no-op so its
+ * existing mount points don't need to change, while still warming the composer
+ * chunk on hover-idle for fast navigation.
+ */
+export function CreatePostFAB(_props: CreatePostFABProps) {
   const router = useRouter();
-  const pathname = usePathname();
 
-  // Don't show the "start a post" button while already in the composer.
-  const onComposer = pathname === "/create";
-
-  // Warm the (heavy) composer chunk so tapping the button is instant.
   useEffect(() => {
     router.prefetch("/create");
   }, [router]);
 
-  return (
-    <article className={`hidden sm:flex ${hidden || onComposer ? "!hidden" : ""}`}>
-      <button
-        type="button"
-        onClick={() => router.push("/create")}
-        onPointerEnter={() => router.prefetch("/create")}
-        className={`fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 rounded-full text-white shadow-lg shadow-background/50 ring-20 ring-background flex items-center justify-center hover:scale-110 hover:brightness-110 transition-all z-[100] ${className}`}
-        style={{ backgroundColor: "var(--vocl-primary)" }}
-        aria-label="Create post"
-      >
-        <IconPlus size={28} stroke={2.5} />
-      </button>
-    </article>
-  );
+  return null;
 }

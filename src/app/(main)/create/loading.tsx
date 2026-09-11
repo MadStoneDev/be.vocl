@@ -6,22 +6,22 @@ export default function CreateLoading() {
       {/* Post type selector */}
       <div className="flex gap-2 mb-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-24 rounded-xl" />
+          <Skeleton key={i} className="h-12 w-24 rounded-none" />
         ))}
       </div>
 
       {/* Editor area */}
-      <div className="bg-vocl-surface-dark rounded-sm p-6 space-y-4">
+      <div className="bg-vocl-surface-dark rounded-none p-6 space-y-4">
         <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-none" />
         <div className="flex gap-2">
-          <Skeleton className="h-10 w-10 rounded-lg" />
-          <Skeleton className="h-10 w-10 rounded-lg" />
-          <Skeleton className="h-10 w-10 rounded-lg" />
+          <Skeleton className="h-10 w-10 rounded-none" />
+          <Skeleton className="h-10 w-10 rounded-none" />
+          <Skeleton className="h-10 w-10 rounded-none" />
         </div>
         <div className="flex justify-end gap-2">
-          <Skeleton className="h-10 w-24 rounded-lg" />
-          <Skeleton className="h-10 w-32 rounded-lg" />
+          <Skeleton className="h-10 w-24 rounded-none" />
+          <Skeleton className="h-10 w-32 rounded-none" />
         </div>
       </div>
     </div>

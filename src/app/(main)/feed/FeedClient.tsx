@@ -2,8 +2,10 @@
 
 import { useMemo, useRef, useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
+import { OPEN_COMMAND_PALETTE_EVENT } from "@/components/layout/commandPaletteEvents";
 
 // SSR stays on so the broadsheet HTML is in the first paint (no blank frame
 // while the chunk loads); the skeleton only shows on a client-side switch.
@@ -220,6 +222,21 @@ export default function FeedClient({
   const [activeTab, setActiveTab] = useState<FeedTab>("chronological");
   // Auto-hiding feed nav: slides away as you read down, returns on scroll-up.
   const navHidden = useAutoHide();
+  // Dateline is client-only (avoids SSR/timezone hydration mismatch on the date).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const dateStr = useMemo(
+    () =>
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    [],
+  );
+  const openSearch = () =>
+    window.dispatchEvent(new CustomEvent(OPEN_COMMAND_PALETTE_EVENT));
   const [showPromiseBanner, setShowPromiseBanner] = useState(initialShowPromise);
   const [showFlaggedBanner] = useState(initialShowFlagged);
 
@@ -361,6 +378,32 @@ export default function FeedClient({
       {/* Flagged Content Banner - show if user has pending reports */}
       {showFlaggedBanner && <FlaggedContentBanner />}
 
+      {/* Masthead dateline band (broadsheet) — desktop only; mobile keeps the
+          top MainNav. Date · Late edition | "Your Daily Voice" | Search + Write. */}
+      <div className="hidden md:grid grid-cols-3 items-center gap-4 py-2.5 border-t border-rule rule-double-b">
+        <div className="byline text-meta truncate">
+          {mounted ? `${dateStr} · Late edition` : "Late edition"}
+        </div>
+        <div className="text-center font-display text-[15px] tracking-[0.42em] uppercase text-ink whitespace-nowrap">
+          Your Daily Voice
+        </div>
+        <div className="flex items-center justify-end gap-4">
+          <button
+            type="button"
+            onClick={openSearch}
+            className="byline text-meta hover:text-ink transition-colors"
+          >
+            Search
+          </button>
+          <Link
+            href="/create"
+            className="border border-foreground text-ink hover:bg-vocl-hover transition-colors font-sans font-medium uppercase tracking-[0.16em] text-[11px] px-4 py-2"
+          >
+            Write
+          </Link>
+        </div>
+      </div>
+
       {/* Auto-hiding sticky nav: sticks under the mobile top bar (md: page top),
           slides up while scrolling down, and drops back in on scroll-up.
           Toggle is always in the markup; FeedTabs hides it below lg via CSS,
@@ -386,12 +429,12 @@ export default function FeedClient({
 
       {isError && !isLoading && (
         <div className="text-center py-8">
-          <p className="text-foreground/50 mb-4">
+          <p className="editorial-body text-meta mb-4">
             {error instanceof Error ? error.message : "Failed to load posts"}
           </p>
           <button
             onClick={() => refetch()}
-            className="px-4 py-2 bg-vocl-primary text-white rounded-xl hover:bg-vocl-primary-hover transition-colors"
+            className="bg-accent text-white px-5 py-2.5 uppercase tracking-[0.16em] text-xs font-medium hover:opacity-[0.88] transition-opacity"
           >
             Try again
           </button>
@@ -442,9 +485,9 @@ export default function FeedClient({
           <button
             onClick={() => fetchNextPage()}
             disabled={isFetchingNextPage}
-            className="px-6 py-2 bg-white/5 text-foreground/70 rounded-xl hover:bg-white/10 transition-colors disabled:opacity-50"
+            className="border border-rule text-meta hover:text-ink hover:border-foreground px-6 py-2.5 uppercase tracking-[0.16em] text-xs font-medium transition-colors disabled:opacity-50"
           >
-            {isFetchingNextPage ? "Loading..." : "Load more"}
+            {isFetchingNextPage ? "Loading…" : "Load more"}
           </button>
         </div>
       )}

@@ -41,7 +41,7 @@ const altTextField = (
       onChange={(e) => onChange(e.target.value.slice(0, 500))}
       placeholder="Describe this for screen readers (alt text)"
       maxLength={500}
-      className="w-full py-2 px-3 text-sm bg-[var(--vocl-hover)] border border-[var(--vocl-border)] rounded-lg text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)] transition-colors"
+      className="w-full py-2 px-3 text-sm bg-[var(--vocl-hover)] border border-[var(--vocl-border)] rounded-none text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)] transition-colors"
     />
     <span className="text-[10px] text-foreground/35 block text-right">
       {value.length}/500
@@ -59,7 +59,7 @@ const modeButton = (
   <button
     type="button"
     onClick={onClick}
-    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-none text-sm font-medium transition-all ${
       active ? "text-white" : "text-foreground/60 hover:text-foreground"
     }`}
     style={active ? { backgroundColor: activeColor } : undefined}
@@ -180,7 +180,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
   if (postType === "image") {
     return (
       <div className="space-y-4">
-        <div className="flex rounded-xl bg-[var(--vocl-hover)] p-1">
+        <div className="flex rounded-none bg-[var(--vocl-hover)] p-1">
           {modeButton(
             state.imageMode === "upload",
             () => patch({ imageMode: "upload", imageLinkUrl: "", imageLinkError: null }),
@@ -232,7 +232,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
         {state.mediaUrls.length > 0 &&
           state.mediaUrls.map((url, index) => (
             <div key={url} className="flex items-start gap-2">
-              <div className="relative w-10 h-10 rounded-md overflow-hidden bg-black/20 flex-shrink-0">
+              <div className="relative w-10 h-10 rounded-none overflow-hidden bg-black/20 flex-shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="" className="w-full h-full object-cover" />
               </div>
@@ -281,7 +281,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                   }
                 }}
                 placeholder="Paste image URL (https://example.com/image.jpg)"
-                className={`flex-1 min-w-0 py-3 px-4 rounded-xl bg-[var(--vocl-hover)] border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
+                className={`flex-1 min-w-0 py-3 px-4 rounded-none bg-[var(--vocl-hover)] border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
                   state.imageLinkError
                     ? "border-vocl-like"
                     : "border-[var(--vocl-border)] focus:border-[var(--vocl-primary)]"
@@ -296,7 +296,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                   linkBusy ||
                   state.mediaUrls.length >= 10
                 }
-                className="px-4 rounded-xl bg-[var(--vocl-primary)] text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 inline-flex items-center gap-2 flex-shrink-0"
+                className="px-4 rounded-none bg-[var(--vocl-primary)] text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 inline-flex items-center gap-2 flex-shrink-0"
               >
                 {linkBusy ? (
                   <IconLoader2 size={16} className="animate-spin" />
@@ -327,7 +327,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 value={state.unsplashQuery}
                 onChange={(e) => patch({ unsplashQuery: e.target.value })}
                 placeholder="Search Unsplash photos…"
-                className="w-full pl-10 pr-3 py-2.5 text-sm bg-[var(--vocl-hover)] rounded-xl border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)]"
+                className="w-full pl-10 pr-3 py-2.5 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)]"
               />
             </div>
             {state.isSearchingUnsplash && (
@@ -345,7 +345,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                       type="button"
                       disabled={added || state.mediaUrls.length >= 10}
                       onClick={() => addUnsplash(photo)}
-                      className={`relative rounded-lg overflow-hidden transition-opacity aspect-square disabled:cursor-default ${
+                      className={`relative rounded-none overflow-hidden transition-opacity aspect-square disabled:cursor-default ${
                         added ? "ring-2 ring-[var(--vocl-primary)]" : "hover:opacity-80"
                       }`}
                     >
@@ -380,7 +380,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
     const parsed = state.videoEmbedUrl ? parseVideoUrl(state.videoEmbedUrl) : null;
     return (
       <div className="space-y-4">
-        <div className="flex rounded-xl bg-[var(--vocl-hover)] p-1">
+        <div className="flex rounded-none bg-[var(--vocl-hover)] p-1">
           {modeButton(
             state.videoMode === "embed",
             () => patch({ videoMode: "embed", mediaUrls: [], hasAcknowledgedRights: false }),
@@ -409,7 +409,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 patch({ videoEmbedUrl: value, videoEmbedError: error });
               }}
               placeholder="Paste video URL (YouTube, Vimeo, Rumble, Dailymotion)"
-              className={`w-full py-3 px-4 rounded-xl bg-[var(--vocl-hover)] border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
+              className={`w-full py-3 px-4 rounded-none bg-[var(--vocl-hover)] border text-foreground placeholder:text-foreground/40 focus:outline-none transition-colors ${
                 state.videoEmbedError
                   ? "border-vocl-like"
                   : parsed
@@ -462,7 +462,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
   if (postType === "audio") {
     return (
       <div className="space-y-4">
-        <div className="flex rounded-xl bg-[var(--vocl-hover)] p-1">
+        <div className="flex rounded-none bg-[var(--vocl-hover)] p-1">
           {modeButton(
             state.audioMode === "spotify",
             () => patch({ audioMode: "spotify", mediaUrls: [], hasAcknowledgedRights: false }),
@@ -513,7 +513,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                     value={state.spotifyQuery}
                     onChange={(e) => patch({ spotifyQuery: e.target.value })}
                     placeholder="Search for a song…"
-                    className="w-full py-3 pl-10 pr-4 rounded-xl bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[#1DB954] transition-colors"
+                    className="w-full py-3 pl-10 pr-4 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[#1DB954] transition-colors"
                   />
                   {state.isSearching && (
                     <IconLoader2
@@ -523,7 +523,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                   )}
                 </div>
                 {state.spotifyResults.length > 0 && (
-                  <div className="rounded-xl border border-[var(--vocl-border)] overflow-hidden divide-y divide-[var(--vocl-border)]">
+                  <div className="rounded-none border border-[var(--vocl-border)] overflow-hidden divide-y divide-[var(--vocl-border)]">
                     {state.spotifyResults.map((track) => (
                       <button
                         key={track.id}
@@ -537,7 +537,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                         }
                         className="w-full flex items-center gap-3 p-3 hover:bg-[var(--vocl-hover)] transition-colors text-left"
                       >
-                        <div className="relative w-10 h-10 rounded-md overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+                        <div className="relative w-10 h-10 rounded-none overflow-hidden bg-vocl-surface-dark flex-shrink-0">
                           {track.albumArt ? (
                             <Image
                               src={track.albumArt}
@@ -574,8 +574,8 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
               </>
             ) : (
               <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--vocl-hover)] border border-[#1DB954]/30">
-                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+              <div className="flex items-center gap-3 p-3 rounded-none bg-[var(--vocl-hover)] border border-[#1DB954]/30">
+                <div className="relative w-12 h-12 rounded-none overflow-hidden bg-vocl-surface-dark flex-shrink-0">
                   {state.selectedTrack.albumArt ? (
                     <Image
                       src={state.selectedTrack.albumArt}
@@ -619,7 +619,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 height="152"
                 loading="lazy"
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                className="rounded-xl border-0"
+                className="rounded-none border-0"
               />
               </div>
             )}
@@ -662,7 +662,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
       <div className="space-y-4">
         {state.selectedGifUrl ? (
           <>
-            <div className="relative rounded-xl overflow-hidden border border-[var(--vocl-primary)]/50">
+            <div className="relative rounded-none overflow-hidden border border-[var(--vocl-primary)]/50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={state.selectedGifUrl}
@@ -699,7 +699,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
               <button
                 type="button"
                 onClick={() => patch({ gifPickerOpen: true })}
-                className="w-full py-10 rounded-xl border border-dashed border-[var(--vocl-border)] hover:border-[var(--vocl-primary)]/50 bg-[var(--vocl-hover)] flex flex-col items-center gap-2 text-foreground/50 hover:text-[var(--vocl-primary)] transition-colors"
+                className="w-full py-10 rounded-none border border-dashed border-[var(--vocl-border)] hover:border-[var(--vocl-primary)]/50 bg-[var(--vocl-hover)] flex flex-col items-center gap-2 text-foreground/50 hover:text-[var(--vocl-primary)] transition-colors"
               >
                 <IconGif size={32} />
                 <span className="text-sm font-medium">Click to browse GIFs</span>
@@ -737,7 +737,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                 }}
                 placeholder={`Option ${index + 1}`}
                 maxLength={100}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[var(--vocl-primary)]"
+                className="flex-1 py-2.5 px-4 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[var(--vocl-primary)]"
               />
               {state.pollOptions.length > 2 && (
                 <button
@@ -747,7 +747,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
                       pollOptions: state.pollOptions.filter((_, i) => i !== index),
                     })
                   }
-                  className="w-10 h-10 flex items-center justify-center rounded-xl text-foreground/40 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-none text-foreground/40 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
                 >
                   <IconTrash size={18} />
                 </button>
@@ -775,7 +775,7 @@ export function ComposerHero({ state, patch }: ComposerHeroProps) {
             <select
               value={state.pollExpiresAt}
               onChange={(e) => patch({ pollExpiresAt: e.target.value })}
-              className="w-full py-2.5 px-4 rounded-xl bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--vocl-primary)]"
+              className="w-full py-2.5 px-4 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--vocl-primary)]"
             >
               <option value="">No expiration</option>
               <option value={new Date(Date.now() + 1 * 86400000).toISOString()}>
@@ -818,7 +818,7 @@ function RightsAcknowledgment({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 cursor-pointer">
+    <label className="flex items-start gap-3 p-3 rounded-none bg-amber-500/10 border border-amber-500/20 cursor-pointer">
       <input
         type="checkbox"
         checked={checked}
@@ -853,7 +853,7 @@ function PollToggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex items-center gap-3 p-3 rounded-xl bg-[var(--vocl-hover)] w-full text-left"
+      className="flex items-center gap-3 p-3 rounded-none bg-[var(--vocl-hover)] w-full text-left"
     >
       <div
         className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"

@@ -389,7 +389,7 @@ export function EditorialComposer({
       />
 
       {/* Panel */}
-      <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-sm border border-[var(--vocl-border)] bg-background shadow-2xl overflow-hidden">
+      <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-none border border-[var(--vocl-border)] bg-background overflow-hidden">
         {skewBlocked && (
           <div className="flex items-center justify-between gap-3 border-b border-vocl-border bg-vocl-primary/10 px-4 py-3">
             <span className="type-body text-sm text-foreground/80">
@@ -400,7 +400,7 @@ export function EditorialComposer({
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="shrink-0 rounded-lg bg-vocl-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
+              className="shrink-0 rounded-none bg-vocl-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
             >
               Reload
             </button>
@@ -452,7 +452,7 @@ export function EditorialComposer({
 
             {state.error && (
               <div className="mx-auto max-w-[680px] px-5 pb-8">
-                <div className="p-3 rounded-xl bg-vocl-like/15 border border-vocl-like/30 text-vocl-like text-sm">
+                <div className="p-3 rounded-none bg-vocl-like/15 border border-vocl-like/30 text-vocl-like text-sm">
                   {state.error}
                 </div>
               </div>
@@ -475,7 +475,7 @@ export function EditorialComposer({
         <button
           type="button"
           onClick={() => setInspectorOpen(true)}
-          className="lg:hidden absolute bottom-5 right-5 flex items-center gap-2 px-4 py-2.5 rounded-full border border-[var(--vocl-border)] bg-vocl-surface-dark/95 backdrop-blur text-sm font-medium text-foreground shadow-xl"
+          className="lg:hidden absolute bottom-5 right-5 flex items-center gap-2 px-4 py-2.5 rounded-none border border-[var(--vocl-border)] bg-vocl-surface-dark/95 backdrop-blur text-sm font-medium text-foreground"
         >
           <IconAdjustmentsHorizontal size={18} />
           Options
@@ -489,13 +489,13 @@ export function EditorialComposer({
             className="absolute inset-0 bg-black/50"
             onClick={() => setInspectorOpen(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-background border-t border-[var(--vocl-border)]">
+          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-none bg-background border-t border-[var(--vocl-border)]">
             <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--vocl-border)] sticky top-0 bg-background">
               <h2 className="font-semibold text-foreground">Post options</h2>
               <button
                 type="button"
                 onClick={() => setInspectorOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:bg-[var(--vocl-hover)]"
+                className="w-8 h-8 flex items-center justify-center rounded-none text-foreground/60 hover:bg-[var(--vocl-hover)]"
               >
                 <IconX size={18} />
               </button>
@@ -519,7 +519,7 @@ export function EditorialComposer({
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowDiscardConfirm(false)}
           />
-          <div className="relative w-full max-w-sm mx-4 rounded-sm bg-vocl-surface-dark border border-[var(--vocl-border)] shadow-2xl p-6">
+          <div className="relative w-full max-w-sm mx-4 rounded-none bg-vocl-surface-dark border border-[var(--vocl-border)] p-6">
             <h2 className="text-lg font-semibold text-foreground">Discard this post?</h2>
             <p className="mt-2 text-sm text-foreground/60">
               Your draft won&apos;t be saved.
@@ -528,14 +528,14 @@ export function EditorialComposer({
               <button
                 type="button"
                 onClick={() => setShowDiscardConfirm(false)}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-foreground/70 hover:bg-[var(--vocl-hover)]"
+                className="px-4 py-2 rounded-none text-sm font-medium text-foreground/70 hover:bg-[var(--vocl-hover)]"
               >
                 Keep editing
               </button>
               <button
                 type="button"
                 onClick={confirmDiscard}
-                className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-vocl-like"
+                className="px-4 py-2 rounded-none text-sm font-semibold text-white bg-vocl-like"
               >
                 Discard
               </button>
@@ -573,7 +573,7 @@ function ComposerPreview({
         <img
           src={state.mediaUrls[0]}
           alt={state.altTexts[0] || ""}
-          className="w-full rounded-sm mb-6"
+          className="w-full rounded-none mb-6"
         />
       )}
       {state.postType === "image" && state.selectedUnsplash && !state.mediaUrls[0] && (
@@ -581,19 +581,19 @@ function ComposerPreview({
         <img
           src={state.selectedUnsplash.urls.regular}
           alt={state.altTexts[0] || ""}
-          className="w-full rounded-sm mb-6"
+          className="w-full rounded-none mb-6"
         />
       )}
       {state.postType === "image" && state.imageLinkUrl && !state.mediaUrls[0] && !state.selectedUnsplash && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={state.imageLinkUrl} alt={state.altTexts[0] || ""} className="w-full rounded-sm mb-6" />
+        <img src={state.imageLinkUrl} alt={state.altTexts[0] || ""} className="w-full rounded-none mb-6" />
       )}
       {state.postType === "gif" && state.selectedGifUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={state.selectedGifUrl} alt={state.altTexts[0] || ""} className="w-full rounded-sm mb-6" />
+        <img src={state.selectedGifUrl} alt={state.altTexts[0] || ""} className="w-full rounded-none mb-6" />
       )}
       {state.postType === "video" && state.mediaUrls[0] && (
-        <video src={state.mediaUrls[0]} controls className="w-full rounded-sm mb-6" />
+        <video src={state.mediaUrls[0]} controls className="w-full rounded-none mb-6" />
       )}
 
       {/* Poll preview */}
@@ -608,7 +608,7 @@ function ComposerPreview({
               .map((o, i) => (
                 <div
                   key={i}
-                  className="px-4 py-2.5 rounded-xl border border-[var(--vocl-border)] text-foreground"
+                  className="px-4 py-2.5 rounded-none border border-[var(--vocl-border)] text-foreground"
                 >
                   {o}
                 </div>
@@ -637,7 +637,7 @@ function ComposerPreview({
               href={p.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 rounded-xl border border-[var(--vocl-border)] hover:bg-[var(--vocl-hover)] transition-colors"
+              className="block p-3 rounded-none border border-[var(--vocl-border)] hover:bg-[var(--vocl-hover)] transition-colors"
             >
               <span className="block text-sm font-medium text-foreground truncate">
                 {p.title || p.url}

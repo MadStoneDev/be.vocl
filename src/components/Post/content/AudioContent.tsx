@@ -43,7 +43,7 @@ export function AudioContent({
   article,
 }: AudioContentProps) {
   // Container styling: a gradient "card" in the feed, boxless on the article page.
-  const shell = article ? "py-2" : "bg-vocl-hover p-4 sm:p-6 ";
+  const shell = article ? "py-2" : "bg-panel border border-rule p-4 sm:p-6 ";
   const [showTranscript, setShowTranscript] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -130,7 +130,7 @@ export function AudioContent({
   if (isSpotifyEmbed) {
     return (
       <div className={shell}>
-        <div className="rounded-xl overflow-hidden">
+        <div className="rounded-none overflow-hidden">
           <iframe
             src={`https://open.spotify.com/embed/track/${spotifyData.track_id}?utm_source=oembed&theme=0`}
             width="100%"
@@ -139,7 +139,7 @@ export function AudioContent({
             allowFullScreen
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             title={spotifyData.name}
-            className="border-0 rounded-xl"
+            className="border-0 rounded-none"
           />
         </div>
 
@@ -181,7 +181,7 @@ export function AudioContent({
                 <Link
                   key={tag.id}
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className={`px-2 py-1 type-meta font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
+                  className={`px-2 py-1 type-meta font-medium rounded-none bg-panel text-meta truncate transition-opacity ${
                     isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-100 sm:opacity-0"
                   }`}
                   style={{ maxWidth: "150px" }}
@@ -203,7 +203,7 @@ export function AudioContent({
 
       <div className="flex gap-4">
         {/* Album Art */}
-        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-vocl-surface-dark flex-shrink-0">
+        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-none overflow-hidden bg-vocl-surface-dark flex-shrink-0">
           {resolvedAlbumArt ? (
             <Image src={resolvedAlbumArt} alt="Album art" fill sizes="(max-width: 640px) 96px, 128px" className="object-cover" />
           ) : (
@@ -217,15 +217,14 @@ export function AudioContent({
             <button
               type="button"
               onClick={togglePlay}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+              aria-label={isPlaying ? "Pause" : "Play"}
+              className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/55 text-white transition-colors"
             >
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-                {isPlaying ? (
-                  <IconPlayerPause size={24} className="text-neutral-900" />
-                ) : (
-                  <IconPlayerPlay size={24} className="text-neutral-900 ml-0.5" />
-                )}
-              </div>
+              {isPlaying ? (
+                <IconPlayerPause size={30} />
+              ) : (
+                <IconPlayerPlay size={30} className="ml-0.5" />
+              )}
             </button>
           )}
         </div>
@@ -252,11 +251,11 @@ export function AudioContent({
           {src && (
             <div className="mt-3 space-y-1">
               <div
-                className="h-1.5 bg-vocl-hover-strong rounded-full cursor-pointer overflow-hidden"
+                className="h-[3px] bg-rule cursor-pointer overflow-hidden"
                 onClick={handleSeek}
               >
                 <div
-                  className="h-full bg-vocl-primary transition-all"
+                  className="h-full bg-accent transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -272,7 +271,7 @@ export function AudioContent({
             <button
               type="button"
               onClick={toggleMute}
-              className="mt-2 self-start p-1.5 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="mt-2 self-start p-1.5 rounded-none text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
             >
               {isMuted ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
             </button>
@@ -300,7 +299,7 @@ export function AudioContent({
               <Link
                 key={tag.id}
                 href={`/tag/${encodeURIComponent(tag.name)}`}
-                className={`px-2 py-1 type-meta font-medium rounded bg-vocl-hover-strong text-foreground/70 truncate transition-opacity ${
+                className={`px-2 py-1 type-meta font-medium rounded-none bg-panel text-meta truncate transition-opacity ${
                   isHovered ? "opacity-90 hover:opacity-100 hover:text-foreground" : "opacity-0"
                 }`}
                 style={{ maxWidth: "150px" }}

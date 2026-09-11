@@ -9,21 +9,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   rightIcon?: ReactNode;
 }
 
+// Broadsheet buttons (design/broadsheet-foundation): radius 0, uppercase Plex
+// Sans labels with 0.16em tracking, no shadows. Primary is the single accent
+// fill per view; hover dims to 0.88 opacity (no colour shift, no transform).
+// Secondary is a 1px ink outline; ghost is a bare text action; danger outlines.
 const variantClasses = {
   primary:
-    'bg-vocl-primary hover:bg-vocl-primary-hover text-white focus-visible:ring-vocl-primary',
+    'bg-accent text-white hover:opacity-[0.88] focus-visible:ring-accent',
   secondary:
-    'bg-vocl-hover-strong hover:bg-vocl-hover-strong text-foreground focus-visible:ring-vocl-border',
+    'border border-foreground text-foreground hover:bg-vocl-hover focus-visible:ring-vocl-border',
   ghost:
-    'bg-transparent hover:bg-vocl-hover text-foreground focus-visible:ring-vocl-border',
+    'text-foreground hover:bg-vocl-hover focus-visible:ring-vocl-border',
   danger:
-    'bg-vocl-like/10 hover:bg-vocl-like/20 text-vocl-like focus-visible:ring-vocl-like',
+    'border border-vocl-like text-vocl-like hover:bg-vocl-like/10 focus-visible:ring-vocl-like',
 };
 
 const sizeClasses = {
-  sm: 'px-3 py-1.5 text-sm gap-1.5',
-  md: 'px-4 py-2 text-sm gap-2',
-  lg: 'px-6 py-3 text-base gap-2',
+  sm: 'px-4 py-2 text-[11px] gap-1.5',
+  md: 'px-5 py-2.5 text-xs gap-2',
+  lg: 'px-6 py-3 text-xs gap-2',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -46,8 +50,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={`
-          inline-flex items-center justify-center font-semibold rounded-lg
-          transition-all duration-150
+          inline-flex items-center justify-center font-sans font-medium uppercase tracking-[0.16em]
+          transition-opacity duration-150
           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background
           disabled:opacity-50 disabled:cursor-not-allowed
           ${variantClasses[variant]}

@@ -1059,10 +1059,8 @@ export const Post = memo(function Post({
     return () => mql.removeEventListener("change", handler);
   }, []);
   const contentBorderRadius = "0";
-  const articleBorderRadius = useMemo(
-    () => (isMobile ? "0" : expandedPanel ? "30px 0 0 0" : "30px 0 40px 0"),
-    [expandedPanel, isMobile],
-  );
+  // Broadsheet: radius 0 everywhere (was a 30/40px shaped corner). Rules, not cards.
+  const articleBorderRadius = "0";
 
   const handleReblogClick = useCallback(() => {
     setIsReblogMenuOpen((prev) => {
@@ -1585,7 +1583,7 @@ export function TextContent({ children, html, isEssay, essayTitle, readingTimeMi
       "[&>p:first-of-type]:first-letter:float-left [&>p:first-of-type]:first-letter:font-display " +
       "[&>p:first-of-type]:first-letter:text-[3.4rem] [&>p:first-of-type]:first-letter:leading-[0.8] " +
       "[&>p:first-of-type]:first-letter:pr-2 [&>p:first-of-type]:first-letter:mt-1 " +
-      "[&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:text-vocl-primary";
+      "[&>p:first-of-type]:first-letter:font-bold [&>p:first-of-type]:first-letter:text-ink";
     return html ? (
       <div
         className={`${body} ${dropcap}`}

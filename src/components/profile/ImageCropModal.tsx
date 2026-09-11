@@ -124,7 +124,7 @@ export function ImageCropModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70" onClick={busy ? undefined : onCancel} />
-      <div className="relative w-full max-w-lg rounded-lg bg-background border border-vocl-border shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg rounded-none bg-background border border-vocl-border  overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-vocl-border">
           <h2 className="font-semibold text-foreground">{title}</h2>
@@ -149,7 +149,7 @@ export function ImageCropModal({
             onPointerCancel={onPointerUp}
             onWheel={onWheel}
             className={`relative mx-auto w-full overflow-hidden bg-vocl-hover touch-none cursor-grab active:cursor-grabbing ${
-              round ? "rounded-full" : "rounded-sm"
+              round ? "rounded-full" : "rounded-none"
             }`}
             style={{ maxWidth: round ? 300 : 460, aspectRatio: String(aspect) }}
           >
@@ -166,7 +166,7 @@ export function ImageCropModal({
             {/* Framing hint */}
             <div
               className={`pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/25 ${
-                round ? "rounded-full" : "rounded-sm"
+                round ? "rounded-full" : "rounded-none"
               }`}
             />
           </div>
@@ -197,7 +197,7 @@ export function ImageCropModal({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="px-4 py-2.5 rounded-sm bg-vocl-hover text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 rounded-none bg-vocl-hover text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -205,7 +205,7 @@ export function ImageCropModal({
             type="button"
             onClick={handleConfirm}
             disabled={busy || !natural.w}
-            className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2.5 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {busy && <IconLoader2 size={18} className="animate-spin" />}
             Save

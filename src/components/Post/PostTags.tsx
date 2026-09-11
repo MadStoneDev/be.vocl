@@ -18,21 +18,19 @@ export function PostTags({ tags, maxVisible = 5 }: PostTagsProps) {
   const hiddenCount = tags.length - maxVisible;
 
   return (
-    <div className="flex flex-wrap gap-1.5 mt-2">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2">
       {visibleTags.map((tag) => (
         <Link
           key={tag.id}
           href={`/search?tag=${encodeURIComponent(tag.name)}`}
-          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-vocl-primary/10 text-vocl-primary text-xs font-medium hover:bg-vocl-primary/20 transition-colors"
+          className="inline-flex items-center gap-0.5 slug text-meta hover:text-accent transition-colors"
         >
-          <IconHash size={12} />
+          <IconHash size={11} />
           {tag.name}
         </Link>
       ))}
       {hiddenCount > 0 && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-vocl-hover text-foreground/50 text-xs">
-          +{hiddenCount} more
-        </span>
+        <span className="slug text-meta-dim">+{hiddenCount} more</span>
       )}
     </div>
   );

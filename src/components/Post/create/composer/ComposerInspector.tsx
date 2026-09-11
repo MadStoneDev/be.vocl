@@ -62,7 +62,7 @@ export function ComposerInspector({
             className="flex items-center gap-3 w-full text-left"
           >
             <div
-              className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+              className="relative w-11 h-6 rounded-none transition-colors flex-shrink-0"
               style={{
                 backgroundColor: inCollection
                   ? "var(--vocl-primary)"
@@ -70,7 +70,7 @@ export function ComposerInspector({
               }}
             >
               <div
-                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all ${
                   inCollection ? "left-6" : "left-1"
                 }`}
               />
@@ -128,7 +128,7 @@ export function ComposerInspector({
                 <select
                   value={state.collectionThreadId ?? ""}
                   onChange={(e) => patch({ collectionThreadId: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-xl border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--vocl-primary)]"
+                  className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--vocl-primary)]"
                 >
                   {myCollections.map((c) => (
                     <option key={c.threadId} value={c.threadId}>
@@ -151,14 +151,14 @@ export function ComposerInspector({
 
       {/* Tags */}
       <section>
-        <h3 className="text-sm font-semibold text-foreground mb-2">Tags</h3>
+        <h3 className="slug text-meta mb-3">Tags</h3>
         <TagInput tags={state.tags} onChange={(tags) => patch({ tags })} />
       </section>
 
       {/* Communities (create mode only — original behavior) */}
       {mode === "create" && myCommunities.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-foreground mb-2">
+          <h3 className="slug text-meta mb-3">
             Also post to communities
           </h3>
           <div className="flex flex-wrap gap-1.5">
@@ -175,7 +175,7 @@ export function ComposerInspector({
                         : [...state.selectedCommunityIds, c.id],
                     })
                   }
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-none text-xs font-medium transition-colors ${
                     selected
                       ? "text-white"
                       : "bg-[var(--vocl-hover)] text-foreground/70 hover:bg-[var(--vocl-hover-strong)]"
@@ -198,7 +198,7 @@ export function ComposerInspector({
       {/* Publish mode (create mode only) */}
       {mode === "create" && (
         <section>
-          <h3 className="text-sm font-semibold text-foreground mb-2">Publishing</h3>
+          <h3 className="slug text-meta mb-3">Publishing</h3>
           <div className="grid grid-cols-3 gap-1.5">
             {[
               { m: "now" as const, icon: IconSend, label: "Now" },
@@ -217,7 +217,7 @@ export function ComposerInspector({
                   }
                   patch(patchObj);
                 }}
-                className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border text-xs font-medium transition-colors ${
+                className={`flex flex-col items-center gap-1 py-2.5 rounded-none border text-xs font-medium transition-colors ${
                   state.publishMode === m
                     ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
                     : "border-[var(--vocl-border)] text-foreground/60 hover:bg-[var(--vocl-hover)]"
@@ -241,7 +241,7 @@ export function ComposerInspector({
                       d.setDate(d.getDate() + preset.days);
                       patch({ scheduledDate: d.toISOString().split("T")[0] });
                     }}
-                    className="px-2.5 py-1 rounded-lg text-xs bg-[var(--vocl-hover)] text-foreground/70 hover:bg-[var(--vocl-hover-strong)] transition-colors"
+                    className="px-2.5 py-1 rounded-none text-xs bg-[var(--vocl-hover)] text-foreground/70 hover:bg-[var(--vocl-hover-strong)] transition-colors"
                   >
                     {preset.label}
                   </button>
@@ -255,7 +255,7 @@ export function ComposerInspector({
                     value={state.scheduledDate}
                     min={new Date().toISOString().split("T")[0]}
                     onChange={(e) => patch({ scheduledDate: e.target.value })}
-                    className="w-full py-2 px-3 rounded-lg bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--vocl-primary)]"
+                    className="w-full py-2 px-3 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--vocl-primary)]"
                   />
                 </div>
                 <div>
@@ -264,7 +264,7 @@ export function ComposerInspector({
                     type="time"
                     value={state.scheduledTime}
                     onChange={(e) => patch({ scheduledTime: e.target.value })}
-                    className="w-full py-2 px-3 rounded-lg bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--vocl-primary)]"
+                    className="w-full py-2 px-3 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--vocl-primary)]"
                   />
                 </div>
               </div>
@@ -283,7 +283,7 @@ export function ComposerInspector({
           className="flex items-center gap-3 w-full text-left"
         >
           <div
-            className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+            className="relative w-11 h-6 rounded-none transition-colors flex-shrink-0"
             style={{
               backgroundColor: state.isSensitive
                 ? "var(--vocl-like, #e0245e)"
@@ -291,7 +291,7 @@ export function ComposerInspector({
             }}
           >
             <div
-              className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+              className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all ${
                 state.isSensitive ? "left-6" : "left-1"
               }`}
             />
@@ -343,7 +343,7 @@ export function ComposerInspector({
           ];
           return (
             <>
-              <h3 className="text-sm font-semibold text-foreground mb-2">Audience</h3>
+              <h3 className="slug text-meta mb-3">Audience</h3>
               <div className="grid grid-cols-3 gap-1.5">
                 {options.map((opt) => {
                   const Icon = opt.icon;
@@ -357,7 +357,7 @@ export function ComposerInspector({
                       aria-checked={active}
                       disabled={disabled}
                       onClick={() => patch({ audience: opt.id })}
-                      className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-colors ${
+                      className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-none border text-xs font-medium transition-colors ${
                         active
                           ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
                           : "border-[var(--vocl-border)] text-foreground/60 hover:bg-[var(--vocl-hover)]"
@@ -381,7 +381,7 @@ export function ComposerInspector({
 
       {/* Content warning */}
       <section>
-        <label className="block text-sm font-semibold text-foreground mb-2">
+        <label className="block slug text-meta mb-3">
           Content warning
         </label>
         <input
@@ -390,7 +390,7 @@ export function ComposerInspector({
           onChange={(e) => patch({ contentWarning: e.target.value })}
           placeholder="e.g. spoilers, flashing images…"
           maxLength={200}
-          className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-xl border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)]"
+          className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)]"
         />
         {state.contentWarning && (
           <span className="text-xs text-foreground/40 mt-1 block text-right">

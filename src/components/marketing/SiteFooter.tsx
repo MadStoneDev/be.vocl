@@ -1,68 +1,53 @@
 import Link from "next/link";
 
-/** Reusable footer for public/marketing pages (home, discover, comparison pages).
- *  Only links destinations that exist and are publicly reachable — extend the
- *  columns as new public pages (explore, comparisons, guidelines) ship. */
+/** Broadsheet "classified" footer for public/marketing pages (home, discover,
+ *  comparison pages). Rules, not cards; a mono colophon on the right. Only links
+ *  destinations that exist and are publicly reachable — extend as new public
+ *  pages ship. */
 
 type FooterLink = { label: string; href: string };
 
 const COLUMNS: { heading: string; links: FooterLink[] }[] = [
   {
-    heading: "Explore",
-    links: [{ label: "Discover", href: "/discover" }],
+    heading: "Compared",
+    links: [
+      { label: "be.vocl vs Tumblr", href: "/vs/tumblr" },
+      { label: "be.vocl vs Medium", href: "/vs/medium" },
+      { label: "be.vocl vs Substack", href: "/vs/substack" },
+    ],
   },
   {
-    heading: "Compare",
+    heading: "The paper",
     links: [
-      { label: "vs Tumblr", href: "/vs/tumblr" },
-      { label: "vs Medium", href: "/vs/medium" },
-      { label: "vs Substack", href: "/vs/substack" },
+      { label: "Front Page", href: "/" },
+      { label: "The Newsstand", href: "/discover" },
+      { label: "Get started", href: "/signup" },
     ],
   },
   {
     heading: "Legal",
     links: [
-      { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
-    ],
-  },
-  {
-    heading: "Get started",
-    links: [
-      { label: "Log in", href: "/login" },
-      { label: "Join be.vocl", href: "/signup" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Content policy · 21+", href: "/terms" },
     ],
   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-vocl-border">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
-          {/* Brand */}
-          <div className="max-w-xs">
-            <span className="type-display text-2xl font-bold text-vocl-primary">
-              be.vocl
-            </span>
-            <p className="mt-3 type-body text-sm text-foreground/60">
-              A calmer corner of the social web — write, vent and share under your
-              name or a pen name. You choose who sees it. We don&apos;t sell you.
-            </p>
-          </div>
-
-          {/* Link columns */}
+    <footer className="border-t border-rule">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {COLUMNS.map((col) => (
             <nav key={col.heading} aria-label={col.heading}>
-              <h3 className="type-meta uppercase tracking-widest text-foreground/45 font-semibold">
-                {col.heading}
-              </h3>
-              <ul className="mt-4 space-y-2.5">
+              <h3 className="slug text-ink mb-3">{col.heading}</h3>
+              <ul className="space-y-1.5">
                 {col.links.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="type-body text-sm text-foreground/70 transition-colors hover:text-foreground"
+                      className="text-xs leading-relaxed text-caption transition-colors hover:text-accent"
                     >
                       {link.label}
                     </Link>
@@ -71,15 +56,15 @@ export function SiteFooter() {
               </ul>
             </nav>
           ))}
-        </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-vocl-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="type-meta text-foreground/45">
-            &copy; 2026 be.vocl. Your voice, your terms.
-          </p>
-          <p className="type-meta text-foreground/45">
-            Made for people who&apos;d rather be honest.
-          </p>
+          {/* Colophon */}
+          <div className="col-span-2 text-left slug leading-loose text-meta-dim sm:col-span-1 sm:text-right">
+            be.vocl
+            <br />
+            Late edition · No. 0311
+            <br />
+            © 2026 · Adults only
+          </div>
         </div>
       </div>
     </footer>

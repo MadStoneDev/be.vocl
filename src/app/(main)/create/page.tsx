@@ -92,7 +92,7 @@ function CreatePageInner() {
           <button
             type="button"
             onClick={handleClose}
-            className="px-5 py-2.5 rounded-xl text-white font-medium"
+            className="px-5 py-2.5 rounded-none text-white font-medium"
             style={{ backgroundColor: "var(--vocl-primary)" }}
           >
             Go back

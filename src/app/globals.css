@@ -21,9 +21,17 @@
   --vocl-like: #E27D60;
   --vocl-reblog: #85C88A;
 
-  /* Semantic primary = brand pink (conversion CTAs: Follow, send, post) */
-  --vocl-primary: var(--vocl-pink);
-  --vocl-primary-hover: #D10B50;
+  /* Broadsheet accent (design/broadsheet-foundation). The single editorial
+     mark colour — wordmark, kickers, one primary action per view, active tab
+     underline. Identical in both editions. Used sparingly; never as a
+     background wash, never two filled buttons at once. */
+  --accent: #D10F50;
+
+  /* Semantic primary now points at the broadsheet accent (conversion CTAs:
+     Follow, send, post). Hover is applied via opacity 0.88 per the spec, but a
+     darkened value is kept for callers that expect a colour shift. */
+  --vocl-primary: var(--accent);
+  --vocl-primary-hover: #B00C43;
 
   /* Content surfaces.
      --vocl-surface (white) and --vocl-surface-muted (#EBEBEB) are the post-card
@@ -36,15 +44,28 @@
   --vocl-overlay: #2a2a2a;
   --vocl-action-bar: #1f1f1f;
 
-  /* ---- Light theme (default) ---- */
-  /* Warm paper ground + warm ink (was cold #f4f4f5 / #18181b) — "Elevated
-     Editorial": a considered neutral, not a default grey. */
-  --background: #F7F5F0;
-  --foreground: #1B1917;
+  /* ---- Newsprint edition (light) — broadsheet token set ----
+     The light theme IS the newsprint edition: a warm paper ground carrying a
+     quiet grain (see --paper-grain / body rule below). It must read as
+     newsprint, not "light mode". Accent is the only colour on the page. */
+  --paper: #F3EFE7;
+  --panel: #EFEAE0;          /* placeholder / inset fill */
+  --panel-stripe: #E4DED2;   /* striped image-placeholder dark band */
+  --ink: #14120F;            /* primary text */
+  --ink-secondary: #241F1A;  /* brief / note body */
+  --editorial-body: #3E3934; /* serif body copy, deck */
+  --meta: #6A645C;           /* bylines, timestamps, labels */
+  --meta-dim: #8A8378;       /* mono captions, footer */
+  --caption: #5C564E;        /* italic photo captions */
+  --rule: #CFC7B8;           /* hairlines, double rules, progress track */
+  --paper-grain: repeating-linear-gradient(0deg, rgba(20, 18, 15, 0.022) 0 1px, transparent 1px 3px);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
   --vocl-surface-dark: #ffffff;
-  --vocl-border: rgba(0, 0, 0, 0.08);
-  --vocl-hover: rgba(0, 0, 0, 0.04);
-  --vocl-hover-strong: rgba(0, 0, 0, 0.07);
+  --vocl-border: var(--rule);
+  --vocl-hover: rgba(20, 18, 15, 0.04);
+  --vocl-hover-strong: rgba(20, 18, 15, 0.07);
   /* Soft editorial depth for FLOATING surfaces (modals, dropdowns, composer,
      hover-lift). The feed stays boxless + hairline for structure. */
   --shadow: 0 1px 2px rgba(41, 37, 31, 0.05), 0 6px 20px -10px rgba(41, 37, 31, 0.15);
@@ -57,11 +78,24 @@
 }
 
 .dark {
-  /* Warm near-black (was flat #1a1a1a) + warm off-white ink + warm card. */
-  --background: #161513;
-  --foreground: #ECEAE5;
-  --vocl-surface-dark: #232120;
-  --vocl-border: rgba(255, 255, 255, 0.06);
+  /* ---- Dark edition (late edition) — broadsheet token set, DEFAULT ----
+     Warm off-white ink on near-black paper; never pure white on pure black. */
+  --paper: #121212;
+  --panel: #161616;          /* placeholder / inset fill */
+  --panel-stripe: #1b1b1b;   /* striped image-placeholder dark band */
+  --ink: #ECE7DF;            /* primary text (warm off-white) */
+  --ink-secondary: #DCD5CB;  /* brief / note body */
+  --editorial-body: #C6BEB4; /* serif body copy, deck */
+  --meta: #8C8680;           /* bylines, timestamps, labels */
+  --meta-dim: #6E6862;       /* mono captions, footer */
+  --caption: #9C958C;        /* italic photo captions */
+  --rule: #2A2724;           /* hairlines, double rules, progress track */
+  --paper-grain: none;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --vocl-surface-dark: #161616;
+  --vocl-border: var(--rule);
   --vocl-hover: rgba(255, 255, 255, 0.05);
   --vocl-hover-strong: rgba(255, 255, 255, 0.10);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
@@ -88,7 +122,26 @@
   --color-vocl-border: var(--vocl-border);
   --color-vocl-hover: var(--vocl-hover);
   --color-vocl-hover-strong: var(--vocl-hover-strong);
-  --font-sans: var(--font-lexend-sans);
+
+  /* Broadsheet editorial tokens — theme-aware via the vars above, so
+     `text-ink`, `text-meta`, `border-rule`, `bg-panel`, `text-accent` etc.
+     resolve to the active edition (dark late / light newsprint). */
+  --color-accent: var(--accent);
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-editorial-body: var(--editorial-body);
+  --color-meta: var(--meta);
+  --color-meta-dim: var(--meta-dim);
+  --color-caption: var(--caption);
+  --color-rule: var(--rule);
+
+  /* Type system: UI/meta = IBM Plex Sans, editorial body = Source Serif 4,
+     mono = IBM Plex Mono, display = Gloock. */
+  --font-sans: var(--font-plex-sans);
+  --font-serif: var(--font-source-serif);
+  --font-mono: var(--font-plex-mono);
   --font-display: var(--font-gloock--display);
 }
 
@@ -100,7 +153,10 @@ html {
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* Newsprint grain in the light edition; `none` in dark (set per theme). The
+     grain is what makes the light edition read as newsprint, not "light mode". */
+  background-image: var(--paper-grain);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -190,6 +246,131 @@ html.theme-transition body {
   font-size: 0.8125rem;
   line-height: 1.4;
   font-weight: 400;
+}
+
+/* =============================================================================
+   Broadsheet editorial primitives (design/broadsheet-foundation)
+   Reusable across every screen — the vocabulary of the paper. Geometry is
+   identical in both editions; only the token values flip. Radius stays 0 (2px
+   absolute max); no shadows, glows or gradients (striped placeholder excepted).
+   ============================================================================ */
+
+/* Kicker / section eyebrow — 10/0.20em uppercase. Accent when it labels the
+   lead or an important section; --meta otherwise (add `.kicker-accent`). */
+.kicker {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--meta);
+}
+.kicker-accent {
+  color: var(--accent);
+}
+
+/* Byline / meta — 11/0.14em uppercase Plex Sans. */
+.byline {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--meta);
+}
+
+/* Section tab — 11.5/0.18em uppercase; active = ink + 2px accent underline.
+   Never pills. */
+.section-tab {
+  font-family: var(--font-sans);
+  font-size: 0.71875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--meta);
+  padding-bottom: 3px;
+  border-bottom: 2px solid transparent;
+}
+.section-tab[aria-current="true"],
+.section-tab[data-active="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+/* Edition slug / spec line — mono 10–10.5/0.18–0.20em uppercase. */
+.slug {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--meta-dim);
+}
+
+/* Editorial serif roles — post content, decks, captions. */
+.editorial-deck {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: var(--editorial-body);
+}
+.editorial-body {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--editorial-body);
+}
+.editorial-caption {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--caption);
+}
+
+/* Run-in — the uppercase Plex Sans lead-in that opens a manifesto paragraph. */
+.run-in {
+  font-family: var(--font-sans);
+  font-size: 0.65625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* Section break — 3px double rule (under dateline rows, above folds). */
+.rule-double {
+  border-top: 3px double var(--rule);
+}
+.rule-double-b {
+  border-bottom: 3px double var(--rule);
+}
+
+/* 21+ stamp — 1px accent box, accent text, mono 10/0.14em. */
+.stamp-21 {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+}
+
+/* Striped image placeholder — the only permitted gradient. Real photography
+   replaces it at the same aspect ratio, with an italic serif caption under. */
+.ph-image {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--panel-stripe) 0 8px,
+    var(--panel) 8px 16px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Editorial selection — accent ground, white text. */
+::selection {
+  background: var(--accent);
+  color: #fff;
 }
 
 /* Animations */

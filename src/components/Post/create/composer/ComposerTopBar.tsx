@@ -71,19 +71,21 @@ export function ComposerTopBar({
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center justify-center w-9 h-9 -ml-1 rounded-full text-foreground/60 hover:text-foreground hover:bg-[var(--vocl-hover)] transition-colors"
+          className="flex items-center justify-center w-9 h-9 -ml-1 rounded-none text-foreground/60 hover:text-foreground hover:bg-[var(--vocl-hover)] transition-colors"
           aria-label="Close composer"
         >
           <IconX size={20} />
         </button>
-        <span
-          className="font-bold text-lg tracking-tight select-none"
-          style={{ color: "var(--vocl-primary)" }}
-        >
-          be.vocl
+        <span className="min-w-0 select-none">
+          <span className="block kicker kicker-accent">
+            {mode === "edit" ? "Edit post" : "File a post"}
+          </span>
+          <span className="block font-display text-lg leading-tight text-ink">
+            {mode === "edit" ? "Revise" : "New entry"}
+          </span>
         </span>
         {draftLabel && (
-          <span className="hidden sm:inline type-meta text-foreground/45 truncate">
+          <span className="hidden sm:inline slug text-meta-dim truncate">
             {draftLabel}
           </span>
         )}
@@ -95,7 +97,7 @@ export function ComposerTopBar({
         <button
           type="button"
           onClick={onTogglePreview}
-          className={`flex items-center gap-1.5 px-3 h-9 rounded-full type-body border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 h-9 rounded-none font-sans uppercase tracking-[0.14em] text-xs border transition-colors ${
             showPreview
               ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
               : "border-[var(--vocl-border)] text-foreground/80 hover:bg-[var(--vocl-hover)]"
@@ -111,8 +113,8 @@ export function ComposerTopBar({
             type="button"
             onClick={onSubmit}
             disabled={isPending}
-            className={`flex items-center gap-1.5 px-4 h-9 type-body font-semibold text-white transition-colors disabled:opacity-60 ${
-              mode === "create" ? "pr-3 rounded-l-full" : "rounded-full"
+            className={`flex items-center gap-1.5 px-4 h-9 font-sans font-medium uppercase tracking-[0.16em] text-xs text-white transition-colors disabled:opacity-60 ${
+              mode === "create" ? "pr-3 rounded-none" : "rounded-none"
             }`}
             style={{ backgroundColor: "var(--vocl-primary)" }}
           >
@@ -128,7 +130,7 @@ export function ComposerTopBar({
               type="button"
               onClick={() => setPublishMenuOpen((v) => !v)}
               disabled={isPending}
-              className="flex items-center justify-center w-8 h-9 rounded-r-full text-white border-l border-white/20 transition-colors disabled:opacity-60"
+              className="flex items-center justify-center w-8 h-9 rounded-none text-white border-l border-white/20 transition-colors disabled:opacity-60"
               style={{ backgroundColor: "var(--vocl-primary)" }}
               aria-label="Publish options"
             >
@@ -142,7 +144,7 @@ export function ComposerTopBar({
                 className="fixed inset-0 z-40"
                 onClick={() => setPublishMenuOpen(false)}
               />
-              <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-[var(--vocl-border)] bg-vocl-surface-dark shadow-xl overflow-hidden p-1">
+              <div className="absolute right-0 top-11 z-50 w-56 rounded-none border border-[var(--vocl-border)] bg-vocl-surface-dark overflow-hidden p-1">
                 {[
                   { m: "now" as const, icon: IconSend, label: "Post now", sub: "Publish immediately" },
                   { m: "queue" as const, icon: IconClock, label: "Add to queue", sub: "Use your queue schedule" },
@@ -155,7 +157,7 @@ export function ComposerTopBar({
                       onPublishModeChange(m);
                       setPublishMenuOpen(false);
                     }}
-                    className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-none text-left transition-colors ${
                       publishMode === m
                         ? "bg-[var(--vocl-hover)]"
                         : "hover:bg-[var(--vocl-hover)]"

@@ -119,10 +119,10 @@ export function FollowersModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-vocl-border">
           <div>
-            <h2 className="font-semibold text-foreground text-lg">
+            <h2 className="type-heading text-ink">
               {type === "followers" ? "Followers" : "Following"}
             </h2>
-            <p className="text-foreground/50 text-sm">@{username}</p>
+            <p className="byline text-meta mt-0.5">@{username}</p>
           </div>
           <button
             type="button"
@@ -141,7 +141,7 @@ export function FollowersModal({
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12 px-4">
-              <p className="text-foreground/50">
+              <p className="editorial-body text-meta">
                 {type === "followers"
                   ? "No followers yet"
                   : "Not following anyone yet"}
@@ -166,8 +166,8 @@ export function FollowersModal({
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                          <span className="text-lg font-bold text-white">
+                        <div className="w-full h-full bg-panel flex items-center justify-center">
+                          <span className="font-display text-lg text-ink">
                             {user.username.charAt(0).toUpperCase()}
                           </span>
                         </div>

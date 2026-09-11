@@ -120,13 +120,13 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 rounded-full">
+    <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 rounded-none">
       {state === "idle" && (
         <>
           <button
             type="button"
             onClick={start}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white type-meta font-medium"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none bg-rose-500 text-white type-meta font-medium"
           >
             <IconMicrophone size={14} /> Start
           </button>
@@ -139,8 +139,8 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
       {state === "recording" && (
         <>
           <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-none bg-rose-400 opacity-75" />
+            <span className="relative inline-flex rounded-none h-2.5 w-2.5 bg-rose-500" />
           </span>
           <span className="type-meta text-foreground/70 font-mono">
             {seconds}s / {MAX_DURATION}s
@@ -148,7 +148,7 @@ export function CommentVoiceRecorder({ postId, onComplete, onCancel }: Props) {
           <button
             type="button"
             onClick={stop}
-            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white type-meta"
+            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-none bg-rose-500 text-white type-meta"
           >
             <IconPlayerStopFilled size={12} /> Stop
           </button>

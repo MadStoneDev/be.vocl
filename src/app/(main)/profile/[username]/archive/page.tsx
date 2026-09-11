@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { IconCalendar, IconArrowLeft, IconPhoto, IconVideo, IconMusic, IconChartBar, IconArticle } from "@tabler/icons-react";
+import { IconArrowLeft, IconPhoto, IconVideo, IconMusic, IconChartBar, IconArticle } from "@tabler/icons-react";
 
 interface Props {
   params: Promise<{ username: string }>;
@@ -140,44 +140,42 @@ export default async function ArchivePage({ params }: Props) {
     <div className="py-6 px-4 max-w-4xl mx-auto">
       <Link
         href={`/profile/${profile.username}`}
-        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="inline-flex items-center gap-2 slug text-meta hover:text-ink mb-6 transition-colors"
       >
         <IconArrowLeft size={16} />
         Back to profile
       </Link>
 
-      <header className="mb-8 flex items-center gap-4">
+      <header className="mb-8 flex items-center gap-4 pb-6 rule-double-b">
         <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0">
           {profile.avatar_url ? (
             <Image src={profile.avatar_url} alt={profile.username} fill className="object-cover" />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center text-white font-bold text-xl">
+            <div className="absolute inset-0 bg-panel flex items-center justify-center font-display text-xl text-ink">
               {profile.username.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <IconCalendar size={22} className="text-vocl-primary" />
-            Archive
-          </h1>
-          <p className="text-sm text-foreground/60">
+          <p className="kicker kicker-accent mb-1">The morgue</p>
+          <h1 className="type-display text-ink">Archive</h1>
+          <p className="byline text-meta mt-1">
             {totalPosts.toLocaleString()} posts from @{profile.username}
           </p>
         </div>
       </header>
 
       {months.length === 0 ? (
-        <div className="rounded-xl bg-white/5 border border-white/5 p-12 text-center">
-          <p className="text-foreground/50">No posts yet.</p>
+        <div className="border border-rule p-12 text-center">
+          <p className="editorial-body text-meta">No posts yet.</p>
         </div>
       ) : (
         <div className="space-y-10">
           {months.map((bucket) => (
             <section key={bucket.key}>
-              <h2 className="text-lg font-semibold text-foreground mb-3 flex items-baseline gap-2">
+              <h2 className="type-heading text-ink mb-3 flex items-baseline gap-2 pb-2 border-b border-rule">
                 {bucket.label}
-                <span className="text-sm font-normal text-foreground/40">
+                <span className="slug text-meta-dim">
                   {bucket.posts.length} {bucket.posts.length === 1 ? "post" : "posts"}
                 </span>
               </h2>
@@ -189,7 +187,7 @@ export default async function ArchivePage({ params }: Props) {
                     <Link
                       key={post.id}
                       href={`/post/${post.id}`}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-vocl-surface-dark border border-white/5 hover:border-vocl-primary/40 transition-colors group"
+                      className="relative aspect-square overflow-hidden bg-panel border border-rule hover:border-accent transition-colors group"
                     >
                       {thumb ? (
                         <Image

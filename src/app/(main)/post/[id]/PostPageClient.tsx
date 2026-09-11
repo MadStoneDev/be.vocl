@@ -7,7 +7,7 @@ import { getPostById, deletePost } from "@/actions/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, toast } from "@/components/ui";
 import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
-import { IconLoader2, IconArrowLeft, IconMessage, IconHeart, IconMicrophone, IconRefresh, IconShare, IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconLoader2, IconArrowLeft, IconPencil, IconTrash } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import Link from "next/link";
 import { fadeUp } from "@/lib/motion";
@@ -139,16 +139,17 @@ export function PostPageClient({ postId }: { postId: string }) {
   if (error || !post) {
     return (
       <div className="max-w-xl mx-auto py-12 px-4 text-center">
-        <h1 className="type-display text-foreground mb-4">Post Not Found</h1>
-        <p className="type-body text-foreground/60 mb-6">
+        <p className="slug text-meta-dim mb-4">Not found</p>
+        <h1 className="type-display text-ink mb-3">This edition has no such page.</h1>
+        <p className="editorial-body text-meta mb-6">
           {error || "This post may have been deleted or you don't have permission to view it."}
         </p>
         <Link
           href="/feed"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-vocl-primary text-white rounded-full hover:bg-vocl-primary-hover transition-colors"
+          className="inline-flex items-center gap-2 border border-foreground text-ink px-5 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs hover:bg-vocl-hover transition-colors"
         >
-          <IconArrowLeft size={18} />
-          Back to Feed
+          <IconArrowLeft size={16} />
+          Back to the front page
         </Link>
       </div>
     );
@@ -258,105 +259,67 @@ export function PostPageClient({ postId }: { postId: string }) {
   return (
     <MotionConfig reducedMotion="user">
     {/* Uniform editorial column; media breaks out full-bleed for guests. */}
-    <article className="max-w-5xl mx-auto py-6 px-4">
+    <article className="max-w-3xl mx-auto py-6 px-4">
       {/* Back affordance */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 type-meta uppercase tracking-wide text-foreground/55 hover:text-vocl-primary mb-6 transition-colors"
+        className="flex items-center gap-2 slug text-meta hover:text-accent mb-8 transition-colors"
       >
         <IconArrowLeft size={15} />
-        Back
+        Front page
       </button>
 
-      {/* Broadsheet masthead: kicker · headline · byline · double rule */}
+      {/* Broadsheet masthead: kicker · headline · byline · double rule (centered) */}
       <motion.header
-        className="mb-6"
+        className="mb-8 text-center"
         initial="hidden"
         animate="show"
         variants={fadeUp}
       >
-        <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
+        <span className="kicker kicker-accent">
           {kicker}
           {readingTime ? ` · ${readingTime} min read` : ""}
         </span>
 
         {articleHeadline && (
-          <h1 className="type-display-lg text-foreground mt-2 leading-[1.05]">
+          <h1 className="type-display-lg text-ink mt-4 leading-[1.03]">
             {articleHeadline}
           </h1>
         )}
 
-        {/* Byline */}
-        <div className="mt-4 flex items-center gap-3">
+        {/* Byline — centered, seated on a double rule */}
+        <div className="mt-5 flex items-center justify-center gap-3 pb-5 rule-double-b">
           <Avatar
             src={post.author.avatarUrl || ""}
             username={post.author.username}
-            size="md"
+            size="sm"
           />
-          <div className="flex flex-col">
-            <span className="type-body font-medium text-foreground leading-tight">
-              {post.author.displayName || post.author.username}
-            </span>
-            <span className="type-meta text-foreground/50">
-              @{post.author.username} · {dateline}
-            </span>
-          </div>
+          <span className="byline">
+            <span className="text-ink">By {post.author.displayName || post.author.username}</span>
+            <span className="mx-2 text-meta-dim" aria-hidden="true">·</span>
+            {dateline}
+          </span>
 
           {post.isOwn && (
-            <div className="ml-auto flex items-center gap-1">
+            <span className="flex items-center gap-1">
               <Link
                 href={`/create?edit=${post.id}`}
                 aria-label="Edit post"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 type-meta text-foreground/60 hover:text-vocl-primary hover:bg-vocl-hover transition-colors"
+                className="inline-flex items-center gap-1.5 px-2 py-1 slug text-meta hover:text-accent transition-colors"
               >
-                <IconPencil size={16} />
+                <IconPencil size={15} />
                 Edit
               </Link>
               <button
                 type="button"
                 onClick={handleDelete}
                 aria-label="Delete post"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-foreground/50 hover:text-red-500 hover:bg-vocl-hover transition-colors"
+                className="inline-flex h-7 w-7 items-center justify-center text-meta hover:text-vocl-like transition-colors"
               >
-                <IconTrash size={16} />
+                <IconTrash size={15} />
               </button>
-            </div>
+            </span>
           )}
-        </div>
-
-        {/* Compact summary under the byline — counts + share. Does NOT expand
-            (so it never pushes the article down); it scrolls to the full
-            engagement below the post. */}
-        <span className="mt-5 block h-px w-full bg-vocl-border" />
-        <div className="flex items-center gap-6 py-3 type-meta text-foreground/55">
-          {[
-            { Icon: IconMessage, n: post.commentCount, label: "Comments" },
-            { Icon: IconHeart, n: post.likeCount, label: "Likes" },
-            { Icon: IconMicrophone, n: post.voiceReactionCount ?? 0, label: "Voice reactions" },
-            { Icon: IconRefresh, n: post.reblogCount, label: "Reblogs" },
-          ].map(({ Icon, n, label }) => (
-            <button
-              key={label}
-              type="button"
-              aria-label={label}
-              onClick={() => document.getElementById("post-engagement")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors"
-            >
-              <Icon size={16} />
-              <span className="tabular-nums">{n}</span>
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              toast.success("Link copied");
-            }}
-            className="ml-auto inline-flex items-center gap-1.5 hover:text-vocl-primary transition-colors uppercase tracking-widest"
-          >
-            <IconShare size={15} />
-            Share
-          </button>
         </div>
       </motion.header>
 

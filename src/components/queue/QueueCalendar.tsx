@@ -8,7 +8,6 @@ import {
   IconVideo,
   IconMusic,
   IconNote,
-  IconCalendarEvent,
 } from "@tabler/icons-react";
 import { useState, useMemo } from "react";
 
@@ -261,51 +260,53 @@ export function QueueCalendar({
   const headerLabel = `${MONTH_NAMES[weekStart.getMonth()]} ${weekStart.getDate()} - ${MONTH_NAMES[weekEnd.getMonth()]} ${weekEnd.getDate()}`;
 
   return (
-    <div className="space-y-4">
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-5">
+      {/* Navigation + legend */}
+      <div className="flex items-center gap-6 flex-wrap py-3 border-t border-b border-rule">
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o - 1)}
           disabled={weekOffset <= 0}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="slug text-meta hover:text-ink transition-colors disabled:opacity-30 disabled:cursor-not-allowed inline-flex items-center gap-1"
         >
-          <IconChevronLeft size={20} />
+          <IconChevronLeft size={14} /> Prev week
         </button>
-        <span className="type-body font-medium text-foreground/80">
-          {headerLabel}
-        </span>
+        <span className="font-display text-xl text-ink">{headerLabel}</span>
         <button
           type="button"
           onClick={() => setWeekOffset((o) => o + 1)}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="slug text-meta hover:text-ink transition-colors inline-flex items-center gap-1"
         >
-          <IconChevronRight size={20} />
+          Next week <IconChevronRight size={14} />
         </button>
+        <span className="ml-auto hidden md:flex items-center gap-4 slug text-meta">
+          <span className="inline-flex items-center gap-2"><span className="w-4 border-t-2 border-dashed border-accent" /> Queued</span>
+          <span className="inline-flex items-center gap-2"><span className="w-4 border-t-2 border-foreground" /> Scheduled</span>
+          <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 bg-accent" /> Today</span>
+        </span>
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 border-l border-rule">
         {days.map((day) => {
           const isToday = isSameDay(day, today);
           const daySlots = slotsByDay.get(day.toDateString()) || [];
           return (
             <div
               key={day.toDateString()}
-              className={`rounded-xl border p-2 min-h-[140px] flex flex-col ${
-                isToday
-                  ? "border-vocl-primary/40 bg-vocl-primary/5"
-                  : "border-vocl-border bg-vocl-surface-dark"
+              className={`border-r border-b border-rule p-2 min-h-[150px] flex flex-col ${
+                isToday ? "border-t-2 border-t-accent bg-panel" : ""
               }`}
             >
               {/* Day header */}
-              <div className="text-center mb-2">
-                <div className="type-meta uppercase tracking-wider text-foreground/40">
+              <div className="mb-3">
+                <div className={`slug ${isToday ? "text-accent" : "text-meta"}`}>
                   {DAY_NAMES[day.getDay()]}
+                  {isToday ? " · Today" : ""}
                 </div>
                 <div
-                  className={`type-heading font-semibold ${
-                    isToday ? "text-vocl-primary" : "text-foreground/70"
+                  className={`font-display text-xl leading-none mt-1 ${
+                    isToday ? "text-accent" : "text-meta"
                   }`}
                 >
                   {day.getDate()}
@@ -313,57 +314,37 @@ export function QueueCalendar({
               </div>
 
               {/* Slots */}
-              <div className="flex-1 space-y-1 overflow-y-auto max-h-[200px] scrollbar-thin">
+              <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[240px] scrollbar-thin">
                 {daySlots.map((slot, idx) => {
                   const Icon = getPostTypeIcon(getPostContent(slot.post));
                   const isQueued = slot.type === "queued";
                   return (
                     <div
                       key={`${slot.type}-${"id" in slot.post ? slot.post.id : idx}-${idx}`}
-                      className={`rounded-lg px-1.5 py-1 type-meta leading-tight flex items-start gap-1 ${
-                        isQueued
-                          ? "bg-vocl-primary/15 text-vocl-primary"
-                          : "bg-green-500/15 text-green-400"
+                      className={`pt-1.5 border-t-2 ${
+                        isQueued ? "border-t-accent border-dashed" : "border-t-foreground"
                       }`}
                       title={`${formatTime(slot.time)} - ${getPostPreview(slot.post)}`}
                     >
-                      <Icon size={12} className="shrink-0 mt-0.5" />
-                      <div className="min-w-0">
-                        <div className="type-meta opacity-70">
-                          {formatTime(slot.time)}
-                        </div>
-                        <div className="truncate">
-                          {getPostPreview(slot.post)}
-                        </div>
+                      <div className="slug text-meta-dim mb-1">
+                        {formatTime(slot.time)} · {isQueued ? "Queued" : "Scheduled"}
+                      </div>
+                      <div className="font-display text-sm leading-tight text-ink truncate flex items-center gap-1.5">
+                        <Icon size={12} className="shrink-0 text-meta" />
+                        {getPostPreview(slot.post)}
                       </div>
                     </div>
                   );
                 })}
                 {daySlots.length === 0 && (
-                  <div className="type-meta text-foreground/20 text-center pt-4">
-                    No posts
+                  <div className="pt-1.5 border-t border-dashed border-rule text-center slug text-meta-dim">
+                    Empty
                   </div>
                 )}
               </div>
             </div>
           );
         })}
-      </div>
-
-      {/* Legend */}
-      <div className="flex items-center gap-4 justify-center type-meta text-foreground/50">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-vocl-primary/40" />
-          <span>Queued</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-green-500/40" />
-          <span>Scheduled</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <IconCalendarEvent size={12} className="text-vocl-primary/60" />
-          <span>Today highlighted</span>
-        </div>
       </div>
     </div>
   );

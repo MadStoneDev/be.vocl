@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { IconLoader2, IconMoodSad } from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import {
   ProfileHeader,
   ProfileLinks,
@@ -394,18 +394,16 @@ export function ProfileClient() {
   if (error || !profile) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-          <IconMoodSad size={40} className="text-foreground/30" />
-        </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          {error || "Profile not found"}
+        <p className="slug text-meta-dim mb-4">Profile</p>
+        <h1 className="type-display text-ink mb-3">
+          {error || "No such columnist."}
         </h1>
-        <p className="text-foreground/50 mb-6">
+        <p className="editorial-body text-meta max-w-[52ch] mb-6">
           The profile you&apos;re looking for doesn&apos;t exist or has been removed.
         </p>
         <button
           onClick={() => router.push("/feed")}
-          className="px-6 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
+          className="px-6 py-2.5 bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs hover:opacity-[0.88] transition-opacity"
         >
           Go to feed
         </button>
@@ -740,7 +738,7 @@ function FollowerCard({
   return (
     <Link
       href={`/profile/${user.username}`}
-      className="flex items-center gap-3 p-3 rounded-sm bg-white/5 hover:bg-white/10 transition-colors"
+      className="flex items-center gap-3 py-3 border-b border-rule hover:bg-vocl-hover transition-colors"
     >
       <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
         {user.avatarUrl ? (
@@ -751,20 +749,20 @@ function FollowerCard({
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-            <span className="text-lg font-bold text-white">
+          <div className="absolute inset-0 bg-panel flex items-center justify-center">
+            <span className="font-display text-lg text-ink">
               {user.username.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">
+        <p className="text-ink truncate">
           {user.displayName || user.username}
         </p>
-        <p className="text-sm text-foreground/50 truncate">@{user.username}</p>
+        <p className="byline text-meta truncate mt-0.5">@{user.username}</p>
         {user.bio && (
-          <p className="text-sm text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
+          <p className="editorial-caption text-caption mt-1 line-clamp-1 not-italic">{user.bio}</p>
         )}
       </div>
       {!isOwnCard && currentUserId && (
@@ -775,10 +773,10 @@ function FollowerCard({
             handleFollowToggle();
           }}
           disabled={isLoadingFollow}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
+          className={`px-4 py-1.5 font-sans font-medium uppercase tracking-[0.16em] text-[11px] transition-colors flex-shrink-0 border ${
             isFollowingUser
-              ? "bg-white/10 text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-              : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+              ? "border-foreground text-foreground hover:bg-vocl-hover"
+              : "border-accent text-accent hover:bg-accent/10"
           }`}
         >
           {isLoadingFollow ? (

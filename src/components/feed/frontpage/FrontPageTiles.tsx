@@ -161,11 +161,7 @@ function Byline({ post }: { post: FeedPost }) {
 }
 
 function Kicker({ post }: { post: FeedPost }) {
-  return (
-    <span className="type-meta uppercase tracking-wide text-vocl-primary font-semibold">
-      {metaOf(post)}
-    </span>
-  );
+  return <span className="kicker kicker-accent">{metaOf(post)}</span>;
 }
 
 function TileShell({
@@ -328,25 +324,24 @@ function AudioTile({ post }: { post: FeedPost; prominence: Prominence }) {
   return (
     <TileShell post={post} className="flex flex-col gap-2">
       <Kicker post={post} />
-      <div className="flex items-center gap-3 border border-vocl-border p-3 transition-colors group-hover:border-vocl-primary/50">
+      <div className="flex items-center gap-3 py-3 border-t border-b border-vocl-border transition-colors">
         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden bg-vocl-hover">
           {art ? (
             <Image src={art} alt={title} fill className="object-cover" sizes="56px" />
           ) : (
-            <span className="flex h-full w-full items-center justify-center text-foreground/40">
+            <span className="flex h-full w-full items-center justify-center text-meta">
               <IconMicrophone size={22} />
             </span>
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="type-body font-medium text-foreground truncate group-hover:text-vocl-primary transition-colors">
+          <p className="type-heading text-ink truncate group-hover:text-accent transition-colors">
             {title}
           </p>
-          <p className="type-meta text-foreground/55 truncate">{subtitle}</p>
+          <p className="byline text-meta truncate mt-1">{subtitle}</p>
         </div>
-        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-vocl-primary text-white">
-          <IconPlayerPlay size={16} />
-        </span>
+        {/* Text play affordance — a glyph, not a filled accent circle. */}
+        <span aria-hidden="true" className="flex-shrink-0 text-lg text-ink leading-none">▸</span>
       </div>
     </TileShell>
   );

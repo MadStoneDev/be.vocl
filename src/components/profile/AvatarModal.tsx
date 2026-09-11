@@ -72,13 +72,13 @@ export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModa
             src={avatarUrl}
             alt={`${username}'s profile picture`}
             fill
-            className="object-cover rounded-sm shadow-2xl"
+            className="object-cover rounded-none "
             sizes="(max-width: 768px) 90vw, 448px"
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover rounded-sm flex items-center justify-center shadow-2xl">
-            <span className="text-8xl sm:text-9xl font-bold text-white">
+          <div className="absolute inset-0 bg-panel border border-rule flex items-center justify-center">
+            <span className="font-display text-8xl sm:text-9xl text-ink">
               {username.charAt(0).toUpperCase()}
             </span>
           </div>

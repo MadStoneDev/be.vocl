@@ -36,10 +36,10 @@ export function ComposerTypeBar({
     <div
       role="tablist"
       aria-label="Post type"
-      className="flex items-center gap-1 md:gap-1.5 px-4 md:px-6 py-2.5 border-b border-[var(--vocl-border)] shrink-0 md:overflow-x-auto"
+      className="flex items-center gap-5 md:gap-6 px-4 md:px-6 py-3 border-b border-[var(--vocl-border)] shrink-0 overflow-x-auto"
       style={{ scrollbarWidth: "none" }}
     >
-      {POST_TYPES.map(({ type, icon: Icon, label }) => {
+      {POST_TYPES.map(({ type, label }) => {
         const active = postType === type;
         return (
           <button
@@ -47,18 +47,12 @@ export function ComposerTypeBar({
             type="button"
             role="tab"
             aria-selected={active}
-            aria-label={label}
+            data-active={active}
             title={label}
             onClick={() => onPostTypeChange(type)}
-            className={`flex flex-1 md:flex-none items-center justify-center md:justify-start gap-2 px-0 md:px-3.5 h-9 rounded-full type-body font-medium whitespace-nowrap transition-colors border ${
-              active
-                ? "text-white border-transparent"
-                : "text-foreground/70 border-[var(--vocl-border)] hover:bg-[var(--vocl-hover)] hover:text-foreground"
-            }`}
-            style={active ? { backgroundColor: "var(--vocl-primary)" } : undefined}
+            className="section-tab whitespace-nowrap hover:text-ink transition-colors"
           >
-            <Icon size={16} />
-            <span className="hidden md:inline">{label}</span>
+            {label}
           </button>
         );
       })}
