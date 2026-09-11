@@ -148,65 +148,71 @@ export function QueueItem({
   const renderPostType = isReblog ? post.originalPost!.postType : post.postType;
   const renderContent = isReblog ? post.originalPost!.content : post.content;
 
+  // State-coded top rule: ink for a fixed scheduled post, accent for the next
+  // one out (queue position #1), plain otherwise.
+  const topBorder = isScheduled
+    ? "border-t-2 border-t-foreground"
+    : displayNumber === 1
+      ? "border-t-2 border-t-accent"
+      : "";
+
   return (
     <div
-      className={`group rounded-sm bg-vocl-surface-dark border border-vocl-border transition-all overflow-hidden ${
-        isDragging ? "opacity-50 scale-[0.98]" : "hover:border-vocl-border"
+      className={`group border border-rule ${topBorder} overflow-hidden transition-opacity ${
+        isDragging ? "opacity-50" : ""
       }`}
     >
       {/* Header bar: drag handle + position + actions */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-vocl-border">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-rule">
+        <div className="flex items-center gap-2.5">
           {!isScheduled && (
             <>
-              <span className="cursor-grab active:cursor-grabbing text-foreground/30 hover:text-foreground/50">
+              <span className="cursor-grab active:cursor-grabbing text-meta-dim hover:text-meta">
                 <IconGripVertical size={18} />
               </span>
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-vocl-primary/20 type-meta font-semibold text-vocl-primary">
-                {displayNumber ?? post.queuePosition}
-              </span>
+              <span className="slug text-meta">#{displayNumber ?? post.queuePosition}</span>
             </>
           )}
           {scheduledFor && (
-            <span className="inline-flex items-center gap-1 type-meta font-medium text-foreground/60">
-              <IconClock size={13} className="text-foreground/40" />
+            <span className="inline-flex items-center gap-1 slug text-meta">
+              <IconClock size={12} className="text-meta-dim" />
               {formatQueueSlot(scheduledFor)}
             </span>
           )}
           {isReblog && (
-            <span className="inline-flex items-center gap-1 type-meta text-foreground/50">
+            <span className="inline-flex items-center gap-1 slug text-meta-dim">
               <IconRefresh size={12} />
-              Reblog of @{post.originalPost!.author.username}
+              Reblog · @{post.originalPost!.author.username}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-4">
           <Link
             href={`/create?edit=${post.id}`}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-hover text-foreground/70 hover:text-foreground hover:bg-vocl-hover-strong type-meta font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 slug text-meta hover:text-ink transition-colors"
             title="Edit"
           >
-            <IconPencil size={14} />
+            <IconPencil size={13} />
             Edit
           </Link>
           <button
             type="button"
             onClick={handlePublishNow}
             disabled={isPublishing || isRemoving}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-vocl-primary/15 text-vocl-primary hover:bg-vocl-primary/25 type-meta font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 slug text-accent hover:opacity-80 transition-opacity disabled:opacity-50"
             title="Publish now"
           >
-            {isPublishing ? <IconLoader2 size={14} className="animate-spin" /> : <IconSend size={14} />}
+            {isPublishing ? <IconLoader2 size={13} className="animate-spin" /> : <IconSend size={13} />}
             Post
           </button>
           <button
             type="button"
             onClick={handleRemove}
             disabled={isPublishing || isRemoving}
-            className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+            className="inline-flex items-center text-meta hover:text-vocl-like transition-colors disabled:opacity-50"
             title="Remove from queue"
           >
-            {isRemoving ? <IconLoader2 size={14} className="animate-spin" /> : <IconTrash size={14} />}
+            {isRemoving ? <IconLoader2 size={13} className="animate-spin" /> : <IconTrash size={14} />}
           </button>
         </div>
       </div>
@@ -214,16 +220,16 @@ export function QueueItem({
       {/* Reblog comment (if present) */}
       {isReblog && post.reblogCommentHtml && (
         <div
-          className="px-4 py-3 type-body text-foreground/80 border-b border-vocl-border"
+          className="px-4 py-3 editorial-body !text-base text-ink-secondary border-b border-rule"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.reblogCommentHtml) }}
         />
       )}
 
       {/* Reblog source author header (mimics feed) */}
       {isReblog && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.02]">
+        <div className="flex items-center gap-2 px-4 py-2 bg-panel">
           {post.originalPost!.author.avatarUrl && (
-            <div className="relative w-6 h-6 rounded-full overflow-hidden">
+            <div className="relative w-6 h-6 overflow-hidden">
               <Image
                 src={post.originalPost!.author.avatarUrl}
                 alt=""
@@ -233,9 +239,7 @@ export function QueueItem({
               />
             </div>
           )}
-          <span className="type-meta text-foreground/70">
-            @{post.originalPost!.author.username}
-          </span>
+          <span className="byline text-meta">@{post.originalPost!.author.username}</span>
         </div>
       )}
 

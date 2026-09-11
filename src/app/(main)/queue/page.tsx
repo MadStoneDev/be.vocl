@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  IconClock,
-  IconLoader2,
-  IconRefresh,
-  IconList,
-  IconCalendar,
-} from "@tabler/icons-react";
+import { IconLoader2, IconRefresh } from "@tabler/icons-react";
 import { QueueControls, QueueList, QueueCalendar, QueueItem } from "@/components/queue";
 import {
   getQueue,
@@ -175,43 +169,35 @@ export default function QueuePage() {
     <div className={`mx-auto px-4 py-6 ${viewMode === "calendar" ? "max-w-5xl" : "max-w-2xl"}`}>
       <title>Queue | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
-            <IconClock size={24} className="text-vocl-primary" />
-          </div>
-          <div>
-            <h1 className="type-display text-3xl font-bold text-foreground">Queue</h1>
-            <p className="text-sm text-foreground/50">
-              Manage your scheduled posts
-            </p>
-          </div>
+      <div className="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <p className="kicker kicker-accent mb-2.5">
+            {viewMode === "calendar" ? "The schedule" : "The spike"}
+          </p>
+          <h1 className="font-display text-4xl leading-none text-ink">Queue</h1>
+          <p className="font-serif italic text-base text-meta mt-2">
+            {viewMode === "calendar"
+              ? "Scheduled posts hold an exact time. Queued posts auto-spread across your daily slots."
+              : "Manage your scheduled posts."}
+          </p>
         </div>
 
-        {/* View toggle */}
-        <div className="flex items-center rounded-sm bg-vocl-surface-dark border border-vocl-border p-1">
+        {/* View toggle — text tabs with the accent underline */}
+        <div className="flex items-center gap-5 flex-shrink-0 pb-1">
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === "list"
-                ? "bg-vocl-primary text-white"
-                : "text-foreground/50 hover:text-foreground"
-            }`}
+            data-active={viewMode === "list"}
+            className="section-tab hover:text-ink transition-colors"
           >
-            <IconList size={16} />
             List
           </button>
           <button
             type="button"
             onClick={() => setViewMode("calendar")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === "calendar"
-                ? "bg-vocl-primary text-white"
-                : "text-foreground/50 hover:text-foreground"
-            }`}
+            data-active={viewMode === "calendar"}
+            className="section-tab hover:text-ink transition-colors"
           >
-            <IconCalendar size={16} />
             Calendar
           </button>
         </div>
@@ -229,13 +215,13 @@ export default function QueuePage() {
 
       {/* Error state */}
       {error && (
-        <div className="mb-6 p-4 rounded-sm bg-vocl-like/20 border border-vocl-like/30 text-vocl-like flex items-center justify-between gap-3">
-          <span>{error}</span>
+        <div className="mb-6 p-4 border border-vocl-like/40 text-vocl-like flex items-center justify-between gap-3">
+          <span className="type-body">{error}</span>
           <button
             onClick={fetchQueue}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-vocl-like/20 hover:bg-vocl-like/30 text-vocl-like text-sm font-medium transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 slug text-vocl-like hover:text-ink transition-colors shrink-0"
           >
-            <IconRefresh size={16} />
+            <IconRefresh size={14} />
             Retry
           </button>
         </div>
@@ -244,7 +230,7 @@ export default function QueuePage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : viewMode === "calendar" ? (
         <QueueCalendar
@@ -257,9 +243,9 @@ export default function QueuePage() {
         <div className="space-y-10">
           <section>
             {scheduledPosts.length > 0 && (
-              <div className="mb-4">
-                <h2 className="type-heading font-display text-foreground">Queue</h2>
-                <p className="text-sm text-foreground/50">
+              <div className="mb-4 border-b border-rule pb-3">
+                <p className="slug text-meta">Queue</p>
+                <p className="font-serif italic text-sm text-meta mt-1">
                   Published automatically into your daily posting window.
                 </p>
               </div>
@@ -275,9 +261,9 @@ export default function QueuePage() {
 
           {scheduledPosts.length > 0 && (
             <section>
-              <div className="mb-4">
-                <h2 className="type-heading font-display text-foreground">Scheduled</h2>
-                <p className="text-sm text-foreground/50">
+              <div className="mb-4 border-b border-rule pb-3">
+                <p className="slug text-meta">Scheduled</p>
+                <p className="font-serif italic text-sm text-meta mt-1">
                   Set to publish at a specific date &amp; time you picked.
                 </p>
               </div>

@@ -72,90 +72,78 @@ export function QueueControls({
   // Calculate estimated time to empty queue
   const daysToEmpty = Math.ceil(queueCount / settings.postsPerDay);
 
+  const btnLabel =
+    "text-[11px] font-sans font-medium uppercase tracking-[0.16em]";
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Main controls */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border">
-        <div className="flex items-center gap-4">
-          {/* Pause/Resume button */}
+    <div className="flex flex-col gap-5">
+      {/* Stats + controls strip — big Gloock numbers over mono labels, cells
+          split by hairlines, seated on a top rule + 3px double bottom rule. */}
+      <div className="flex items-stretch flex-wrap gap-y-4 border-t border-rule rule-double-b">
+        <div className="py-4 pr-8 border-r border-rule">
+          <div className="font-display text-3xl leading-none text-ink">
+            {loading ? "—" : queueCount}
+          </div>
+          <div className="slug text-meta mt-2">
+            {queueCount === 1 ? "Post in queue" : "Posts in queue"}
+          </div>
+        </div>
+        <div className="py-4 px-8 border-r border-rule">
+          <div className="font-display text-3xl leading-none text-ink">
+            {loading ? "—" : settings.postsPerDay}
+          </div>
+          <div className="slug text-meta mt-2">Posts per day</div>
+        </div>
+        <div className="py-4 px-8 border-r border-rule">
+          <div className="font-display text-3xl leading-none text-ink">
+            {loading ? "—" : daysToEmpty === 0 ? "—" : `~${daysToEmpty}d`}
+          </div>
+          <div className="slug text-meta mt-2">Until empty</div>
+        </div>
+
+        {/* Status + actions */}
+        <div className="py-4 sm:pl-8 sm:ml-auto flex items-center gap-5">
+          <span className={`${btnLabel} text-meta inline-flex items-center gap-2`}>
+            <span className={`w-1.5 h-1.5 ${settings.paused ? "bg-meta" : "bg-accent"}`} />
+            {settings.paused ? "Paused" : "Press · Active"}
+          </span>
           <button
             type="button"
             onClick={handleTogglePause}
             disabled={isUpdating}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
-              settings.paused
-                ? "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
-                : "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30"
-            }`}
+            className={`inline-flex items-center gap-2 border border-foreground text-ink px-4 py-2 ${btnLabel} hover:bg-vocl-hover transition-colors disabled:opacity-50`}
           >
             {isUpdating ? (
-              <IconLoader2 size={18} className="animate-spin" />
+              <IconLoader2 size={14} className="animate-spin" />
             ) : settings.paused ? (
-              <IconPlayerPlay size={18} />
+              <IconPlayerPlay size={14} />
             ) : (
-              <IconPlayerPause size={18} />
+              <IconPlayerPause size={14} />
             )}
             <span>{settings.paused ? "Resume queue" : "Pause queue"}</span>
           </button>
-
-          {/* Status */}
-          <div className="flex items-center gap-2 type-body text-foreground/60">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                settings.paused ? "bg-amber-500" : "bg-green-500"
-              }`}
-            />
-            <span>{settings.paused ? "Paused" : "Active"}</span>
-          </div>
-        </div>
-
-        {/* Settings button */}
-        <button
-          type="button"
-          onClick={() => setShowSettings(!showSettings)}
-          className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
-        >
-          <IconSettings size={20} />
-        </button>
-      </div>
-
-      {/* Queue info — order-3 so the settings panel can sit above it */}
-      <div className="order-3 grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="type-display font-bold text-foreground">
-            {loading ? "—" : queueCount}
-          </p>
-          <p className="type-meta text-foreground/50">
-            {queueCount === 1 ? "Post in queue" : "Posts in queue"}
-          </p>
-        </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="type-display font-bold text-foreground">
-            {loading ? "—" : settings.postsPerDay}
-          </p>
-          <p className="type-meta text-foreground/50">Posts per day</p>
-        </div>
-        <div className="p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="type-display font-bold text-foreground">
-            {loading ? "—" : daysToEmpty === 0 ? "-" : `~${daysToEmpty}d`}
-          </p>
-          <p className="type-meta text-foreground/50">Until empty</p>
+          <button
+            type="button"
+            onClick={() => setShowSettings(!showSettings)}
+            aria-label="Schedule settings"
+            className="text-meta hover:text-ink transition-colors"
+          >
+            <IconSettings size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Settings panel — order-2 so it opens directly under the controls bar */}
+      {/* Settings panel */}
       {showSettings && (
-        <div className="order-2 p-4 rounded-xl bg-vocl-surface-dark border border-vocl-border space-y-4">
-          <h3 className="type-heading font-semibold text-foreground flex items-center gap-2">
-            <IconClock size={18} />
-            Queue Settings
+        <div className="p-5 border border-rule space-y-4">
+          <h3 className="slug text-meta flex items-center gap-2">
+            <IconClock size={14} />
+            Schedule settings
           </h3>
 
           {/* Posts per day */}
           <div>
-            <label className="block type-meta text-foreground/60 mb-2">
-              Posts per day
-            </label>
+            <label className="block byline text-meta mb-2">Posts per day</label>
             <input
               type="number"
               min={1}
@@ -167,58 +155,48 @@ export function QueueControls({
                   postsPerDay: parseInt(e.target.value) || 1,
                 }))
               }
-              className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
+              className="w-full px-3 py-2 bg-transparent border border-rule text-ink focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Time window */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block type-meta text-foreground/60 mb-2">
-                Start time
-              </label>
+              <label className="block byline text-meta mb-2">Start time</label>
               <input
                 type="time"
                 value={localSettings.windowStart}
                 onChange={(e) =>
-                  setLocalSettings((s) => ({
-                    ...s,
-                    windowStart: e.target.value,
-                  }))
+                  setLocalSettings((s) => ({ ...s, windowStart: e.target.value }))
                 }
-                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
+                className="w-full px-3 py-2 bg-transparent border border-rule text-ink focus:outline-none focus:border-accent"
               />
             </div>
             <div>
-              <label className="block type-meta text-foreground/60 mb-2">
-                End time
-              </label>
+              <label className="block byline text-meta mb-2">End time</label>
               <input
                 type="time"
                 value={localSettings.windowEnd}
                 onChange={(e) =>
-                  setLocalSettings((s) => ({
-                    ...s,
-                    windowEnd: e.target.value,
-                  }))
+                  setLocalSettings((s) => ({ ...s, windowEnd: e.target.value }))
                 }
-                className="w-full px-4 py-2 rounded-xl bg-background/50 border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
+                className="w-full px-3 py-2 bg-transparent border border-rule text-ink focus:outline-none focus:border-accent"
               />
             </div>
           </div>
 
-          <p className="type-meta text-foreground/40">
-            Posts will be published evenly between {localSettings.windowStart}{" "}
-            and {localSettings.windowEnd} in your timezone.
+          <p className="font-serif italic text-sm text-meta">
+            Posts will be published evenly between {localSettings.windowStart} and{" "}
+            {localSettings.windowEnd} in your timezone.
           </p>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end items-center gap-5 pt-4 rule-double">
             <button
               type="button"
               onClick={handleCloseSettings}
               disabled={isUpdating}
-              className="px-4 py-2 rounded-xl border border-vocl-border text-foreground/70 font-medium hover:bg-vocl-hover transition-colors disabled:opacity-50"
+              className={`${btnLabel} text-meta hover:text-ink transition-colors disabled:opacity-50`}
             >
               Cancel
             </button>
@@ -226,9 +204,9 @@ export function QueueControls({
               type="button"
               onClick={handleSaveSettings}
               disabled={isUpdating}
-              className="px-4 py-2 rounded-xl bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+              className={`inline-flex items-center gap-2 bg-accent text-white px-4 py-2 ${btnLabel} hover:opacity-[0.88] transition-opacity disabled:opacity-50`}
             >
-              {isUpdating && <IconLoader2 size={16} className="animate-spin" />}
+              {isUpdating && <IconLoader2 size={14} className="animate-spin" />}
               Save settings
             </button>
           </div>

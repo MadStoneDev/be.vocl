@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { IconMoodEmpty } from "@tabler/icons-react";
+import Link from "next/link";
 import { QueueItem } from "./QueueItem";
 import { computeQueuedTimes, type QueueTimingSettings } from "@/lib/queue-schedule";
 
@@ -69,17 +69,19 @@ export function QueueList({
 
   if (posts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4">
-          <IconMoodEmpty size={32} className="text-foreground/30" />
-        </div>
-        <h3 className="type-heading font-semibold text-foreground/70 mb-2">
-          Your queue is empty
-        </h3>
-        <p className="type-body text-foreground/50 max-w-sm">
-          Add posts to your queue by clicking &quot;Add to queue&quot; when reblogging.
-          They&apos;ll be published automatically based on your schedule.
+      <div className="flex flex-col items-center justify-center py-16 text-center border-b border-rule">
+        <p className="slug text-meta-dim mb-4">Nothing set for tomorrow&apos;s edition</p>
+        <h3 className="type-display text-ink mb-3 max-w-[18ch]">The spike is empty.</h3>
+        <p className="editorial-body text-meta max-w-[52ch] mb-6">
+          Add posts with “Add to queue” when you write or reblog. They go out on
+          your schedule, in your timezone.
         </p>
+        <Link
+          href="/create"
+          className="inline-flex items-center bg-accent text-white px-5 py-2.5 text-xs font-sans font-medium uppercase tracking-[0.16em] hover:opacity-[0.88] transition-opacity"
+        >
+          Write something
+        </Link>
       </div>
     );
   }

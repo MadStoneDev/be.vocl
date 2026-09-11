@@ -10,8 +10,8 @@ export default function QueueLoading() {
           <Skeleton className="h-4 w-64" />
         </div>
         <div className="flex gap-2">
-          <Skeleton className="h-10 w-24 rounded-lg" />
-          <Skeleton className="h-10 w-10 rounded-lg" />
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-10" />
         </div>
       </div>
 
@@ -19,7 +19,7 @@ export default function QueueLoading() {
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex gap-3 items-start">
-            <Skeleton className="w-8 h-8 rounded-lg flex-shrink-0" />
+            <Skeleton className="w-8 h-8 flex-shrink-0" />
             <div className="flex-1">
               <PostSkeleton />
             </div>
