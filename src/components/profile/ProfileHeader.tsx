@@ -35,6 +35,8 @@ interface ProfileHeaderProps {
   isVerified?: boolean;
   isMutual?: boolean;
   role?: number;
+  joinedYear?: number;
+  location?: string;
   allowsAsks?: boolean;
   stats?: { posts: number; followers: number; following: number };
   onStatClick?: (stat: StatKey) => void;
@@ -67,6 +69,8 @@ export function ProfileHeader({
   isVerified,
   isMutual: isMutualProp,
   role = 0,
+  joinedYear,
+  location,
   allowsAsks,
   stats,
   onStatClick,
@@ -100,11 +104,11 @@ export function ProfileHeader({
 
   const statItems: { key: StatKey; label: string }[] = [
     { key: "posts", label: "Posts" },
-    { key: "followers", label: "Followers" },
+    { key: "followers", label: "Subscribers" },
     { key: "following", label: "Following" },
   ];
 
-  const eyebrow = isOwnProfile ? "Your Profile" : "Profile";
+  const eyebrow = joinedYear ? `Columnist since ${joinedYear}` : "Columnist";
 
   return (
     <MotionConfig reducedMotion="user">
@@ -114,9 +118,10 @@ export function ProfileHeader({
         initial="hidden"
         animate="show"
       >
-        {/* Banner — editorial hero, only when the member has one */}
-        {headerUrl && (
-          <div className="relative h-40 md:h-56 w-full overflow-hidden border-b border-vocl-border">
+        {/* Banner — always present, a 6:1 editorial strip; real image if the
+            member has one, otherwise the striped placeholder. */}
+        <div className="relative w-full aspect-[6/1] overflow-hidden border-b border-rule ph-image">
+          {headerUrl && (
             <Image
               src={headerUrl}
               alt=""
@@ -126,8 +131,8 @@ export function ProfileHeader({
               className="object-cover"
               priority
             />
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Masthead */}
         <div className="relative px-4 sm:px-6 pt-6">
@@ -168,13 +173,16 @@ export function ProfileHeader({
 
               {/* Name and username — editorial masthead */}
               <div className="pb-1">
-                <h1 className="font-display font-normal text-3xl sm:text-4xl leading-tight text-foreground flex items-center gap-2 flex-wrap">
+                <h1 className="font-display text-4xl sm:text-[3.25rem] leading-none tracking-[-0.01em] text-foreground flex items-center gap-2 flex-wrap">
                   {displayName || username}
                   {isVerified && <VerificationBadge size={22} />}
                   <StaffBadge role={role} size={22} />
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="byline text-meta">@{username}</p>
+                  <p className="byline text-meta">
+                    @{username}
+                    {location && <span className="text-meta"> · {location}</span>}
+                  </p>
                   {isMutualProp && <MutualBadge />}
                 </div>
               </div>
@@ -212,7 +220,7 @@ export function ProfileHeader({
                     ) : (
                       <IconUserPlus size={16} />
                     )}
-                    <span>{isFollowing ? "Following" : "Follow"}</span>
+                    <span>{isFollowing ? "Subscribing" : "Subscribe"}</span>
                   </motion.button>
 
                   {/* Tip button — outline (no gradient) */}

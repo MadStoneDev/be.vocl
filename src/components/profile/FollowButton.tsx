@@ -99,12 +99,12 @@ export function FollowButton({
       ) : isFollowing ? (
         <>
           <IconUserMinus size={iconSizes[size]} />
-          <span>{isHovering ? "Unfollow" : "Following"}</span>
+          <span>{isHovering ? "Unsubscribe" : "Subscribing"}</span>
         </>
       ) : (
         <>
           <IconUserPlus size={iconSizes[size]} />
-          <span>Follow</span>
+          <span>Subscribe</span>
         </>
       )}
     </button>

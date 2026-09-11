@@ -141,14 +141,14 @@ export default function InviteSettingsPage() {
     <div className="py-6">
       <title>Settings — Invites | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
+      <div className="mb-8 border-b border-rule pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2  text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="slug text-meta hover:text-accent transition-colors"
         >
-          <IconArrowLeft size={22} />
+          ← Settings
         </Link>
-        <div>
+        <div className="mt-3">
           <span className="kicker kicker-accent">
             Settings
           </span>
@@ -288,19 +288,19 @@ export default function InviteSettingsPage() {
                     <div className="flex items-center gap-2">
                       {/* Status Badge */}
                       {code.isRevoked ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-vocl-like/20 text-vocl-like">
+                        <span className="px-2 py-1 text-xs font-medium bg-vocl-like/20 text-vocl-like">
                           Revoked
                         </span>
                       ) : isExpired ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-500">
+                        <span className="px-2 py-1 text-xs font-medium bg-amber-500/20 text-amber-500">
                           Expired
                         </span>
                       ) : isExhausted ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
+                        <span className="px-2 py-1 text-xs font-medium bg-purple-500/20 text-purple-500">
                           Used
                         </span>
                       ) : (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-500">
+                        <span className="px-2 py-1 text-xs font-medium bg-green-500/20 text-green-500">
                           Active
                         </span>
                       )}

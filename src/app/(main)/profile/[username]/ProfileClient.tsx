@@ -40,6 +40,8 @@ interface ProfileData {
   showFollowing: boolean;
   accentColor?: string | null;
   role: number;
+  createdAt?: string;
+  timezone?: string;
 }
 
 interface ProfileLink {
@@ -136,6 +138,8 @@ export function ProfileClient() {
         showFollowing: result.profile.showFollowing,
         accentColor: result.profile.accentColor ?? null,
         role: result.profile.role,
+        createdAt: result.profile.createdAt,
+        timezone: result.profile.timezone,
       });
 
       setIsOwnProfile(result.isOwnProfile || false);
@@ -427,6 +431,8 @@ export function ProfileClient() {
         isFollowing={following}
         isMutual={mutual}
         role={profile.role}
+        joinedYear={profile.createdAt ? new Date(profile.createdAt).getFullYear() : undefined}
+        location={profile.timezone}
         allowsAsks={allowsAsks}
         stats={stats}
         onStatClick={(stat) => {

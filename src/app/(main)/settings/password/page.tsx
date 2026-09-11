@@ -121,14 +121,14 @@ function PasswordSettingsContent() {
       <title>Settings — Password | be.vocl</title>
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
+        <div className="mb-8 border-b border-rule pb-5">
           <Link
             href="/settings"
-            className="p-2 -ml-2  hover:bg-vocl-hover transition-colors"
+            className="slug text-meta hover:text-accent transition-colors"
           >
-            <IconArrowLeft className="w-5 h-5 text-foreground/70" />
+            ← Settings
           </Link>
-          <div>
+          <div className="mt-3">
             <span className="kicker kicker-accent">
               Security
             </span>

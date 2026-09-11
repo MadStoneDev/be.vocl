@@ -15,8 +15,6 @@ import {
   IconSend,
   IconTrash,
   IconEdit,
-  IconFileOff,
-  IconPencil,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import {
@@ -182,32 +180,26 @@ export default function DraftsPage() {
   };
 
   return (
-    <div className="py-6">
+    <div className="py-8 max-w-2xl mx-auto">
       <title>Drafts | be.vocl</title>
-      <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
-        <IconPencil size={28} className="text-vocl-primary flex-shrink-0" />
-        Unpublished posts
-      </h1>
+      <header className="mb-6 border-b border-rule pb-5">
+        <p className="kicker kicker-accent">The spike</p>
+        <h1 className="type-display text-ink mt-2">Unpublished posts</h1>
+      </header>
 
       {/* Tabs */}
-      <div className="flex sm:rounded-sm bg-vocl-surface-dark/50 p-1 mb-6">
+      <div className="flex gap-6 mb-6 border-b border-rule overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
-          const Icon = tab.icon;
-
           return (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 sm:rounded-sm text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-vocl-primary text-white shadow-lg"
-                  : "text-foreground/60 hover:text-foreground"
-              }`}
+              data-active={isActive}
+              className="section-tab whitespace-nowrap hover:text-ink transition-colors"
             >
-              <Icon size={18} />
-              <span>{tab.label}</span>
+              {tab.label}
             </button>
           );
         })}
@@ -219,23 +211,21 @@ export default function DraftsPage() {
           <LoadingSpinner size="lg" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-vocl-hover flex items-center justify-center mb-4 text-foreground/60">
-            <IconFileOff size={32} />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            {activeTab === "drafts" && "Nothing under review"}
-            {activeTab === "scheduled" && "No scheduled posts"}
-            {activeTab === "queue" && "No queued posts"}
+        <div className="border-y border-rule py-16 px-4 text-center">
+          <p className="kicker kicker-accent mb-3">Nothing here</p>
+          <h3 className="type-display text-ink">
+            {activeTab === "drafts" && "Nothing under review."}
+            {activeTab === "scheduled" && "No scheduled posts."}
+            {activeTab === "queue" && "No queued posts."}
           </h3>
-          <p className="text-sm text-foreground/60 max-w-sm">
+          <p className="editorial-body text-meta mt-3 mx-auto max-w-[48ch]">
             {activeTab === "drafts" && "Posts held for moderation review appear here. They publish automatically once approved."}
             {activeTab === "scheduled" && "Schedule posts to be published at a specific time."}
             {activeTab === "queue" && "Add posts to your queue to publish them in order."}
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="border-t border-rule">
           {posts.map((post) => {
             const Icon = postTypeIcons[post.post_type] || IconFileText;
             const preview = getContentPreview(post.post_type, post.content);
@@ -244,20 +234,20 @@ export default function DraftsPage() {
             return (
               <div
                 key={post.id}
-                className="flex items-start gap-4 p-4 rounded-sm bg-vocl-surface-dark hover:bg-vocl-hover transition-colors"
+                className="flex items-start gap-4 py-4 border-b border-rule hover:bg-vocl-hover transition-colors"
               >
                 {/* Post type icon */}
-                <div className="w-10 h-10 rounded-sm bg-vocl-hover flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-foreground/70" />
+                <div className="w-6 flex justify-center shrink-0 pt-0.5">
+                  <Icon className="w-5 h-5 text-meta" aria-hidden="true" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground text-sm leading-relaxed line-clamp-2">
+                  <p className="editorial-body text-ink line-clamp-2">
                     {preview}
                   </p>
 
-                  <div className="flex items-center gap-3 mt-2 text-xs text-foreground/40">
+                  <div className="flex items-center gap-3 mt-2 slug text-meta-dim">
                     {activeTab === "scheduled" && post.scheduled_for && (
                       <span className="flex items-center gap-1 text-vocl-primary">
                         <IconCalendarEvent size={14} />
@@ -286,7 +276,7 @@ export default function DraftsPage() {
                 <div className="flex items-center gap-1 shrink-0">
                   <Link
                     href={`/create?edit=${post.id}`}
-                    className="p-2 rounded-lg text-foreground/40 hover:text-foreground hover:bg-vocl-hover-strong transition-colors"
+                    className="p-2 text-meta hover:text-foreground hover:bg-vocl-hover-strong transition-colors"
                     title="Edit"
                   >
                     <IconEdit size={18} />
@@ -300,7 +290,7 @@ export default function DraftsPage() {
                       type="button"
                       onClick={() => handlePublish(post.id)}
                       disabled={isActioning}
-                      className="p-2 rounded-lg text-foreground/40 hover:text-vocl-primary hover:bg-vocl-primary/10 transition-colors disabled:opacity-50"
+                      className="p-2 text-meta hover:text-vocl-primary hover:bg-vocl-primary/10 transition-colors disabled:opacity-50"
                       title="Publish now"
                     >
                       <IconSend size={18} />
@@ -311,7 +301,7 @@ export default function DraftsPage() {
                     type="button"
                     onClick={() => setConfirmDelete(post.id)}
                     disabled={isActioning}
-                    className="p-2 rounded-lg text-foreground/40 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+                    className="p-2 text-meta hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
                     title="Delete"
                   >
                     <IconTrash size={18} />

@@ -261,14 +261,14 @@ export default function ProfileSettingsPage() {
     <div className="py-6">
       <title>Settings — Profile | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
+      <div className="mb-8 border-b border-rule pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2  hover:bg-vocl-hover transition-colors"
+          className="slug text-meta hover:text-accent transition-colors"
         >
-          <IconArrowLeft size={22} className="text-foreground/70" />
+          ← Settings
         </Link>
-        <div>
+        <div className="mt-3">
           <span className="kicker kicker-accent">
             Settings
           </span>

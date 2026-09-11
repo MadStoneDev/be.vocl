@@ -25,6 +25,9 @@ interface ComposerTopBarProps {
   onSubmit: () => void;
   isPending: boolean;
   submitLabel?: string;
+  /** "header" hides the publish split-button (it lives in the footer in the
+   *  single-panel broadsheet layout); "full" keeps it inline (legacy). */
+  variant?: "full" | "header";
 }
 
 export function ComposerTopBar({
@@ -38,6 +41,7 @@ export function ComposerTopBar({
   onSubmit,
   isPending,
   submitLabel,
+  variant = "full",
 }: ComposerTopBarProps) {
   const [now, setNow] = useState(() => Date.now());
   const [publishMenuOpen, setPublishMenuOpen] = useState(false);
@@ -107,7 +111,9 @@ export function ComposerTopBar({
           <span className="hidden md:inline">Preview</span>
         </button>
 
-        {/* Publish split-button */}
+        {/* Publish split-button (hidden in the single-panel layout — the footer
+            carries publish there). */}
+        {variant !== "header" && (
         <div className="relative flex items-center">
           <button
             type="button"
@@ -186,6 +192,7 @@ export function ComposerTopBar({
             </>
           )}
         </div>
+        )}
       </div>
     </header>
   );

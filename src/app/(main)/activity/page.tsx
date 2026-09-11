@@ -8,7 +8,6 @@ import {
   IconRepeat,
   IconUserPlus,
   IconAt,
-  IconActivity,
 } from "@tabler/icons-react";
 import { LoadingSpinner } from "@/components/ui";
 import { getActivityStats } from "@/actions/activity";
@@ -119,57 +118,45 @@ export default function ActivityPage() {
 
   if (error || !stats) {
     return (
-      <div className="py-6">
-        <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
-        <IconActivity size={28} className="text-vocl-primary flex-shrink-0" />
-        Activity
-      </h1>
-        <div className="p-6 rounded-sm bg-vocl-surface-dark border border-vocl-border text-center">
-          <p className="text-foreground/50">{error || "Unable to load activity data."}</p>
+      <div className="py-8 max-w-2xl mx-auto">
+        <header className="mb-6 border-b border-rule pb-5">
+          <p className="kicker kicker-accent">Your account</p>
+          <h1 className="type-display text-ink mt-2">Activity</h1>
+        </header>
+        <div className="border-y border-rule py-12 text-center">
+          <p className="editorial-body text-meta">{error || "Unable to load activity data."}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-6">
+    <div className="py-8 max-w-2xl mx-auto">
       <title>Activity | be.vocl</title>
-      <h1 className="type-display text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
-        <IconActivity size={28} className="text-vocl-primary flex-shrink-0" />
-        Activity
-      </h1>
+      <header className="mb-8 border-b border-rule pb-5">
+        <p className="kicker kicker-accent">Your account</p>
+        <h1 className="type-display text-ink mt-2">Activity</h1>
+        <p className="editorial-deck text-meta mt-2">
+          Who&apos;s been reading, liking and echoing your work.
+        </p>
+      </header>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.key}
-              className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <div
-                  className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center`}
-                >
-                  <Icon className={`w-4 h-4 ${card.color}`} />
-                </div>
-              </div>
-              <p className={`text-2xl font-bold ${card.color}`}>
-                {stats[card.key].toLocaleString()}
-              </p>
-              <p className="text-xs text-foreground/50 mt-1">{card.label}</p>
-            </div>
-          );
-        })}
+      {/* Overview — ruled figures */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-rule rule-double-b mb-8">
+        {statCards.map((card, i) => (
+          <div key={card.key} className={`py-4 px-4 ${i > 0 ? "border-l border-rule" : ""}`}>
+            <p className="font-display text-3xl leading-none text-ink tabular-nums">
+              {stats[card.key].toLocaleString()}
+            </p>
+            <p className="byline text-meta mt-2">{card.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Recent Activity Feed */}
-      <h2 className="text-lg font-semibold text-foreground mb-4">
-        Recent Activity
-      </h2>
+      <div className="slug text-meta border-b border-rule pb-3 mb-4">Recent activity</div>
 
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-6 mb-6 overflow-x-auto border-b border-rule">
         {filterTabs.map((tab) => {
           const count =
             tab.key === "all"
@@ -179,22 +166,11 @@ export default function ActivityPage() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium whitespace-nowrap transition-colors ${
-                filter === tab.key
-                  ? "bg-vocl-primary text-white"
-                  : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
-              }`}
+              data-active={filter === tab.key}
+              className="section-tab whitespace-nowrap hover:text-ink transition-colors"
             >
-              <span>{tab.label}</span>
-              {count > 0 && (
-                <span
-                  className={`px-1.5 py-0.5 rounded-full text-xs ${
-                    filter === tab.key ? "bg-white/20" : "bg-vocl-hover-strong"
-                  }`}
-                >
-                  {count}
-                </span>
-              )}
+              {tab.label}
+              {count > 0 && <span className="ml-1.5 text-meta-dim">{count}</span>}
             </button>
           );
         })}
@@ -207,8 +183,8 @@ export default function ActivityPage() {
             : stats.recentActivity.filter((i) => i.type === filter);
         if (filtered.length === 0) {
           return (
-            <div className="p-6 rounded-sm bg-vocl-surface-dark border border-vocl-border text-center">
-              <p className="text-foreground/50">
+            <div className="border-y border-rule py-12 text-center">
+              <p className="editorial-body text-meta">
                 {filter === "all"
                   ? "No recent activity yet."
                   : `No ${filterTabs.find((t) => t.key === filter)?.label.toLowerCase()} yet.`}
@@ -217,30 +193,26 @@ export default function ActivityPage() {
           );
         }
         return (
-          <div className="space-y-2">
+          <div className="border-t border-rule">
             {filtered.map((item) => {
-            const { icon: ActivityIcon, color, bg } = getActivityIcon(item.type);
+            const { icon: ActivityIcon } = getActivityIcon(item.type);
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border hover:bg-vocl-hover transition-colors"
+                className="flex items-center gap-3 py-3.5 border-b border-rule hover:bg-vocl-hover transition-colors"
               >
-                <div
-                  className={`w-9 h-9 rounded-lg ${bg} flex-shrink-0 flex items-center justify-center`}
-                >
-                  <ActivityIcon className={`w-4 h-4 ${color}`} />
-                </div>
+                <ActivityIcon className="w-4 h-4 text-meta flex-shrink-0" aria-hidden="true" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate">
+                  <p className="text-sm text-ink truncate">
                     {getActivityDescription(item)}
                   </p>
                   {item.content && (
-                    <p className="text-xs text-foreground/40 truncate mt-0.5">
+                    <p className="editorial-caption not-italic text-meta-dim truncate mt-0.5">
                       {item.content}
                     </p>
                   )}
                 </div>
-                <span className="text-xs text-foreground/30 flex-shrink-0">
+                <span className="slug text-meta-dim flex-shrink-0">
                   {item.createdAt}
                 </span>
               </div>

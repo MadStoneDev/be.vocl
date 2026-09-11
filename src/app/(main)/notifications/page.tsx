@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  IconBell,
   IconLoader2,
   IconCheck,
   IconTrash,
@@ -94,43 +93,36 @@ export default function NotificationsPage() {
       <title>Activity | be.vocl</title>
     <div className="max-w-2xl mx-auto px-4 py-6">
       {/* Header — editorial masthead */}
-      <div className="flex items-end justify-between mb-5 border-b-4 border-double border-vocl-border pb-4">
+      <div className="flex items-end justify-between mb-5 rule-double-b pb-4">
         <div>
-          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
-            Recent
-          </span>
-          <h1 className="type-display text-3xl font-bold text-foreground leading-none mt-1 flex items-center gap-3">
-            <IconBell size={28} className="text-vocl-primary flex-shrink-0" />
-            Activity
-          </h1>
+          <p className="kicker kicker-accent">Recent</p>
+          <h1 className="type-display text-ink mt-2">Activity</h1>
           {unreadCount > 0 && (
-            <p className="type-meta uppercase tracking-widest text-foreground/50 mt-1.5">
-              {unreadCount} unread
-            </p>
+            <p className="slug text-meta-dim mt-2">{unreadCount} unread</p>
           )}
         </div>
 
         {/* Actions */}
         {notifications.length > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2 px-3 py-2 rounded-sm text-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+                className="flex items-center gap-1.5 byline text-meta hover:text-ink transition-colors"
               >
-                <IconCheck size={16} />
+                <IconCheck size={14} />
                 <span className="hidden sm:inline">Mark all read</span>
               </button>
             )}
             <button
               onClick={() => setShowClearConfirm(true)}
               disabled={isClearing}
-              className="flex items-center gap-2 px-3 py-2 rounded-sm text-sm text-vocl-like/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 byline text-meta hover:text-vocl-like transition-colors disabled:opacity-50"
             >
               {isClearing ? (
-                <IconLoader2 size={16} className="animate-spin" />
+                <IconLoader2 size={14} className="animate-spin" />
               ) : (
-                <IconTrash size={16} />
+                <IconTrash size={14} />
               )}
               <span className="hidden sm:inline">Clear all</span>
             </button>
@@ -139,7 +131,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2" role="tablist" aria-label="Filter notifications">
+      <div className="flex gap-6 mb-6 overflow-x-auto border-b border-rule" role="tablist" aria-label="Filter notifications">
         {FILTER_TABS.map((tab) => {
           const isActive = activeFilter === tab.id;
           return (
@@ -148,11 +140,8 @@ export default function NotificationsPage() {
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveFilter(tab.id)}
-              className={`px-4 py-2 rounded-sm text-sm font-medium whitespace-nowrap transition-colors ${
-                isActive
-                  ? "bg-vocl-primary text-white"
-                  : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong hover:text-foreground"
-              }`}
+              data-active={isActive}
+              className="section-tab whitespace-nowrap hover:text-ink transition-colors"
             >
               {tab.label}
             </button>
@@ -163,7 +152,7 @@ export default function NotificationsPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : (
         <NotificationList

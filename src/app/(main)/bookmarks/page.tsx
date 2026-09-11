@@ -205,21 +205,19 @@ export default function BookmarksPage() {
       <title>Bookmarks | be.vocl</title>
     <div className="max-w-xl mx-auto py-2 sm:py-3 px-2 sm:px-4">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
-          <IconBookmark size={24} className="text-vocl-primary" />
-        </div>
-        <h1 className="type-display text-3xl font-bold text-foreground">Bookmarks</h1>
-      </div>
+      <header className="mb-5 border-b border-rule pb-4">
+        <p className="kicker kicker-accent">Saved</p>
+        <h1 className="type-display text-ink mt-2">Bookmarks</h1>
+      </header>
 
       {/* Collection pills */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
         {/* All bookmarks pill */}
         <button
           onClick={() => setActiveCollection(null)}
-          className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+          className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-medium transition-all ${
             activeCollection === null
-              ? "bg-vocl-primary text-white shadow-lg"
+              ? "bg-vocl-primary text-white"
               : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
           }`}
         >
@@ -230,9 +228,9 @@ export default function BookmarksPage() {
         {/* Uncollected pill */}
         <button
           onClick={() => setActiveCollection("uncollected")}
-          className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+          className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-medium transition-all ${
             activeCollection === "uncollected"
-              ? "bg-vocl-primary text-white shadow-lg"
+              ? "bg-vocl-primary text-white"
               : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
           }`}
         >
@@ -256,7 +254,7 @@ export default function BookmarksPage() {
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   maxLength={50}
-                  className="w-28 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border border-vocl-primary text-foreground focus:outline-none"
+                  className="w-28 px-3 py-1.5 rounded-none text-sm bg-vocl-hover-strong border border-vocl-primary text-foreground focus:outline-none"
                   onBlur={() => {
                     setRenamingId(null);
                     setRenameValue("");
@@ -271,7 +269,7 @@ export default function BookmarksPage() {
                 <button
                   type="submit"
                   onMouseDown={(e) => e.preventDefault()}
-                  className="p-1 rounded-full bg-vocl-primary text-white"
+                  className="p-1 rounded-none bg-vocl-primary text-white"
                 >
                   <IconCheck size={14} />
                 </button>
@@ -279,9 +277,9 @@ export default function BookmarksPage() {
             ) : (
               <button
                 onClick={() => setActiveCollection(col.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-medium transition-all ${
                   activeCollection === col.id
-                    ? "bg-vocl-primary text-white shadow-lg"
+                    ? "bg-vocl-primary text-white"
                     : "bg-vocl-hover text-foreground/60 hover:text-foreground hover:bg-vocl-hover-strong"
                 }`}
               >
@@ -307,7 +305,7 @@ export default function BookmarksPage() {
                     e.stopPropagation();
                     setMenuOpenId(menuOpenId === col.id ? null : col.id);
                   }}
-                  className={`ml-1 p-0.5 rounded-full transition-colors ${
+                  className={`ml-1 p-0.5 rounded-none transition-colors ${
                     activeCollection === col.id
                       ? "hover:bg-white/20"
                       : "hover:bg-vocl-hover-strong"
@@ -322,7 +320,7 @@ export default function BookmarksPage() {
             {menuOpenId === col.id && (
               <div
                 ref={menuRef}
-                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-vocl-border rounded-sm shadow-xl py-1 min-w-[140px]"
+                className="absolute top-full left-0 mt-1 z-20 bg-vocl-surface-dark border border-vocl-border rounded-none py-1 min-w-[140px]"
               >
                 <button
                   onClick={() => {
@@ -368,14 +366,14 @@ export default function BookmarksPage() {
               }}
               placeholder="Collection name"
               maxLength={50}
-              className={`w-36 px-3 py-1.5 rounded-full text-sm bg-vocl-hover-strong border text-foreground placeholder:text-foreground/30 focus:outline-none ${
+              className={`w-36 px-3 py-1.5 rounded-none text-sm bg-vocl-hover-strong border text-foreground placeholder:text-foreground/30 focus:outline-none ${
                 createError ? "border-vocl-like" : "border-vocl-primary"
               }`}
             />
             <button
               type="submit"
               disabled={isSubmitting || !newName.trim()}
-              className="p-1.5 rounded-full bg-vocl-primary text-white disabled:opacity-50 transition-opacity"
+              className="p-1.5 rounded-none bg-vocl-primary text-white disabled:opacity-50 transition-opacity"
             >
               {isSubmitting ? (
                 <IconLoader2 size={14} className="animate-spin" />
@@ -390,7 +388,7 @@ export default function BookmarksPage() {
                 setNewName("");
                 setCreateError(null);
               }}
-              className="p-1.5 rounded-full bg-vocl-hover text-foreground/60 hover:text-foreground transition-colors"
+              className="p-1.5 rounded-none bg-vocl-hover text-foreground/60 hover:text-foreground transition-colors"
             >
               <IconX size={14} />
             </button>
@@ -398,7 +396,7 @@ export default function BookmarksPage() {
         ) : (
           <button
             onClick={() => setIsCreating(true)}
-            className="flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm text-foreground/40 hover:text-foreground/70 bg-vocl-hover hover:bg-vocl-hover-strong transition-all border border-dashed border-vocl-border hover:border-vocl-border"
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-2 rounded-none text-sm text-foreground/40 hover:text-foreground/70 bg-vocl-hover hover:bg-vocl-hover-strong transition-all border border-dashed border-vocl-border hover:border-vocl-border"
           >
             <IconPlus size={15} />
             <span>New</span>
@@ -408,7 +406,7 @@ export default function BookmarksPage() {
 
       {/* Create error toast */}
       {createError && (
-        <div className="mb-4 px-4 py-2 rounded-sm bg-vocl-like/10 border border-vocl-like/20 text-sm text-vocl-like">
+        <div className="mb-4 px-4 py-2 rounded-none bg-vocl-like/10 border border-vocl-like/20 text-sm text-vocl-like">
           {createError}
         </div>
       )}
@@ -418,16 +416,16 @@ export default function BookmarksPage() {
 
       {/* Empty state */}
       {!isLoading && posts.length === 0 && (
-        <div className="text-center py-16">
-          <IconBookmark size={48} className="mx-auto text-foreground/20 mb-4" />
-          <p className="text-foreground/40 text-lg mb-2">
+        <div className="border-y border-rule py-16 text-center">
+          <p className="kicker kicker-accent mb-3">Bookmarks</p>
+          <h2 className="type-display text-ink">
             {activeCollection && activeCollection !== "uncollected"
-              ? "No bookmarks in this collection"
+              ? "Nothing filed here yet."
               : activeCollection === "uncollected"
-              ? "No unsorted bookmarks"
-              : "No bookmarks yet"}
-          </p>
-          <p className="text-foreground/30 text-sm">
+              ? "No unsorted bookmarks."
+              : "Nothing saved yet."}
+          </h2>
+          <p className="editorial-body text-meta mt-3 mx-auto max-w-[46ch]">
             {activeCollection
               ? "Move bookmarks here from other views."
               : "Bookmark posts to save them for later."}
@@ -452,7 +450,7 @@ export default function BookmarksPage() {
                           moveMenuPostId === post.id ? null : post.id
                         )
                       }
-                      className="p-1.5 rounded-lg bg-black/40 backdrop-blur-sm text-foreground/60 hover:text-foreground hover:bg-black/60 transition-colors"
+                      className="p-1.5 rounded-none bg-black/40 backdrop-blur-sm text-foreground/60 hover:text-foreground hover:bg-black/60 transition-colors"
                       title="Move to collection"
                     >
                       <IconFolder size={16} />
@@ -460,7 +458,7 @@ export default function BookmarksPage() {
 
                     {/* Move dropdown */}
                     {moveMenuPostId === post.id && (
-                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-vocl-border rounded-sm shadow-xl py-1 min-w-[180px]">
+                      <div className="absolute right-0 top-full mt-1 z-30 bg-vocl-surface-dark border border-vocl-border rounded-none py-1 min-w-[180px]">
                         <button
                           onClick={() => handleMoveBookmark(post.id, null)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
@@ -574,9 +572,9 @@ export default function BookmarksPage() {
               <button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="px-6 py-2 bg-vocl-hover text-foreground/70 rounded-sm hover:bg-vocl-hover-strong transition-colors disabled:opacity-50"
+                className="border border-foreground text-ink font-sans font-medium uppercase tracking-[0.16em] text-xs px-6 py-2.5 hover:bg-vocl-hover transition-colors disabled:opacity-50"
               >
-                {isFetchingNextPage ? "Loading..." : "Load more"}
+                {isFetchingNextPage ? "Loading…" : "Load more"}
               </button>
             </div>
           )}
