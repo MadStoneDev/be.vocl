@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { IconAdjustmentsHorizontal, IconX } from "@tabler/icons-react";
+import {
+  IconSend,
+  IconClock,
+  IconCalendar,
+  IconChevronDown,
+  IconLoader2,
+} from "@tabler/icons-react";
 import { Portal } from "@/components/ui";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { getMyCommunities, type CommunitySummary } from "@/actions/communities";
@@ -214,7 +220,7 @@ export function EditorialComposer({
 
   const [isPending, startTransition] = useTransition();
   const [showPreview, setShowPreview] = useState(false);
-  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [publishMenuOpen, setPublishMenuOpen] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   // Holds the latest Escape behavior; the keydown listener is bound once but
   // must always run against current state (see below).
@@ -380,6 +386,34 @@ export function EditorialComposer({
       : "Save"
     : undefined;
 
+  // Footer publish affordances (single-panel layout).
+  const publishVerb =
+    state.publishMode === "queue"
+      ? "Add to Queue"
+      : state.publishMode === "schedule"
+        ? "Schedule"
+        : "Publish now";
+  const PublishIcon =
+    state.publishMode === "queue"
+      ? IconClock
+      : state.publishMode === "schedule"
+        ? IconCalendar
+        : IconSend;
+  const footerLabel = submitLabel ?? publishVerb;
+  const publishModeLabel = isEdit
+    ? ""
+    : state.publishMode === "queue"
+      ? "To your queue"
+      : state.publishMode === "schedule"
+        ? "Scheduled"
+        : "Posts now";
+  const draftText =
+    draftStatus.kind === "saving"
+      ? "Saving…"
+      : draftStatus.kind === "saved"
+        ? "Draft saved"
+        : "";
+
   return (
     <Portal>
       {/* Overlay — feed peeks at the margins */}
@@ -388,8 +422,8 @@ export function EditorialComposer({
         onClick={handleClose}
       />
 
-      {/* Panel */}
-      <div className="fixed inset-2 md:inset-8 z-[60] flex flex-col rounded-none border border-[var(--vocl-border)] bg-background overflow-hidden">
+      {/* Panel — a centered broadsheet card (max 900px), feed peeking behind */}
+      <div className="fixed inset-x-2 inset-y-2 md:inset-y-8 z-[60] mx-auto flex max-w-[900px] flex-col rounded-none border border-rule bg-background overflow-hidden">
         {skewBlocked && (
           <div className="flex items-center justify-between gap-3 border-b border-vocl-border bg-vocl-primary/10 px-4 py-3">
             <span className="type-body text-sm text-foreground/80">
@@ -407,6 +441,7 @@ export function EditorialComposer({
           </div>
         )}
         <ComposerTopBar
+          variant="header"
           mode={mode}
           publishMode={state.publishMode}
           onPublishModeChange={(m) => patch({ publishMode: m })}
@@ -434,12 +469,13 @@ export function EditorialComposer({
           </div>
         )}
 
-        <div className="flex-1 flex min-h-0">
-          {/* Center manuscript column */}
-          <main className="flex-1 overflow-y-auto">
-            {showPreview ? (
-              <ComposerPreview state={state} linkPreviews={linkPreviews} />
-            ) : (
+        {/* Single manuscript column — body, then settings inline below it (the
+            old right-hand inspector), so the whole thing reads as one form. */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {showPreview ? (
+            <ComposerPreview state={state} linkPreviews={linkPreviews} />
+          ) : (
+            <>
               <ManuscriptColumn
                 state={state}
                 patch={patch}
@@ -448,68 +484,92 @@ export function EditorialComposer({
                 linkPreviewsLoading={linkPreviewsLoading}
                 onDismissPreview={dismissLinkPreview}
               />
-            )}
 
-            {state.error && (
-              <div className="mx-auto max-w-[680px] px-5 pb-8">
-                <div className="p-3 rounded-none bg-vocl-like/15 border border-vocl-like/30 text-vocl-like text-sm">
-                  {state.error}
-                </div>
+              {/* Settings — audience, tags, sensitivity, CW (was the side rail) */}
+              <div className="border-t border-rule">
+                <ComposerInspector
+                  state={state}
+                  patch={patch}
+                  mode={mode}
+                  myCommunities={myCommunities}
+                  myCollections={myCollections}
+                />
               </div>
-            )}
-          </main>
+            </>
+          )}
 
-          {/* Inspector — desktop sidebar */}
-          <aside className="hidden lg:block w-[320px] shrink-0 border-l border-[var(--vocl-border)] overflow-y-auto">
-            <ComposerInspector
-              state={state}
-              patch={patch}
-              mode={mode}
-              myCommunities={myCommunities}
-              myCollections={myCollections}
-            />
-          </aside>
+          {state.error && (
+            <div className="mx-auto max-w-[680px] px-5 pb-8">
+              <div className="p-3 rounded-none bg-vocl-like/15 border border-vocl-like/30 text-vocl-like text-sm">
+                {state.error}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Inspector trigger — mobile/tablet */}
-        <button
-          type="button"
-          onClick={() => setInspectorOpen(true)}
-          className="lg:hidden absolute bottom-5 right-5 flex items-center gap-2 px-4 py-2.5 rounded-none border border-[var(--vocl-border)] bg-vocl-surface-dark/95 backdrop-blur text-sm font-medium text-foreground"
-        >
-          <IconAdjustmentsHorizontal size={18} />
-          Options
-        </button>
-      </div>
-
-      {/* Inspector — mobile bottom sheet */}
-      {inspectorOpen && (
-        <div className="lg:hidden fixed inset-0 z-[70]">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setInspectorOpen(false)}
-          />
-          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-none bg-background border-t border-[var(--vocl-border)]">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--vocl-border)] sticky top-0 bg-background">
-              <h2 className="font-semibold text-foreground">Post options</h2>
+        {/* Footer — publish actions on a 3px double rule (artboard 07) */}
+        <div className="shrink-0 flex items-center justify-between gap-3 border-t-[3px] border-double border-rule px-4 md:px-6 py-3">
+          <div className="flex items-center gap-4 min-w-0">
+            {draftText && <span className="slug text-meta-dim truncate">{draftText}</span>}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline slug text-meta-dim">{publishModeLabel}</span>
+            {/* Publish split-button */}
+            <div className="relative flex items-center">
               <button
                 type="button"
-                onClick={() => setInspectorOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-none text-foreground/60 hover:bg-[var(--vocl-hover)]"
+                onClick={handleSubmit}
+                disabled={isPending}
+                className="flex items-center gap-1.5 bg-accent px-5 h-9 font-sans font-medium uppercase tracking-[0.16em] text-xs text-white transition-opacity hover:opacity-[0.88] disabled:opacity-60"
               >
-                <IconX size={18} />
+                {isPending ? <IconLoader2 size={16} className="animate-spin" /> : <PublishIcon size={16} />}
+                {footerLabel}
               </button>
+              {!isEdit && (
+                <button
+                  type="button"
+                  onClick={() => setPublishMenuOpen((v) => !v)}
+                  disabled={isPending}
+                  className="flex items-center justify-center w-8 h-9 bg-accent text-white border-l border-white/20 transition-opacity hover:opacity-[0.88] disabled:opacity-60"
+                  aria-label="Publish options"
+                >
+                  <IconChevronDown size={16} />
+                </button>
+              )}
+              {publishMenuOpen && !isEdit && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setPublishMenuOpen(false)} />
+                  <div className="absolute right-0 bottom-11 z-50 w-56 border border-rule bg-vocl-surface-dark overflow-hidden p-1">
+                    {[
+                      { m: "now" as const, icon: IconSend, label: "Publish now", sub: "Publish immediately" },
+                      { m: "queue" as const, icon: IconClock, label: "Add to queue", sub: "Use your queue schedule" },
+                      { m: "schedule" as const, icon: IconCalendar, label: "Schedule…", sub: "Pick a date & time" },
+                    ].map(({ m, icon: Icon, label, sub }) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => {
+                          patch({ publishMode: m });
+                          setPublishMenuOpen(false);
+                        }}
+                        className={`w-full flex items-start gap-2.5 px-3 py-2 text-left transition-colors ${
+                          state.publishMode === m ? "bg-vocl-hover" : "hover:bg-vocl-hover"
+                        }`}
+                      >
+                        <Icon size={16} className={`mt-0.5 ${state.publishMode === m ? "text-accent" : "text-meta"}`} />
+                        <span className="flex-1">
+                          <span className="block type-body font-medium text-ink">{label}</span>
+                          <span className="block type-meta text-meta">{sub}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            <ComposerInspector
-              state={state}
-              patch={patch}
-              mode={mode}
-              myCommunities={myCommunities}
-              myCollections={myCollections}
-            />
           </div>
         </div>
-      )}
+      </div>
 
       {/* Discard confirmation — sits above the composer panel (z-[60]) and the
           mobile inspector (z-[70]). */}
