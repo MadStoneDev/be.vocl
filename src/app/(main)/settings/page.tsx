@@ -121,7 +121,7 @@ function SettingsContent() {
           <Link
             key={link.href}
             href={link.href}
-            className="group flex items-baseline justify-between gap-4 py-4 border-b border-rule last:border-b-0 text-ink"
+            className="group flex items-baseline justify-between gap-4 py-4 pl-4 -ml-4 border-l-2 border-l-transparent hover:border-l-accent border-b border-b-rule last:border-b-0 text-ink transition-colors"
           >
             <span className="flex-1 min-w-0">
               <span className="slug text-meta-dim mr-4">

@@ -155,14 +155,14 @@ export default function NotificationsSettingsPage() {
     <div className="py-6">
       <title>Settings — Notifications | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
+      <div className="mb-8 border-b border-rule pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2  hover:bg-vocl-hover transition-colors"
+          className="slug text-meta hover:text-accent transition-colors"
         >
-          <IconArrowLeft size={22} className="text-foreground/70" />
+          ← Settings
         </Link>
-        <div className="flex-1">
+        <div className="mt-3">
           <span className="kicker kicker-accent">
             Settings
           </span>
@@ -201,14 +201,14 @@ export default function NotificationsSettingsPage() {
                 className="sr-only"
               />
               <div
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                className={`w-3.5 h-3.5 border flex items-center justify-center ${
                   settings.emailFrequency === option.value
-                    ? "border-vocl-primary"
-                    : "border-vocl-border"
+                    ? "border-accent"
+                    : "border-rule"
                 }`}
               >
                 {settings.emailFrequency === option.value && (
-                  <div className="w-2 h-2 rounded-full bg-accent" />
+                  <div className="w-2 h-2 bg-accent" />
                 )}
               </div>
               <div className="flex-1">

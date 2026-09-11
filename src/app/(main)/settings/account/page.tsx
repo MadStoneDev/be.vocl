@@ -82,10 +82,9 @@ export default function AccountSettingsPage() {
       <title>Settings — Account | be.vocl</title>
       <Link
         href="/settings"
-        className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground mb-4 transition-colors"
+        className="slug text-meta hover:text-accent transition-colors mb-4 inline-block"
       >
-        <IconArrowLeft size={16} />
-        Back to settings
+        ← Settings
       </Link>
 
       <div className="mb-8 border-b border-vocl-border pb-5">
