@@ -25,23 +25,23 @@ export default async function MainLayout({
   // Logged-out reading view — masthead + centered column + sign-up footer.
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col overflow-x-hidden">
-      <header className="border-b border-vocl-border">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link href="/" className="type-display text-2xl font-bold text-vocl-primary">
+      <header className="border-b border-rule">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+          <Link href="/" className="font-display text-2xl leading-none text-accent">
             be.vocl
           </Link>
-          <nav className="flex items-center gap-3">
+          <nav className="flex items-center gap-5">
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:text-foreground"
+              className="byline text-ink transition-colors hover:text-accent"
             >
-              Log in
+              Sign in
             </Link>
             <Link
               href="/signup"
-              className="rounded-xl bg-vocl-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
+              className="bg-accent px-5 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88]"
             >
-              Join be.vocl
+              Subscribe
             </Link>
           </nav>
         </div>
@@ -51,19 +51,18 @@ export default async function MainLayout({
         <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">{children}</div>
       </main>
 
-      <footer className="border-t border-vocl-border">
-        <div className="mx-auto max-w-2xl px-4 py-10 text-center sm:px-6">
-          <p className="type-display text-xl font-bold text-foreground">
-            Like what you&apos;re reading?
-          </p>
-          <p className="type-body text-foreground/65 mt-2">
-            Join be.vocl to follow voices you love and share your own.
+      <footer className="border-t border-rule">
+        <div className="mx-auto max-w-2xl px-4 py-12 text-center sm:px-6">
+          <p className="kicker kicker-accent mb-3">Keep reading</p>
+          <p className="type-display text-ink">Like what you&apos;re reading?</p>
+          <p className="editorial-body text-meta mt-3 mx-auto max-w-[46ch]">
+            Subscribe to be.vocl to follow the voices you love and file your own.
           </p>
           <Link
             href="/signup"
-            className="mt-5 inline-block rounded-xl bg-vocl-primary px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
+            className="mt-6 inline-block bg-accent px-6 py-3 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88]"
           >
-            Join be.vocl
+            Subscribe · 21+
           </Link>
         </div>
       </footer>
