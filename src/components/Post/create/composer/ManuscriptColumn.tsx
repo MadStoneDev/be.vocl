@@ -78,7 +78,7 @@ export function ManuscriptColumn({
               <button
                 type="button"
                 onClick={() => patch({ isEssay: !state.isEssay })}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none transition-colors ${
                   state.isEssay
                     ? "text-[var(--vocl-primary)]"
                     : "bg-[var(--vocl-hover)] text-foreground/60 hover:text-foreground"

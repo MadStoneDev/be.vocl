@@ -183,7 +183,7 @@ export function TagInput({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-vocl-primary/20 text-vocl-primary type-meta"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-none bg-vocl-primary/20 text-vocl-primary type-meta"
           >
             <IconHash size={14} />
             {tag}
@@ -241,7 +241,7 @@ export function TagInput({
               }, 200);
             }}
             placeholder={placeholder}
-            className="w-full py-2.5 pl-10 pr-4 rounded-xl bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body"
+            className="w-full py-2.5 pl-10 pr-4 rounded-none bg-background/50 border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body"
             maxLength={30}
             autoComplete="off"
           />
@@ -250,7 +250,7 @@ export function TagInput({
           {showDropdown && (suggestions.length > 0 || (queryNormalized.length >= 2 && !exactMatchExists)) && (
             <div
               ref={dropdownRef}
-              className="absolute z-50 left-0 right-0 mt-1 rounded-xl bg-vocl-surface-dark border border-vocl-border shadow-xl overflow-hidden max-h-52 overflow-y-auto"
+              className="absolute z-50 left-0 right-0 mt-1 rounded-none bg-vocl-surface-dark border border-vocl-border overflow-hidden max-h-52 overflow-y-auto"
             >
               {suggestions.map((suggestion, index) => (
                 <button

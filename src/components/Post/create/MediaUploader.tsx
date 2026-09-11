@@ -150,17 +150,17 @@ export function MediaUploader({
               onDragEnd={reorderable ? handleReorderEnd : undefined}
               className={`relative group transition-all ${
                 draggedIndex === index ? "opacity-40" : ""
-              } ${dragOverIndex === index ? "ring-2 ring-vocl-primary rounded-xl" : ""}`}
+              } ${dragOverIndex === index ? "ring-2 ring-vocl-primary rounded-none" : ""}`}
             >
               {mediaType === "image" && (
-                <div className="relative aspect-square rounded-xl overflow-hidden bg-vocl-surface-dark">
+                <div className="relative aspect-square rounded-none overflow-hidden bg-vocl-surface-dark">
                   <Image src={url} alt="" fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
                   {reorderable && (
                     <>
-                      <span className="absolute top-2 left-2 w-6 h-6 rounded-md bg-black/55 text-white flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute top-2 left-2 w-6 h-6 rounded-none bg-black/55 text-white flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
                         <IconGripVertical size={15} />
                       </span>
-                      <span className="absolute bottom-2 left-2 min-w-[20px] h-5 px-1 rounded-md bg-black/55 text-white type-meta font-semibold flex items-center justify-center">
+                      <span className="absolute bottom-2 left-2 min-w-[20px] h-5 px-1 rounded-none bg-black/55 text-white type-meta font-semibold flex items-center justify-center">
                         {index + 1}
                       </span>
                     </>
@@ -168,7 +168,7 @@ export function MediaUploader({
                 </div>
               )}
               {mediaType === "video" && (
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-vocl-surface-dark">
+                <div className="relative aspect-video rounded-none overflow-hidden bg-vocl-surface-dark">
                   <video src={url} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <IconVideo size={32} className="text-white" />
@@ -176,14 +176,14 @@ export function MediaUploader({
                 </div>
               )}
               {mediaType === "audio" && (
-                <div className="relative aspect-square rounded-xl overflow-hidden bg-vocl-surface-dark flex items-center justify-center">
+                <div className="relative aspect-square rounded-none overflow-hidden bg-vocl-surface-dark flex items-center justify-center">
                   <IconMusic size={48} className="text-foreground/40" />
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-vocl-like text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-none bg-vocl-like text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <IconX size={14} />
               </button>
@@ -202,7 +202,7 @@ export function MediaUploader({
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`relative border-2 border-dashed rounded-sm p-8 text-center transition-colors ${
+          className={`relative border-2 border-dashed rounded-none p-8 text-center transition-colors ${
             dragOver
               ? "border-vocl-primary bg-vocl-primary/10"
               : "border-vocl-border hover:border-vocl-border"
@@ -228,7 +228,7 @@ export function MediaUploader({
               <p className="type-body text-foreground/60">
                 Uploading... {progress?.percent || 0}%
               </p>
-              <div className="w-48 h-1.5 mx-auto bg-vocl-hover-strong rounded-full overflow-hidden">
+              <div className="w-48 h-1.5 mx-auto bg-vocl-hover-strong rounded-none overflow-hidden">
                 <div
                   className="h-full bg-vocl-primary transition-all"
                   style={{ width: `${progress?.percent || 0}%` }}
@@ -237,7 +237,7 @@ export function MediaUploader({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-full bg-vocl-primary/10 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto rounded-none bg-vocl-primary/10 flex items-center justify-center">
                 <Icon size={32} className="text-vocl-primary" />
               </div>
               <div>

@@ -158,7 +158,7 @@ export function EditorialEditor({
   };
 
   const BtnClass = (active: boolean) =>
-    `flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+    `flex items-center justify-center w-8 h-8 rounded-none transition-colors ${
       active
         ? "bg-[var(--vocl-primary)] text-white"
         : "text-foreground/70 hover:bg-[var(--vocl-hover)] hover:text-foreground"
@@ -169,7 +169,7 @@ export function EditorialEditor({
       <BubbleMenu
         editor={editor}
         options={{ placement: "top" }}
-        className="flex items-center gap-0.5 rounded-xl border border-[var(--vocl-border)] bg-vocl-surface-dark/95 backdrop-blur p-1 shadow-xl"
+        className="flex items-center gap-0.5 rounded-none border border-[var(--vocl-border)] bg-vocl-surface-dark/95 backdrop-blur p-1"
       >
         <button
           type="button"
@@ -216,7 +216,7 @@ export function EditorialEditor({
 
       {/* Inline link popover (replaces window.prompt) */}
       {linkPopover && (
-        <div className="absolute z-50 top-0 left-0 right-0 flex items-center gap-2 rounded-xl border border-[var(--vocl-border)] bg-vocl-surface-dark p-2 shadow-xl">
+        <div className="absolute z-50 top-0 left-0 right-0 flex items-center gap-2 rounded-none border border-[var(--vocl-border)] bg-vocl-surface-dark p-2">
           <input
             ref={linkInputRef}
             type="url"
@@ -239,14 +239,14 @@ export function EditorialEditor({
           <button
             type="button"
             onClick={applyLink}
-            className="px-3 py-1.5 rounded-lg bg-[var(--vocl-primary)] text-white type-body font-medium hover:bg-[var(--vocl-primary-hover)] transition-colors"
+            className="px-3 py-1.5 rounded-none bg-[var(--vocl-primary)] text-white type-body font-medium hover:bg-[var(--vocl-primary-hover)] transition-colors"
           >
             Apply
           </button>
           <button
             type="button"
             onClick={() => setLinkPopover(false)}
-            className="px-2 py-1.5 rounded-lg text-foreground/60 hover:text-foreground type-body"
+            className="px-2 py-1.5 rounded-none text-foreground/60 hover:text-foreground type-body"
           >
             Cancel
           </button>
