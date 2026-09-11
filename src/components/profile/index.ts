@@ -1,6 +1,7 @@
 export { ProfileHeader } from "./ProfileHeader";
 export { ProfileLinks } from "./ProfileLinks";
 export { ProfileTabs } from "./ProfileTabs";
+export { ProfileMasthead } from "./ProfileMasthead";
 export { PinnedPost } from "./PinnedPost";
 export { FollowButton } from "./FollowButton";
 export { FollowersModal } from "./FollowersModal";
