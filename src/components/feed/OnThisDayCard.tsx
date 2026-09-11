@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  IconCalendarEvent,
   IconChevronRight,
   IconHeart,
   IconMessage,
@@ -72,38 +71,32 @@ export function OnThisDayCard() {
   const firstPost = posts[0];
 
   return (
-    <div className="mb-4 rounded-xl bg-gradient-to-br from-vocl-primary/15 to-vocl-primary/5 border border-vocl-primary/20 p-4">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2">
-          <IconCalendarEvent size={20} className="text-vocl-primary" />
-          <h3 className="text-sm font-semibold text-foreground">On this day</h3>
-        </div>
+    <div className="mb-4 border-t border-b border-rule py-4">
+      <div className="flex items-start justify-between gap-3 pb-3 border-b border-rule">
+        <span className="slug text-accent">On this day</span>
         <button
           onClick={dismiss}
-          className="text-xs text-foreground/40 hover:text-foreground/70"
+          className="slug text-meta-dim hover:text-ink transition-colors"
         >
           Hide
         </button>
       </div>
 
-      <Link
-        href={`/post/${firstPost.id}`}
-        className="block group rounded-lg bg-black/5 hover:bg-black/10 transition-colors p-3"
-      >
+      <Link href={`/post/${firstPost.id}`} className="block group pt-3">
         <div className="flex items-start gap-3">
           {thumbnail(firstPost) ? (
-            <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/20">
+            <div className="relative w-16 h-16 overflow-hidden flex-shrink-0 bg-vocl-hover">
               <Image src={thumbnail(firstPost)!} alt="" fill className="object-cover" sizes="64px" />
             </div>
           ) : null}
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-vocl-primary mb-0.5">
+            <p className="kicker kicker-accent mb-1">
               {firstPost.yearsAgo} {firstPost.yearsAgo === 1 ? "year" : "years"} ago
             </p>
-            <p className="text-sm text-foreground line-clamp-3">
+            <p className="editorial-body text-ink line-clamp-3 group-hover:text-accent transition-colors">
               {snippet(firstPost) || "View this post"}
             </p>
-            <div className="flex items-center gap-3 mt-1.5 text-xs text-foreground/50">
+            <div className="flex items-center gap-3 mt-1.5 byline text-meta">
               <span className="inline-flex items-center gap-1">
                 <IconHeart size={12} />
                 {firstPost.likeCount}
@@ -114,16 +107,16 @@ export function OnThisDayCard() {
               </span>
             </div>
           </div>
-          <IconChevronRight size={16} className="text-foreground/30 group-hover:text-foreground/70 flex-shrink-0 mt-1" />
+          <IconChevronRight size={16} className="text-meta-dim group-hover:text-ink flex-shrink-0 mt-1" />
         </div>
       </Link>
 
       {posts.length > 1 && (
         <Link
           href="/on-this-day"
-          className="inline-block mt-2 text-xs text-vocl-primary hover:underline"
+          className="inline-block mt-3 slug text-accent hover:text-ink transition-colors"
         >
-          See {posts.length - 1} more from today's memories →
+          See {posts.length - 1} more from today&rsquo;s memories &rarr;
         </Link>
       )}
     </div>

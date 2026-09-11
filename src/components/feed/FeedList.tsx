@@ -118,9 +118,10 @@ export function FeedList({
   if (posts.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-foreground/40 text-lg mb-2">Your feed is empty</p>
-        <p className="text-foreground/30 text-sm">
-          Follow some people or tags to see posts here!
+        <p className="slug text-meta-dim mb-4">Nothing on the wire yet</p>
+        <h3 className="type-display text-ink mb-3">A blank front page.</h3>
+        <p className="editorial-body text-meta max-w-[52ch] mx-auto">
+          Follow some voices or open a desk, and tonight&rsquo;s edition fills itself.
         </p>
       </div>
     );

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IconUserPlus, IconLoader2 } from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { getSuggestedUsers } from "@/actions/search";
 import { followUser, unfollowUser } from "@/actions/follows";
 import { toast } from "@/components/ui";
@@ -64,31 +64,23 @@ export function WhoToFollow() {
   if (isLoading || users.length === 0) return null;
 
   return (
-    <div className="rounded-xl bg-vocl-hover border border-vocl-border p-4 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <IconUserPlus size={18} className="text-vocl-primary" />
-          <h3 className="text-sm font-semibold text-foreground">
-            Who to Follow
-          </h3>
-        </div>
+    <div className="border-t border-b border-rule py-4 mb-4">
+      <div className="flex items-center justify-between pb-3 border-b border-rule">
+        <span className="slug text-accent">Rising voices</span>
         <Link
           href="/explore"
-          className="text-xs text-vocl-primary hover:text-vocl-primary-hover transition-colors"
+          className="slug text-meta-dim hover:text-ink transition-colors"
         >
           See more
         </Link>
       </div>
 
-      <div className="space-y-3">
+      <div className="divide-y divide-rule">
         {users.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center gap-3"
-          >
+          <div key={user.id} className="flex items-center gap-3 py-3">
             <Link
               href={`/profile/${user.username}`}
-              className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+              className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-vocl-hover"
             >
               {user.avatarUrl ? (
                 <Image
@@ -99,29 +91,20 @@ export function WhoToFollow() {
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                  <span className="text-sm font-bold text-white">
-                    {user.username.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+                <span className="absolute inset-0 flex items-center justify-center font-display text-ink">
+                  {user.username.charAt(0).toUpperCase()}
+                </span>
               )}
             </Link>
 
-            <Link
-              href={`/profile/${user.username}`}
-              className="flex-1 min-w-0"
-            >
-              <p className="text-sm font-medium text-foreground truncate">
+            <Link href={`/profile/${user.username}`} className="flex-1 min-w-0">
+              <p className="text-sm text-ink truncate">
                 {user.displayName || user.username}
               </p>
-              <div className="flex items-center gap-1.5">
-                <p className="text-xs text-foreground/50 truncate">
-                  @{user.username}
-                </p>
+              <div className="flex items-center gap-2">
+                <p className="byline text-meta truncate">@{user.username}</p>
                 {user.followsYou && (
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-vocl-primary/15 text-vocl-primary flex-shrink-0">
-                    Follows you
-                  </span>
+                  <span className="slug text-meta-dim flex-shrink-0">Follows you</span>
                 )}
               </div>
             </Link>
@@ -129,10 +112,10 @@ export function WhoToFollow() {
             <button
               onClick={() => handleFollowToggle(user.id)}
               disabled={followLoadingMap[user.id]}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors flex-shrink-0 ${
+              className={`px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] transition-colors flex-shrink-0 ${
                 followingMap[user.id]
-                  ? "bg-vocl-hover-strong text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                  : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+                  ? "border border-rule text-meta hover:text-vocl-like hover:border-vocl-like"
+                  : "bg-accent text-white hover:opacity-[0.88]"
               }`}
             >
               {followLoadingMap[user.id] ? (
