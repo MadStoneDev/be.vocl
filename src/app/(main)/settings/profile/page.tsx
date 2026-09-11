@@ -264,21 +264,21 @@ export default function ProfileSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-sm hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2  hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
         <div>
-          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          <span className="kicker kicker-accent">
             Settings
           </span>
-          <h1 className="type-display font-display text-foreground">Edit Profile</h1>
+          <h1 className="type-display font-display text-ink">Edit Profile</h1>
         </div>
       </div>
 
       {/* Header Image */}
       <div className="relative mb-16">
-        <div className="relative h-40 md:h-56 w-full rounded-sm overflow-hidden">
+        <div className="relative h-40 md:h-56 w-full  overflow-hidden">
           {headerUrl ? (
             <Image
               src={headerUrl}
@@ -287,7 +287,7 @@ export default function ProfileSettingsPage() {
               className="object-cover"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary/30 via-vocl-primary/10 to-background" />
+            <div className="absolute inset-0 ph-image" />
           )}
           {isUploadingHeader ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60">
@@ -298,7 +298,7 @@ export default function ProfileSettingsPage() {
               onClick={() => headerInputRef.current?.click()}
               className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
             >
-              <div className="flex items-center gap-2 px-4 py-2 rounded-sm bg-white/20 backdrop-blur text-white">
+              <div className="flex items-center gap-2 px-4 py-2  bg-white/20 backdrop-blur text-white">
                 <IconCamera size={20} />
                 <span className="text-sm font-medium">Change header</span>
               </div>
@@ -316,7 +316,7 @@ export default function ProfileSettingsPage() {
         {/* Avatar */}
         <div className="absolute -bottom-12 left-4">
           <div className="relative">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-xl bg-vocl-surface-dark">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden border border-rule bg-panel">
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
@@ -325,7 +325,7 @@ export default function ProfileSettingsPage() {
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+                <div className="absolute inset-0 bg-accent flex items-center justify-center">
                   <span className="text-2xl font-bold text-white">
                     {username.charAt(0).toUpperCase()}
                   </span>
@@ -368,9 +368,9 @@ export default function ProfileSettingsPage() {
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={username}
             maxLength={50}
-            className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+            className="w-full px-4 py-3 border border-rule text-foreground placeholder:text-meta-dim focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
           />
-          <p className="mt-1 text-xs text-foreground/50">
+          <p className="mt-1 text-xs text-meta">
             {displayName.length}/50 characters
           </p>
         </div>
@@ -380,10 +380,10 @@ export default function ProfileSettingsPage() {
           <label className="block text-sm font-medium text-foreground/70 mb-2">
             Username
           </label>
-          <div className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark/50 border border-vocl-border text-foreground/50">
+          <div className="w-full px-4 py-3 border border-rule/50 border border-vocl-border text-meta">
             @{username}
           </div>
-          <p className="mt-1 text-xs text-foreground/50">
+          <p className="mt-1 text-xs text-meta">
             Username cannot be changed
           </p>
         </div>
@@ -399,9 +399,9 @@ export default function ProfileSettingsPage() {
             placeholder="Tell the world about yourself..."
             maxLength={160}
             rows={3}
-            className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent resize-none"
+            className="w-full px-4 py-3 border border-rule text-foreground placeholder:text-meta-dim focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
           />
-          <p className="mt-1 text-xs text-foreground/50">
+          <p className="mt-1 text-xs text-meta">
             {bio.length}/160 characters
           </p>
         </div>
@@ -414,7 +414,7 @@ export default function ProfileSettingsPage() {
           <select
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
-            className="w-full px-4 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+            className="w-full px-4 py-3 border border-rule text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
           >
             {!TIMEZONES.includes(timezone) && (
               <option value={timezone}>{timezone}</option>
@@ -425,7 +425,7 @@ export default function ProfileSettingsPage() {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-foreground/50">
+          <p className="mt-1 text-xs text-meta">
             Used for scheduling, your posting queue, and daily digest emails.
           </p>
         </div>
@@ -435,7 +435,7 @@ export default function ProfileSettingsPage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full py-3 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3  bg-accent text-white font-semibold hover:opacity-[0.88] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <IconLoader2 size={20} className="animate-spin" />
@@ -451,10 +451,10 @@ export default function ProfileSettingsPage() {
           <span className="type-meta uppercase tracking-widest text-foreground/45 font-semibold">
             Links
           </span>
-          <h2 className="type-heading font-display text-foreground mt-1 mb-1">
+          <h2 className="type-heading font-display text-ink mt-1 mb-1">
             Profile Links
           </h2>
-          <p className="text-sm text-foreground/50 mb-4">
+          <p className="text-sm text-meta mb-4">
             Add links to your website, social media, or other profiles
           </p>
 
@@ -464,7 +464,7 @@ export default function ProfileSettingsPage() {
               {links.map((link, index) => (
                 <div
                   key={link.id}
-                  className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark"
+                  className="flex items-center gap-3 p-3 border border-rule"
                 >
                   <div className="flex flex-col gap-0.5">
                     <button
@@ -481,7 +481,7 @@ export default function ProfileSettingsPage() {
                         }
                       }}
                       disabled={index === 0}
-                      className="p-0.5 rounded text-foreground/30 hover:text-foreground/60 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                      className="p-0.5 rounded text-meta-dim hover:text-foreground/60 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                     >
                       <IconChevronUp size={16} />
                     </button>
@@ -499,7 +499,7 @@ export default function ProfileSettingsPage() {
                         }
                       }}
                       disabled={index === links.length - 1}
-                      className="p-0.5 rounded text-foreground/30 hover:text-foreground/60 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                      className="p-0.5 rounded text-meta-dim hover:text-foreground/60 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                     >
                       <IconChevronDown size={16} />
                     </button>
@@ -508,13 +508,13 @@ export default function ProfileSettingsPage() {
                     <p className="text-sm font-medium text-foreground truncate">
                       {link.title}
                     </p>
-                    <p className="text-xs text-foreground/50 truncate">
+                    <p className="text-xs text-meta truncate">
                       {link.url}
                     </p>
                   </div>
                   <button
                     onClick={() => handleRemoveLink(link.id)}
-                    className="p-2 rounded-lg text-foreground/50 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+                    className="p-2  text-meta hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
                   >
                     <IconTrash size={18} />
                   </button>
@@ -524,26 +524,26 @@ export default function ProfileSettingsPage() {
           )}
 
           {/* Add New Link */}
-          <div className="space-y-3 p-4 rounded-sm bg-vocl-surface-dark/50 border border-vocl-border">
+          <div className="space-y-3 p-4 border border-rule/50 border border-vocl-border">
             <input
               type="text"
               value={newLinkTitle}
               onChange={(e) => setNewLinkTitle(e.target.value)}
               placeholder="Link title (e.g., My Website)"
               maxLength={30}
-              className="w-full px-4 py-2.5 rounded-lg bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-rule text-foreground text-sm placeholder:text-meta-dim focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
             <input
               type="url"
               value={newLinkUrl}
               onChange={(e) => setNewLinkUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full px-4 py-2.5 rounded-lg bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-rule text-foreground text-sm placeholder:text-meta-dim focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
             <button
               onClick={handleAddLink}
               disabled={isAddingLink || !newLinkTitle.trim() || !newLinkUrl.trim()}
-              className="w-full py-2.5 rounded-lg bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2.5  bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover-strong transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isAddingLink ? (
                 <IconLoader2 size={18} className="animate-spin" />
@@ -555,7 +555,7 @@ export default function ProfileSettingsPage() {
           </div>
 
           {links.length >= 5 && (
-            <p className="mt-2 text-xs text-foreground/50">
+            <p className="mt-2 text-xs text-meta">
               Maximum 5 links allowed
             </p>
           )}

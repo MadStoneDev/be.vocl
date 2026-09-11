@@ -168,9 +168,9 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
       { id: "new-post", label: "New post", hint: "Create", icon: <IconPencilPlus size={18} />, keywords: "write compose create", run: () => go("/create") },
       {
         id: "toggle-theme",
-        label: resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+        label: resolvedTheme === "dark" ? "Switch to newsprint edition" : "Switch to late (dark) edition",
         icon: resolvedTheme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />,
-        keywords: "theme dark light appearance",
+        keywords: "theme edition dark light newsprint late appearance",
         run: toggleTheme,
       },
     ],

@@ -144,24 +144,24 @@ export default function InviteSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-sm text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2  text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} />
         </Link>
         <div>
-          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          <span className="kicker kicker-accent">
             Settings
           </span>
-          <h1 className="type-display font-display text-foreground">Invite Codes</h1>
+          <h1 className="type-display font-display text-ink">Invite Codes</h1>
         </div>
       </div>
 
       {/* Info Card */}
       {!isLoading && !canGenerateCodes ? (
         // Not a Trusted User - show locked message
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-sm p-6 mb-6">
+        <div className="bg-amber-500/10 border border-amber-500/20  p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-sm bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12  bg-amber-500/20 flex items-center justify-center flex-shrink-0">
               <IconLock size={24} className="text-amber-500" />
             </div>
             <div>
@@ -172,7 +172,7 @@ export default function InviteSettingsPage() {
                 Invite codes are currently available only to <strong>Trusted Users</strong>.
                 Keep engaging with the community and you may be promoted!
               </p>
-              <p className="text-xs text-foreground/40">
+              <p className="text-xs text-meta-dim">
                 Trusted Users can generate up to 3 invite codes to share with friends.
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function InviteSettingsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-vocl-primary/10 border border-vocl-primary/20 rounded-sm p-4 mb-6">
+          <div className="bg-accent/10 border border-vocl-primary/20  p-4 mb-6">
             <div className="flex items-start gap-3">
               <IconTicket size={24} className="text-vocl-primary flex-shrink-0 mt-0.5" />
               <div>
@@ -196,7 +196,7 @@ export default function InviteSettingsPage() {
           </div>
 
           {/* Generate Section */}
-          <div className="bg-vocl-surface-dark rounded-sm border border-vocl-border p-4 mb-6">
+          <div className="border border-rule p-4 mb-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h3 className="font-medium text-foreground">
@@ -208,7 +208,7 @@ export default function InviteSettingsPage() {
                     </>
                   )}
                 </h3>
-                <p className="text-sm text-foreground/50">
+                <p className="text-sm text-meta">
                   {isUnlimited
                     ? "As a staff member, you can generate unlimited invite codes"
                     : "Generate codes to invite your friends"}
@@ -217,7 +217,7 @@ export default function InviteSettingsPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generating || !canGenerate}
-                className="flex w-full shrink-0 items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover disabled:opacity-50 transition-colors sm:w-auto"
+                className="flex w-full shrink-0 items-center justify-center gap-2 px-4 py-2.5  bg-accent text-white font-medium hover:opacity-[0.88] disabled:opacity-50 transition-colors sm:w-auto"
               >
                 {generating ? (
                   <>
@@ -244,14 +244,14 @@ export default function InviteSettingsPage() {
       ) : codes.length === 0 ? (
         <div className="text-center py-12">
           <IconTicket size={48} className="mx-auto mb-4 text-foreground/20" />
-          <p className="text-foreground/50 mb-2">No invite codes yet</p>
-          <p className="text-sm text-foreground/30">
+          <p className="text-meta mb-2">No invite codes yet</p>
+          <p className="text-sm text-meta-dim">
             Generate a code to start inviting friends
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          <h2 className="type-heading font-display text-foreground">Your Codes</h2>
+          <h2 className="type-heading font-display text-ink">Your Codes</h2>
 
           {codes.map((code) => {
             const isExpired = code.expiresAt && new Date(code.expiresAt) < new Date();
@@ -263,18 +263,18 @@ export default function InviteSettingsPage() {
             return (
               <div
                 key={code.id}
-                className="bg-vocl-surface-dark rounded-sm border border-vocl-border overflow-hidden"
+                className="border border-rule overflow-hidden"
               >
                 {/* Code Header */}
                 <div className="p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <code className="font-mono text-lg text-vocl-primary bg-vocl-primary/10 px-3 py-1.5 rounded-lg">
+                      <code className="font-mono text-lg text-vocl-primary bg-accent/10 px-3 py-1.5 ">
                         {code.code}
                       </code>
                       <button
                         onClick={() => copyToClipboard(code.code)}
-                        className="p-2 rounded-lg hover:bg-vocl-hover text-foreground/40 hover:text-foreground transition-colors"
+                        className="p-2  hover:bg-vocl-hover text-meta-dim hover:text-foreground transition-colors"
                         title="Copy code"
                       >
                         {copiedCode === code.code ? (
@@ -308,7 +308,7 @@ export default function InviteSettingsPage() {
                   </div>
 
                   {/* Code Stats */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-foreground/50">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-meta">
                     <span>
                       Used: {code.uses}/{code.maxUses ?? "∞"}
                     </span>
@@ -353,10 +353,10 @@ export default function InviteSettingsPage() {
                   <div className="border-t border-vocl-border p-4 bg-background/30">
                     {loadingUses === code.id ? (
                       <div className="flex items-center justify-center py-4">
-                        <IconLoader2 size={20} className="animate-spin text-foreground/40" />
+                        <IconLoader2 size={20} className="animate-spin text-meta-dim" />
                       </div>
                     ) : uses.length === 0 ? (
-                      <p className="text-sm text-foreground/40 text-center py-2">
+                      <p className="text-sm text-meta-dim text-center py-2">
                         No one has used this code yet
                       </p>
                     ) : (
@@ -368,7 +368,7 @@ export default function InviteSettingsPage() {
                           <Link
                             key={use.id}
                             href={`/@${use.username}`}
-                            className="flex items-center gap-3 p-2 -mx-2 rounded-sm hover:bg-vocl-hover transition-colors"
+                            className="flex items-center gap-3 p-2 -mx-2  hover:bg-vocl-hover transition-colors"
                           >
                             <Avatar
                               src={use.avatarUrl}
@@ -379,11 +379,11 @@ export default function InviteSettingsPage() {
                               <div className="font-medium text-foreground">
                                 {use.displayName || `@${use.username}`}
                               </div>
-                              <div className="text-sm text-foreground/50">
+                              <div className="text-sm text-meta">
                                 @{use.username}
                               </div>
                             </div>
-                            <div className="text-xs text-foreground/40">
+                            <div className="text-xs text-meta-dim">
                               {formatTimeAgo(use.usedAt)}
                             </div>
                           </Link>

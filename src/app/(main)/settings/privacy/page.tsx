@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  IconArrowLeft,
   IconEye,
   IconEyeOff,
   IconLoader2,
@@ -260,24 +259,16 @@ export default function PrivacySettingsPage() {
     <div className="py-6 max-w-2xl mx-auto">
       <title>Settings — Privacy | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6 border-b border-vocl-border pb-5">
-        <Link
-          href="/settings"
-          className="w-10 h-10 rounded-full bg-vocl-hover flex items-center justify-center hover:bg-vocl-hover-strong transition-colors shrink-0"
-        >
-          <IconArrowLeft size={20} className="text-foreground" />
+      <div className="mb-6 border-b border-rule pb-5">
+        <Link href="/settings" className="slug text-meta hover:text-ink transition-colors">
+          ← Settings
         </Link>
-        <div>
-          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
-            Settings
-          </span>
-          <h1 className="type-display font-display text-foreground">Privacy &amp; Content</h1>
-          <p className="type-body text-foreground/55 mt-1">Control your privacy and content preferences</p>
-        </div>
+        <h1 className="type-display font-display text-ink mt-3">Privacy &amp; Content</h1>
+        <p className="editorial-deck text-meta mt-2">Control your privacy and content preferences.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-6 mb-6 overflow-x-auto border-t border-rule rule-double-b py-3">
         {[
           { id: "privacy" as const, label: "Privacy" },
           { id: "content" as const, label: "Content" },
@@ -289,11 +280,8 @@ export default function PrivacySettingsPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-sm text-sm font-medium whitespace-nowrap transition-colors ${
-              activeTab === tab.id
-                ? "bg-vocl-primary text-white"
-                : "bg-vocl-hover text-foreground/60 hover:bg-vocl-hover-strong"
-            }`}
+            data-active={activeTab === tab.id}
+            className="section-tab whitespace-nowrap hover:text-ink transition-colors"
           >
             {tab.label}
           </button>
@@ -303,12 +291,12 @@ export default function PrivacySettingsPage() {
       {/* Privacy Tab */}
       {activeTab === "privacy" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-1 flex items-center gap-2">
               <IconWorld size={20} />
               Public profile
             </h3>
-            <p className="text-xs text-foreground/50 mb-4">
+            <p className="editorial-caption not-italic text-meta mb-4">
               When on, your profile page is viewable by logged-out visitors and can
               be indexed by search engines. Your Members-only and sensitive posts
               stay hidden either way — only posts you set to Public appear.
@@ -325,8 +313,8 @@ export default function PrivacySettingsPage() {
             />
           </div>
 
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-4 flex items-center gap-2">
               <IconEye size={20} />
               Profile Visibility
             </h3>
@@ -374,12 +362,12 @@ export default function PrivacySettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-1 flex items-center gap-2">
               <IconSearch size={20} />
               Finding you on be.vocl
             </h3>
-            <p className="text-xs text-foreground/50 mb-4">
+            <p className="editorial-caption not-italic text-meta mb-4">
               Controls whether other members can find your account through the in-app
               search box.
             </p>
@@ -397,12 +385,12 @@ export default function PrivacySettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-1 flex items-center gap-2">
               <IconMessage size={20} />
               Messages
             </h3>
-            <p className="text-xs text-foreground/50 mb-4">
+            <p className="editorial-caption not-italic text-meta mb-4">
               Choose who can start a new direct-message conversation with you.
               Existing conversations aren&apos;t affected.
             </p>
@@ -422,22 +410,16 @@ export default function PrivacySettingsPage() {
                     onClick={() => handleDmPrivacyChange(opt.value)}
                     disabled={isPending}
                     aria-pressed={selected}
-                    className={`w-full flex items-start gap-3 p-3 rounded-sm text-left transition-colors disabled:opacity-60 ${
-                      selected
-                        ? "bg-vocl-primary/15 border border-vocl-primary/40"
-                        : "bg-vocl-hover border border-transparent hover:bg-vocl-hover-strong"
-                    }`}
+                    className="w-full flex items-start gap-3 py-3 border-t border-rule text-left transition-colors disabled:opacity-60"
                   >
                     <span
-                      className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        selected ? "border-vocl-primary" : "border-vocl-border"
+                      className={`mt-1 w-[10px] h-[10px] flex-shrink-0 border ${
+                        selected ? "border-accent bg-accent" : "border-rule bg-transparent"
                       }`}
-                    >
-                      {selected && <span className="w-2 h-2 rounded-full bg-vocl-primary" />}
-                    </span>
+                    />
                     <span className="flex-1">
-                      <span className="block text-sm font-medium text-foreground">{opt.label}</span>
-                      <span className="block text-xs text-foreground/50">{opt.desc}</span>
+                      <span className={`block text-sm ${selected ? "text-ink" : "text-meta"}`}>{opt.label}</span>
+                      <span className="block editorial-caption not-italic text-meta">{opt.desc}</span>
                     </span>
                   </button>
                 );
@@ -445,12 +427,12 @@ export default function PrivacySettingsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-1 flex items-center gap-2">
               <IconWorld size={20} />
               Public web
             </h3>
-            <p className="text-xs text-foreground/50 mb-4">
+            <p className="editorial-caption not-italic text-meta mb-4">
               Your profile and feed are only visible to logged-in be.vocl members.
               Only posts you set to{" "}
               <span className="font-medium text-foreground/70">Public</span> can be
@@ -487,12 +469,12 @@ export default function PrivacySettingsPage() {
       {activeTab === "content" && (
         <div className="space-y-4">
           {/* Date of birth (immutable; gates sensitive content at 21+) */}
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-1 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-1 flex items-center gap-2">
               <IconCake size={20} />
               Date of birth
             </h3>
-            <p className="text-xs text-foreground/50 mb-4">
+            <p className="editorial-caption not-italic text-meta mb-4">
               be.vocl is {SENSITIVE_MIN_AGE}+. Your date of birth gates access to
               sensitive content. It can&apos;t be changed once set — contact
               support if it&apos;s wrong.
@@ -500,7 +482,7 @@ export default function PrivacySettingsPage() {
             {dateOfBirth ? (
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm text-ink">
                     {new Date(dateOfBirth).toLocaleDateString(undefined, {
                       year: "numeric",
                       month: "long",
@@ -527,13 +509,13 @@ export default function PrivacySettingsPage() {
                     value={dobInput}
                     max={new Date().toISOString().slice(0, 10)}
                     onChange={(e) => setDobInput(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-sm bg-vocl-hover border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
+                    className="flex-1 px-4 py-2.5 bg-transparent border border-rule text-ink focus:outline-none focus:border-accent"
                   />
                   <button
                     type="button"
                     onClick={handleSaveDob}
                     disabled={!dobInput || savingDob}
-                    className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50"
+                    className="px-5 py-2.5 bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs hover:opacity-[0.88] transition-opacity disabled:opacity-50"
                   >
                     {savingDob ? "Saving…" : "Save"}
                   </button>
@@ -545,8 +527,8 @@ export default function PrivacySettingsPage() {
             )}
           </div>
 
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-4 flex items-center gap-2">
               <IconEyeOff size={20} />
               Sensitive Content
             </h3>
@@ -608,8 +590,8 @@ export default function PrivacySettingsPage() {
       {/* Asks Tab */}
       {activeTab === "asks" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-4 flex items-center gap-2">
               <IconMessageQuestion size={20} />
               Ask Box Settings
             </h3>
@@ -636,7 +618,7 @@ export default function PrivacySettingsPage() {
               />
             </div>
           </div>
-          <p className="text-xs text-foreground/40 px-2">
+          <p className="editorial-caption not-italic text-meta-dim px-2">
             When asks are enabled, an &quot;Ask&quot; button will appear on your profile.
             Others can send you questions that you can answer publicly.
           </p>
@@ -646,13 +628,13 @@ export default function PrivacySettingsPage() {
       {/* Blocked Tab */}
       {activeTab === "blocked" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-4 flex items-center gap-2">
               <IconUserX size={20} />
               Blocked Users
             </h3>
             {blockedUsers.length === 0 ? (
-              <p className="text-foreground/50 text-sm text-center py-8">
+              <p className="text-meta text-sm text-center py-8">
                 You haven&apos;t blocked anyone yet
               </p>
             ) : (
@@ -668,7 +650,7 @@ export default function PrivacySettingsPage() {
               </div>
             )}
           </div>
-          <p className="text-xs text-foreground/40 px-2">
+          <p className="editorial-caption not-italic text-meta-dim px-2">
             Blocked users cannot see your profile, posts, or send you messages.
             You won&apos;t see their content in your feed.
           </p>
@@ -678,13 +660,13 @@ export default function PrivacySettingsPage() {
       {/* Muted Tab */}
       {activeTab === "muted" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-4 flex items-center gap-2">
               <IconVolume3 size={20} />
               Muted Users
             </h3>
             {mutedUsers.length === 0 ? (
-              <p className="text-foreground/50 text-sm text-center py-8">
+              <p className="text-meta text-sm text-center py-8">
                 You haven&apos;t muted anyone yet
               </p>
             ) : (
@@ -700,7 +682,7 @@ export default function PrivacySettingsPage() {
               </div>
             )}
           </div>
-          <p className="text-xs text-foreground/40 px-2">
+          <p className="editorial-caption not-italic text-meta-dim px-2">
             Muted users&apos; posts won&apos;t appear in your feed, but they can
             still follow you and see your content.
           </p>
@@ -710,21 +692,21 @@ export default function PrivacySettingsPage() {
       {/* Muted Tags Tab */}
       {activeTab === "muted_tags" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-            <h3 className="type-heading font-display text-foreground mb-4 flex items-center gap-2">
+          <div className="p-4 border border-rule">
+            <h3 className="type-heading font-display text-ink mb-4 flex items-center gap-2">
               <IconHash size={20} />
               Muted Tags
             </h3>
             {mutedTags.length === 0 ? (
-              <p className="text-foreground/50 text-sm text-center py-8">
+              <p className="text-meta text-sm text-center py-8">
                 You haven&apos;t muted any tags yet
               </p>
             ) : (
               <div className="space-y-2">
                 {mutedTags.map((tag) => (
-                  <div key={tag.id} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-hover">
-                    <div className="w-10 h-10 rounded-full bg-vocl-primary/20 flex items-center justify-center">
-                      <IconHash size={18} className="text-vocl-primary" />
+                  <div key={tag.id} className="flex items-center gap-3 p-3 border border-rule">
+                    <div className="w-10 h-10 bg-vocl-hover flex items-center justify-center">
+                      <IconHash size={18} className="text-accent" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground text-sm truncate">
@@ -736,7 +718,7 @@ export default function PrivacySettingsPage() {
                     </div>
                     <button
                       onClick={() => handleUnmuteTag(tag.id)}
-                      className="px-3 py-1.5 rounded-lg bg-vocl-hover-strong text-foreground/70 text-sm hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
+                      className="px-3 py-1.5 border border-rule text-meta text-[11px] uppercase tracking-[0.14em] hover:text-ink hover:border-foreground transition-colors"
                     >
                       Unmute
                     </button>
@@ -745,7 +727,7 @@ export default function PrivacySettingsPage() {
               </div>
             )}
           </div>
-          <p className="text-xs text-foreground/40 px-2">
+          <p className="editorial-caption not-italic text-meta-dim px-2">
             Posts with muted tags won&apos;t appear in your feed. You can mute
             tags from tag pages or the post menu.
           </p>
@@ -770,10 +752,10 @@ function ToggleSetting({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-start justify-between gap-4">
       <div className="flex-1">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-foreground/50">{description}</p>
+        <p className="text-sm text-ink mb-1">{label}</p>
+        <p className="editorial-caption not-italic text-meta">{description}</p>
       </div>
       <button
         type="button"
@@ -781,13 +763,13 @@ function ToggleSetting({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         disabled={disabled}
-        className={`relative w-11 h-6 rounded-full transition-colors ${
-          checked ? "bg-vocl-primary" : "bg-vocl-hover-strong"
+        className={`relative w-[44px] h-[22px] flex-shrink-0 border transition-colors ${
+          checked ? "border-accent bg-accent" : "border-rule bg-transparent"
         } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-            checked ? "translate-x-5" : "translate-x-0"
+          className={`absolute top-[3px] h-[14px] w-[14px] transition-all ${
+            checked ? "right-[3px] bg-white" : "left-[3px] bg-meta"
           }`}
         />
       </button>
@@ -806,7 +788,7 @@ function UserListItem({
   onAction: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-sm bg-vocl-hover">
+    <div className="flex items-center gap-3 p-3 border border-rule">
       <div className="relative w-10 h-10 rounded-full overflow-hidden">
         {user.avatarUrl ? (
           <Image
@@ -816,7 +798,7 @@ function UserListItem({
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+          <div className="w-full h-full bg-vocl-hover flex items-center justify-center">
             <span className="text-sm font-bold text-white">
               {user.username.charAt(0).toUpperCase()}
             </span>
@@ -831,7 +813,7 @@ function UserListItem({
       </div>
       <button
         onClick={onAction}
-        className="px-3 py-1.5 rounded-lg bg-vocl-hover-strong text-foreground/70 text-sm hover:bg-vocl-hover-strong hover:text-foreground transition-colors"
+        className="px-3 py-1.5 border border-rule text-meta text-[11px] uppercase tracking-[0.14em] hover:text-ink hover:border-foreground transition-colors"
       >
         {action}
       </button>

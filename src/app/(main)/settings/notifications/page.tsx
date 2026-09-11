@@ -35,13 +35,13 @@ function Toggle({ enabled, onChange, disabled }: ToggleProps) {
       aria-checked={enabled}
       disabled={disabled}
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+      className={`relative inline-flex h-[22px] w-[44px] shrink-0 border transition-colors ${
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-      } ${enabled ? "bg-vocl-primary" : "bg-vocl-hover-strong"}`}
+      } ${enabled ? "border-accent bg-accent" : "border-rule bg-transparent"}`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          enabled ? "translate-x-6" : "translate-x-1"
+        className={`absolute top-[3px] h-[14px] w-[14px] transition-all ${
+          enabled ? "right-[3px] bg-white" : "left-[3px] bg-meta"
         }`}
       />
     </button>
@@ -67,12 +67,12 @@ function NotificationRow({
 }: NotificationRowProps) {
   return (
     <div className="flex items-start gap-4 py-4 border-b border-vocl-border last:border-0">
-      <div className="w-10 h-10 rounded-sm bg-vocl-hover flex items-center justify-center shrink-0">
+      <div className="w-10 h-10  bg-vocl-hover flex items-center justify-center shrink-0">
         <Icon size={20} className="text-foreground/70" />
       </div>
       <div className="flex-1 min-w-0">
         <h3 className="font-medium text-foreground">{title}</h3>
-        <p className="text-sm text-foreground/50">{description}</p>
+        <p className="text-sm text-meta">{description}</p>
       </div>
       <div className="shrink-0">
         <Toggle enabled={emailEnabled} onChange={onEmailChange} disabled={disabled} />
@@ -158,37 +158,37 @@ export default function NotificationsSettingsPage() {
       <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
         <Link
           href="/settings"
-          className="p-2 -ml-2 rounded-sm hover:bg-vocl-hover transition-colors"
+          className="p-2 -ml-2  hover:bg-vocl-hover transition-colors"
         >
           <IconArrowLeft size={22} className="text-foreground/70" />
         </Link>
         <div className="flex-1">
-          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          <span className="kicker kicker-accent">
             Settings
           </span>
-          <h1 className="type-display font-display text-foreground">Email Notifications</h1>
-          <p className="type-body text-foreground/55 mt-1">
+          <h1 className="type-display font-display text-ink">Email Notifications</h1>
+          <p className="type-body text-meta mt-1">
             Choose which email notifications you want to receive.
           </p>
         </div>
         {isSaving && (
-          <IconLoader2 size={20} className="animate-spin text-foreground/50 shrink-0" />
+          <IconLoader2 size={20} className="animate-spin text-meta shrink-0" />
         )}
       </div>
 
       {/* Email Frequency */}
-      <div className="rounded-sm bg-vocl-surface-dark border border-vocl-border p-4 mb-6">
-        <h2 className="type-heading font-display text-foreground mb-1">Email Frequency</h2>
-        <p className="text-sm text-foreground/50 mb-4">
+      <div className="border border-rule p-4 mb-6">
+        <h2 className="type-heading font-display text-ink mb-1">Email Frequency</h2>
+        <p className="text-sm text-meta mb-4">
           How often do you want to receive notification emails?
         </p>
         <div className="space-y-2">
           {frequencyOptions.map((option) => (
             <label
               key={option.value}
-              className={`flex items-center gap-3 p-3 rounded-sm cursor-pointer transition-colors ${
+              className={`flex items-center gap-3 p-3  cursor-pointer transition-colors ${
                 settings.emailFrequency === option.value
-                  ? "bg-vocl-primary/20 border border-vocl-primary/40"
+                  ? "bg-accent/20 border border-vocl-primary/40"
                   : "bg-vocl-hover border border-transparent hover:bg-vocl-hover-strong"
               }`}
             >
@@ -208,12 +208,12 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 {settings.emailFrequency === option.value && (
-                  <div className="w-2 h-2 rounded-full bg-vocl-primary" />
+                  <div className="w-2 h-2 rounded-full bg-accent" />
                 )}
               </div>
               <div className="flex-1">
                 <span className="font-medium text-foreground">{option.label}</span>
-                <p className="text-sm text-foreground/50">{option.description}</p>
+                <p className="text-sm text-meta">{option.description}</p>
               </div>
             </label>
           ))}
@@ -221,10 +221,10 @@ export default function NotificationsSettingsPage() {
       </div>
 
       {/* Notification Types */}
-      <div className={`rounded-sm bg-vocl-surface-dark border border-vocl-border p-4 ${isEmailDisabled ? "opacity-50" : ""}`}>
+      <div className={`border border-rule p-4 ${isEmailDisabled ? "opacity-50" : ""}`}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="type-heading font-display text-foreground">Notification Types</h2>
-          <div className="flex items-center gap-1 text-sm text-foreground/50">
+          <h2 className="type-heading font-display text-ink">Notification Types</h2>
+          <div className="flex items-center gap-1 text-sm text-meta">
             <IconMail size={16} />
             <span>Email</span>
           </div>
@@ -285,7 +285,7 @@ export default function NotificationsSettingsPage() {
       </div>
 
       {/* Note */}
-      <p className="mt-4 text-sm text-foreground/40">
+      <p className="mt-4 text-sm text-meta-dim">
         {settings.emailFrequency === "daily" ? (
           <>
             Daily digest emails are sent at 6 PM in your{" "}

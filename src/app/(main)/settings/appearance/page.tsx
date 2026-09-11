@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import {
-  IconArrowLeft,
   IconSun,
   IconMoon,
   IconDeviceDesktop,
@@ -34,8 +33,8 @@ const defaultSettings: AppearanceSettings = {
 };
 
 const themeOptions: { value: Theme; label: string; icon: typeof IconSun }[] = [
-  { value: "light", label: "Light", icon: IconSun },
-  { value: "dark", label: "Dark", icon: IconMoon },
+  { value: "dark", label: "Late edition", icon: IconMoon },
+  { value: "light", label: "Newsprint edition", icon: IconSun },
   { value: "system", label: "System", icon: IconDeviceDesktop },
 ];
 
@@ -134,26 +133,18 @@ export default function AppearanceSettingsPage() {
     <div className="py-6">
       <title>Settings — Appearance | be.vocl</title>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 border-b border-vocl-border pb-5">
-        <Link
-          href="/settings"
-          className="p-2 -ml-2 rounded-sm hover:bg-vocl-hover transition-colors"
-        >
-          <IconArrowLeft size={22} className="text-foreground/70" />
+      <div className="mb-8 border-b border-rule pb-5">
+        <Link href="/settings" className="slug text-meta hover:text-ink transition-colors">
+          ← Settings
         </Link>
-        <div>
-          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
-            Settings
-          </span>
-          <h1 className="type-display font-display text-foreground">Appearance</h1>
-        </div>
+        <h1 className="type-display font-display text-ink mt-3">Appearance</h1>
       </div>
 
-      {/* Theme Selection */}
+      {/* Edition Selection */}
       <section className="mb-10">
-        <h2 className="type-heading font-display text-foreground mb-1">Theme</h2>
-        <p className="text-sm text-foreground/50 mb-4">
-          Choose how be.vocl looks to you
+        <h2 className="type-heading font-display text-ink mb-1">Edition</h2>
+        <p className="editorial-caption not-italic text-meta mb-4">
+          Choose how be.vocl looks to you — the dark late edition or the light newsprint edition.
         </p>
 
         <div className="grid grid-cols-3 gap-3">
@@ -168,28 +159,14 @@ export default function AppearanceSettingsPage() {
                   setTheme(option.value);
                   toast.success("Appearance updated");
                 }}
-                className={`relative flex flex-col items-center gap-2 p-4 rounded-sm border transition-all ${
+                className={`relative flex flex-col items-center gap-2 p-4 border transition-colors ${
                   isSelected
-                    ? "border-vocl-primary bg-vocl-primary/10"
-                    : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
+                    ? "border-accent text-ink"
+                    : "border-rule text-meta hover:text-ink"
                 }`}
               >
-                <Icon
-                  size={28}
-                  className={isSelected ? "text-vocl-primary" : "text-foreground/70"}
-                />
-                <span
-                  className={`text-sm font-medium ${
-                    isSelected ? "text-vocl-primary" : "text-foreground/70"
-                  }`}
-                >
-                  {option.label}
-                </span>
-                {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-vocl-primary flex items-center justify-center">
-                    <IconCheck size={12} className="text-white" />
-                  </div>
-                )}
+                <Icon size={26} className={isSelected ? "text-accent" : "text-meta"} />
+                <span className="text-xs font-medium text-center">{option.label}</span>
               </button>
             );
           })}
@@ -199,10 +176,10 @@ export default function AppearanceSettingsPage() {
       {/* Font Size */}
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-1">
-          <IconTextSize size={20} className="text-foreground/70" />
-          <h2 className="type-heading font-display text-foreground">Font Size</h2>
+          <IconTextSize size={18} className="text-meta" />
+          <h2 className="type-heading font-display text-ink">Font Size</h2>
         </div>
-        <p className="text-sm text-foreground/50 mb-4">
+        <p className="editorial-caption not-italic text-meta mb-4">
           Adjust text size for better readability
         </p>
 
@@ -214,35 +191,24 @@ export default function AppearanceSettingsPage() {
               <button
                 key={option.value}
                 onClick={() => updateSetting("fontSize", option.value)}
-                className={`relative flex flex-col items-center gap-2 p-4 rounded-sm border transition-all ${
+                className={`relative flex flex-col items-center gap-2 p-4 border transition-colors ${
                   isSelected
-                    ? "border-vocl-primary bg-vocl-primary/10"
-                    : "border-vocl-border bg-vocl-surface-dark hover:border-vocl-border"
+                    ? "border-accent text-ink"
+                    : "border-rule text-meta hover:text-ink"
                 }`}
               >
                 <span
-                  className={`font-medium ${
+                  className={`font-display ${
                     option.value === "small"
-                      ? "text-sm"
+                      ? "text-base"
                       : option.value === "large"
-                      ? "text-xl"
-                      : "text-base"
-                  } ${isSelected ? "text-vocl-primary" : "text-foreground/70"}`}
+                      ? "text-2xl"
+                      : "text-xl"
+                  } ${isSelected ? "text-accent" : "text-meta"}`}
                 >
                   {option.sample}
                 </span>
-                <span
-                  className={`text-sm ${
-                    isSelected ? "text-vocl-primary" : "text-foreground/70"
-                  }`}
-                >
-                  {option.label}
-                </span>
-                {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-vocl-primary flex items-center justify-center">
-                    <IconCheck size={12} className="text-white" />
-                  </div>
-                )}
+                <span className="text-xs font-medium">{option.label}</span>
               </button>
             );
           })}
@@ -252,10 +218,10 @@ export default function AppearanceSettingsPage() {
       {/* Accent Colour (site-wide UI accent, this device) */}
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-1">
-          <IconPalette size={20} className="text-foreground/70" />
-          <h2 className="type-heading font-display text-foreground">Accent Colour</h2>
+          <IconPalette size={18} className="text-meta" />
+          <h2 className="type-heading font-display text-ink">Accent Colour</h2>
         </div>
-        <p className="text-sm text-foreground/50 mb-4">
+        <p className="editorial-caption not-italic text-meta mb-4">
           Personalise buttons, links, and highlights across the app on this device.
         </p>
 
@@ -267,8 +233,8 @@ export default function AppearanceSettingsPage() {
               <button
                 key={option.name}
                 onClick={() => selectAccent(option.name)}
-                className={`relative w-12 h-12 rounded-full transition-all ${
-                  isSelected ? "ring-2 ring-offset-2 ring-offset-background ring-foreground" : ""
+                className={`relative w-12 h-12 transition-all ${
+                  isSelected ? "ring-2 ring-offset-2 ring-offset-background ring-accent" : ""
                 }`}
                 style={{ backgroundColor: option.color }}
                 aria-label={option.label}
@@ -286,12 +252,12 @@ export default function AppearanceSettingsPage() {
       {/* Profile Accent Color (Tumblr-style blog theming, saved to profile) */}
       <section className="mb-10">
         <div className="flex items-center gap-2 mb-1">
-          <IconPalette size={20} className="text-foreground/70" />
-          <h2 className="type-heading font-display text-foreground">
+          <IconPalette size={18} className="text-meta" />
+          <h2 className="type-heading font-display text-ink">
             Profile Accent
           </h2>
         </div>
-        <p className="text-sm text-foreground/50 mb-4">
+        <p className="editorial-caption not-italic text-meta mb-4">
           Theme your profile page. Buttons, links, and highlights on your profile
           use this colour for everyone who visits.
         </p>
@@ -306,9 +272,9 @@ export default function AppearanceSettingsPage() {
                 type="button"
                 onClick={() => saveProfileAccent(preset.color)}
                 disabled={savingAccent}
-                className={`relative w-12 h-12 rounded-full transition-all disabled:opacity-50 ${
+                className={`relative w-12 h-12 transition-all disabled:opacity-50 ${
                   isSelected
-                    ? "ring-2 ring-offset-2 ring-offset-background ring-foreground"
+                    ? "ring-2 ring-offset-2 ring-offset-background ring-accent"
                     : ""
                 }`}
                 style={{ backgroundColor: preset.color }}
@@ -329,10 +295,10 @@ export default function AppearanceSettingsPage() {
 
       {/* Reduced Motion */}
       <section className="mb-8">
-        <div className="flex items-center justify-between p-4 rounded-sm bg-vocl-surface-dark">
+        <div className="flex items-center justify-between gap-6 py-4 border-t border-b border-rule">
           <div>
-            <h3 className="font-medium text-foreground">Reduce Motion</h3>
-            <p className="text-sm text-foreground/50">
+            <h3 className="text-ink mb-1">Reduce motion</h3>
+            <p className="editorial-caption not-italic text-meta">
               Minimise animations throughout the app
             </p>
           </div>
@@ -341,13 +307,14 @@ export default function AppearanceSettingsPage() {
             role="switch"
             aria-checked={settings.reducedMotion}
             onClick={() => updateSetting("reducedMotion", !settings.reducedMotion)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-              settings.reducedMotion ? "bg-vocl-primary" : "bg-vocl-hover-strong"
+            aria-label="Reduce motion"
+            className={`relative inline-flex h-[22px] w-[44px] flex-shrink-0 items-center border transition-colors cursor-pointer ${
+              settings.reducedMotion ? "border-accent bg-accent" : "border-rule bg-transparent"
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                settings.reducedMotion ? "translate-x-6" : "translate-x-1"
+              className={`absolute top-[3px] h-[14px] w-[14px] transition-all ${
+                settings.reducedMotion ? "right-[3px] bg-white" : "left-[3px] bg-meta"
               }`}
             />
           </button>
@@ -355,7 +322,7 @@ export default function AppearanceSettingsPage() {
       </section>
 
       {/* Note */}
-      <p className="text-sm text-foreground/40">
+      <p className="editorial-caption not-italic text-meta-dim">
         Font size and reduce motion are still in preview and may not affect all
         parts of the app yet.
       </p>
