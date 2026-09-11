@@ -5,22 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  IconSearch,
   IconX,
-  IconHash,
   IconLoader2,
-  IconUsers,
-  IconNotes,
-  IconHeart,
-  IconMessage,
-  IconRefresh,
   IconPhoto,
   IconPlayerPlayFilled,
   IconBrandSpotify,
   IconMicrophone,
   IconVideo,
   IconMusic,
-  IconCompass,
 } from "@tabler/icons-react";
 import { motion, MotionConfig } from "framer-motion";
 import { getExploreData } from "@/actions/explore";
@@ -28,16 +20,34 @@ import { followUser, unfollowUser } from "@/actions/follows";
 import { toast, PullToRefresh } from "@/components/ui";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
-/** Editorial section band header: uppercase kicker + hairline rule. */
-function SectionBand({ children }: { children: React.ReactNode }) {
+/** Editorial section band header: a mono slug over a full hairline rule, with an
+ *  optional right-aligned mono aside (e.g. a count). */
+function SectionBand({ children, aside }: { children: React.ReactNode; aside?: React.ReactNode }) {
   return (
-    <div className="mb-5 flex items-center gap-3">
-      <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
-        {children}
-      </span>
-      <span className="h-px flex-1 bg-vocl-border" />
+    <div className="mb-5 flex items-baseline justify-between gap-3 border-b border-rule pb-3">
+      <span className="slug text-meta">{children}</span>
+      {aside && <span className="slug text-meta-dim">{aside}</span>}
     </div>
   );
+}
+
+/** Kicker label for a post type, matching the paper's vocabulary. */
+function postKicker(postType: string): string {
+  switch (postType) {
+    case "image":
+    case "gallery":
+      return "Photo";
+    case "video":
+      return "Video";
+    case "audio":
+      return "Listen";
+    case "poll":
+      return "Poll";
+    case "ask":
+      return "Ask";
+    default:
+      return "Note";
+  }
 }
 
 interface TrendingTag {
@@ -144,272 +154,216 @@ export default function ExplorePage() {
     <PullToRefresh onRefresh={loadData}>
       <title>Explore | be.vocl</title>
     <MotionConfig reducedMotion="user">
-    <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4">
+    <div className="py-6 max-w-6xl mx-auto px-4 sm:px-6">
       {/* Editorial masthead */}
-      <motion.header
-        className="mb-6 border-b border-vocl-border pb-5"
-        initial="hidden"
-        animate="show"
-        variants={fadeUp}
-      >
-        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
-          The Newsstand
-        </span>
-        <h1 className="type-display-lg text-foreground mt-1 flex items-center gap-3">
-          <IconCompass size={30} className="text-vocl-primary flex-shrink-0" />
-          Explore
-        </h1>
-        <p className="type-body text-foreground/55 mt-1">
+      <motion.header className="mb-1" initial="hidden" animate="show" variants={fadeUp}>
+        <span className="kicker kicker-accent">The Newsstand</span>
+        <h1 className="type-display-lg text-ink mt-2">Explore</h1>
+        <p className="editorial-deck mt-1">
           Trending topics, rising voices, and stories worth reading.
         </p>
       </motion.header>
 
-      {/* Search bar — submits to /search */}
-      <form onSubmit={handleSearchSubmit} className="relative mb-10">
-        <IconSearch
-          size={18}
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none"
-        />
+      {/* Search row — mono label, serif placeholder, CTRL K hint; submits to /search */}
+      <form
+        onSubmit={handleSearchSubmit}
+        className="mt-5 mb-10 flex items-center gap-3 py-3.5 border-t border-rule rule-double-b"
+      >
+        <span className="slug text-meta-dim flex-shrink-0">Search</span>
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search @users, #tags, or posts..."
-          className="w-full pl-10 pr-10 py-3 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent text-sm"
+          placeholder="@users, #tags, or posts…"
+          className="flex-1 min-w-0 bg-transparent border-0 font-serif italic text-lg text-ink placeholder:text-meta-dim focus:outline-none"
         />
-        {searchQuery && (
+        {searchQuery ? (
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground"
+            className="text-meta hover:text-ink flex-shrink-0"
             aria-label="Clear search"
           >
             <IconX size={18} />
           </button>
+        ) : (
+          <span className="slug text-meta-dim border border-rule px-2 py-1 flex-shrink-0">Ctrl K</span>
         )}
       </form>
 
-      <div className="space-y-12">
-        {/* Trending Now */}
-        <section>
-          <SectionBand>Trending Tags</SectionBand>
-          {trendingTags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {trendingTags.map((tag) => (
-                <Link
-                  key={tag.id}
-                  href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className="group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-vocl-border hover:border-vocl-primary/50 transition-colors"
-                >
-                  <IconHash
-                    size={14}
-                    className="text-vocl-primary"
-                  />
-                  <span className="text-sm font-medium text-foreground group-hover:text-vocl-primary transition-colors">
-                    {tag.name}
-                  </span>
-                  <span className="type-meta text-foreground/40 ml-0.5">
-                    {tag.postCount}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="type-body text-foreground/45 py-2">
-              No trending tags in the last 24 hours.
-            </p>
-          )}
-        </section>
-
-        {/* Trending Posts */}
+      <div className="space-y-14">
+        {/* Trending Stories — lead-plus-columns editorial grid */}
         {trendingPosts.length > 0 && (
           <section>
-            <SectionBand>Trending Stories</SectionBand>
+            <SectionBand aside={`${trendingPosts.length} filed · 24h`}>Trending stories</SectionBand>
             <motion.div
-              className="divide-y divide-vocl-border"
+              className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10"
               initial="hidden"
               animate="show"
               variants={staggerContainer(0.05)}
             >
-              {trendingPosts.map((post) => (
-                <motion.div key={post.id} variants={fadeUp}>
-                <Link
-                  href={`/post/${post.id}`}
-                  className="group block overflow-hidden py-5 first:pt-0"
-                >
-                  {/* Media preview */}
-                  <TrendingPostMedia post={post} />
-
-                  {/* Body */}
-                  <div className={post.postType === "text" || post.postType === "poll" ? "" : "pt-3"}>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-                        {post.author.avatarUrl ? (
-                          <Image
-                            src={post.author.avatarUrl}
-                            alt={post.author.username}
-                            fill
-                            className="object-cover"
-                            sizes="24px"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                            <span className="text-[10px] font-bold text-white">
-                              {post.author.username.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
+              {trendingPosts.map((post, i) => {
+                const isLead = i === 0;
+                return (
+                  <motion.div
+                    key={post.id}
+                    variants={fadeUp}
+                    className={isLead ? "" : "md:border-l md:border-rule md:pl-8"}
+                  >
+                    <Link href={`/post/${post.id}`} className="group block">
+                      {isLead && (
+                        <div className="mb-3">
+                          <TrendingPostMedia post={post} />
+                        </div>
+                      )}
+                      <span className="kicker kicker-accent">{postKicker(post.postType)}</span>
+                      {post.snippet && (
+                        <h2
+                          className={`${isLead ? "type-display" : "type-heading"} text-ink mt-2 line-clamp-3 group-hover:text-accent transition-colors`}
+                        >
+                          {post.snippet}
+                        </h2>
+                      )}
+                      <div className="byline text-meta mt-2">
+                        {post.author.username} · {post.likeCount} likes
                       </div>
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {post.author.displayName || post.author.username}
-                      </span>
-                      <span className="text-foreground/40 text-xs truncate">
-                        @{post.author.username}
-                      </span>
-                    </div>
-                    {post.snippet && (
-                      <p className="type-heading text-foreground line-clamp-2 group-hover:text-vocl-primary transition-colors">
-                        {post.snippet}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2 type-meta text-foreground/40">
-                      <span className="flex items-center gap-1">
-                        <IconHeart size={12} />
-                        {post.likeCount}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <IconMessage size={12} />
-                        {post.commentCount}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <IconRefresh size={12} />
-                        {post.reblogCount}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-                </motion.div>
-              ))}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </section>
         )}
 
-        {/* Popular Topics */}
+        {/* Classified index — every section, set in Gloock and sized by how
+            much has been filed to it (bigger = busier). */}
         <section>
-          <SectionBand>Sections</SectionBand>
+          <SectionBand aside={popularTags.length ? `${popularTags.length} sections` : undefined}>
+            Sections · Classified index
+          </SectionBand>
           {popularTags.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6">
-              {popularTags.map((tag) => (
-                <Link
-                  key={tag.id}
-                  href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className="group border-t border-vocl-border pt-4"
-                >
-                  <p className="type-heading text-foreground truncate group-hover:text-vocl-primary transition-colors flex items-center gap-1">
-                    <IconHash size={18} className="text-vocl-primary flex-shrink-0" />
-                    {tag.name}
-                  </p>
-                  <p className="type-meta text-foreground/45 mt-1">
-                    {tag.totalPosts.toLocaleString()}{" "}
-                    {tag.totalPosts === 1 ? "post" : "posts"}
-                  </p>
-                </Link>
-              ))}
-            </div>
+            (() => {
+              const max = Math.max(...popularTags.map((t) => t.totalPosts), 1);
+              return (
+                <div className="columns-2 sm:columns-3 lg:columns-4 gap-x-8 [column-rule:1px_solid_var(--rule)]">
+                  {popularTags.map((tag) => {
+                    const size = 16 + Math.round((tag.totalPosts / max) * 18); // 16–34px
+                    return (
+                      <div
+                        key={tag.id}
+                        className="break-inside-avoid border-b border-rule py-2 flex items-baseline gap-2"
+                      >
+                        <Link
+                          href={`/tag/${encodeURIComponent(tag.name)}`}
+                          className="font-display text-ink hover:text-accent transition-colors leading-tight"
+                          style={{ fontSize: `${size}px` }}
+                        >
+                          {tag.name}
+                        </Link>
+                        <span className="slug text-meta-dim">{tag.totalPosts}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()
           ) : (
-            <p className="type-body text-foreground/45 py-2">
-              No popular topics yet.
-            </p>
+            <p className="editorial-body text-meta">No sections in print yet.</p>
           )}
         </section>
 
-        {/* Rising Creators */}
-        <section>
-          <SectionBand>Rising Voices</SectionBand>
-          {risingCreators.length > 0 ? (
-            <div className="divide-y divide-vocl-border">
-              {risingCreators.map((creator) => (
-                <div
-                  key={creator.id}
-                  className="flex items-center gap-3 py-4 first:pt-0"
-                >
-                  <Link
-                    href={`/profile/${creator.username}`}
-                    className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0"
-                  >
-                    {creator.avatarUrl ? (
-                      <Image
-                        src={creator.avatarUrl}
-                        alt={creator.username}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">
+        {/* Rising voices | Trending tags — two-column foot */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+          <div>
+            <SectionBand>Rising voices</SectionBand>
+            {risingCreators.length > 0 ? (
+              <div className="divide-y divide-rule">
+                {risingCreators.map((creator) => (
+                  <div key={creator.id} className="flex items-start gap-3 py-4 first:pt-0">
+                    <Link
+                      href={`/profile/${creator.username}`}
+                      className="relative w-12 h-12 overflow-hidden flex-shrink-0 bg-panel"
+                    >
+                      {creator.avatarUrl ? (
+                        <Image
+                          src={creator.avatarUrl}
+                          alt={creator.username}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="absolute inset-0 flex items-center justify-center font-display text-lg text-meta">
                           {creator.username.charAt(0).toUpperCase()}
                         </span>
-                      </div>
-                    )}
-                  </Link>
+                      )}
+                    </Link>
 
-                  <Link
-                    href={`/profile/${creator.username}`}
-                    className="flex-1 min-w-0"
-                  >
-                    <p className="type-heading text-foreground truncate hover:text-vocl-primary transition-colors">
-                      {creator.displayName || creator.username}
-                    </p>
-                    <p className="type-meta text-foreground/50 truncate">
-                      @{creator.username}
-                    </p>
-                    {creator.bio && (
-                      <p className="type-body text-foreground/60 mt-1 line-clamp-1">
-                        {creator.bio}
+                    <Link href={`/profile/${creator.username}`} className="flex-1 min-w-0">
+                      <p className="type-heading text-ink truncate hover:text-accent transition-colors">
+                        {creator.displayName || creator.username}
                       </p>
-                    )}
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="flex items-center gap-1 type-meta text-foreground/40">
-                        <IconUsers size={12} />
-                        {creator.followerCount.toLocaleString()}{" "}
-                        {creator.followerCount === 1
-                          ? "follower"
-                          : "followers"}
-                      </span>
-                      <span className="flex items-center gap-1 type-meta text-foreground/40">
-                        <IconNotes size={12} />
-                        {creator.postCount.toLocaleString()}{" "}
-                        {creator.postCount === 1 ? "post" : "posts"}
-                      </span>
-                    </div>
-                  </Link>
+                      <p className="byline text-meta truncate mt-0.5">@{creator.username}</p>
+                      {creator.bio && (
+                        <p className="editorial-caption not-italic text-meta mt-1 line-clamp-1">
+                          {creator.bio}
+                        </p>
+                      )}
+                      <div className="byline text-meta-dim mt-1.5">
+                        {creator.followerCount.toLocaleString()} followers · {creator.postCount.toLocaleString()} posts
+                      </div>
+                    </Link>
 
-                  <button
-                    onClick={() => handleFollowToggle(creator.id)}
-                    disabled={followLoadingMap[creator.id]}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
-                      followingMap[creator.id]
-                        ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-                        : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
-                    }`}
+                    <button
+                      onClick={() => handleFollowToggle(creator.id)}
+                      disabled={followLoadingMap[creator.id]}
+                      className={`flex-shrink-0 border px-4 py-2 font-sans font-medium uppercase tracking-[0.16em] text-[11px] transition-colors ${
+                        followingMap[creator.id]
+                          ? "border-rule text-meta hover:text-vocl-like"
+                          : "border-foreground text-ink hover:bg-vocl-hover"
+                      }`}
+                    >
+                      {followLoadingMap[creator.id] ? (
+                        <IconLoader2 size={14} className="animate-spin" />
+                      ) : followingMap[creator.id] ? (
+                        "Following"
+                      ) : (
+                        "Follow"
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="editorial-body italic text-meta">
+                Nobody new on the masthead this week. Check back after tonight&apos;s edition.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <SectionBand aside="24h">Trending tags</SectionBand>
+            {trendingTags.length > 0 ? (
+              <div className="divide-y divide-rule">
+                {trendingTags.map((tag) => (
+                  <Link
+                    key={tag.id}
+                    href={`/tag/${encodeURIComponent(tag.name)}`}
+                    className="group flex items-baseline justify-between py-2.5"
                   >
-                    {followLoadingMap[creator.id] ? (
-                      <IconLoader2 size={16} className="animate-spin" />
-                    ) : followingMap[creator.id] ? (
-                      "Following"
-                    ) : (
-                      "Follow"
-                    )}
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="type-body text-foreground/45 py-2">
-              No rising creators to show right now.
-            </p>
-          )}
+                    <span className="font-display text-lg text-ink group-hover:text-accent transition-colors">
+                      {tag.name}
+                    </span>
+                    <span className="slug text-meta-dim">{tag.postCount}</span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="editorial-body italic text-meta">
+                Quiet day. Nothing has caught yet — the index above is the whole paper.
+              </p>
+            )}
+          </div>
         </section>
       </div>
     </div>
@@ -444,8 +398,8 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
   if (postType === "image" || postType === "gallery") {
     if (!thumbnailUrl) {
       return (
-        <div className="aspect-[16/10] bg-gradient-to-br from-vocl-primary/10 to-vocl-primary/5 flex items-center justify-center">
-          <IconPhoto size={36} className="text-vocl-primary/40" />
+        <div className="aspect-[16/10] ph-image">
+          <IconPhoto size={36} className="text-meta-dim" />
         </div>
       );
     }
@@ -482,8 +436,8 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
     // Spotify embed-style preview
     if (spotifyTrackId && thumbnailUrl) {
       return (
-        <div className="relative aspect-[16/6] bg-gradient-to-br from-[#1DB954]/20 to-black/40 flex items-center gap-3 p-3">
-          <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/20">
+        <div className="relative aspect-[16/6] bg-panel flex items-center gap-3 p-3">
+          <div className="relative w-16 h-16 overflow-hidden flex-shrink-0 bg-black/20">
             <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="64px" />
           </div>
           <div className="flex-1 min-w-0">
@@ -501,17 +455,17 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
     // Voice note or file
     const isVoice = (post as any).content?.is_voice_note;
     return (
-      <div className="relative aspect-[16/6] bg-gradient-to-br from-vocl-primary/20 to-vocl-primary/5 flex items-center gap-3 p-3">
+      <div className="relative aspect-[16/6] bg-panel flex items-center gap-3 p-3">
         {thumbnailUrl ? (
-          <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-black/20">
+          <div className="relative w-16 h-16 overflow-hidden flex-shrink-0 bg-black/20">
             <Image src={thumbnailUrl} alt="" fill className="object-cover" sizes="64px" />
           </div>
         ) : (
-          <div className="w-16 h-16 rounded-md bg-vocl-primary/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 bg-panel flex items-center justify-center flex-shrink-0">
             {isVoice ? (
-              <IconMicrophone size={24} className="text-vocl-primary" />
+              <IconMicrophone size={24} className="text-meta" />
             ) : (
-              <IconMusic size={24} className="text-vocl-primary" />
+              <IconMusic size={24} className="text-meta" />
             )}
           </div>
         )}
@@ -537,7 +491,7 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
 
 function ExploreSkeleton() {
   return (
-    <div className="py-3 sm:py-6 max-w-2xl mx-auto px-2 sm:px-4 animate-pulse">
+    <div className="py-6 max-w-6xl mx-auto px-4 sm:px-6 animate-pulse">
       {/* Header skeleton */}
       <div className="mb-8">
         <div className="h-8 w-32 bg-vocl-hover-strong rounded-lg" />
