@@ -9,6 +9,7 @@ import {
   IconLoader2,
 } from "@tabler/icons-react";
 import { Portal } from "@/components/ui";
+import { useAuth } from "@/hooks/useAuth";
 import { useLinkPreviews } from "@/hooks/useLinkPreviews";
 import { getMyCommunities, type CommunitySummary } from "@/actions/communities";
 import { getMyCollections, type MyCollection } from "@/actions/post-threads";
@@ -217,6 +218,7 @@ export function EditorialComposer({
 
   const composer = useComposerState(initialState);
   const { state, patch, setPostType, reset, ensurePostId } = composer;
+  const { profile } = useAuth();
 
   const [isPending, startTransition] = useTransition();
   const [showPreview, setShowPreview] = useState(false);
@@ -400,13 +402,6 @@ export function EditorialComposer({
         ? IconCalendar
         : IconSend;
   const footerLabel = submitLabel ?? publishVerb;
-  const publishModeLabel = isEdit
-    ? ""
-    : state.publishMode === "queue"
-      ? "To your queue"
-      : state.publishMode === "schedule"
-        ? "Scheduled"
-        : "Posts now";
   const draftText =
     draftStatus.kind === "saving"
       ? "Saving…"
@@ -425,8 +420,8 @@ export function EditorialComposer({
       {/* Panel — a centered broadsheet card (max 900px), feed peeking behind */}
       <div className="fixed inset-x-2 inset-y-2 md:inset-y-8 z-[60] mx-auto flex max-w-[900px] flex-col rounded-none border border-rule bg-background overflow-hidden">
         {skewBlocked && (
-          <div className="flex items-center justify-between gap-3 border-b border-vocl-border bg-vocl-primary/10 px-4 py-3">
-            <span className="type-body text-sm text-foreground/80">
+          <div className="flex items-center justify-between gap-3 border-b border-rule bg-accent/10 px-4 py-3">
+            <span className="editorial-body text-sm text-ink">
               A new version of be.vocl was released. Reload to{" "}
               {isEdit ? "continue" : "publish"}.
               {!isEdit && " Your draft is saved."}
@@ -434,7 +429,7 @@ export function EditorialComposer({
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="shrink-0 rounded-none bg-vocl-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-vocl-primary-hover"
+              className="shrink-0 bg-accent px-4 py-1.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88]"
             >
               Reload
             </button>
@@ -464,7 +459,7 @@ export function EditorialComposer({
 
         {/* Thread banner */}
         {threadId && !isEdit && (
-          <div className="px-5 py-2 text-sm text-[var(--vocl-primary)] border-b border-[var(--vocl-border)] bg-[color-mix(in_srgb,var(--vocl-primary)_8%,transparent)]">
+          <div className="px-5 py-2 slug text-accent border-b border-rule bg-accent/[0.06]">
             Continuing thread…
           </div>
         )}
@@ -513,7 +508,9 @@ export function EditorialComposer({
             {draftText && <span className="slug text-meta-dim truncate">{draftText}</span>}
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline slug text-meta-dim">{publishModeLabel}</span>
+            {profile?.username && (
+              <span className="hidden sm:inline slug text-meta-dim">As @{profile.username}</span>
+            )}
             {/* Publish split-button */}
             <div className="relative flex items-center">
               <button
@@ -579,23 +576,24 @@ export function EditorialComposer({
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowDiscardConfirm(false)}
           />
-          <div className="relative w-full max-w-sm mx-4 rounded-none bg-vocl-surface-dark border border-[var(--vocl-border)] p-6">
-            <h2 className="text-lg font-semibold text-foreground">Discard this post?</h2>
-            <p className="mt-2 text-sm text-foreground/60">
+          <div className="relative w-full max-w-sm mx-4 rounded-none bg-background border border-rule p-6">
+            <p className="kicker kicker-accent mb-2">Discard</p>
+            <h2 className="type-heading text-ink">Discard this post?</h2>
+            <p className="mt-2 editorial-body text-sm text-meta">
               Your draft won&apos;t be saved.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowDiscardConfirm(false)}
-                className="px-4 py-2 rounded-none text-sm font-medium text-foreground/70 hover:bg-[var(--vocl-hover)]"
+                className="px-4 py-2 font-sans text-xs font-medium uppercase tracking-[0.16em] text-meta hover:text-ink hover:bg-vocl-hover transition-colors"
               >
                 Keep editing
               </button>
               <button
                 type="button"
                 onClick={confirmDiscard}
-                className="px-4 py-2 rounded-none text-sm font-semibold text-white bg-vocl-like"
+                className="px-4 py-2 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white bg-vocl-like hover:opacity-[0.88] transition-opacity"
               >
                 Discard
               </button>
