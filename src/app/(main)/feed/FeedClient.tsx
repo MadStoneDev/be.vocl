@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, useEffect, useSyncExternalStore } from "reac
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
+import { FeedTabs, FeedList, WhoToFollow, FeedRail, type FeedTab } from "@/components/feed";
 import { OPEN_COMMAND_PALETTE_EVENT } from "@/components/layout/commandPaletteEvents";
 
 // SSR stays on so the broadsheet HTML is in the first paint (no blank frame
@@ -30,10 +30,11 @@ const TAB_ORDER: FeedTab[] = ["chronological", "engagement", "trending"];
 // Viewport width as an external store: null during SSR + hydration (so the
 // first client render matches the server HTML and CSS picks the visible
 // layout), the real value immediately after.
-// The broadsheet Front Page only has room once the sidebar isn't eating most
-// of the width — gate it at 2xl (1536px), below which Front Page falls back to
-// the single-column feed.
-const WIDE_QUERY = "(min-width: 1536px)";
+// The broadsheet Front Page needs a wide column. Gate it at xl (1280px) so real
+// laptops (incl. the 1440 the artboard is drawn at) get the broadsheet; below
+// that it falls back to the single-column reader. The optional right rail only
+// appears at 2xl, where there's room for it without cramping the grid.
+const WIDE_QUERY = "(min-width: 1280px)";
 function subscribeWide(onChange: () => void) {
   const mql = window.matchMedia(WIDE_QUERY);
   mql.addEventListener("change", onChange);
@@ -369,7 +370,7 @@ export default function FeedClient({
     {/* Front Page fills a wider column on lg+ (where the broadsheet grid shows);
         Reader stays a comfortable single-column width. Bounded by the parent, so
         it never overflows the sidebar/viewport. */}
-    <div className={`py-1 sm:py-3 mx-auto ${layout === "frontpage" ? "max-w-5xl 2xl:max-w-7xl" : "max-w-5xl"}`}>
+    <div className={`py-1 sm:py-3 mx-auto ${layout === "frontpage" ? "max-w-5xl xl:max-w-7xl" : "max-w-5xl"}`}>
       {/* Promise Banner - show until accepted */}
       {showPromiseBanner && (
         <PromiseBanner onAccepted={() => setShowPromiseBanner(false)} />
@@ -442,33 +443,43 @@ export default function FeedClient({
       )}
 
       <div {...feedSwipe}>
-        {layout === "frontpage" && isWide === null ? (
-          // SSR + first paint: the server can't know the viewport, so render
-          // both layouts and let the 2xl breakpoint pick — no post-hydration
-          // swap. Collapses to a single tree once isWide is measured.
-          <>
-            <div className="hidden 2xl:block">
-              <FrontPageGrid
-                posts={feedListPosts}
-                isLoading={isLoading}
-                isLoadingMore={isFetchingNextPage}
-              />
+        {layout === "frontpage" ? (
+          // Broadsheet: main column + an optional right rail (Listen / Briefs).
+          // The rail only turns on at 2xl, where there's room; below that the
+          // grid takes the full width. The main column still switches between the
+          // front-page grid (xl+) and the reader (below), matching SSR via CSS
+          // while isWide is unmeasured.
+          <div className="2xl:grid 2xl:grid-cols-[minmax(0,1fr)_320px] 2xl:gap-10">
+            <div className="min-w-0">
+              {isWide === null ? (
+                <>
+                  <div className="hidden xl:block">
+                    <FrontPageGrid posts={feedListPosts} isLoading={isLoading} isLoadingMore={isFetchingNextPage} />
+                  </div>
+                  <div className="xl:hidden">
+                    <FeedList
+                      posts={feedListPosts}
+                      isLoading={isLoading}
+                      isLoadingMore={isFetchingNextPage}
+                      showWhoToFollow={activeTab === "engagement"}
+                    />
+                  </div>
+                </>
+              ) : isWide ? (
+                <FrontPageGrid posts={feedListPosts} isLoading={isLoading} isLoadingMore={isFetchingNextPage} />
+              ) : (
+                <FeedList
+                  posts={feedListPosts}
+                  isLoading={isLoading}
+                  isLoadingMore={isFetchingNextPage}
+                  showWhoToFollow={activeTab === "engagement"}
+                />
+              )}
             </div>
-            <div className="2xl:hidden">
-              <FeedList
-                posts={feedListPosts}
-                isLoading={isLoading}
-                isLoadingMore={isFetchingNextPage}
-                showWhoToFollow={activeTab === "engagement"}
-              />
-            </div>
-          </>
-        ) : layout === "frontpage" && isWide ? (
-          <FrontPageGrid
-            posts={feedListPosts}
-            isLoading={isLoading}
-            isLoadingMore={isFetchingNextPage}
-          />
+            <aside className="hidden 2xl:block border-l border-rule pl-8">
+              <FeedRail posts={feedListPosts} />
+            </aside>
+          </div>
         ) : (
           <FeedList
             posts={feedListPosts}
