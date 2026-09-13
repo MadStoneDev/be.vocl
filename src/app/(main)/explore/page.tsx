@@ -138,7 +138,7 @@ export default function ExplorePage() {
 
     if (result.success) {
       setFollowingMap((prev) => ({ ...prev, [userId]: !isCurrentlyFollowing }));
-      toast.success(isCurrentlyFollowing ? "Unfollowed" : "Following!");
+      toast.success(isCurrentlyFollowing ? "Unsubscribed" : "Subscribed!");
     } else {
       toast.error("Failed to update follow status");
     }
@@ -326,9 +326,9 @@ export default function ExplorePage() {
                       {followLoadingMap[creator.id] ? (
                         <IconLoader2 size={14} className="animate-spin" />
                       ) : followingMap[creator.id] ? (
-                        "Following"
+                        "Subscribing"
                       ) : (
-                        "Follow"
+                        "Subscribe"
                       )}
                     </button>
                   </div>
@@ -424,7 +424,7 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
           </div>
         </div>
         {videoEmbedUrl && (
-          <span className="absolute top-2 right-2 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-medium">
+          <span className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-medium">
             Embed
           </span>
         )}
@@ -470,7 +470,7 @@ function TrendingPostMedia({ post }: { post: TrendingPost }) {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="inline-flex items-center gap-1 text-xs text-vocl-primary font-medium">
+          <div className="inline-flex items-center gap-1 text-xs text-accent font-medium">
             {isVoice ? (
               <>
                 <IconMicrophone size={14} /> Voice note
@@ -494,22 +494,22 @@ function ExploreSkeleton() {
     <div className="py-6 max-w-6xl mx-auto px-4 sm:px-6 animate-pulse">
       {/* Header skeleton */}
       <div className="mb-8">
-        <div className="h-8 w-32 bg-vocl-hover-strong rounded-lg" />
-        <div className="h-4 w-64 bg-vocl-hover rounded-lg mt-2" />
+        <div className="h-8 w-32 bg-vocl-hover-strong rounded-none" />
+        <div className="h-4 w-64 bg-vocl-hover rounded-none mt-2" />
       </div>
 
       <div className="space-y-10">
         {/* Trending skeleton */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-vocl-hover-strong rounded" />
-            <div className="h-5 w-36 bg-vocl-hover-strong rounded-lg" />
+            <div className="w-6 h-6 bg-vocl-hover-strong rounded-none" />
+            <div className="h-5 w-36 bg-vocl-hover-strong rounded-none" />
           </div>
           <div className="flex flex-wrap gap-2">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="h-9 rounded-full bg-vocl-hover"
+                className="h-9 rounded-none bg-vocl-hover"
                 style={{ width: `${60 + Math.random() * 60}px` }}
               />
             ))}
@@ -519,12 +519,12 @@ function ExploreSkeleton() {
         {/* Popular topics skeleton */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-vocl-hover-strong rounded" />
-            <div className="h-5 w-36 bg-vocl-hover-strong rounded-lg" />
+            <div className="w-6 h-6 bg-vocl-hover-strong rounded-none" />
+            <div className="h-5 w-36 bg-vocl-hover-strong rounded-none" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-24 rounded-sm bg-vocl-hover" />
+              <div key={i} className="h-24 rounded-none bg-vocl-hover" />
             ))}
           </div>
         </section>
@@ -532,22 +532,22 @@ function ExploreSkeleton() {
         {/* Rising creators skeleton */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-vocl-hover-strong rounded" />
-            <div className="h-5 w-36 bg-vocl-hover-strong rounded-lg" />
+            <div className="w-6 h-6 bg-vocl-hover-strong rounded-none" />
+            <div className="h-5 w-36 bg-vocl-hover-strong rounded-none" />
           </div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-4 rounded-sm bg-vocl-hover"
+                className="flex items-center gap-3 p-4 rounded-none bg-vocl-hover"
               >
                 <div className="w-12 h-12 rounded-full bg-vocl-hover-strong flex-shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-28 bg-vocl-hover-strong rounded" />
-                  <div className="h-3 w-20 bg-vocl-hover rounded" />
-                  <div className="h-3 w-48 bg-vocl-hover rounded" />
+                  <div className="h-4 w-28 bg-vocl-hover-strong rounded-none" />
+                  <div className="h-3 w-20 bg-vocl-hover rounded-none" />
+                  <div className="h-3 w-48 bg-vocl-hover rounded-none" />
                 </div>
-                <div className="h-8 w-20 bg-vocl-hover-strong rounded-lg flex-shrink-0" />
+                <div className="h-8 w-20 bg-vocl-hover-strong rounded-none flex-shrink-0" />
               </div>
             ))}
           </div>
