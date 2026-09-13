@@ -568,16 +568,16 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                         followedUsers.has(user.id)
                           ? "bg-white/10 text-foreground/50"
-                          : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+                          : "bg-accent text-white hover:opacity-[0.88]"
                       }`}
                     >
                       {followedUsers.has(user.id) ? (
                         <span className="flex items-center gap-1">
                           <IconCheck size={14} />
-                          Following
+                          Subscribing
                         </span>
                       ) : (
-                        "Follow"
+                        "Subscribe"
                       )}
                     </button>
                   </div>

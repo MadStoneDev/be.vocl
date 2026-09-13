@@ -335,7 +335,7 @@ function SearchContent() {
       setSuggestedUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, isFollowing: !isFollowing } : u))
       );
-      toast.success(isFollowing ? "Unfollowed" : "Following!");
+      toast.success(isFollowing ? "Unsubscribed" : "Subscribed!");
     }
   };
 
@@ -890,18 +890,18 @@ function UserCard({
       <button
         onClick={handleFollow}
         disabled={isLoading}
-        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
+        className={`flex-shrink-0 border px-4 py-1.5 font-sans font-medium uppercase tracking-[0.16em] text-[11px] transition-colors ${
           user.isFollowing
-            ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
-            : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+            ? "border-foreground text-ink hover:bg-vocl-hover"
+            : "border-accent text-accent hover:bg-accent/10"
         }`}
       >
         {isLoading ? (
           <IconLoader2 size={16} className="animate-spin" />
         ) : user.isFollowing ? (
-          "Following"
+          "Subscribing"
         ) : (
-          "Follow"
+          "Subscribe"
         )}
       </button>
     </Link>

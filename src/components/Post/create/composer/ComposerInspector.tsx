@@ -65,7 +65,7 @@ export function ComposerInspector({
               className="relative w-11 h-6 rounded-none transition-colors flex-shrink-0"
               style={{
                 backgroundColor: inCollection
-                  ? "var(--vocl-primary)"
+                  ? "var(--accent)"
                   : "var(--vocl-border)",
               }}
             >
@@ -96,7 +96,7 @@ export function ComposerInspector({
                   onChange={() =>
                     patch({ collectionMode: "new", collectionThreadId: null })
                   }
-                  className="accent-[var(--vocl-primary)]"
+                  className="accent-[var(--accent)]"
                 />
                 Start a new collection
               </label>
@@ -119,7 +119,7 @@ export function ComposerInspector({
                       collectionThreadId: myCollections[0]?.threadId ?? null,
                     })
                   }
-                  className="accent-[var(--vocl-primary)]"
+                  className="accent-[var(--accent)]"
                 />
                 Add to an existing collection
               </label>
@@ -128,7 +128,7 @@ export function ComposerInspector({
                 <select
                   value={state.collectionThreadId ?? ""}
                   onChange={(e) => patch({ collectionThreadId: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--vocl-primary)]"
+                  className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground focus:outline-none focus:border-[var(--accent)]"
                 >
                   {myCollections.map((c) => (
                     <option key={c.threadId} value={c.threadId}>
@@ -141,7 +141,7 @@ export function ComposerInspector({
 
               {myCollections.length === 0 && (
                 <p className="text-xs text-foreground/40">
-                  You don't have any collections yet — start one here.
+                  You don&apos;t have any collections yet — start one here.
                 </p>
               )}
             </div>
@@ -149,18 +149,10 @@ export function ComposerInspector({
         </section>
       )}
 
-      {/* Tags */}
-      <section>
-        <h3 className="slug text-meta mb-3">Tags</h3>
-        <TagInput tags={state.tags} onChange={(tags) => patch({ tags })} />
-      </section>
-
       {/* Communities (create mode only — original behavior) */}
       {mode === "create" && myCommunities.length > 0 && (
         <section>
-          <h3 className="slug text-meta mb-3">
-            Also post to communities
-          </h3>
+          <h3 className="slug text-meta mb-3">Also post to communities</h3>
           <div className="flex flex-wrap gap-1.5">
             {myCommunities.map((c) => {
               const selected = state.selectedCommunityIds.includes(c.id);
@@ -177,10 +169,9 @@ export function ComposerInspector({
                   }
                   className={`px-2.5 py-1 rounded-none text-xs font-medium transition-colors ${
                     selected
-                      ? "text-white"
+                      ? "bg-accent text-white"
                       : "bg-[var(--vocl-hover)] text-foreground/70 hover:bg-[var(--vocl-hover-strong)]"
                   }`}
-                  style={selected ? { backgroundColor: "var(--vocl-primary)" } : undefined}
                 >
                   /c/{c.slug}
                 </button>
@@ -219,7 +210,7 @@ export function ComposerInspector({
                 }}
                 className={`flex flex-col items-center gap-1 py-2.5 rounded-none border text-xs font-medium transition-colors ${
                   state.publishMode === m
-                    ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
+                    ? "border-accent text-accent"
                     : "border-[var(--vocl-border)] text-foreground/60 hover:bg-[var(--vocl-hover)]"
                 }`}
               >
@@ -255,7 +246,7 @@ export function ComposerInspector({
                     value={state.scheduledDate}
                     min={new Date().toISOString().split("T")[0]}
                     onChange={(e) => patch({ scheduledDate: e.target.value })}
-                    className="w-full py-2 px-3 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--vocl-primary)]"
+                    className="w-full py-2 px-3 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--accent)]"
                   />
                 </div>
                 <div>
@@ -264,7 +255,7 @@ export function ComposerInspector({
                     type="time"
                     value={state.scheduledTime}
                     onChange={(e) => patch({ scheduledTime: e.target.value })}
-                    className="w-full py-2 px-3 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--vocl-primary)]"
+                    className="w-full py-2 px-3 rounded-none bg-[var(--vocl-hover)] border border-[var(--vocl-border)] text-foreground text-sm focus:outline-none focus:border-[var(--accent)]"
                   />
                 </div>
               </div>
@@ -273,131 +264,121 @@ export function ComposerInspector({
         </section>
       )}
 
-      {/* Sensitive toggle */}
-      <section>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={state.isSensitive}
-          onClick={() => patch({ isSensitive: !state.isSensitive })}
-          className="flex items-center gap-3 w-full text-left"
-        >
-          <div
-            className="relative w-11 h-6 rounded-none transition-colors flex-shrink-0"
-            style={{
-              backgroundColor: state.isSensitive
-                ? "var(--vocl-like, #e0245e)"
-                : "var(--vocl-border)",
-            }}
+      {/* Core settings — artboard 07's 2-col grid:
+          row 1: Audience | Sections · tags   row 2: Sensitive | Content warning */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6 border-t border-rule pt-6">
+        {/* Audience: who can see this post */}
+        <section>
+          {(() => {
+            const locked = state.isSensitive;
+            const audience: PostAudience =
+              locked && state.audience === "public" ? "members" : state.audience;
+            const options: Array<{
+              id: PostAudience;
+              icon: typeof IconWorld;
+              label: string;
+              desc: string;
+            }> = [
+              { id: "public", icon: IconWorld, label: "Public", desc: "Anyone on the web, including logged-out visitors" },
+              { id: "members", icon: IconUsers, label: "Members", desc: "Any logged-in be.vocl member" },
+              { id: "followers", icon: IconUserCheck, label: "Followers", desc: "Only people who follow you" },
+            ];
+            return (
+              <>
+                <h3 className="slug text-meta mb-3">Audience</h3>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {options.map((opt) => {
+                    const Icon = opt.icon;
+                    const active = audience === opt.id;
+                    const disabled = locked && opt.id === "public";
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        disabled={disabled}
+                        onClick={() => patch({ audience: opt.id })}
+                        className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-none border text-xs font-medium transition-colors ${
+                          active
+                            ? "border-accent text-accent"
+                            : "border-[var(--vocl-border)] text-foreground/60 hover:bg-[var(--vocl-hover)]"
+                        } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                      >
+                        <Icon size={18} />
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-foreground/45 text-xs mt-1.5">
+                  {locked
+                    ? "Sensitive posts are never Public — they’re shown to members or followers only."
+                    : options.find((o) => o.id === audience)?.desc}
+                </p>
+              </>
+            );
+          })()}
+        </section>
+
+        {/* Sections · tags */}
+        <section>
+          <h3 className="slug text-meta mb-3">Sections · tags</h3>
+          <TagInput tags={state.tags} onChange={(tags) => patch({ tags })} />
+        </section>
+
+        {/* Sensitive toggle */}
+        <section>
+          <h3 className="slug text-meta mb-3">Sensitive</h3>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={state.isSensitive}
+            onClick={() => patch({ isSensitive: !state.isSensitive })}
+            className="flex items-center gap-3 w-full text-left"
           >
             <div
-              className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all ${
-                state.isSensitive ? "left-6" : "left-1"
-              }`}
-            />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-1.5 text-foreground text-sm font-medium">
-              <IconAlertTriangle size={16} />
-              Sensitive content
+              className="relative w-11 h-6 rounded-none transition-colors flex-shrink-0"
+              style={{
+                backgroundColor: state.isSensitive ? "var(--vocl-like, #e0245e)" : "var(--vocl-border)",
+              }}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all ${
+                  state.isSensitive ? "left-6" : "left-1"
+                }`}
+              />
             </div>
-            <p className="text-foreground/45 text-xs mt-0.5">
-              Mark this post as containing mature content
-            </p>
-          </div>
-        </button>
-      </section>
-
-      {/* Audience: who can see this post */}
-      <section>
-        {(() => {
-          // Sensitive posts are NEVER public — the Public option is disabled and
-          // a sensitive post sitting on Public is treated as Members.
-          const locked = state.isSensitive;
-          const audience: PostAudience =
-            locked && state.audience === "public" ? "members" : state.audience;
-          const options: Array<{
-            id: PostAudience;
-            icon: typeof IconWorld;
-            label: string;
-            desc: string;
-          }> = [
-            {
-              id: "public",
-              icon: IconWorld,
-              label: "Public",
-              desc: "Anyone on the web, including logged-out visitors",
-            },
-            {
-              id: "members",
-              icon: IconUsers,
-              label: "Members",
-              desc: "Any logged-in be.vocl member",
-            },
-            {
-              id: "followers",
-              icon: IconUserCheck,
-              label: "Followers",
-              desc: "Only people who follow you",
-            },
-          ];
-          return (
-            <>
-              <h3 className="slug text-meta mb-3">Audience</h3>
-              <div className="grid grid-cols-3 gap-1.5">
-                {options.map((opt) => {
-                  const Icon = opt.icon;
-                  const active = audience === opt.id;
-                  const disabled = locked && opt.id === "public";
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      disabled={disabled}
-                      onClick={() => patch({ audience: opt.id })}
-                      className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-none border text-xs font-medium transition-colors ${
-                        active
-                          ? "border-[var(--vocl-primary)] text-[var(--vocl-primary)]"
-                          : "border-[var(--vocl-border)] text-foreground/60 hover:bg-[var(--vocl-hover)]"
-                      } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
-                    >
-                      <Icon size={18} />
-                      {opt.label}
-                    </button>
-                  );
-                })}
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 text-foreground text-sm font-medium">
+                <IconAlertTriangle size={16} />
+                Sensitive content
               </div>
-              <p className="text-foreground/45 text-xs mt-1.5">
-                {locked
-                  ? "Sensitive posts are never Public — they’re shown to members or followers only."
-                  : options.find((o) => o.id === audience)?.desc}
+              <p className="text-foreground/45 text-xs mt-0.5">
+                Mark this post as containing mature content
               </p>
-            </>
-          );
-        })()}
-      </section>
+            </div>
+          </button>
+        </section>
 
-      {/* Content warning */}
-      <section>
-        <label className="block slug text-meta mb-3">
-          Content warning
-        </label>
-        <input
-          type="text"
-          value={state.contentWarning}
-          onChange={(e) => patch({ contentWarning: e.target.value })}
-          placeholder="e.g. spoilers, flashing images…"
-          maxLength={200}
-          className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--vocl-primary)]"
-        />
-        {state.contentWarning && (
-          <span className="text-xs text-foreground/40 mt-1 block text-right">
-            {state.contentWarning.length}/200
-          </span>
-        )}
-      </section>
+        {/* Content warning */}
+        <section>
+          <label className="block slug text-meta mb-3">Content warning</label>
+          <input
+            type="text"
+            value={state.contentWarning}
+            onChange={(e) => patch({ contentWarning: e.target.value })}
+            placeholder="e.g. spoilers, flashing images…"
+            maxLength={200}
+            className="w-full px-3 py-2 text-sm bg-[var(--vocl-hover)] rounded-none border border-[var(--vocl-border)] text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-[var(--accent)]"
+          />
+          {state.contentWarning && (
+            <span className="text-xs text-foreground/40 mt-1 block text-right">
+              {state.contentWarning.length}/200
+            </span>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

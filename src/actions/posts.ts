@@ -1161,6 +1161,13 @@ export interface PublicFrontPagePost {
   isOwn: boolean;
   tags: Array<{ id: string; name: string }>;
   threadId: string | null;
+  /** Public poll results for the front-page "Poll of the evening" (poll posts
+   *  only). Aggregated from poll_votes; null for non-poll posts. */
+  poll?: {
+    question: string;
+    options: Array<{ label: string; votes: number }>;
+    totalVotes: number;
+  } | null;
 }
 
 /** Map a raw posts row into the FeedPost-shaped content object. */
@@ -1300,6 +1307,32 @@ async function shapePublicPostRows(
     );
   }
 
+  // Poll vote aggregates — so the front-page "Poll of the evening" can render
+  // its bars for logged-out visitors (public poll posts only).
+  const pollPostIds = rows.filter((p) => p.post_type === "poll").map((p) => p.id);
+  const pollByPost: Record<string, PublicFrontPagePost["poll"]> = {};
+  if (pollPostIds.length > 0) {
+    const { data: voteRows } = await supabase
+      .from("poll_votes")
+      .select("post_id, option_index")
+      .in("post_id", pollPostIds);
+    const counts: Record<string, Record<number, number>> = {};
+    for (const v of (voteRows ?? []) as Array<{ post_id: string; option_index: number }>) {
+      (counts[v.post_id] ??= {})[v.option_index] = (counts[v.post_id]?.[v.option_index] || 0) + 1;
+    }
+    for (const p of rows) {
+      if (p.post_type !== "poll") continue;
+      const labels: string[] = p.content?.options ?? [];
+      const c = counts[p.id] ?? {};
+      const options = labels.map((label, i) => ({ label, votes: c[i] || 0 }));
+      pollByPost[p.id] = {
+        question: p.content?.question ?? "",
+        options,
+        totalVotes: options.reduce((s, o) => s + o.votes, 0),
+      };
+    }
+  }
+
   return rows.map((post): PublicFrontPagePost => ({
     id: post.id,
     author: {
@@ -1318,6 +1351,7 @@ async function shapePublicPostRows(
     isOwn: false,
     tags: tagsByPost[post.id] ?? [],
     threadId: post.thread_id ?? null,
+    poll: pollByPost[post.id] ?? null,
   }));
 }
 
