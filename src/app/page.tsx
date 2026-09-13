@@ -112,8 +112,11 @@ export default async function Home() {
     .filter((p) => p.contentType === "text" && !p.content.isEssay && !used.has(p.id))
     .slice(0, 3);
   const listen = posts.filter((p) => p.contentType === "audio").slice(0, 2);
-  const poll = posts.find((p) => p.contentType === "poll");
-  const pollQuestion = poll ? ((poll.rawContent as Record<string, unknown>)?.question as string) : "";
+  const pollPost = posts.find((p) => p.contentType === "poll");
+  const pollData =
+    (pollPost as unknown as {
+      poll?: { question: string; options: Array<{ label: string; votes: number }>; totalVotes: number } | null;
+    })?.poll ?? null;
 
   // Dateline + edition slug.
   const now = new Date();
@@ -311,13 +314,39 @@ export default async function Home() {
                   </>
                 )}
 
-                {poll && pollQuestion && (
+                {pollPost && pollData && pollData.options.length > 0 && (
                   <>
                     <div className="slug border-b border-rule pb-3 pt-6 text-meta">Poll of the evening</div>
-                    <Link href={hrefOf(poll)} className="block py-4 transition-colors hover:text-accent">
-                      <p className="type-heading text-ink">{clamp(pollQuestion, 120)}</p>
-                      <span className="byline mt-3 block text-meta">Cast your vote →</span>
-                    </Link>
+                    <div className="py-4">
+                      <p className="type-heading mb-4 text-ink">{clamp(pollData.question, 120)}</p>
+                      <div className="flex flex-col gap-3">
+                        {[...pollData.options]
+                          .sort((a, b) => b.votes - a.votes)
+                          .map((o, i) => {
+                            const pct = pollData.totalVotes > 0 ? Math.round((o.votes / pollData.totalVotes) * 100) : 0;
+                            return (
+                              <div key={o.label}>
+                                <div className="byline mb-1.5 flex justify-between text-editorial-body">
+                                  <span>{o.label}</span>
+                                  <span className="tabular-nums">{pct}%</span>
+                                </div>
+                                <div className="h-[3px] bg-rule">
+                                  <div
+                                    className="h-[3px]"
+                                    style={{ width: `${pct}%`, background: i === 0 ? "var(--accent)" : "var(--meta-dim)" }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                      <Link
+                        href={hrefOf(pollPost)}
+                        className="byline mt-3 block text-meta transition-colors hover:text-accent"
+                      >
+                        {pollData.totalVotes.toLocaleString()} {pollData.totalVotes === 1 ? "vote" : "votes"} · Cast yours →
+                      </Link>
+                    </div>
                   </>
                 )}
               </div>
