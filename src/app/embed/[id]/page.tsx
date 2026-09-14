@@ -116,7 +116,7 @@ export default async function EmbedPostPage({ params }: Props) {
             rel="noopener noreferrer"
             className="flex items-center gap-2 min-w-0 group"
           >
-            <div className="relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
+            <div className="relative w-9 h-9 rounded-none overflow-hidden flex-shrink-0">
               {author?.avatar_url ? (
                 <Image src={author.avatar_url} alt={author.username} fill className="object-cover" unoptimized />
               ) : (

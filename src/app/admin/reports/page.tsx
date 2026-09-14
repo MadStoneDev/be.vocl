@@ -220,7 +220,7 @@ export default function AdminReportsPage() {
                   <div className="flex items-center gap-2 type-body text-foreground/70 mb-2">
                     <span>Reported:</span>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-full bg-panel overflow-hidden">
+                      <div className="w-5 h-5 rounded-none bg-panel overflow-hidden">
                         {report.reportedUser.avatarUrl ? (
                           <Image
                             src={report.reportedUser.avatarUrl}

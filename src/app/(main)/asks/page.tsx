@@ -170,11 +170,11 @@ export default function AsksPage() {
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
                   {ask.is_anonymous || !ask.sender ? (
-                    <div className="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-none bg-panel flex items-center justify-center flex-shrink-0">
                       <IconUserQuestion size={20} className="text-neutral-400" />
                     </div>
                   ) : (
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                    <div className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0">
                       <Image
                         src={`/api/avatar/${ask.sender.id}`}
                         alt={ask.sender.username}

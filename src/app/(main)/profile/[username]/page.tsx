@@ -260,7 +260,7 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* Avatar + Name Section */}
       <div className="px-4 sm:px-6 -mt-16 relative">
-        <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden bg-white/10">
+        <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-none border-4 border-background overflow-hidden bg-white/10">
           {profile.avatar_url ? (
             <Image
               src={profile.avatar_url}
@@ -438,7 +438,7 @@ function PrivateProfileShell({
         </div>
 
         <div className="px-4 sm:px-6 -mt-16 relative">
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background overflow-hidden bg-white/10">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-none border-4 border-background overflow-hidden bg-white/10">
             {profile.avatar_url ? (
               <Image src={profile.avatar_url} alt={displayName} fill sizes="128px" quality={90} className="object-cover" priority />
             ) : (

@@ -147,7 +147,7 @@ export default async function ArchivePage({ params }: Props) {
       </Link>
 
       <header className="mb-8 flex items-center gap-4 pb-6 rule-double-b">
-        <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0">
+        <div className="relative w-14 h-14 rounded-none overflow-hidden flex-shrink-0">
           {profile.avatar_url ? (
             <Image src={profile.avatar_url} alt={profile.username} fill className="object-cover" />
           ) : (

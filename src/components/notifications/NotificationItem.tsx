@@ -196,7 +196,7 @@ export function NotificationItem({
             {stackedActors.map((a, i) => (
               <div
                 key={`${a.username}-${i}`}
-                className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-background"
+                className="relative w-9 h-9 rounded-none overflow-hidden ring-2 ring-background"
                 style={{ zIndex: stackedActors.length - i }}
               >
                 {a.avatarUrl ? (
@@ -219,7 +219,7 @@ export function NotificationItem({
           </div>
         ) : (
           <>
-            <div className="relative w-12 h-12 rounded-full overflow-hidden">
+            <div className="relative w-12 h-12 rounded-none overflow-hidden">
               {actor.avatarUrl ? (
                 <Image
                   src={actor.avatarUrl}

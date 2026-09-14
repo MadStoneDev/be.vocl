@@ -132,7 +132,7 @@ export default function AdminAppealsPage() {
 
                   {/* User */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-panel overflow-hidden">
+                    <div className="w-10 h-10 rounded-none bg-panel overflow-hidden">
                       {appeal.user.avatarUrl ? (
                         <Image
                           src={appeal.user.avatarUrl}

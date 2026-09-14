@@ -177,7 +177,7 @@ export default function CommunityAboutPage() {
                 href={`/profile/${m.username}`}
                 className="flex items-center gap-3 py-4 group"
               >
-                <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
+                <div className="relative w-11 h-11 rounded-none overflow-hidden flex-shrink-0">
                   {m.avatarUrl ? (
                     <Image src={m.avatarUrl} alt={m.username} fill sizes="40px" className="object-cover" />
                   ) : (

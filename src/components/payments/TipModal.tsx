@@ -151,7 +151,7 @@ export function TipModal({ isOpen, onClose, recipient }: TipModalProps) {
 
         {/* Recipient info */}
         <div className="flex items-center gap-3 p-4 bg-vocl-hover">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+          <div className="relative w-12 h-12 rounded-none overflow-hidden flex-shrink-0">
             {recipient.avatarUrl ? (
               <Image
                 src={recipient.avatarUrl}

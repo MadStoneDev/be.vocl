@@ -120,7 +120,7 @@ export function ProfileHeader({
           {avatarUrl !== undefined && (
             <button
               onClick={onAvatarClick}
-              className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-full border border-rule hover:opacity-95 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-none border border-rule hover:opacity-95 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="View profile picture"
             >
               {avatarUrl ? (

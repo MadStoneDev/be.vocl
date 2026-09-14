@@ -268,7 +268,7 @@ export default function AdminFlagsPage() {
                       href={`/@${flag.post.author.username}`}
                       className="flex items-center gap-1.5 hover:text-accent"
                     >
-                      <div className="w-5 h-5 rounded-full bg-panel overflow-hidden">
+                      <div className="w-5 h-5 rounded-none bg-panel overflow-hidden">
                         {flag.post.author.avatar_url ? (
                           <Image
                             src={flag.post.author.avatar_url}

@@ -658,7 +658,7 @@ function FollowerCard({
 
   return (
     <Link href={`/profile/${user.username}`} className="flex items-center gap-3 border-b border-rule py-3 hover:bg-vocl-hover transition-colors">
-      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
+      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-none">
         {user.avatarUrl ? (
           <Image src={user.avatarUrl} alt={user.username} fill className="object-cover" />
         ) : (

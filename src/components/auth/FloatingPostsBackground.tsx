@@ -230,7 +230,7 @@ function FakeAvatar({
   const initials = username.charAt(0).toUpperCase();
   return (
     <div
-      className="w-9 h-9 rounded-full flex items-center justify-center text-white font-display text-sm font-semibold shrink-0"
+      className="w-9 h-9 rounded-none flex items-center justify-center text-white font-display text-sm font-semibold shrink-0"
       style={{ backgroundColor: color }}
     >
       {initials}

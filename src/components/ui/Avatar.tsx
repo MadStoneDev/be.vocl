@@ -22,43 +22,12 @@ const sizeClasses = {
 
 const sizePx = {
   xs: 24,
-  sm: 36,  // Matches w-9 (36px)
+  sm: 36, // Matches w-9 (36px)
   md: 40,
   lg: 48,
   xl: 64,
   "2xl": 96,
 };
-
-// Generate a consistent color based on username
-function getAvatarColor(username: string): string {
-  const colors = [
-    "bg-red-500",
-    "bg-orange-500",
-    "bg-amber-500",
-    "bg-yellow-500",
-    "bg-lime-500",
-    "bg-green-500",
-    "bg-emerald-500",
-    "bg-teal-500",
-    "bg-cyan-500",
-    "bg-sky-500",
-    "bg-blue-500",
-    "bg-indigo-500",
-    "bg-violet-500",
-    "bg-purple-500",
-    "bg-fuchsia-500",
-    "bg-pink-500",
-    "bg-rose-500",
-  ];
-
-  // Simple hash based on username
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  return colors[Math.abs(hash) % colors.length];
-}
 
 export function Avatar({
   src,
@@ -70,15 +39,15 @@ export function Avatar({
   const [imageError, setImageError] = useState(false);
   const showFallback = !src || imageError;
   const firstLetter = username.charAt(0).toUpperCase();
-  const bgColor = getAvatarColor(username);
 
-  const baseClasses = `rounded-full overflow-hidden flex-shrink-0 ${sizeClasses[size]} ${className}`;
+  // Broadsheet: avatars are SQUARE (radius 0), never circular.
+  const baseClasses = `rounded-none overflow-hidden flex-shrink-0 ${sizeClasses[size]} ${className}`;
   const clickableClasses = onClick ? "cursor-pointer hover:opacity-90" : "";
 
   if (showFallback) {
     return (
       <div
-        className={`${baseClasses} bg-vocl-primary hover:bg-vocl-primary-hover ${clickableClasses} flex items-center justify-center font-semibold text-white transition-all`}
+        className={`${baseClasses} bg-panel ${clickableClasses} flex items-center justify-center font-display text-ink transition-opacity`}
         onClick={onClick}
         role={onClick ? "button" : undefined}
       >
@@ -89,7 +58,7 @@ export function Avatar({
 
   return (
     <div
-      className={`${baseClasses} ${clickableClasses} relative bg-vocl-surface-dark`}
+      className={`${baseClasses} ${clickableClasses} relative bg-panel`}
       onClick={onClick}
       role={onClick ? "button" : undefined}
     >

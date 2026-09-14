@@ -316,7 +316,7 @@ export default function ProfileSettingsPage() {
         {/* Avatar */}
         <div className="absolute -bottom-12 left-4">
           <div className="relative">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border border-rule bg-panel">
+            <div className="relative w-24 h-24 rounded-none overflow-hidden border border-rule bg-panel">
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
@@ -333,13 +333,13 @@ export default function ProfileSettingsPage() {
               )}
             </div>
             {isUploadingAvatar ? (
-              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
+              <div className="absolute inset-0 flex items-center justify-center rounded-none bg-black/60">
                 <IconLoader2 size={24} className="text-white animate-spin" />
               </div>
             ) : (
               <button
                 onClick={() => avatarInputRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
+                className="absolute inset-0 flex items-center justify-center rounded-none bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
               >
                 <IconCamera size={24} className="text-white" />
               </button>
