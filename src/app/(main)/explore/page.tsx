@@ -541,7 +541,7 @@ function ExploreSkeleton() {
                 key={i}
                 className="flex items-center gap-3 p-4 rounded-none bg-vocl-hover"
               >
-                <div className="w-12 h-12 rounded-full bg-vocl-hover-strong flex-shrink-0" />
+                <div className="w-12 h-12 rounded-none bg-vocl-hover-strong flex-shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 w-28 bg-vocl-hover-strong rounded-none" />
                   <div className="h-3 w-20 bg-vocl-hover rounded-none" />

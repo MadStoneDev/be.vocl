@@ -253,7 +253,7 @@ export function NewChatModal({
                         isSelected ? "bg-vocl-primary/10" : "hover:bg-vocl-hover"
                       }`}
                     >
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                      <div className="relative w-12 h-12 rounded-none overflow-hidden flex-shrink-0">
                         {user.avatarUrl ? (
                           <Image
                             src={user.avatarUrl}

@@ -506,7 +506,7 @@ export default function CommunitySettingsPage() {
             <div className="space-y-2">
               {requests.map((r) => (
                 <div key={r.id} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-                  <Link href={`/profile/${r.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <Link href={`/profile/${r.username}`} className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0">
                     {r.avatarUrl ? (
                       <Image src={r.avatarUrl} alt={r.username} fill sizes="40px" className="object-cover" />
                     ) : (
@@ -556,7 +556,7 @@ export default function CommunitySettingsPage() {
         <div className="space-y-2">
           {members.map((m) => (
             <div key={m.userId} className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark border border-vocl-border">
-              <Link href={`/profile/${m.username}`} className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+              <Link href={`/profile/${m.username}`} className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0">
                 {m.avatarUrl ? (
                   <Image src={m.avatarUrl} alt={m.username} fill className="object-cover" />
                 ) : (

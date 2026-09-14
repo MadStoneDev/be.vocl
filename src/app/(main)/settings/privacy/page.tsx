@@ -789,7 +789,7 @@ function UserListItem({
 }) {
   return (
     <div className="flex items-center gap-3 p-3 border border-rule">
-      <div className="relative w-10 h-10 rounded-full overflow-hidden">
+      <div className="relative w-10 h-10 rounded-none overflow-hidden">
         {user.avatarUrl ? (
           <Image
             src={user.avatarUrl}

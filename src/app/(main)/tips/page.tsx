@@ -123,7 +123,7 @@ export default function TipsPage() {
               >
                 <Link
                   href={`/profile/${username}`}
-                  className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                  className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0"
                 >
                   {avatarUrl ? (
                     <Image src={avatarUrl} alt={username} fill className="object-cover" />

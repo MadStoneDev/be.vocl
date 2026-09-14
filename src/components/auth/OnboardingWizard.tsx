@@ -330,7 +330,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
             </div>
 
             <div className="flex flex-col items-center gap-4">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden bg-vocl-surface-dark border-2 border-dashed border-white/20">
+              <div className="relative w-32 h-32 rounded-none overflow-hidden bg-vocl-surface-dark border-2 border-dashed border-white/20">
                 {avatarUrl ? (
                   <>
                     <Image
@@ -538,7 +538,7 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                     key={user.id}
                     className="flex items-center gap-3 p-3 rounded-sm bg-vocl-surface-dark"
                   >
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                    <div className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0">
                       {user.avatarUrl ? (
                         <Image
                           src={user.avatarUrl}

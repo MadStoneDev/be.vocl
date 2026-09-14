@@ -80,7 +80,7 @@ export function WhoToFollow() {
           <div key={user.id} className="flex items-center gap-3 py-3">
             <Link
               href={`/profile/${user.username}`}
-              className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-vocl-hover"
+              className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0 bg-vocl-hover"
             >
               {user.avatarUrl ? (
                 <Image

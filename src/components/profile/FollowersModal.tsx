@@ -156,7 +156,7 @@ export function FollowersModal({
                 >
                   {/* Avatar */}
                   <Link href={`/profile/${user.username}`} onClick={onClose}>
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
+                    <div className="relative w-12 h-12 rounded-none overflow-hidden shrink-0">
                       {user.avatarUrl ? (
                         <Image
                           src={user.avatarUrl}

@@ -131,7 +131,7 @@ export function ReblogDialog({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   {originalPost.author.avatarUrl && (
-                    <div className="relative w-5 h-5 rounded-full overflow-hidden">
+                    <div className="relative w-5 h-5 rounded-none overflow-hidden">
                       <Image
                         src={originalPost.author.avatarUrl}
                         alt=""

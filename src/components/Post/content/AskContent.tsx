@@ -81,7 +81,7 @@ export function AskContent({ content, article }: AskContentProps) {
           ) : content.asker_id ? (
             <Link
               href={`/profile/${content.asker_username}`}
-              className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 hover:opacity-90 transition-opacity"
+              className="relative w-10 h-10 rounded-none overflow-hidden flex-shrink-0 hover:opacity-90 transition-opacity"
             >
               <Image
                 src={`/api/avatar/${content.asker_id}`}

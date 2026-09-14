@@ -861,7 +861,7 @@ function UserCard({
       href={`/profile/${user.username}`}
       className="group flex items-center gap-3 py-4 first:pt-0 transition-colors"
     >
-      <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+      <div className="relative w-12 h-12 rounded-none overflow-hidden flex-shrink-0">
         {user.avatarUrl ? (
           <Image
             src={user.avatarUrl}

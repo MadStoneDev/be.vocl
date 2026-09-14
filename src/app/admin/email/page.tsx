@@ -503,7 +503,7 @@ function EmailPreview({
           </>
         ) : (
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-12 h-12 rounded-none bg-panel flex items-center justify-center text-white font-bold text-lg">
               {(founderName || "F").charAt(0).toUpperCase()}
             </div>
             <div>
@@ -676,7 +676,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           <h2 className="text-xl font-semibold text-center mb-4">You have a new follower!</h2>
           <p className="mb-4">Hey @username,</p>
           <div className="flex items-center gap-3 bg-[#2a2a2a] p-4 rounded-none mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold">
+            <div className="w-12 h-12 rounded-none bg-panel flex items-center justify-center text-white font-bold">
               J
             </div>
             <div>
@@ -697,7 +697,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           <p className="mb-4">Hey @username,</p>
           <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
                 J
               </div>
               <span className="font-semibold">@johndoe</span>
@@ -720,7 +720,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           <p className="mb-4">Hey @username,</p>
           <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
                 J
               </div>
               <span className="font-semibold">@johndoe</span>
@@ -743,7 +743,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           <p className="mb-4">Hey @username,</p>
           <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
                 J
               </div>
               <span className="font-semibold">@johndoe</span>
@@ -766,7 +766,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           <p className="mb-4">Hey @username,</p>
           <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
                 J
               </div>
               <span className="font-semibold">@johndoe</span>
@@ -788,7 +788,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           <p className="mb-4">Hey @username,</p>
           <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
                 J
               </div>
               <span className="font-semibold">@johndoe</span>
@@ -885,7 +885,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           </p>
           <div className="border-t border-[#2a2a2a] pt-4 mt-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#5B9A8B] flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-12 h-12 rounded-none bg-panel flex items-center justify-center text-white font-bold text-lg">
                 R
               </div>
               <div>
