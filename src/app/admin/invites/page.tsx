@@ -179,7 +179,7 @@ export default function AdminInvitesPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowGrantModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-none bg-panel border border-rule text-foreground hover:bg-panel transition-colors"
           >
             <IconGift size={18} />
             <span className="hidden sm:inline">Grant Codes</span>
@@ -189,7 +189,7 @@ export default function AdminInvitesPage() {
               setShowGenerateModal(true);
               setGeneratedCodes([]);
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
           >
             <IconPlus size={18} />
             <span className="hidden sm:inline">Generate</span>
@@ -200,19 +200,19 @@ export default function AdminInvitesPage() {
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
+          <div className="bg-panel rounded-none p-4 border border-rule">
             <div className="type-display text-2xl font-bold text-foreground">{stats.totalCodes}</div>
             <div className="type-body text-foreground/50">Total Codes</div>
           </div>
-          <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
+          <div className="bg-panel rounded-none p-4 border border-rule">
             <div className="type-display text-2xl font-bold text-green-500">{stats.activeCodes}</div>
             <div className="type-body text-foreground/50">Active Codes</div>
           </div>
-          <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
-            <div className="type-display text-2xl font-bold text-vocl-primary">{stats.totalUses}</div>
+          <div className="bg-panel rounded-none p-4 border border-rule">
+            <div className="type-display text-2xl font-bold text-accent">{stats.totalUses}</div>
             <div className="type-body text-foreground/50">Total Redemptions</div>
           </div>
-          <div className="bg-vocl-surface-dark rounded-xl p-4 border border-white/5">
+          <div className="bg-panel rounded-none p-4 border border-rule">
             <div className="type-display text-2xl font-bold text-foreground">{stats.usersWithCodes}</div>
             <div className="type-body text-foreground/50">Users with Codes</div>
           </div>
@@ -231,7 +231,7 @@ export default function AdminInvitesPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search codes..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
+            className="w-full pl-10 pr-4 py-2 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
           />
         </div>
         <label className="flex items-center gap-2 type-body text-foreground/60">
@@ -239,13 +239,13 @@ export default function AdminInvitesPage() {
             type="checkbox"
             checked={showRevoked}
             onChange={(e) => setShowRevoked(e.target.checked)}
-            className="rounded border-white/10 bg-vocl-surface-dark"
+            className="rounded border-rule bg-panel"
           />
           Show revoked
         </label>
         <button
           onClick={loadData}
-          className="p-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
+          className="p-2 rounded-none bg-panel border border-rule text-foreground/60 hover:text-foreground hover:bg-panel transition-colors"
           title="Refresh"
         >
           <IconRefresh size={18} />
@@ -255,7 +255,7 @@ export default function AdminInvitesPage() {
       {/* Codes Table */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : filteredCodes.length === 0 ? (
         <div className="text-center py-20">
@@ -263,11 +263,11 @@ export default function AdminInvitesPage() {
           <p className="type-body text-foreground/50">No invite codes found</p>
         </div>
       ) : (
-        <div className="bg-vocl-surface-dark rounded-sm border border-white/5 overflow-hidden">
+        <div className="bg-panel rounded-none border border-rule overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-rule">
                   <th className="text-left px-4 py-3 type-meta font-semibold uppercase tracking-wide text-foreground/50">
                     Code
                   </th>
@@ -294,15 +294,15 @@ export default function AdminInvitesPage() {
                   const isExhausted = code.maxUses !== null && code.uses >= code.maxUses;
 
                   return (
-                    <tr key={code.id} className="border-b border-white/5 last:border-0">
+                    <tr key={code.id} className="border-b border-rule last:border-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <code className="font-mono type-body text-vocl-primary bg-vocl-primary/10 px-2 py-1 rounded">
+                          <code className="font-mono type-body text-accent bg-accent/10 px-2 py-1 rounded">
                             {code.code}
                           </code>
                           <button
                             onClick={() => copyToClipboard(code.code)}
-                            className="p-1 rounded hover:bg-white/5 text-foreground/40 hover:text-foreground transition-colors"
+                            className="p-1 rounded hover:bg-panel text-foreground/40 hover:text-foreground transition-colors"
                             title="Copy code"
                           >
                             {copiedCode === code.code ? (
@@ -354,7 +354,7 @@ export default function AdminInvitesPage() {
                         {!code.isRevoked && (
                           <button
                             onClick={() => handleRevoke(code.id)}
-                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20"
+                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-none hover:bg-vocl-like/20"
                           >
                             Revoke
                           </button>
@@ -376,7 +376,7 @@ export default function AdminInvitesPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowGenerateModal(false)}
           />
-          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
+          <div className="relative w-full max-w-md mx-4 bg-background border border-rule rounded-none shadow-2xl">
             <div className="p-6">
               <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Generate Invite Codes
@@ -392,12 +392,12 @@ export default function AdminInvitesPage() {
                     {generatedCodes.map((code) => (
                       <div
                         key={code}
-                        className="flex items-center justify-between gap-2 p-3 rounded-xl bg-vocl-surface-dark border border-white/5"
+                        className="flex items-center justify-between gap-2 p-3 rounded-none bg-panel border border-rule"
                       >
-                        <code className="font-mono text-vocl-primary">{code}</code>
+                        <code className="font-mono text-accent">{code}</code>
                         <button
                           onClick={() => copyToClipboard(code)}
-                          className="p-2 rounded-lg hover:bg-white/5 text-foreground/40 hover:text-foreground transition-colors"
+                          className="p-2 rounded-none hover:bg-panel text-foreground/40 hover:text-foreground transition-colors"
                         >
                           {copiedCode === code ? (
                             <IconCheck size={18} className="text-green-500" />
@@ -413,13 +413,13 @@ export default function AdminInvitesPage() {
                       const allCodes = generatedCodes.join("\n");
                       copyToClipboard(allCodes);
                     }}
-                    className="w-full mt-4 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover"
+                    className="w-full mt-4 px-4 py-2.5 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover"
                   >
                     Copy All Codes
                   </button>
                   <button
                     onClick={() => setShowGenerateModal(false)}
-                    className="w-full mt-2 px-4 py-2.5 rounded-xl border border-white/10 text-foreground hover:bg-white/5"
+                    className="w-full mt-2 px-4 py-2.5 rounded-none border border-rule text-foreground hover:bg-panel"
                   >
                     Done
                   </button>
@@ -437,7 +437,7 @@ export default function AdminInvitesPage() {
                       max={100}
                       value={generateQuantity}
                       onChange={(e) => setGenerateQuantity(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
+                      className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -453,7 +453,7 @@ export default function AdminInvitesPage() {
                         setGenerateMaxUses(e.target.value === "" ? "" : Number(e.target.value))
                       }
                       placeholder="Unlimited"
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
+                      className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -471,7 +471,7 @@ export default function AdminInvitesPage() {
                         )
                       }
                       placeholder="Never"
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
+                      className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
@@ -484,21 +484,21 @@ export default function AdminInvitesPage() {
                       value={generateNote}
                       onChange={(e) => setGenerateNote(e.target.value)}
                       placeholder="e.g., Beta testers batch 1"
-                      className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
+                      className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => setShowGenerateModal(false)}
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-foreground hover:bg-white/5"
+                      className="flex-1 px-4 py-2.5 rounded-none border border-rule text-foreground hover:bg-panel"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleGenerate}
                       disabled={generating}
-                      className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2.5 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {generating ? (
                         <>
@@ -527,7 +527,7 @@ export default function AdminInvitesPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowGrantModal(false)}
           />
-          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
+          <div className="relative w-full max-w-md mx-4 bg-background border border-rule rounded-none shadow-2xl">
             <div className="p-6">
               <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Grant Invite Codes to User
@@ -548,13 +548,13 @@ export default function AdminInvitesPage() {
                       value={grantSearch}
                       onChange={(e) => setGrantSearch(e.target.value)}
                       placeholder="Search by username..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
                     />
                   </div>
 
                   {/* Search Results */}
                   {(searchingUsers || grantSearchResults.length > 0) && (
-                    <div className="mt-2 bg-vocl-surface-dark border border-white/10 rounded-xl overflow-hidden">
+                    <div className="mt-2 bg-panel border border-rule rounded-none overflow-hidden">
                       {searchingUsers ? (
                         <div className="p-4 text-center">
                           <IconLoader2
@@ -571,7 +571,7 @@ export default function AdminInvitesPage() {
                               setGrantSearch(`@${user.username}`);
                               setGrantSearchResults([]);
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-panel transition-colors text-left"
                           >
                             <Avatar
                               src={user.avatarUrl}
@@ -605,21 +605,21 @@ export default function AdminInvitesPage() {
                     max={100}
                     value={grantAmount}
                     onChange={(e) => setGrantAmount(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
+                    className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
                   />
                 </div>
 
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setShowGrantModal(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-foreground hover:bg-white/5"
+                    className="flex-1 px-4 py-2.5 rounded-none border border-rule text-foreground hover:bg-panel"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleGrantCodes}
                     disabled={granting || !grantUserId}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2.5 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {granting ? (
                       <>

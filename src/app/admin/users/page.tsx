@@ -1,16 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  IconLoader2,
-  IconSearch,
-  IconShieldCheck,
-  IconLock,
-  IconLockOpen,
-  IconBan,
-} from "@tabler/icons-react";
-import { Avatar } from "@/components/ui";
+import { IconLoader2 } from "@tabler/icons-react";
 import {
   getUsers,
   banUser,
@@ -21,18 +14,25 @@ import {
   type UserWithDetails,
 } from "@/actions/admin";
 
-const STATUS_OPTIONS = [
+const STATUS_TABS = [
   { value: "all", label: "All" },
   { value: "unlocked", label: "Active" },
   { value: "restricted", label: "Restricted" },
   { value: "banned", label: "Banned" },
 ];
 
-const ROLE_LABELS: Record<number, string> = {
-  0: "User",
-  5: "Moderator",
-  10: "Admin",
-};
+/** Square avatar per the broadsheet spec — never circular. */
+function SquareAvatar({ src, username, size = 36 }: { src?: string | null; username: string; size?: number }) {
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={username} className="flex-none object-cover" style={{ width: size, height: size }} />;
+  }
+  return (
+    <span className="ph-image flex flex-none items-center justify-center" style={{ width: size, height: size }}>
+      <span className="font-display text-sm text-ink">{username.charAt(0).toUpperCase()}</span>
+    </span>
+  );
+}
 
 export default function AdminUsersPage() {
   const searchParams = useSearchParams();
@@ -52,21 +52,15 @@ export default function AdminUsersPage() {
       search: searchQuery || undefined,
       lockStatus: statusFilter !== "all" ? statusFilter : undefined,
     });
-    if (result.success && result.users) {
-      setUsers(result.users);
-    }
+    if (result.success && result.users) setUsers(result.users);
     setIsLoading(false);
   };
 
+  useEffect(() => { loadUsers(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [statusFilter]);
   useEffect(() => {
-    loadUsers();
-  }, [statusFilter]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadUsers();
-    }, 300);
+    const timer = setTimeout(() => loadUsers(), 300);
     return () => clearTimeout(timer);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [searchQuery]);
 
   const handleBan = async () => {
@@ -78,286 +72,158 @@ export default function AdminUsersPage() {
     loadUsers();
     setActionLoading(false);
   };
+  const handleRestrict = async (userId: string) => { setActionLoading(true); await restrictUser(userId); loadUsers(); setActionLoading(false); };
+  const handleUnlock = async (userId: string) => { setActionLoading(true); await unlockUser(userId); loadUsers(); setActionLoading(false); };
+  const handleSetRole = async (userId: string, role: number) => { setActionLoading(true); await setUserRole(userId, role); loadUsers(); setActionLoading(false); };
+  const handleToggleNsfw = async (userId: string, isNsfw: boolean) => { setActionLoading(true); await setUserNsfw(userId, isNsfw); loadUsers(); setActionLoading(false); };
 
-  const handleRestrict = async (userId: string) => {
-    setActionLoading(true);
-    await restrictUser(userId);
-    loadUsers();
-    setActionLoading(false);
-  };
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("en-AU", { month: "short", day: "numeric", year: "numeric" });
 
-  const handleUnlock = async (userId: string) => {
-    setActionLoading(true);
-    await unlockUser(userId);
-    loadUsers();
-    setActionLoading(false);
-  };
+  const admins = users.filter((u) => u.role >= 10).length;
+  const banned = users.filter((u) => u.lockStatus === "banned").length;
 
-  const handleSetRole = async (userId: string, role: number) => {
-    setActionLoading(true);
-    await setUserRole(userId, role);
-    loadUsers();
-    setActionLoading(false);
-  };
-
-  const handleToggleNsfw = async (userId: string, isNsfw: boolean) => {
-    setActionLoading(true);
-    await setUserNsfw(userId, isNsfw);
-    loadUsers();
-    setActionLoading(false);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  const GRID = "grid grid-cols-[minmax(0,1fr)_110px_120px_64px_110px_auto] items-center gap-x-5";
 
   return (
     <div>
-      <title>Admin — Users | be.vocl</title>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="type-display text-2xl font-bold text-foreground">Users</h1>
+      <title>Users — Admin | be.vocl</title>
+
+      {/* Title row */}
+      <div className="flex items-end justify-between gap-4 pt-8 pb-4.5">
+        <div>
+          <div className="kicker kicker-accent mb-2.5">Records</div>
+          <h1 className="type-display text-ink">Users</h1>
+        </div>
+        <span className="slug text-meta-dim hidden sm:block">
+          {users.length} accounts · {admins} admins · {banned} banned
+        </span>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <IconSearch
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by username..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+      {/* Filter + search row */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-rule pb-3">
+        <div className="flex gap-5 overflow-x-auto">
+          {STATUS_TABS.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              onClick={() => setStatusFilter(t.value)}
+              data-active={statusFilter === t.value}
+              className="section-tab whitespace-nowrap hover:text-ink transition-colors"
+            >
+              {t.label}
+            </button>
           ))}
-        </select>
+        </div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="SEARCH BY USERNAME…"
+          className="w-[240px] max-w-full border-b border-rule bg-transparent pb-1.5 font-mono text-[11px] tracking-[0.12em] uppercase text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
+        />
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
-        </div>
+        <div className="flex items-center justify-center py-24"><IconLoader2 size={32} className="animate-spin text-accent" /></div>
       ) : users.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-foreground/50">No users found</p>
-        </div>
+        <p className="editorial-body text-meta py-16 text-center">No members match this view.</p>
       ) : (
-        <div className="bg-vocl-surface-dark rounded-sm border border-white/5 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
-                  User
-                </th>
-                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
-                  Role
-                </th>
-                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
-                  Status
-                </th>
-                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
-                  Reports
-                </th>
-                <th className="text-left px-4 py-3 type-meta font-semibold text-foreground/50">
-                  Joined
-                </th>
-                <th className="text-right px-4 py-3 type-meta font-semibold text-foreground/50">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-white/5 last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={user.avatarUrl}
-                        username={user.username}
-                        size="sm"
-                      />
-                      <div>
-                        <div className="font-semibold text-foreground">
-                          @{user.username}
-                        </div>
-                        {user.displayName && (
-                          <div className="type-meta text-foreground/50">
-                            {user.displayName}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={user.role}
-                      onChange={(e) => handleSetRole(user.id, Number(e.target.value))}
-                      disabled={actionLoading}
-                      className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground focus:outline-none"
-                    >
-                      <option value={0}>User</option>
-                      <option value={5}>Moderator</option>
-                      <option value={10}>Admin</option>
-                    </select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold ${
-                        user.lockStatus === "banned"
-                          ? "bg-vocl-like/20 text-vocl-like"
-                          : user.lockStatus === "restricted"
-                          ? "bg-amber-500/20 text-amber-500"
-                          : "bg-green-500/20 text-green-500"
-                      }`}
-                    >
-                      {user.lockStatus === "banned" ? (
-                        <IconBan size={12} />
-                      ) : user.lockStatus === "restricted" ? (
-                        <IconLock size={12} />
-                      ) : (
-                        <IconLockOpen size={12} />
-                      )}
-                      {user.lockStatus}
-                    </span>
-                    <button
-                      onClick={() => handleToggleNsfw(user.id, !user.isNsfw)}
-                      disabled={actionLoading}
-                      title="Toggle NSFW account flag"
-                      className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full type-meta font-semibold transition-colors disabled:opacity-50 ${
-                        user.isNsfw
-                          ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
-                          : "bg-white/5 text-foreground/40 hover:bg-white/10"
-                      }`}
-                    >
-                      NSFW
-                    </button>
-                  </td>
-                  <td className="px-4 py-3">
-                    {user.reportCount > 0 ? (
-                      <span className="type-meta font-semibold text-amber-500">
-                        {user.reportCount}
-                      </span>
-                    ) : (
-                      <span className="type-meta text-foreground/30">0</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 type-meta text-foreground/50">
-                    {formatDate(user.createdAt)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {user.lockStatus === "unlocked" && (
-                        <>
-                          <button
-                            onClick={() => handleRestrict(user.id)}
-                            disabled={actionLoading}
-                            className="px-3 py-1.5 type-meta font-semibold text-amber-500 bg-amber-500/10 rounded-lg hover:bg-amber-500/20 disabled:opacity-50"
-                          >
-                            Restrict
-                          </button>
-                          <button
-                            onClick={() => setSelectedUser(user)}
-                            disabled={actionLoading}
-                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20 disabled:opacity-50"
-                          >
-                            Ban
-                          </button>
-                        </>
-                      )}
-                      {user.lockStatus === "restricted" && (
-                        <>
-                          <button
-                            onClick={() => handleUnlock(user.id)}
-                            disabled={actionLoading}
-                            className="px-3 py-1.5 type-meta font-semibold text-green-500 bg-green-500/10 rounded-lg hover:bg-green-500/20 disabled:opacity-50"
-                          >
-                            Unlock
-                          </button>
-                          <button
-                            onClick={() => setSelectedUser(user)}
-                            disabled={actionLoading}
-                            className="px-3 py-1.5 type-meta font-semibold text-vocl-like bg-vocl-like/10 rounded-lg hover:bg-vocl-like/20 disabled:opacity-50"
-                          >
-                            Ban
-                          </button>
-                        </>
-                      )}
-                      {user.lockStatus === "banned" && (
-                        <button
-                          onClick={() => handleUnlock(user.id)}
-                          disabled={actionLoading}
-                          className="px-3 py-1.5 type-meta font-semibold text-green-500 bg-green-500/10 rounded-lg hover:bg-green-500/20 disabled:opacity-50"
-                        >
-                          Unban
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto">
+          <div className="min-w-[820px]">
+            {/* Header */}
+            <div className={`${GRID} slug text-meta-dim py-2.5 border-b border-rule`}>
+              <span>Member</span><span>Role</span><span>Status</span><span>Reports</span><span>Joined</span>
+              <span className="text-right">Actions</span>
+            </div>
+            {/* Rows */}
+            {users.map((user) => (
+              <div key={user.id} className={`${GRID} border-b border-rule py-3.5`}>
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <SquareAvatar src={user.avatarUrl} username={user.username} />
+                  <div className="min-w-0">
+                    <div className="font-sans text-sm font-medium text-ink truncate">@{user.username}</div>
+                    {user.displayName && <div className="editorial-caption text-meta not-italic truncate">{user.displayName}</div>}
+                  </div>
+                </div>
+                <select
+                  value={user.role}
+                  onChange={(e) => handleSetRole(user.id, Number(e.target.value))}
+                  disabled={actionLoading}
+                  className="border-b border-rule bg-transparent pb-1 font-sans text-[11px] uppercase tracking-[0.16em] text-ink-secondary focus:border-foreground focus:outline-none disabled:opacity-50"
+                >
+                  <option value={0}>User</option>
+                  <option value={5}>Moderator</option>
+                  <option value={10}>Admin</option>
+                </select>
+                <div className="byline text-meta">
+                  {user.lockStatus}
+                  <button
+                    onClick={() => handleToggleNsfw(user.id, !user.isNsfw)}
+                    disabled={actionLoading}
+                    title="Toggle NSFW account flag"
+                    className={`ml-2 font-mono text-[10px] tracking-[0.14em] transition-colors disabled:opacity-50 ${user.isNsfw ? "text-accent" : "text-meta-dim hover:text-ink"}`}
+                  >
+                    NSFW
+                  </button>
+                </div>
+                <span className={`font-mono text-xs ${user.reportCount > 0 ? "text-accent" : "text-meta-dim"}`}>{user.reportCount}</span>
+                <span className="byline text-meta">{formatDate(user.createdAt)}</span>
+                <div className="flex items-center justify-end gap-4 byline">
+                  {user.lockStatus === "unlocked" && (
+                    <>
+                      <button onClick={() => handleRestrict(user.id)} disabled={actionLoading} className="text-ink hover:text-accent transition-colors disabled:opacity-50">Restrict</button>
+                      <button onClick={() => setSelectedUser(user)} disabled={actionLoading} className="text-ink hover:text-vocl-like transition-colors disabled:opacity-50">Ban</button>
+                    </>
+                  )}
+                  {user.lockStatus === "restricted" && (
+                    <>
+                      <button onClick={() => handleUnlock(user.id)} disabled={actionLoading} className="text-ink hover:text-accent transition-colors disabled:opacity-50">Unlock</button>
+                      <button onClick={() => setSelectedUser(user)} disabled={actionLoading} className="text-ink hover:text-vocl-like transition-colors disabled:opacity-50">Ban</button>
+                    </>
+                  )}
+                  {user.lockStatus === "banned" && (
+                    <button onClick={() => handleUnlock(user.id)} disabled={actionLoading} className="text-ink hover:text-accent transition-colors disabled:opacity-50">Unban</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Ban Modal */}
+      {/* Footer: count + single primary */}
+      {!isLoading && users.length > 0 && (
+        <div className="flex items-center justify-between gap-4 pt-5">
+          <span className="slug text-meta-dim">Showing {users.length} of {users.length}</span>
+          <Link href="/admin/invites" className="bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs px-6 py-3 hover:opacity-[0.88] transition-opacity">Invite a member</Link>
+        </div>
+      )}
+
+      {/* Ban modal — editorial, reason required */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedUser(null)}
-          />
-          <div className="relative w-full max-w-md mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
-            <div className="p-6">
-              <h2 className="type-heading text-xl font-bold text-foreground mb-4">
-                Ban @{selectedUser.username}
-              </h2>
-
-              <div className="mb-4">
-                <label className="type-meta font-semibold text-foreground/50 block mb-2">
-                  Ban Reason (required)
-                </label>
-                <textarea
-                  value={banReason}
-                  onChange={(e) => setBanReason(e.target.value)}
-                  placeholder="Provide a reason for banning this user..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 type-meta font-semibold text-foreground hover:bg-white/5"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleBan}
-                  disabled={actionLoading || !banReason.trim()}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-vocl-like text-white type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
-                >
-                  {actionLoading ? "Banning..." : "Ban User"}
-                </button>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setSelectedUser(null)} />
+          <div className="relative w-full max-w-md border border-rule bg-background p-6">
+            <div className="kicker kicker-accent mb-2.5">Confirm · reason required</div>
+            <h2 className="type-heading text-ink mb-4">Ban @{selectedUser.username}</h2>
+            <label className="slug text-meta-dim block mb-2">Reason</label>
+            <textarea
+              value={banReason}
+              onChange={(e) => setBanReason(e.target.value)}
+              placeholder="This reason is sent to the member and written to the audit trail…"
+              rows={3}
+              className="w-full border border-rule bg-transparent p-3 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none resize-none"
+            />
+            <div className="mt-5 flex justify-end gap-4 byline">
+              <button onClick={() => setSelectedUser(null)} className="text-meta hover:text-ink transition-colors px-2 py-2.5">Cancel</button>
+              <button
+                onClick={handleBan}
+                disabled={actionLoading || !banReason.trim()}
+                className="bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs px-5 py-2.5 hover:opacity-[0.88] transition-opacity disabled:opacity-50"
+              >
+                {actionLoading ? "Banning…" : "Ban member"}
+              </button>
             </div>
           </div>
         </div>

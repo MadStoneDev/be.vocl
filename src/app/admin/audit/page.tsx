@@ -60,17 +60,17 @@ export default function AdminAuditPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : error ? (
         <div className="text-center py-20 text-foreground/50">{error}</div>
       ) : logs.length === 0 ? (
         <div className="text-center py-20 text-foreground/50">No actions recorded yet</div>
       ) : (
-        <div className="overflow-x-auto rounded-sm border border-white/5">
+        <div className="overflow-x-auto rounded-none border border-rule">
           <table className="w-full type-body">
             <thead>
-              <tr className="text-left text-foreground/50 border-b border-white/5">
+              <tr className="text-left text-foreground/50 border-b border-rule">
                 <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">When</th>
                 <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Moderator</th>
                 <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Action</th>
@@ -80,7 +80,7 @@ export default function AdminAuditPage() {
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} className="border-b border-white/5 last:border-0 align-top">
+                <tr key={log.id} className="border-b border-rule last:border-0 align-top">
                   <td className="px-4 py-3 text-foreground/50 whitespace-nowrap tabular-nums">
                     {formatDate(log.createdAt)}
                   </td>
@@ -92,7 +92,7 @@ export default function AdminAuditPage() {
                       className={`inline-flex items-center px-2 py-0.5 rounded-full type-meta font-semibold ${
                         STRONG.has(log.action)
                           ? "bg-vocl-like/15 text-vocl-like"
-                          : "bg-white/5 text-foreground/70"
+                          : "bg-panel text-foreground/70"
                       }`}
                     >
                       {ACTION_LABELS[log.action] || log.action}
@@ -105,7 +105,7 @@ export default function AdminAuditPage() {
                         href={`/post/${log.targetPostId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-1 text-vocl-primary underline"
+                        className="ml-1 text-accent underline"
                       >
                         post
                       </a>
