@@ -3,9 +3,12 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // No forced centering: the auth pages are masthead-led and top-aligned,
+  // full-width (a rail form beside tonight's page — never a centred card).
+  // Pages that want centring (onboarding) provide their own wrapper.
   return (
-    <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center px-4 py-10">
-      <div className="relative z-20 w-full">{children}</div>
+    <div className="min-h-dvh bg-background text-foreground py-6 sm:py-8">
+      {children}
     </div>
   );
 }
