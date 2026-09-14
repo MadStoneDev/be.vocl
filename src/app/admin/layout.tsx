@@ -1,32 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  IconFlag,
-  IconFlagExclamation,
-  IconUsers,
-  IconMessageReport,
-  IconDashboard,
-  IconArrowLeft,
-  IconLoader2,
-  IconShieldCheck,
-  IconSettings,
-  IconLogout,
-  IconMail,
-  IconTicket,
-  IconHistory,
-} from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Admin shell — direction 1B "The Worklist". The back desk lives inside the
+ * app's own chrome: a 248px broadsheet rail (same geometry as the product
+ * SectionsRail), grouped DESK / RECORDS, with a masthead + user footer. Rules,
+ * radius 0, accent for the active item only.
+ */
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { profile, isLoading } = useAuth();
@@ -34,26 +21,19 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (isLoading) return;
-
-    // Check if user is admin (role >= 10) or moderator (role >= 5)
     const checkAccess = async () => {
       if (!profile) {
         router.replace("/login");
         return;
       }
-
-      // Fetch role from database
       const response = await fetch("/api/admin/check-access");
       const data = await response.json();
-
       if (!data.authorized) {
         router.replace("/feed");
         return;
       }
-
       setIsAuthorized(true);
     };
-
     checkAccess();
   }, [profile, isLoading, router]);
 
@@ -66,126 +46,111 @@ export default function AdminLayout({
   if (isLoading || isAuthorized === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+        <IconLoader2 size={32} className="animate-spin text-accent" />
       </div>
     );
   }
+  if (!isAuthorized) return null;
 
-  if (!isAuthorized) {
-    return null;
-  }
-
-  const navItems = [
-    { href: "/admin", icon: IconDashboard, label: "Overview", exact: true },
-    { href: "/admin/reports", icon: IconFlag, label: "Reports" },
-    { href: "/admin/flags", icon: IconFlagExclamation, label: "Flags" },
-    { href: "/admin/users", icon: IconUsers, label: "Users" },
-    { href: "/admin/appeals", icon: IconMessageReport, label: "Appeals" },
-    { href: "/admin/audit", icon: IconHistory, label: "Audit" },
-    { href: "/admin/invites", icon: IconTicket, label: "Invites" },
-    { href: "/admin/email", icon: IconMail, label: "Email" },
+  const groups: { label: string; items: { href: string; label: string; exact?: boolean }[] }[] = [
+    {
+      label: "Desk",
+      items: [
+        { href: "/admin", label: "The queue", exact: true },
+        { href: "/admin/reports", label: "Reports" },
+        { href: "/admin/flags", label: "Flags" },
+        { href: "/admin/appeals", label: "Appeals" },
+      ],
+    },
+    {
+      label: "Records",
+      items: [
+        { href: "/admin/users", label: "Users" },
+        { href: "/admin/invites", label: "Invites" },
+        { href: "/admin/email", label: "Email" },
+        { href: "/admin/audit", label: "Audit trail" },
+      ],
+    },
   ];
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link
-              href="/feed"
-              className="flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
-            >
-              <IconArrowLeft size={20} />
-              <span className="type-body hidden sm:inline">Back to feed</span>
-            </Link>
-            <div className="h-6 w-px bg-white/10" />
-            <div className="flex items-center gap-2">
-              <IconShieldCheck size={20} className="text-vocl-primary" />
-              <span className="type-heading font-semibold text-foreground">Admin</span>
-            </div>
-          </div>
+  const isActive = (href: string, exact?: boolean) =>
+    exact ? pathname === href : pathname.startsWith(href);
 
-          {/* Header actions - visible on mobile */}
-          <div className="flex items-center gap-1">
-            <Link
-              href="/settings"
-              className="p-2 rounded-lg text-foreground/60 hover:text-foreground hover:bg-white/5 transition-colors"
-              title="Settings"
-            >
-              <IconSettings size={20} />
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-lg text-foreground/60 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
-              title="Logout"
-            >
-              <IconLogout size={20} />
-            </button>
+  const navRow = (item: { href: string; label: string; exact?: boolean }) => (
+    <Link
+      key={item.href}
+      href={item.href}
+      aria-current={isActive(item.href, item.exact) ? "page" : undefined}
+      className={`block border-l-2 px-6 py-2.5 text-[13.5px] transition-colors ${
+        isActive(item.href, item.exact)
+          ? "border-accent text-ink"
+          : "border-transparent text-meta hover:text-ink hover:bg-vocl-hover"
+      }`}
+    >
+      {item.label}
+    </Link>
+  );
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Desktop rail */}
+      <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 w-[248px] flex-col border-r border-rule bg-background">
+        <div className="border-b border-rule px-6 pb-5 pt-6">
+          <Link href="/admin" className="font-display text-[28px] leading-none text-ink">
+            be<span className="text-accent">.</span>vocl
+          </Link>
+          <div className="slug mt-2 text-meta-dim">Back desk · Admin</div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-5">
+          {groups.map((g) => (
+            <div key={g.label} className="mb-6 last:mb-0">
+              <div className="slug px-6 pb-3 text-meta-dim">{g.label}</div>
+              {g.items.map(navRow)}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-auto flex flex-col gap-3 border-t border-rule px-6 py-5">
+          <Link href="/feed" className="slug text-meta hover:text-accent transition-colors">
+            ← Back to front page
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <span className="ph-image h-[26px] w-[26px] flex-none" aria-hidden="true" />
+            <span className="text-[12.5px] text-ink truncate">@{profile?.username ?? "admin"}</span>
+            <span className="slug ml-auto text-accent">Admin</span>
+          </div>
+          <div className="flex gap-4">
+            <Link href="/settings" className="slug text-meta hover:text-ink transition-colors">Settings</Link>
+            <button onClick={handleLogout} className="slug text-meta hover:text-vocl-like transition-colors">Sign out</button>
           </div>
         </div>
-      </header>
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:block fixed left-0 top-14 bottom-0 w-56 bg-background border-r border-white/5 z-40">
-        <nav className="p-3">
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = item.exact
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
-              const Icon = item.icon;
-
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                      isActive
-                        ? "bg-vocl-primary/10 text-vocl-primary font-semibold"
-                        : "text-foreground/60 hover:text-foreground hover:bg-white/5"
-                    }`}
-                  >
-                    <Icon size={20} />
-                    <span className="type-body">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
       </aside>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-white/5 safe-area-bottom">
-        <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map((item) => {
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
-                  isActive
-                    ? "text-vocl-primary"
-                    : "text-foreground/60 hover:text-foreground"
-                }`}
-              >
-                <Icon size={22} />
-                <span className="type-meta font-semibold">{item.label}</span>
-              </Link>
-            );
-          })}
+      {/* Mobile top bar + scrollable section nav */}
+      <div className="md:hidden sticky top-0 z-40 bg-background border-b border-rule">
+        <div className="flex items-center justify-between px-5 py-3">
+          <Link href="/admin" className="font-display text-xl leading-none text-ink">
+            be<span className="text-accent">.</span>vocl <span className="slug text-meta-dim ml-1">Back desk</span>
+          </Link>
+          <button onClick={handleLogout} className="slug text-meta hover:text-vocl-like transition-colors">Sign out</button>
         </div>
-      </nav>
+        <nav className="flex gap-5 overflow-x-auto px-5 pb-2.5">
+          {groups.flatMap((g) => g.items).map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              data-active={isActive(item.href, item.exact)}
+              className="section-tab whitespace-nowrap hover:text-ink transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
 
-      {/* Main Content */}
-      <main className="pt-14 pb-20 md:pb-0 md:pl-56">
-        <div className="max-w-5xl mx-auto p-4 sm:p-6">{children}</div>
+      <main className="md:pl-[248px]">
+        <div className="px-5 pb-16 pt-4 md:px-10 md:pt-0">{children}</div>
       </main>
     </div>
   );

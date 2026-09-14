@@ -2,16 +2,12 @@
 
 import { useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
 import {
-  IconMessagePlus,
   IconTrash,
-  IconDots,
   IconMailOpened,
   IconBellOff,
   IconBan,
   IconFlag,
-  IconUsersGroup,
 } from "@tabler/icons-react";
 import { TimeAgo } from "@/components/ui/TimeAgo";
 
@@ -40,6 +36,10 @@ interface ConversationListProps {
   searchQuery: string;
   onSelect: (conversationId: string) => void;
   onNewChat: () => void;
+  /** Highlights the open thread with the accent left-rule + panel fill. */
+  activeConversationId?: string;
+  /** When set, the viewer's own last message is prefixed "You: ". */
+  currentUserId?: string;
   onDeleteConversation?: (conversationId: string) => void;
   onMarkAsRead?: (conversationId: string) => void;
   onMuteNotifications?: (conversationId: string) => void;
@@ -47,11 +47,19 @@ interface ConversationListProps {
   onReportUser?: (conversationId: string) => void;
 }
 
+/**
+ * Broadsheet "Correspondence" list (artboard 2A): avatar-less rows — handle +
+ * mono time on one baseline, a serif preview beneath. Selected row carries a 2px
+ * accent left rule + panel fill; unread is a 5×5px accent square before the
+ * handle (never a numeric badge). Context menu on right-click / long-press.
+ */
 export function ConversationList({
   conversations,
   searchQuery,
   onSelect,
   onNewChat,
+  activeConversationId,
+  currentUserId,
   onDeleteConversation,
   onMarkAsRead,
   onMuteNotifications,
@@ -88,7 +96,7 @@ export function ConversationList({
     e.preventDefault();
     setContextMenu({ conversationId, x: e.clientX, y: e.clientY });
   }, []);
-  // Filter conversations by search query
+
   const filteredConversations = conversations.filter((conv) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -99,19 +107,17 @@ export function ConversationList({
 
   if (filteredConversations.length === 0 && !searchQuery) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
-          <IconMessagePlus size={28} className="text-vocl-primary" />
-        </div>
-        <h3 className="type-heading font-semibold text-foreground mb-2">No messages yet</h3>
-        <p className="type-body text-foreground/50 mb-6">
-          Start a conversation with someone you follow
+      <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+        <p className="slug text-meta-dim mb-3">Correspondence</p>
+        <h3 className="type-heading text-ink mb-2">Nothing in the mailbag.</h3>
+        <p className="editorial-body text-meta mb-6 max-w-[32ch]">
+          When someone writes to you it lands here, and nowhere else.
         </p>
         <button
           onClick={onNewChat}
-          className="px-5 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+          className="border border-foreground px-5 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs text-ink hover:bg-vocl-hover transition-colors"
         >
-          Start chatting
+          Write to someone
         </button>
       </div>
     );
@@ -119,25 +125,20 @@ export function ConversationList({
 
   if (filteredConversations.length === 0 && searchQuery) {
     return (
-      <div className="py-12 px-4 text-center">
-        <p className="type-body text-foreground/50">
-          No conversations matching &quot;{searchQuery}&quot;
-        </p>
+      <div className="px-6 py-12 text-center">
+        <p className="editorial-body text-meta">No correspondents matching &quot;{searchQuery}&quot;.</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-vocl-border">
-      {/* Context menu - portaled to body to escape overflow clipping */}
+    <div>
+      {/* Context menu — portaled to body to escape overflow clipping */}
       {contextMenu && createPortal(
         <>
+          <div className="fixed inset-0 z-[60]" onClick={() => setContextMenu(null)} />
           <div
-            className="fixed inset-0 z-[60]"
-            onClick={() => setContextMenu(null)}
-          />
-          <div
-            className="fixed z-[70] w-52 py-1 rounded-sm bg-vocl-surface-dark border border-vocl-border shadow-xl text-foreground"
+            className="fixed z-[70] w-52 border border-rule bg-background py-1 text-ink"
             style={{
               left: Math.min(contextMenu.x, window.innerWidth - 220),
               top: Math.min(contextMenu.y, window.innerHeight - 280),
@@ -148,160 +149,93 @@ export function ConversationList({
                 onMarkAsRead?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-meta hover:text-ink hover:bg-vocl-hover transition-colors"
             >
-              <IconMailOpened size={18} />
-              Mark as read
+              <IconMailOpened size={18} /> Mark as read
             </button>
             <button
               onClick={() => {
                 onMuteNotifications?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-meta hover:text-ink hover:bg-vocl-hover transition-colors"
             >
-              <IconBellOff size={18} />
-              Mute notifications
+              <IconBellOff size={18} /> Mute notifications
             </button>
-            <div className="my-1 border-t border-vocl-border" />
+            <div className="my-1 border-t border-rule" />
             <button
               onClick={() => {
                 onBlockUser?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-meta hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
             >
-              <IconBan size={18} />
-              Block user
+              <IconBan size={18} /> Block user
             </button>
             <button
               onClick={() => {
                 onReportUser?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-meta hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
             >
-              <IconFlag size={18} />
-              Report user
+              <IconFlag size={18} /> Report user
             </button>
             <button
               onClick={() => {
                 onDeleteConversation?.(contextMenu.conversationId);
                 setContextMenu(null);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-vocl-like hover:bg-vocl-like/10 transition-colors"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-vocl-like hover:bg-vocl-like/10 transition-colors"
             >
-              <IconTrash size={18} />
-              Delete conversation
+              <IconTrash size={18} /> Delete conversation
             </button>
           </div>
         </>,
         document.body
       )}
 
-      {filteredConversations.map((conversation) => (
-        <button
-          key={conversation.id}
-          onClick={() => {
-            if (longPressTriggered.current) return;
-            onSelect(conversation.id);
-          }}
-          onContextMenu={(e) => handleContextMenuEvent(conversation.id, e)}
-          onTouchStart={(e) => handleTouchStart(conversation.id, e)}
-          onTouchEnd={handleTouchEnd}
-          onTouchMove={handleTouchEnd}
-          className="w-full flex items-center gap-3 p-4 hover:bg-vocl-hover transition-colors text-left"
-        >
-          {/* Avatar with online indicator */}
-          <div className="relative flex-shrink-0">
-            <div className="w-12 h-12 rounded-full overflow-hidden">
-              {conversation.isGroup ? (
-                <div className="w-full h-full bg-vocl-primary/15 flex items-center justify-center">
-                  <IconUsersGroup size={22} className="text-vocl-primary" />
-                </div>
-              ) : conversation.participant.avatarUrl ? (
-                <Image
-                  src={conversation.participant.avatarUrl}
-                  alt={conversation.participant.username}
-                  width={48}
-                  height={48}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                  <span className="text-lg font-bold text-white">
-                    {conversation.participant.username.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
-            {!conversation.isGroup && conversation.participant.isOnline && (
-              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background" />
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-0.5">
-              <span className="type-body font-medium text-foreground truncate">
-                {conversation.isGroup
-                  ? conversation.name || "Group"
-                  : `@${conversation.participant.username}`}
+      {filteredConversations.map((conversation) => {
+        const isActive = conversation.id === activeConversationId;
+        const isUnread = conversation.unreadCount > 0;
+        const lm = conversation.lastMessage;
+        const isOwnLast = !!(lm && currentUserId && lm.senderId === currentUserId);
+        const title = conversation.isGroup ? conversation.name || "Group" : `@${conversation.participant.username}`;
+        return (
+          <button
+            key={conversation.id}
+            onClick={() => {
+              if (longPressTriggered.current) return;
+              onSelect(conversation.id);
+            }}
+            onContextMenu={(e) => handleContextMenuEvent(conversation.id, e)}
+            onTouchStart={(e) => handleTouchStart(conversation.id, e)}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchEnd}
+            className={`block w-full border-b border-rule border-l-2 px-6 py-4 text-left transition-colors ${
+              isActive ? "border-l-accent bg-panel" : "border-l-transparent hover:bg-vocl-hover"
+            }`}
+          >
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-ink">
+                {isUnread && <span aria-hidden="true" className="inline-block h-[5px] w-[5px] flex-none bg-accent" />}
+                <span className="truncate">{title}</span>
               </span>
-              {conversation.lastMessage && (
-                <TimeAgo
-                  iso={conversation.lastMessage.createdAt}
-                  className="type-meta text-foreground/40 flex-shrink-0 ml-2"
-                />
-              )}
+              {lm && <TimeAgo iso={lm.createdAt} className="slug flex-none text-meta-dim" />}
             </div>
-            {conversation.lastMessage && (
+            {lm && (
               <p
-                className={`type-body truncate ${
-                  conversation.lastMessage.isRead
-                    ? "text-foreground/50"
-                    : "text-foreground font-medium"
+                className={`editorial-body mt-1.5 truncate text-[0.9rem] ${
+                  isUnread ? "text-ink-secondary" : "text-editorial-body"
                 }`}
               >
-                {conversation.lastMessage.content}
+                {isOwnLast && <span className="text-meta">You: </span>}
+                {lm.content}
               </p>
             )}
-          </div>
-
-          {/* Unread badge */}
-          {conversation.unreadCount > 0 && (
-            <div className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-sm bg-vocl-primary flex items-center justify-center">
-              <span className="type-meta font-bold text-white">
-                {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
-              </span>
-            </div>
-          )}
-
-          {/* Menu button */}
-          <div
-            className="flex-shrink-0"
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const rect = e.currentTarget.getBoundingClientRect();
-                setContextMenu({
-                  conversationId: conversation.id,
-                  x: rect.left,
-                  y: rect.bottom + 4,
-                });
-              }}
-              aria-label={`Options for @${conversation.participant.username}`}
-              className="p-1.5 rounded-lg text-foreground/30 hover:text-foreground/70 hover:bg-vocl-hover transition-colors"
-            >
-              <IconDots size={16} />
-            </button>
-          </div>
-        </button>
-      ))}
+          </button>
+        );
+      })}
     </div>
   );
 }

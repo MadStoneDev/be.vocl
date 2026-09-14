@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { IconX, IconSearch, IconLoader2, IconMessagePlus } from "@tabler/icons-react";
+import { IconX, IconLoader2 } from "@tabler/icons-react";
 import { ConversationList, type Conversation } from "./ConversationList";
 import { ActiveChat, type Message, type Participant } from "./ActiveChat";
 import { NewChatModal } from "./NewChatModal";
@@ -10,7 +10,7 @@ import { useChat, useMessages } from "@/hooks/useChat";
 import { useTypingPresence } from "@/hooks/useTypingPresence";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsOnline } from "@/hooks/useOnlineStatus";
-import { toast, ConfirmDialog, Avatar } from "@/components/ui";
+import { toast, ConfirmDialog } from "@/components/ui";
 import { hideConversation, setConversationMuted, searchMessages, type MessageSearchResult } from "@/actions/messages";
 import { blockUser } from "@/actions/follows";
 
@@ -455,40 +455,38 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   // header — only the mobile/desktop list header needs it.
   const listPanel = (
     <div className="flex flex-col h-full min-h-0">
-      {/* Header — editorial masthead */}
-      <div className="flex items-center justify-between h-16 px-4 border-b-4 border-double border-vocl-border flex-shrink-0">
-        <div className="flex flex-col leading-none">
-          <span className="type-meta uppercase tracking-[0.2em] text-vocl-primary font-semibold">
-            Direct
-          </span>
-          <h2 className="type-display text-xl font-bold text-foreground">Messages</h2>
+      {/* Header — "Correspondence" */}
+      <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-rule flex-shrink-0">
+        <span className="font-display text-2xl text-ink">Correspondence</span>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="byline text-meta hover:text-accent transition-colors"
+          >
+            New
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close messages"
+            className="text-meta hover:text-ink transition-colors"
+          >
+            <IconX size={18} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close messages"
-          className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-all"
-        >
-          <IconX size={20} />
-        </button>
       </div>
 
-      {/* Search — only useful once there are conversations to search */}
+      {/* Search — mono line on a rule */}
       {conversations.length > 0 && (
-        <div className="p-4 border-b border-vocl-border flex-shrink-0">
-          <div className="relative">
-            <IconSearch
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
-            />
-            <input
-              type="text"
-              placeholder="Search messages..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2.5 pl-10 pr-4 rounded-sm bg-vocl-surface-muted text-foreground border border-vocl-border placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary transition-colors type-body dark:bg-vocl-surface-dark"
-            />
-          </div>
+        <div className="px-6 pb-3 pt-3 border-b border-rule flex-shrink-0">
+          <input
+            type="text"
+            placeholder="SEARCH CORRESPONDENTS…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full border-b border-rule bg-transparent pb-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
+          />
         </div>
       )}
 
@@ -496,14 +494,14 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       <div className="flex-1 overflow-y-auto min-h-0">
         {conversationsLoading ? (
           <div className="flex items-center justify-center py-16">
-            <IconLoader2 size={28} className="animate-spin text-vocl-primary" />
+            <IconLoader2 size={28} className="animate-spin text-accent" />
           </div>
         ) : conversationsError ? (
-          <div className="text-center py-16 px-4">
-            <p className="text-foreground/60 type-body">{conversationsError}</p>
+          <div className="px-6 py-16 text-center">
+            <p className="editorial-body text-meta mb-4">{conversationsError}</p>
             <button
               onClick={() => refreshConversations()}
-              className="mt-4 px-4 py-2 rounded-xl bg-vocl-primary text-white type-meta font-semibold"
+              className="bg-accent px-5 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88]"
             >
               Try again
             </button>
@@ -511,29 +509,20 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
         ) : (
           <>
             {searchQuery.trim().length >= 2 && visibleMessageResults.length > 0 && (
-              <div className="border-b border-vocl-border">
-                <p className="px-4 pt-3 pb-1 type-meta uppercase tracking-widest text-foreground/45 font-semibold">
-                  In messages
-                </p>
+              <div className="border-b border-rule">
+                <p className="slug px-6 pt-4 pb-2 text-meta-dim">In messages</p>
                 {visibleMessageResults.map((r) => {
                   const conv = conversations.find((c) => c.id === r.conversationId);
                   return (
                     <button
                       key={r.messageId}
                       onClick={() => handleSelectConversation(r.conversationId)}
-                      className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-vocl-hover transition-colors"
+                      className="block w-full border-b border-rule px-6 py-3 text-left transition-colors hover:bg-vocl-hover"
                     >
-                      <Avatar
-                        src={conv?.participant.avatarUrl || ""}
-                        username={conv?.participant.username || "?"}
-                        size="sm"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="type-body font-medium text-foreground truncate">
-                          {conv?.participant.username || "Conversation"}
-                        </p>
-                        <p className="type-meta text-foreground/60 truncate">{r.content}</p>
-                      </div>
+                      <p className="truncate text-sm font-medium text-ink">
+                        @{conv?.participant.username || "conversation"}
+                      </p>
+                      <p className="editorial-body mt-1 truncate text-[0.9rem] text-meta">{r.content}</p>
                     </button>
                   );
                 })}
@@ -542,6 +531,8 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
             <ConversationList
               conversations={conversations}
               searchQuery={searchQuery}
+              activeConversationId={activeConversation?.id}
+              currentUserId={currentUserId}
               onSelect={handleSelectConversation}
               onNewChat={handleNewChat}
               onDeleteConversation={handleDeleteConversation}
@@ -593,33 +584,27 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   // conversation" is nonsensical and the CTA duplicates the list's "Start
   // chatting" — so show a calm empty note and let the left pane own the CTA.
   const desktopEmptyState = (
-    <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-vocl-primary/10 flex items-center justify-center mb-4">
-        <IconMessagePlus size={28} className="text-vocl-primary" />
-      </div>
+    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
       {conversations.length > 0 ? (
         <>
-          <h3 className="type-heading font-semibold text-foreground mb-2">
-            Select a conversation
-          </h3>
-          <p className="type-body text-foreground/60 mb-6 max-w-xs">
-            Choose a conversation from the list, or start a new one.
+          <p className="slug text-meta-dim mb-3">Correspondence</p>
+          <h3 className="type-display text-ink mb-2">Choose a correspondent.</h3>
+          <p className="editorial-body text-meta mb-6 max-w-[36ch]">
+            Open a thread from the column on the left, or start a new one.
           </p>
           <button
             onClick={handleNewChat}
-            className="px-5 py-2.5 rounded-xl bg-vocl-primary text-white type-body font-semibold hover:bg-vocl-primary-hover transition-colors"
+            className="border border-foreground px-5 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-ink transition-colors hover:bg-vocl-hover"
           >
-            New message
+            Write to someone
           </button>
         </>
       ) : (
         <>
-          <h3 className="type-heading font-semibold text-foreground mb-2">
-            Welcome to Messages
-          </h3>
-          <p className="type-body text-foreground/60 max-w-xs">
-            Start a conversation from the panel on the left, or from anyone&apos;s
-            profile. Your chats will appear here.
+          <p className="slug text-meta-dim mb-3">Correspondence</p>
+          <h3 className="type-display text-ink mb-2">Nothing in the mailbag.</h3>
+          <p className="editorial-body text-meta max-w-[36ch]">
+            Start a letter from the column on the left, or from anyone&apos;s profile.
           </p>
         </>
       )}

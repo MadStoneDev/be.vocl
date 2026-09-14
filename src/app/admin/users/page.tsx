@@ -1,30 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  IconLoader2,
-  IconSearch,
-  IconLock,
-  IconLockOpen,
-  IconBan,
-} from "@tabler/icons-react";
-import { Avatar } from "@/components/ui";
+import { IconLoader2 } from "@tabler/icons-react";
 import { getUsers, type UserWithDetails } from "@/actions/admin";
 import { UserDetailModal } from "@/components/admin/UserDetailModal";
 
-const STATUS_OPTIONS = [
+const STATUS_TABS = [
   { value: "all", label: "All" },
   { value: "unlocked", label: "Active" },
   { value: "restricted", label: "Restricted" },
   { value: "banned", label: "Banned" },
 ];
 
-const ROLE_LABELS: Record<number, string> = {
-  0: "User",
-  5: "Moderator",
-  10: "Admin",
-};
+const ROLE_LABELS: Record<number, string> = { 0: "User", 5: "Moderator", 10: "Admin" };
+
+/** Square avatar per the broadsheet spec — never circular. */
+function SquareAvatar({ src, username, size = 36 }: { src?: string | null; username: string; size?: number }) {
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={username} className="flex-none object-cover" style={{ width: size, height: size }} />;
+  }
+  return (
+    <span className="ph-image flex flex-none items-center justify-center" style={{ width: size, height: size }}>
+      <span className="font-display text-sm text-ink">{username.charAt(0).toUpperCase()}</span>
+    </span>
+  );
+}
 
 export default function AdminUsersPage() {
   const searchParams = useSearchParams();
@@ -34,6 +37,7 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState("");
+  // Row click opens the full dossier modal (all member actions live inside it).
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const loadUsers = async () => {
@@ -42,9 +46,7 @@ export default function AdminUsersPage() {
       search: searchQuery || undefined,
       lockStatus: statusFilter !== "all" ? statusFilter : undefined,
     });
-    if (result.success && result.users) {
-      setUsers(result.users);
-    }
+    if (result.success && result.users) setUsers(result.users);
     setIsLoading(false);
   };
 
@@ -52,171 +54,116 @@ export default function AdminUsersPage() {
     loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadUsers();
-    }, 300);
+    const timer = setTimeout(() => loadUsers(), 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    new Date(dateStr).toLocaleDateString("en-AU", { month: "short", day: "numeric", year: "numeric" });
 
-  const th = "text-left px-4 py-3 type-meta font-semibold text-foreground/50";
+  const admins = users.filter((u) => u.role >= 10).length;
+  const banned = users.filter((u) => u.lockStatus === "banned").length;
+
+  const GRID = "grid grid-cols-[minmax(0,1fr)_100px_110px_70px_64px_100px_auto] items-center gap-x-5";
 
   return (
     <div>
-      <title>Admin — Users | be.vocl</title>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="type-display text-2xl font-bold text-foreground">Users</h1>
+      <title>Users — Admin | be.vocl</title>
+
+      {/* Title row */}
+      <div className="flex items-end justify-between gap-4 pt-8 pb-4.5">
+        <div>
+          <div className="kicker kicker-accent mb-2.5">Records</div>
+          <h1 className="type-display text-ink">Users</h1>
+        </div>
+        <span className="slug text-meta-dim hidden sm:block">
+          {users.length} accounts · {admins} admins · {banned} banned
+        </span>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <IconSearch
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40"
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by username..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-vocl-border text-foreground focus:outline-none focus:border-vocl-primary"
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+      {/* Filter + search row */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-rule pb-3">
+        <div className="flex gap-5 overflow-x-auto">
+          {STATUS_TABS.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              onClick={() => setStatusFilter(t.value)}
+              data-active={statusFilter === t.value}
+              className="section-tab whitespace-nowrap hover:text-ink transition-colors"
+            >
+              {t.label}
+            </button>
           ))}
-        </select>
+        </div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="SEARCH BY USERNAME…"
+          className="w-[240px] max-w-full border-b border-rule bg-transparent pb-1.5 font-mono text-[11px] tracking-[0.12em] uppercase text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
+        />
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
-        </div>
+        <div className="flex items-center justify-center py-24"><IconLoader2 size={32} className="animate-spin text-accent" /></div>
       ) : users.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-foreground/50">No users found</p>
-        </div>
+        <p className="editorial-body text-meta py-16 text-center">No members match this view.</p>
       ) : (
-        <div className="bg-vocl-surface-dark rounded-sm border border-vocl-border overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-vocl-border">
-                <th className={th}>User</th>
-                <th className={th}>Role</th>
-                <th className={th}>Status</th>
-                <th className={th}>NSFW</th>
-                <th className={th}>Beta</th>
-                <th className={th}>Reports</th>
-                <th className={th}>Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  onClick={() => setSelectedUserId(user.id)}
-                  className="border-b border-vocl-border last:border-0 cursor-pointer hover:bg-vocl-hover transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar src={user.avatarUrl} username={user.username} size="sm" />
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground truncate">
-                          @{user.username}
-                        </div>
-                        {user.displayName && (
-                          <div className="type-meta text-foreground/50 truncate">
-                            {user.displayName}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="type-meta font-semibold text-foreground/70">
-                      {ROLE_LABELS[user.role] ?? `Role ${user.role}`}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full type-meta font-semibold ${
-                        user.lockStatus === "banned"
-                          ? "bg-vocl-like/20 text-vocl-like"
-                          : user.lockStatus === "restricted"
-                          ? "bg-amber-500/20 text-amber-500"
-                          : "bg-green-500/20 text-green-500"
-                      }`}
-                    >
-                      {user.lockStatus === "banned" ? (
-                        <IconBan size={12} />
-                      ) : user.lockStatus === "restricted" ? (
-                        <IconLock size={12} />
-                      ) : (
-                        <IconLockOpen size={12} />
-                      )}
-                      {user.lockStatus === "unlocked" ? "active" : user.lockStatus}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {user.isNsfw ? (
-                      <span className="inline-block px-2 py-0.5 rounded-full type-meta font-semibold bg-rose-500/20 text-rose-400">
-                        NSFW
-                      </span>
-                    ) : (
-                      <span className="type-meta text-foreground/25">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {user.betaAccess ? (
-                      <span className="inline-block px-2 py-0.5 rounded-full type-meta font-semibold bg-vocl-primary/20 text-vocl-primary">
-                        BETA
-                      </span>
-                    ) : (
-                      <span className="type-meta text-foreground/25">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {user.reportCount > 0 ? (
-                      <span className="type-meta font-semibold text-amber-500">
-                        {user.reportCount}
-                      </span>
-                    ) : (
-                      <span className="type-meta text-foreground/30">0</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 type-meta text-foreground/50 whitespace-nowrap">
-                    {formatDate(user.createdAt)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto">
+          <div className="min-w-[820px]">
+            {/* Header */}
+            <div className={`${GRID} slug text-meta-dim py-2.5 border-b border-rule`}>
+              <span>Member</span><span>Role</span><span>Status</span><span>Flags</span><span>Reports</span><span>Joined</span>
+              <span className="text-right">Actions</span>
+            </div>
+            {/* Rows — whole row opens the dossier */}
+            {users.map((user) => (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => setSelectedUserId(user.id)}
+                className={`${GRID} w-full border-b border-rule py-3.5 text-left hover:bg-vocl-hover transition-colors`}
+              >
+                <span className="flex items-center gap-3.5 min-w-0">
+                  <SquareAvatar src={user.avatarUrl} username={user.username} />
+                  <span className="min-w-0">
+                    <span className="block font-sans text-sm font-medium text-ink truncate">@{user.username}</span>
+                    {user.displayName && <span className="block editorial-caption text-meta not-italic truncate">{user.displayName}</span>}
+                  </span>
+                </span>
+                <span className="byline text-meta">{ROLE_LABELS[user.role] ?? `Role ${user.role}`}</span>
+                <span className="byline text-meta">{user.lockStatus}</span>
+                <span className={`font-mono text-[10px] tracking-[0.14em] ${user.isNsfw ? "text-accent" : "text-meta-dim"}`}>
+                  {user.isNsfw ? "NSFW" : "—"}
+                </span>
+                <span className={`font-mono text-xs ${user.reportCount > 0 ? "text-accent" : "text-meta-dim"}`}>{user.reportCount}</span>
+                <span className="byline text-meta">{formatDate(user.createdAt)}</span>
+                <span className="byline text-ink text-right">Open</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
+      {/* Footer: count + single primary */}
+      {!isLoading && users.length > 0 && (
+        <div className="flex items-center justify-between gap-4 pt-5">
+          <span className="slug text-meta-dim">Showing {users.length} of {users.length}</span>
+          <Link
+            href="/admin/invites"
+            className="bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs px-6 py-3 hover:opacity-[0.88] transition-opacity"
+          >
+            Invite a member
+          </Link>
+        </div>
+      )}
+
+      {/* Full member dossier (all actions inside) */}
       {selectedUserId && (
-        <UserDetailModal
-          userId={selectedUserId}
-          onClose={() => setSelectedUserId(null)}
-          onChanged={loadUsers}
-        />
+        <UserDetailModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} onChanged={loadUsers} />
       )}
     </div>
   );

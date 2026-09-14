@@ -3,19 +3,6 @@
 import { useState, useTransition, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import {
-  IconBrandGoogle,
-  IconBrandGithub,
-  IconMail,
-  IconLock,
-  IconUser,
-  IconLoader2,
-  IconEye,
-  IconEyeOff,
-  IconCheck,
-  IconX,
-  IconTicket,
-} from "@tabler/icons-react";
 import { validateUsernameFormat } from "@/lib/validation";
 import { checkUsernameAvailability } from "@/actions/profile";
 import { validateInviteCode } from "@/actions/invites";
@@ -26,13 +13,80 @@ interface AuthCardProps {
   initialMode?: AuthMode;
 }
 
-// Map error codes to user-friendly messages
 const errorMessages: Record<string, string> = {
   auth_callback_error: "Authentication failed. Please try again.",
   link_expired: "This link has expired. Please request a new one.",
   verification_failed: "Verification failed. The link may be invalid or already used.",
   invalid_callback: "Invalid authentication request.",
 };
+
+const TEXT_ACTION =
+  "font-sans text-[10.5px] tracking-[0.16em] uppercase text-meta hover:text-accent transition-colors";
+
+/** Broadsheet form field (artboard 2C): a mono label above a Source Serif value
+ *  on a 1px bottom rule — ink when filled/focused, faint when empty. No box. */
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  mono,
+  password,
+  showPassword,
+  onToggleShow,
+  inputRef,
+  disabled,
+  autoComplete,
+  maxLength,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  mono?: boolean;
+  password?: boolean;
+  showPassword?: boolean;
+  onToggleShow?: () => void;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+  disabled?: boolean;
+  autoComplete?: string;
+  maxLength?: number;
+  hint?: React.ReactNode;
+}) {
+  return (
+    <div className="mt-6 first:mt-0">
+      <label className="slug text-meta-dim mb-2 block">{label}</label>
+      <div
+        className={`flex items-baseline justify-between gap-3 border-b pb-2 transition-colors focus-within:border-foreground ${
+          value ? "border-foreground" : "border-rule"
+        }`}
+      >
+        <input
+          ref={inputRef}
+          type={password && !showPassword ? "password" : type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoComplete={autoComplete}
+          maxLength={maxLength}
+          className={`w-full bg-transparent text-ink placeholder:text-meta-dim focus:outline-none disabled:opacity-50 ${
+            mono ? "font-mono text-base tracking-[0.08em]" : "font-serif text-[17px]"
+          }`}
+        />
+        {password && (
+          <button type="button" onClick={onToggleShow} className={`${TEXT_ACTION} flex-none`}>
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        )}
+      </div>
+      {hint}
+    </div>
+  );
+}
 
 export function AuthCard({ initialMode = "login" }: AuthCardProps) {
   const router = useRouter();
@@ -48,12 +102,10 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Username validation state
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
 
-  // Invite code state (required for beta)
   const [inviteCode, setInviteCode] = useState("");
   const [inviteCodeError, setInviteCodeError] = useState<string | null>(null);
   const [inviteCodeValid, setInviteCodeValid] = useState<boolean | null>(null);
@@ -62,44 +114,32 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
   const emailRef = useRef<HTMLInputElement>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
 
-  // Check for error in URL params (from auth callback)
   useEffect(() => {
     const errorParam = searchParams.get("error");
-    if (errorParam) {
-      setError(errorMessages[errorParam] || "An authentication error occurred.");
-    }
+    if (errorParam) setError(errorMessages[errorParam] || "An authentication error occurred.");
   }, [searchParams]);
 
-  // Focus the primary field for the active mode: email for sign-in, username
-  // for subscribe. Runs on load and whenever the tab switches.
   useEffect(() => {
     if (mode === "login") emailRef.current?.focus();
     else if (mode === "signup") usernameRef.current?.focus();
   }, [mode]);
 
-  // Validate username on change with debouncing
   const validateUsername = useCallback(async (value: string) => {
     if (!value) {
       setUsernameError(null);
       setUsernameAvailable(null);
       return;
     }
-
-    // First check format
     const formatResult = validateUsernameFormat(value);
     if (!formatResult.valid) {
       setUsernameError(formatResult.error || null);
       setUsernameAvailable(null);
       return;
     }
-
-    // Format is valid, check availability
     setUsernameError(null);
     setCheckingUsername(true);
-
     const result = await checkUsernameAvailability(value);
     setCheckingUsername(false);
-
     if (!result.available) {
       setUsernameError(result.error || "Username is not available");
       setUsernameAvailable(false);
@@ -109,43 +149,32 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     }
   }, []);
 
-  // Debounced username validation
   useEffect(() => {
     if (mode !== "signup" || !username) {
       setUsernameError(null);
       setUsernameAvailable(null);
       return;
     }
-
-    const timer = setTimeout(() => {
-      validateUsername(username);
-    }, 500);
-
+    const timer = setTimeout(() => validateUsername(username), 500);
     return () => clearTimeout(timer);
   }, [username, mode, validateUsername]);
 
-  // Validate invite code on change with debouncing
   const checkInviteCode = useCallback(async (value: string) => {
     if (!value) {
       setInviteCodeError(null);
       setInviteCodeValid(null);
       return;
     }
-
-    // Format check: should match VOCL-XXXX-XXXX pattern
     const formatted = value.toUpperCase().replace(/[^A-Z0-9-]/g, "");
     const codePattern = /^VOCL-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-
     if (!codePattern.test(formatted)) {
       setInviteCodeError(null);
       setInviteCodeValid(null);
       return;
     }
-
     setCheckingInviteCode(true);
     const result = await validateInviteCode(formatted);
     setCheckingInviteCode(false);
-
     if (!result.valid) {
       setInviteCodeError(result.error || "Invalid code");
       setInviteCodeValid(false);
@@ -155,20 +184,24 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     }
   }, []);
 
-  // Debounced invite code validation
   useEffect(() => {
     if (mode !== "signup" || !inviteCode) {
       setInviteCodeError(null);
       setInviteCodeValid(null);
       return;
     }
-
-    const timer = setTimeout(() => {
-      checkInviteCode(inviteCode);
-    }, 500);
-
+    const timer = setTimeout(() => checkInviteCode(inviteCode), 500);
     return () => clearTimeout(timer);
   }, [inviteCode, mode, checkInviteCode]);
+
+  // Auto-format an invite code as the member types: VOCL-XXXX-XXXX.
+  const formatInvite = (raw: string) => {
+    let val = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (val.length > 4 && !val.startsWith("VOCL")) val = "VOCL" + val;
+    if (val.length > 4) val = val.slice(0, 4) + "-" + val.slice(4);
+    if (val.length > 9) val = val.slice(0, 9) + "-" + val.slice(9, 13);
+    setInviteCode(val);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,50 +211,36 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     startTransition(async () => {
       try {
         if (mode === "forgot") {
-          // Password reset / magic link
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-            email,
-            {
-              redirectTo: `${window.location.origin}/auth/callback`,
-            }
-          );
-
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/callback`,
+          });
           if (resetError) {
             setError(resetError.message);
             return;
           }
-
-          setSuccess("Check your email for the password reset link!");
+          setSuccess("Check your email for the password reset link.");
         } else if (mode === "signup") {
-          // Validate invite code (required for beta)
           const formattedCode = inviteCode.toUpperCase().replace(/[^A-Z0-9-]/g, "");
           const codePattern = /^VOCL-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-
           if (!formattedCode || !codePattern.test(formattedCode)) {
-            setError("A valid invite code is required to sign up during beta");
+            setError("A valid invite code is required to join during beta.");
             return;
           }
-
           const inviteResult = await validateInviteCode(formattedCode);
           if (!inviteResult.valid) {
             setError(inviteResult.error || "Invalid invite code");
             return;
           }
-
-          // Validate username format
           const formatResult = validateUsernameFormat(username);
           if (!formatResult.valid) {
             setError(formatResult.error || "Invalid username");
             return;
           }
-
-          // Check availability one more time before signup
           const availabilityResult = await checkUsernameAvailability(username);
           if (!availabilityResult.available) {
             setError(availabilityResult.error || "Username is not available");
             return;
           }
-
           const { error: signUpError } = await supabase.auth.signUp({
             email,
             password,
@@ -230,86 +249,56 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               data: {
                 username: username.toLowerCase().trim(),
                 display_name: username,
-                invite_code: formattedCode, // Store for redemption after confirmation
+                invite_code: formattedCode,
               },
             },
           });
-
           if (signUpError) {
             setError(signUpError.message);
             return;
           }
-
-          setSuccess("Check your email for the confirmation link!");
+          setSuccess("Check your email for the confirmation link.");
         } else {
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
+          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
           if (signInError) {
             setError(signInError.message);
             return;
           }
-
-          // Hard navigation to ensure fresh server data with new auth cookies
           window.location.href = "/feed";
         }
       } catch {
-        setError("An unexpected error occurred");
+        setError("An unexpected error occurred.");
       }
     });
   };
 
   const handleMagicLink = async () => {
     if (!email) {
-      setError("Please enter your email address");
+      setError("Enter your email address first.");
       return;
     }
-
     setError(null);
     setSuccess(null);
-
     startTransition(async () => {
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
-          // Beta is invite-only: a magic link must never create a new account.
-          // Unknown emails get an error instead of being silently provisioned.
           shouldCreateUser: false,
         },
       });
-
       if (magicLinkError) {
-        // Supabase returns "Signups not allowed for otp" for unknown emails.
         if (/signups not allowed/i.test(magicLinkError.message)) {
           setError(
-            "No account found for that email. Be.Vocl is invite-only during beta — sign up with an invite code first.",
+            "No account found for that email. be.vocl is invite-only during beta — join with an invite code first.",
           );
         } else {
           setError(magicLinkError.message);
         }
         return;
       }
-
-      setSuccess("Check your email for the magic link!");
+      setSuccess("Check your email for the sign-in link.");
     });
-  };
-
-  const handleOAuthSignIn = async (provider: "google" | "github") => {
-    setError(null);
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      setError(error.message);
-    }
   };
 
   const dateline = new Date().toLocaleDateString("en-US", {
@@ -319,360 +308,245 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     year: "numeric",
   });
 
+  const accentBtn =
+    "block w-full text-center bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs py-3.5 transition-opacity hover:opacity-[0.88] disabled:opacity-50 disabled:cursor-not-allowed";
+  const outlineBtn =
+    "block w-full text-center border border-foreground text-ink font-sans font-medium uppercase tracking-[0.16em] text-xs py-3 transition-colors hover:bg-vocl-hover";
+
+  const feedback = (
+    <>
+      {error && <p className="editorial-caption text-accent mt-4">{error}</p>}
+      {success && <p className="editorial-caption text-meta mt-4">{success}</p>}
+    </>
+  );
+
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Masthead */}
-      <header className="text-center mb-7 border-b-4 border-double border-vocl-border pb-5">
-        <div className="flex items-center justify-center gap-3 type-meta uppercase tracking-[0.25em] text-foreground/45">
-          <span className="h-px w-8 bg-vocl-border" />
-          Est. 2026
-          <span className="h-px w-8 bg-vocl-border" />
-        </div>
-        <h1 className="type-display text-5xl sm:text-6xl font-bold text-vocl-primary mt-2 leading-none">
+    <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-14">
+      {/* Utility bar */}
+      <div className="flex items-center justify-between border-b border-rule py-3.5">
+        <span className="slug text-meta-dim">EST. 2026 · LATE EDITION · NO. 0311</span>
+        <span className="flex gap-5 byline text-meta">
+          <a href="/" className="hover:text-accent transition-colors">Front page</a>
+          <a href="/terms" className="hover:text-accent transition-colors">The terms</a>
+        </span>
+      </div>
+
+      {/* Wordmark band */}
+      <div className="text-center py-8 sm:py-9">
+        <div className="font-display text-5xl leading-[0.95] tracking-[-0.01em] text-accent sm:text-[78px]">
           be.vocl
-        </h1>
-        <p className="type-meta uppercase tracking-[0.3em] text-foreground/55 mt-3">
-          Your daily voice
-        </p>
-        <p className="type-meta text-foreground/40 mt-1">{dateline}</p>
-      </header>
-
-      {/* Newspaper "edition" panel */}
-      <div className="border border-vocl-border bg-vocl-surface-dark p-6 sm:p-8">
-        {/* Section kicker + headline */}
-        <div className="text-center mb-6">
-          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
-            {mode === "login" ? "Subscribers" : mode === "signup" ? "New readers" : "Account recovery"}
-          </span>
-          <h2 className="type-display text-2xl sm:text-3xl font-bold text-foreground mt-1">
-            {mode === "login"
-              ? "Sign in to read on"
-              : mode === "signup"
-              ? "Start your subscription"
-              : "Reset your password"}
-          </h2>
-          {mode === "forgot" && (
-            <p className="type-body text-sm text-foreground/60 mt-2">
-              Enter your email and we&apos;ll send you a link to reset your password.
-            </p>
-          )}
         </div>
+        <div className="font-display mt-2.5 text-[11px] uppercase tracking-[0.34em] text-ink sm:text-[15px] sm:tracking-[0.42em]">
+          Your Daily Voice
+        </div>
+      </div>
 
-        {/* Mode switch (login / signup) */}
-        {mode !== "forgot" && (
-          <div className="flex items-stretch border-y border-vocl-border mb-6">
-            {(["login", "signup"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => {
-                  setMode(m);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className={`flex-1 py-3 type-meta uppercase tracking-widest font-semibold transition-colors ${
-                  mode === m
-                    ? "text-vocl-primary border-b-2 border-vocl-primary -mb-px"
-                    : "text-foreground/50 hover:text-foreground"
-                } ${m === "signup" ? "border-l border-vocl-border" : ""}`}
+      {/* Dateline */}
+      <div className="grid grid-cols-1 items-center gap-2 border-t border-rule rule-double-b py-2.5 text-center sm:grid-cols-[1fr_auto_1fr] sm:text-left byline text-meta">
+        <span>{dateline}</span>
+        <span className="stamp-21 justify-self-center">21+ · Adults Only</span>
+        <span className="hidden sm:block sm:text-right">No ads · No data brokers · No algorithm</span>
+      </div>
+
+      {/* Body grid: tonight's page | form column */}
+      <div className="grid grid-cols-1 pt-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:pt-10">
+        {/* LEFT — tonight's page */}
+        <div className="mb-12 lg:mb-0 lg:pr-14">
+          <div className="kicker kicker-accent mb-3">On the front page tonight</div>
+          <h1 className="font-display mb-4 text-4xl leading-[1.03] tracking-[-0.015em] text-ink sm:text-[52px]">
+            Say the thing you can&apos;t say anywhere else.
+          </h1>
+          <p className="editorial-deck mb-5 max-w-[52ch] text-editorial-body">
+            Under your name, or a name you choose. Read by the people you decide on — and nobody else, ever.
+          </p>
+          <div className="ph-image aspect-[3/2] w-full" aria-hidden="true" />
+          <p className="editorial-caption mt-2.5">
+            Tonight&apos;s lead, published publicly by @mardusurge at 02:14.
+          </p>
+          <div className="mt-8 grid grid-cols-1 border-t border-rule pt-6 sm:grid-cols-3">
+            {[
+              ["Pen names", "write under as many names as you need. Nobody can tie them together."],
+              ["You decide who sees it", "every post carries its own audience."],
+              ["21+ only", "verified at the door, no exceptions."],
+            ].map(([lead, body], i) => (
+              <p
+                key={lead}
+                className={`editorial-body text-editorial-body mb-4 sm:mb-0 ${
+                  i === 0 ? "sm:pr-6" : "sm:border-l sm:border-rule sm:px-6"
+                }`}
               >
-                {m === "login" ? "Sign in" : "Subscribe"}
-              </button>
+                <span className="run-in mr-1.5">{lead} —</span>
+                {body}
+              </p>
             ))}
           </div>
-        )}
+        </div>
 
-        {/* OAuth Buttons - Hidden during invite-only beta, unhide later */}
-        {/* {mode !== "forgot" && (
-          <>
-            <div className="space-y-2 mb-3">
-              <button
-                type="button"
-                onClick={() => handleOAuthSignIn("google")}
-                disabled={isPending}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"
-              >
-                <IconBrandGoogle size={20} />
-                Continue with Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOAuthSignIn("github")}
-                disabled={isPending}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-white hover:bg-white text-white hover:text-gray-700 font-medium transition-all disabled:opacity-50"
-              >
-                <IconBrandGithub size={20} />
-                Continue with GitHub
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4 mb-3">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-foreground/40 text-sm">or</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-          </>
-        )} */}
-
-        {/* Email/Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {mode === "signup" && (
+        {/* RIGHT — form column */}
+        <div className="lg:border-l lg:border-rule lg:pl-10">
+          {mode === "login" && (
             <>
-              {/* Invite Code Field (Beta Required) */}
-              <div className="space-y-1">
-                <div className="relative">
-                  <IconTicket
-                    size={20}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Invite Code (e.g., VOCL-XXXX-XXXX)"
-                    value={inviteCode}
-                    onChange={(e) => {
-                      // Auto-format as user types: VOCL-XXXX-XXXX
-                      let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-                      if (val.length > 4 && !val.startsWith("VOCL")) {
-                        val = "VOCL" + val;
-                      }
-                      // Add dashes
-                      if (val.length > 4) {
-                        val = val.slice(0, 4) + "-" + val.slice(4);
-                      }
-                      if (val.length > 9) {
-                        val = val.slice(0, 9) + "-" + val.slice(9, 13);
-                      }
-                      setInviteCode(val);
-                    }}
-                    disabled={isPending}
-                    className={`w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-hover border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 font-mono tracking-wider ${
-                      inviteCodeError
-                        ? "border-vocl-like focus:border-vocl-like focus:ring-vocl-like"
-                        : inviteCodeValid
-                        ? "border-green-500 focus:border-green-500 focus:ring-green-500"
-                        : "border-vocl-border focus:border-vocl-primary focus:ring-vocl-primary"
-                    }`}
-                    required
-                    maxLength={14}
-                  />
-                  {/* Validation status indicator */}
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    {checkingInviteCode && (
-                      <IconLoader2 size={18} className="animate-spin text-foreground/40" />
-                    )}
-                    {!checkingInviteCode && inviteCodeValid && (
-                      <IconCheck size={18} className="text-green-500" />
-                    )}
-                    {!checkingInviteCode && inviteCodeError && (
-                      <IconX size={18} className="text-vocl-like" />
-                    )}
-                  </div>
-                </div>
-                {/* Invite code hint or error */}
-                {inviteCodeError ? (
-                  <p className="text-xs text-vocl-like px-1">{inviteCodeError}</p>
-                ) : inviteCodeValid ? (
-                  <p className="text-xs text-green-500 px-1">Valid invite code</p>
-                ) : checkingInviteCode ? (
-                  <p className="text-xs text-foreground/40 px-1">Validating code...</p>
-                ) : (
-                  <p className="text-xs text-foreground/40 px-1">
-                    be.vocl is in private beta. You need an invite code to sign up.
-                  </p>
-                )}
+              <div className="slug border-b border-rule pb-3 text-meta">Sign in</div>
+              <h2 className="font-display mb-6 mt-5 text-[32px] leading-[1.08] text-ink">
+                Welcome back to the paper.
+              </h2>
+              <form onSubmit={handleSubmit}>
+                <Field
+                  label="Email"
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  inputRef={emailRef}
+                  disabled={isPending}
+                  autoComplete="email"
+                />
+                <Field
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  password
+                  showPassword={showPassword}
+                  onToggleShow={() => setShowPassword((s) => !s)}
+                  disabled={isPending}
+                  autoComplete="current-password"
+                />
+                {feedback}
+                <button type="submit" disabled={isPending || !email || !password} className={`mt-7 ${accentBtn}`}>
+                  {isPending ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+              <div className="mt-4 flex items-center justify-between">
+                <button type="button" onClick={handleMagicLink} disabled={isPending} className={TEXT_ACTION}>
+                  Email me a sign-in link
+                </button>
+                <button type="button" onClick={() => { setMode("forgot"); setError(null); setSuccess(null); }} className={TEXT_ACTION}>
+                  Forgot password
+                </button>
               </div>
 
-              {/* Username Field */}
-              <div className="space-y-1">
-                <div className="relative">
-                  <IconUser
-                    size={20}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
-                  />
-                  <input
-                    ref={usernameRef}
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-                    disabled={isPending}
-                    className={`w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-hover border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-1 transition-all disabled:opacity-50 ${
-                      usernameError
-                        ? "border-vocl-like focus:border-vocl-like focus:ring-vocl-like"
-                        : usernameAvailable
-                        ? "border-green-500 focus:border-green-500 focus:ring-green-500"
-                        : "border-vocl-border focus:border-vocl-primary focus:ring-vocl-primary"
-                    }`}
-                    required
-                    minLength={3}
-                    maxLength={20}
-                  />
-                  {/* Validation status indicator */}
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    {checkingUsername && (
-                      <IconLoader2 size={18} className="animate-spin text-foreground/40" />
-                    )}
-                    {!checkingUsername && usernameAvailable && (
-                      <IconCheck size={18} className="text-green-500" />
-                    )}
-                    {!checkingUsername && usernameError && (
-                      <IconX size={18} className="text-vocl-like" />
-                    )}
-                  </div>
-                </div>
-                {/* Username hint or error */}
-                {usernameError ? (
-                  <p className="text-xs text-vocl-like px-1">{usernameError}</p>
-                ) : username ? (
-                  usernameAvailable ? (
-                    <p className="text-xs text-green-500 px-1">Username is available</p>
-                  ) : checkingUsername ? (
-                    <p className="text-xs text-foreground/40 px-1">Checking availability...</p>
-                  ) : null
-                ) : (
-                  <p className="text-xs text-foreground/40 px-1">
-                    3-20 characters, letters, numbers, underscores. Must start with a letter.
-                  </p>
-                )}
+              {/* Join block */}
+              <div className="mt-9 rule-double pt-7">
+                <div className="kicker kicker-accent mb-3">No account yet</div>
+                <p className="editorial-body mb-5 text-ink-secondary">
+                  be.vocl opens by invitation. Enter the code a member gave you — one code, one seat.
+                </p>
+                <Field
+                  label="Invite code"
+                  value={inviteCode}
+                  onChange={formatInvite}
+                  mono
+                  placeholder="VOCL-XXXX-XXXX"
+                  maxLength={14}
+                />
+                <button type="button" onClick={() => { setMode("signup"); setError(null); setSuccess(null); }} className={`mt-6 ${outlineBtn}`}>
+                  Redeem &amp; join
+                </button>
+                <p className="editorial-caption mt-4 text-meta">
+                  You&apos;ll confirm you&apos;re 21 or older on the next page. We ask once, and we don&apos;t keep the document.
+                </p>
               </div>
             </>
           )}
 
-          <div className="relative">
-            <IconMail
-              size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
-            />
-            <input
-              ref={emailRef}
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isPending}
-              className="w-full py-3 pl-12 pr-4 rounded-sm bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
-              required
-            />
-          </div>
-
-          {/* Password field - hide for forgot mode */}
-          {mode !== "forgot" && (
-            <div className="relative">
-              <IconLock
-                size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
-              />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isPending}
-                className="w-full py-3 pl-12 pr-12 rounded-sm bg-vocl-hover border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-vocl-primary focus:ring-1 focus:ring-vocl-primary transition-all disabled:opacity-50"
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-all"
-              >
-                {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+          {mode === "signup" && (
+            <>
+              <div className="slug border-b border-rule pb-3 text-accent">No account yet</div>
+              <h2 className="font-display mb-6 mt-5 text-[32px] leading-[1.08] text-ink">
+                Redeem your invitation.
+              </h2>
+              <form onSubmit={handleSubmit}>
+                <Field
+                  label="Invite code"
+                  value={inviteCode}
+                  onChange={formatInvite}
+                  mono
+                  placeholder="VOCL-XXXX-XXXX"
+                  maxLength={14}
+                  disabled={isPending}
+                  hint={
+                    inviteCodeError ? (
+                      <p className="editorial-caption mt-2 text-accent">{inviteCodeError}</p>
+                    ) : inviteCodeValid ? (
+                      <p className="editorial-caption mt-2 text-meta not-italic">Valid invite code.</p>
+                    ) : checkingInviteCode ? (
+                      <p className="editorial-caption mt-2 text-meta">Validating…</p>
+                    ) : (
+                      <p className="editorial-caption mt-2 text-meta">One code, one seat.</p>
+                    )
+                  }
+                />
+                <Field
+                  label="Username"
+                  value={username}
+                  onChange={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                  inputRef={usernameRef}
+                  disabled={isPending}
+                  maxLength={20}
+                  hint={
+                    usernameError ? (
+                      <p className="editorial-caption mt-2 text-accent">{usernameError}</p>
+                    ) : username && usernameAvailable ? (
+                      <p className="editorial-caption mt-2 text-meta not-italic">Available.</p>
+                    ) : username && checkingUsername ? (
+                      <p className="editorial-caption mt-2 text-meta">Checking…</p>
+                    ) : (
+                      <p className="editorial-caption mt-2 text-meta">3–20 characters, starts with a letter.</p>
+                    )
+                  }
+                />
+                <Field label="Email" value={email} onChange={setEmail} type="email" disabled={isPending} autoComplete="email" />
+                <Field
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  password
+                  showPassword={showPassword}
+                  onToggleShow={() => setShowPassword((s) => !s)}
+                  disabled={isPending}
+                  autoComplete="new-password"
+                />
+                {feedback}
+                <button type="submit" disabled={isPending} className={`mt-7 ${accentBtn}`}>
+                  {isPending ? "Creating account…" : "Redeem & join"}
+                </button>
+              </form>
+              <button type="button" onClick={() => { setMode("login"); setError(null); setSuccess(null); }} className={`${TEXT_ACTION} mt-5`}>
+                ← Already a member? Sign in
               </button>
-            </div>
+              <p className="editorial-caption mt-6 text-meta">
+                You&apos;ll confirm you&apos;re 21 or older on the next page. By joining you agree to the{" "}
+                <a href="/terms" className="text-ink hover:text-accent transition-colors">Terms</a> and{" "}
+                <a href="/privacy" className="text-ink hover:text-accent transition-colors">Privacy Policy</a>.
+              </p>
+            </>
           )}
 
-          {mode === "login" && (
-            <div className="flex justify-between items-center">
-              <button
-                type="button"
-                onClick={handleMagicLink}
-                disabled={isPending}
-                className="text-xs text-foreground/60 hover:text-foreground transition-all"
-              >
-                Send magic link instead
+          {mode === "forgot" && (
+            <>
+              <div className="slug border-b border-rule pb-3 text-meta">Account recovery</div>
+              <h2 className="font-display mb-4 mt-5 text-[32px] leading-[1.08] text-ink">Reset your password.</h2>
+              <p className="editorial-body mb-2 text-meta">
+                Enter your email and we&apos;ll send you a link to set a new one.
+              </p>
+              <form onSubmit={handleSubmit}>
+                <Field label="Email" value={email} onChange={setEmail} type="email" inputRef={emailRef} disabled={isPending} autoComplete="email" />
+                {feedback}
+                <button type="submit" disabled={isPending || !email} className={`mt-7 ${accentBtn}`}>
+                  {isPending ? "Sending…" : "Send reset link"}
+                </button>
+              </form>
+              <button type="button" onClick={() => { setMode("login"); setError(null); setSuccess(null); }} className={`${TEXT_ACTION} mt-5`}>
+                ← Back to sign in
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("forgot");
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="text-xs text-vocl-primary hover:text-vocl-primary-hover transition-all"
-              >
-                Forgot password?
-              </button>
-            </div>
+            </>
           )}
-
-          {/* Error Message */}
-          {error && (
-            <div className="p-3 rounded-sm bg-vocl-like/15 border border-vocl-like/30 text-vocl-like text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <div className="p-3 rounded-sm bg-vocl-primary/15 border border-vocl-primary/30 text-vocl-primary text-sm">
-              {success}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="mt-6 w-full py-3.5 rounded-sm bg-vocl-primary text-white type-meta uppercase tracking-widest font-semibold hover:bg-vocl-primary-hover transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isPending ? (
-              <>
-                <IconLoader2 size={20} className="animate-spin" />
-                {mode === "login"
-                  ? "Logging in..."
-                  : mode === "forgot"
-                  ? "Sending..."
-                  : "Creating account..."}
-              </>
-            ) : mode === "login" ? (
-              "Log in"
-            ) : mode === "forgot" ? (
-              "Send reset link"
-            ) : (
-              "Create account"
-            )}
-          </button>
-        </form>
-
-        {/* Back to login for forgot mode */}
-        {mode === "forgot" && (
-          <button
-            type="button"
-            onClick={() => {
-              setMode("login");
-              setError(null);
-              setSuccess(null);
-            }}
-            className="w-full text-center mt-4 text-sm text-foreground/60 hover:text-foreground transition-all"
-          >
-            ← Back to login
-          </button>
-        )}
-
-        {/* Terms (for signup) */}
-        {mode === "signup" && (
-          <p className="text-xs text-foreground/40 text-center mt-4">
-            By creating an account, you agree to our{" "}
-            <a href="/terms" className="text-vocl-primary hover:underline">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="/privacy" className="text-vocl-primary hover:underline">
-              Privacy Policy
-            </a>
-          </p>
-        )}
+        </div>
       </div>
+
+      {/* Mobile footer slug */}
+      <p className="slug mt-10 text-center text-meta-dim lg:hidden">
+        Terms · Privacy · Content policy · 21+
+      </p>
     </div>
   );
 }

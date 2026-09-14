@@ -190,7 +190,7 @@ export default function AdminFlagsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
+          className="px-4 py-2 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -202,7 +202,7 @@ export default function AdminFlagsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : flags.length === 0 ? (
         <div className="text-center py-20">
@@ -213,7 +213,7 @@ export default function AdminFlagsPage() {
           {flags.map((flag) => (
             <div
               key={flag.id}
-              className="bg-vocl-surface-dark rounded-sm p-5 border border-white/5"
+              className="bg-panel rounded-none p-5 border border-rule"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -222,7 +222,7 @@ export default function AdminFlagsPage() {
                     <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       !flag.flagger_id
                         ? "bg-amber-500/20 text-amber-500"
-                        : "bg-vocl-primary/20 text-vocl-primary"
+                        : "bg-vocl-primary/20 text-accent"
                     }`}>
                       {!flag.flagger_id ? (
                         <span className="flex items-center gap-1">
@@ -245,7 +245,7 @@ export default function AdminFlagsPage() {
                         ? "bg-red-500/20 text-red-500"
                         : flag.status.startsWith("resolved")
                         ? "bg-green-500/20 text-green-500"
-                        : "bg-white/10 text-foreground/50"
+                        : "bg-vocl-hover text-foreground/50"
                     }`}>
                       {flag.status.replace("resolved_", "")}
                     </span>
@@ -266,9 +266,9 @@ export default function AdminFlagsPage() {
                     <span>Post by:</span>
                     <Link
                       href={`/@${flag.post.author.username}`}
-                      className="flex items-center gap-1.5 hover:text-vocl-primary"
+                      className="flex items-center gap-1.5 hover:text-accent"
                     >
-                      <div className="w-5 h-5 rounded-full bg-vocl-surface-dark overflow-hidden">
+                      <div className="w-5 h-5 rounded-full bg-panel overflow-hidden">
                         {flag.post.author.avatar_url ? (
                           <Image
                             src={flag.post.author.avatar_url}
@@ -316,7 +316,7 @@ export default function AdminFlagsPage() {
                   {flag.status === "pending" && (
                     <button
                       onClick={() => handleClaim(flag.id)}
-                      className="px-4 py-2 bg-vocl-primary text-white rounded-xl type-body font-semibold hover:bg-vocl-primary-hover transition-colors"
+                      className="px-4 py-2 bg-vocl-primary text-white rounded-none type-body font-semibold hover:bg-vocl-primary-hover transition-colors"
                     >
                       Claim
                     </button>
@@ -324,7 +324,7 @@ export default function AdminFlagsPage() {
                   {(flag.status === "pending" || flag.status === "reviewing" || flag.status === "escalated") && (
                     <button
                       onClick={() => setSelectedFlag(flag)}
-                      className="px-4 py-2 bg-white/10 text-foreground rounded-xl type-body font-semibold hover:bg-white/20 transition-colors"
+                      className="px-4 py-2 bg-vocl-hover text-foreground rounded-none type-body font-semibold hover:bg-white/20 transition-colors"
                     >
                       Review
                     </button>
@@ -332,7 +332,7 @@ export default function AdminFlagsPage() {
                   <Link
                     href={`/post/${flag.post_id}`}
                     target="_blank"
-                    className="px-4 py-2 bg-white/5 text-foreground/70 rounded-xl type-body font-semibold hover:bg-white/10 transition-colors text-center"
+                    className="px-4 py-2 bg-panel text-foreground/70 rounded-none type-body font-semibold hover:bg-vocl-hover transition-colors text-center"
                   >
                     View Post
                   </Link>
@@ -353,7 +353,7 @@ export default function AdminFlagsPage() {
               setShowEscalate(false);
             }}
           />
-          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-lg mx-4 bg-background border border-rule rounded-none shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 {showEscalate ? "Escalate Flag" : "Review Flag"}
@@ -368,7 +368,7 @@ export default function AdminFlagsPage() {
                     <select
                       value={escalationTarget || ""}
                       onChange={(e) => setEscalationTarget(Number(e.target.value))}
-                      className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
+                      className="w-full px-4 py-3 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
                     >
                       <option value="">Select role level...</option>
                       {escalationTargets.map((role) => (
@@ -388,21 +388,21 @@ export default function AdminFlagsPage() {
                       onChange={(e) => setEscalationReason(e.target.value)}
                       placeholder="Explain why this needs higher-level review..."
                       rows={3}
-                      className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                      className="w-full px-4 py-3 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                     />
                   </div>
 
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowEscalate(false)}
-                      className="flex-1 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-semibold hover:bg-white/20"
+                      className="flex-1 px-4 py-2.5 bg-vocl-hover text-foreground rounded-none font-semibold hover:bg-white/20"
                     >
                       Back
                     </button>
                     <button
                       onClick={handleEscalate}
                       disabled={resolving || !escalationTarget || !escalationReason.trim()}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-500/90 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-none font-semibold hover:bg-red-500/90 disabled:opacity-50"
                     >
                       <IconArrowUp size={18} />
                       Escalate
@@ -449,7 +449,7 @@ export default function AdminFlagsPage() {
                         onChange={(e) => setResolutionNotes(e.target.value)}
                         placeholder="Add notes about this decision..."
                         rows={3}
-                        className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                        className="w-full px-4 py-3 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                       />
                     </div>
                   </div>
@@ -458,7 +458,7 @@ export default function AdminFlagsPage() {
                     <button
                       onClick={() => handleResolve("resolved_removed")}
                       disabled={resolving}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-none font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                     >
                       <IconX size={18} />
                       Remove Post
@@ -466,7 +466,7 @@ export default function AdminFlagsPage() {
                     <button
                       onClick={() => handleResolve("resolved_flagged")}
                       disabled={resolving}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-500/90 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-none font-semibold hover:bg-amber-500/90 disabled:opacity-50"
                     >
                       <IconAlertTriangle size={18} />
                       Mark Sensitive
@@ -474,7 +474,7 @@ export default function AdminFlagsPage() {
                     <button
                       onClick={() => handleResolve("resolved_dismissed")}
                       disabled={resolving}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 text-foreground rounded-xl font-semibold hover:bg-white/20 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-hover text-foreground rounded-none font-semibold hover:bg-white/20 disabled:opacity-50"
                     >
                       <IconCheck size={18} />
                       Dismiss
@@ -484,7 +484,7 @@ export default function AdminFlagsPage() {
                   {escalationTargets.length > 0 && (
                     <button
                       onClick={() => setShowEscalate(true)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/20 text-red-400 rounded-xl font-semibold hover:bg-red-500/30 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/20 text-red-400 rounded-none font-semibold hover:bg-red-500/30 transition-colors"
                     >
                       <IconArrowUp size={18} />
                       Escalate to Higher Level

@@ -31,7 +31,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
     [];
 
   return (
-    <div className="rounded-xl border border-white/10 bg-vocl-surface-dark p-3 space-y-3 max-h-80 overflow-y-auto">
+    <div className="rounded-none border border-rule bg-panel p-3 space-y-3 max-h-80 overflow-y-auto">
       {type === "text" && (c.html || c.plain) && (
         <div
           className="type-body text-foreground/90 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5"
@@ -48,7 +48,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
               key={i}
               src={url}
               alt="reported content"
-              className="w-full h-36 object-cover rounded-lg border border-white/10"
+              className="w-full h-36 object-cover rounded-none border border-rule"
             />
           ))}
         </div>
@@ -58,7 +58,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
           href={c.embed_url || c.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-vocl-primary type-body underline break-all"
+          className="text-accent type-body underline break-all"
         >
           {c.embed_url || c.url}
         </a>
@@ -66,7 +66,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
       {type === "audio" && c.url && <audio controls src={c.url} className="w-full" />}
       {c.caption_html && (
         <div
-          className="type-meta text-foreground/60 border-t border-white/10 pt-2"
+          className="type-meta text-foreground/60 border-t border-rule pt-2"
           dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(c.caption_html) }}
         />
       )}
@@ -152,7 +152,7 @@ export default function AdminReportsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
+          className="px-4 py-2 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -164,7 +164,7 @@ export default function AdminReportsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : reports.length === 0 ? (
         <div className="text-center py-20">
@@ -175,7 +175,7 @@ export default function AdminReportsPage() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className="bg-vocl-surface-dark rounded-sm p-5 border border-white/5"
+              className="bg-panel rounded-none p-5 border border-rule"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -184,7 +184,7 @@ export default function AdminReportsPage() {
                     <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
                       report.source === "auto_moderation"
                         ? "bg-amber-500/20 text-amber-500"
-                        : "bg-vocl-primary/20 text-vocl-primary"
+                        : "bg-vocl-primary/20 text-accent"
                     }`}>
                       {report.source === "auto_moderation" ? (
                         <span className="flex items-center gap-1">
@@ -205,7 +205,7 @@ export default function AdminReportsPage() {
                         ? "bg-blue-500/20 text-blue-500"
                         : report.status.startsWith("resolved")
                         ? "bg-green-500/20 text-green-500"
-                        : "bg-white/10 text-foreground/50"
+                        : "bg-vocl-hover text-foreground/50"
                     }`}>
                       {report.status.replace("resolved_", "").replace("_", " ")}
                     </span>
@@ -220,7 +220,7 @@ export default function AdminReportsPage() {
                   <div className="flex items-center gap-2 type-body text-foreground/70 mb-2">
                     <span>Reported:</span>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-full bg-vocl-surface-dark overflow-hidden">
+                      <div className="w-5 h-5 rounded-full bg-panel overflow-hidden">
                         {report.reportedUser.avatarUrl ? (
                           <Image
                             src={report.reportedUser.avatarUrl}
@@ -251,7 +251,7 @@ export default function AdminReportsPage() {
                 {report.status === "pending" && (
                   <button
                     onClick={() => setSelectedReport(report)}
-                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
+                    className="px-4 py-2 bg-vocl-primary text-white rounded-none type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
                   >
                     Review
                   </button>
@@ -269,7 +269,7 @@ export default function AdminReportsPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setSelectedReport(null)}
           />
-          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
+          <div className="relative w-full max-w-lg mx-4 bg-background border border-rule rounded-none shadow-2xl">
             <div className="p-6">
               <h2 className="type-heading text-xl font-bold text-foreground mb-4">Review Report</h2>
 
@@ -313,7 +313,7 @@ export default function AdminReportsPage() {
                     onChange={(e) => setResolutionNotes(e.target.value)}
                     placeholder="Add notes about this decision..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                    className="w-full px-4 py-3 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                   />
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_approved")}
                   disabled={resolving}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-3 bg-green-600 text-white rounded-xl type-meta font-semibold hover:bg-green-600/90 disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-3 bg-green-600 text-white rounded-none type-meta font-semibold hover:bg-green-600/90 disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Approve &amp; publish post
@@ -333,7 +333,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_ban")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-none type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                 >
                   <IconX size={18} />
                   Ban User
@@ -341,7 +341,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_restrict")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl type-meta font-semibold hover:bg-amber-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-none type-meta font-semibold hover:bg-amber-500/90 disabled:opacity-50"
                 >
                   <IconAlertTriangle size={18} />
                   Restrict
@@ -349,7 +349,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_dismissed")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 text-foreground rounded-xl type-meta font-semibold hover:bg-white/20 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-hover text-foreground rounded-none type-meta font-semibold hover:bg-white/20 disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Dismiss

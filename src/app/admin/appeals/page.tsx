@@ -80,7 +80,7 @@ export default function AdminAppealsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground focus:outline-none focus:border-vocl-primary"
+          className="px-4 py-2 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -92,7 +92,7 @@ export default function AdminAppealsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+          <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : appeals.length === 0 ? (
         <div className="text-center py-20">
@@ -103,7 +103,7 @@ export default function AdminAppealsPage() {
           {appeals.map((appeal) => (
             <div
               key={appeal.id}
-              className="bg-vocl-surface-dark rounded-sm p-5 border border-white/5"
+              className="bg-panel rounded-none p-5 border border-rule"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -132,7 +132,7 @@ export default function AdminAppealsPage() {
 
                   {/* User */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-vocl-surface-dark overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-panel overflow-hidden">
                       {appeal.user.avatarUrl ? (
                         <Image
                           src={appeal.user.avatarUrl}
@@ -158,7 +158,7 @@ export default function AdminAppealsPage() {
                   </div>
 
                   {/* Reason */}
-                  <div className="bg-white/5 rounded-xl p-3 mb-3">
+                  <div className="bg-panel rounded-none p-3 mb-3">
                     <p className="type-body text-foreground">
                       {appeal.reason}
                     </p>
@@ -177,7 +177,7 @@ export default function AdminAppealsPage() {
                 {appeal.status === "pending" && (
                   <button
                     onClick={() => setSelectedAppeal(appeal)}
-                    className="px-4 py-2 bg-vocl-primary text-white rounded-xl type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
+                    className="px-4 py-2 bg-vocl-primary text-white rounded-none type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
                   >
                     Review
                   </button>
@@ -195,14 +195,14 @@ export default function AdminAppealsPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setSelectedAppeal(null)}
           />
-          <div className="relative w-full max-w-lg mx-4 bg-background border border-white/10 rounded-sm shadow-2xl">
+          <div className="relative w-full max-w-lg mx-4 bg-background border border-rule rounded-none shadow-2xl">
             <div className="p-6">
               <h2 className="type-heading text-xl font-bold text-foreground mb-4">
                 Review Appeal from @{selectedAppeal.user.username}
               </h2>
 
               <div className="space-y-4 mb-6">
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className="bg-panel rounded-none p-4">
                   <label className="type-meta font-semibold text-foreground/50 block mb-1">
                     Appeal Reason
                   </label>
@@ -218,7 +218,7 @@ export default function AdminAppealsPage() {
                     onChange={(e) => setReviewNotes(e.target.value)}
                     placeholder="Explain your decision..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-vocl-surface-dark border border-white/10 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                    className="w-full px-4 py-3 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
                   />
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function AdminAppealsPage() {
                 <button
                   onClick={() => handleReview("approved")}
                   disabled={reviewing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-xl type-meta font-semibold hover:bg-green-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-none type-meta font-semibold hover:bg-green-500/90 disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Approve
@@ -235,7 +235,7 @@ export default function AdminAppealsPage() {
                 <button
                   onClick={() => handleReview("denied")}
                   disabled={reviewing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-xl type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-none type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
                 >
                   <IconX size={18} />
                   Deny
@@ -243,7 +243,7 @@ export default function AdminAppealsPage() {
                 <button
                   onClick={() => handleReview("blocked")}
                   disabled={reviewing}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500 text-white rounded-xl type-meta font-semibold hover:bg-purple-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500 text-white rounded-none type-meta font-semibold hover:bg-purple-500/90 disabled:opacity-50"
                 >
                   <IconBan size={18} />
                   Block Appeals
