@@ -1,19 +1,8 @@
 "use client";
 
 import { useRef, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { MotionConfig } from "framer-motion";
-import {
-  IconArrowLeft,
-  IconDots,
-  IconTrash,
-  IconMailOpened,
-  IconBellOff,
-  IconBan,
-  IconFlag,
-  IconLoader2,
-  IconUsersGroup,
-} from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { ChatInput } from "./ChatInput";
@@ -175,7 +164,6 @@ export function ActiveChat({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isPrependingRef = useRef(false);
   const prevScrollHeightRef = useRef(0);
-  const [showMenu, setShowMenu] = useState(false);
   // The message currently being replied to (shown as a banner above the input).
   const [replyingTo, setReplyingTo] = useState<{
     id: string;
@@ -273,131 +261,35 @@ export function ActiveChat({
   return (
     <MotionConfig reducedMotion="user">
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-vocl-border">
-        <button
-          onClick={onBack}
-          aria-label="Back to conversations"
-          className="p-2 -ml-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
-        >
-          <IconArrowLeft size={20} />
-        </button>
-
-        {/* Participant info */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative flex-shrink-0">
-            <div className="w-10 h-10 rounded-full overflow-hidden">
-              {isGroup ? (
-                <div className="w-full h-full bg-vocl-primary/15 flex items-center justify-center">
-                  <IconUsersGroup size={20} className="text-vocl-primary" />
-                </div>
-              ) : participant.avatarUrl ? (
-                <Image
-                  src={participant.avatarUrl}
-                  alt={participant.username}
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                  <span className="text-sm font-bold text-white">
-                    {participant.username.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
-            {!isGroup && participant.isOnline && (
-              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="type-heading text-foreground truncate leading-tight">
-              {isGroup ? groupName || "Group" : `@${participant.username}`}
-            </p>
-            <p className="type-meta uppercase tracking-widest text-foreground/40">
-              {isGroup
-                ? `${(members?.length ?? 0) + 1} members`
-                : participant.isOnline
-                  ? "Online"
-                  : "Offline"}
-            </p>
-          </div>
-        </div>
-
-        {/* Menu */}
-        <div className="relative">
+      {/* Thread header — correspondence, not chat */}
+      <div className="flex items-end justify-between gap-4 px-5 md:px-10 pt-5 pb-3.5 rule-double-b">
+        <div className="min-w-0">
           <button
-            onClick={() => setShowMenu(!showMenu)}
-            aria-label="Conversation options"
-            aria-haspopup="menu"
-            aria-expanded={showMenu}
-            className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-vocl-hover transition-colors"
+            onClick={onBack}
+            className="byline mb-2 inline-flex items-center gap-1 text-meta hover:text-accent transition-colors md:hidden"
           >
-            <IconDots size={20} />
+            ← Correspondence
           </button>
-
-          {showMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowMenu(false)}
-              />
-              <div className="absolute right-0 mt-2 w-52 py-1 rounded-xl bg-vocl-surface-dark border border-vocl-border shadow-xl z-50 text-foreground">
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onMarkAsRead?.();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
-                >
-                  <IconMailOpened size={18} />
-                  Mark as read
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onMuteNotifications?.();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-foreground hover:bg-vocl-hover transition-colors"
-                >
-                  <IconBellOff size={18} />
-                  Mute notifications
-                </button>
-                <div className="my-1 border-t border-vocl-border" />
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onBlockUser?.();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
-                >
-                  <IconBan size={18} />
-                  Block user
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onReportUser?.();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-foreground/70 hover:text-vocl-like hover:bg-vocl-like/10 transition-colors"
-                >
-                  <IconFlag size={18} />
-                  Report user
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    onDeleteConversation?.();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 type-body text-vocl-like hover:bg-vocl-like/10 transition-colors"
-                >
-                  <IconTrash size={18} />
-                  Delete conversation
-                </button>
-              </div>
-            </>
+          <div className="kicker mb-1.5">Private correspondence · 21+</div>
+          <h2 className="font-display text-[30px] leading-none text-ink truncate">
+            {isGroup ? groupName || "Group" : `@${participant.username}`}
+          </h2>
+          <p className="mt-1.5 font-serif italic text-[15px] text-meta">
+            {isGroup ? `${(members?.length ?? 0) + 1} members · all 21+ verified` : "Both 21+ verified"}
+          </p>
+        </div>
+        <div className="flex flex-none gap-5">
+          {onMuteNotifications && (
+            <button onClick={onMuteNotifications} className="byline text-meta hover:text-accent transition-colors">Mute</button>
+          )}
+          {onBlockUser && (
+            <button onClick={onBlockUser} className="byline text-meta hover:text-accent transition-colors">Block</button>
+          )}
+          {onReportUser && (
+            <button onClick={onReportUser} className="byline text-meta hover:text-accent transition-colors">Report</button>
+          )}
+          {onDeleteConversation && (
+            <button onClick={onDeleteConversation} className="byline text-meta hover:text-accent transition-colors">Delete thread</button>
           )}
         </div>
       </div>
@@ -406,7 +298,7 @@ export function ActiveChat({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4"
+        className="flex-1 overflow-y-auto px-5 md:px-10"
         role="log"
         aria-live="polite"
         aria-label={`Conversation with @${participant.username}`}
@@ -417,26 +309,10 @@ export function ActiveChat({
           </div>
         )}
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
-              {participant.avatarUrl ? (
-                <Image
-                  src={participant.avatarUrl}
-                  alt={participant.username}
-                  width={64}
-                  height={64}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
-                    {participant.username.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
-            <p className="text-foreground/60 type-body">
-              Start your conversation with @{participant.username}
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <p className="slug text-meta-dim mb-3">A blank page</p>
+            <p className="editorial-body text-meta max-w-[40ch]">
+              Write the first letter to @{participant.username}.
             </p>
           </div>
         ) : (
@@ -445,12 +321,10 @@ export function ActiveChat({
               row.type === "divider" ? (
                 <div
                   key={row.key}
-                  className="flex items-center justify-center my-4"
+                  className="py-[22px] pb-1.5 text-center font-mono text-[10px] tracking-[0.2em] text-meta-dim"
                   role="separator"
                 >
-                  <span className="px-3 py-1 rounded-full bg-vocl-surface-muted text-foreground/60 type-meta font-medium dark:bg-vocl-surface-dark">
-                    {row.label}
-                  </span>
+                  — {row.label.toUpperCase()} —
                 </div>
               ) : (
                 <MessageBubble
@@ -504,7 +378,7 @@ export function ActiveChat({
         onSendGif={onSendGif}
         onSendVoice={handleVoice}
         onTyping={onTyping}
-        placeholder={`Message @${participant.username}`}
+        placeholder={`Write to @${participant.username}…`}
         replyingTo={replyingTo}
         onCancelReply={() => setReplyingTo(null)}
       />

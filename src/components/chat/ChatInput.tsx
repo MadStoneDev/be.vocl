@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import {
-  IconSend,
-  IconPhoto,
-  IconMoodSmile,
-  IconGif,
-  IconX,
-  IconLoader2,
-  IconMicrophone,
-} from "@tabler/icons-react";
+import { IconMoodSmile, IconX, IconLoader2 } from "@tabler/icons-react";
 import { toast } from "@/components/ui";
 import Image from "next/image";
 import { GifPicker } from "./GifPicker";
@@ -54,7 +46,6 @@ export function ChatInput({
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -173,26 +164,25 @@ export function ChatInput({
     }
   };
 
+  const actionClass = (active?: boolean) =>
+    `byline transition-colors disabled:opacity-40 ${active ? "text-accent" : "text-meta hover:text-accent"}`;
+
   return (
-    <div className="border-t border-vocl-border p-3">
+    <div className="rule-double px-5 md:px-10 pt-5 pb-6">
       {/* Replying-to banner */}
       {replyingTo && (
-        <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-sm bg-vocl-surface-muted border-l-2 border-vocl-primary dark:bg-vocl-surface-dark">
-          <div className="flex-1 min-w-0">
-            <p className="type-meta font-semibold text-vocl-primary">
-              Replying to {replyingTo.senderName}
-            </p>
-            <p className="type-meta text-foreground/60 truncate">
-              {replyingTo.preview}
-            </p>
+        <div className="mb-3 flex items-center gap-2 border-l-2 border-accent py-1 pl-3">
+          <div className="min-w-0 flex-1">
+            <p className="byline text-accent">Replying to {replyingTo.senderName}</p>
+            <p className="editorial-body truncate text-[0.9rem] text-meta">{replyingTo.preview}</p>
           </div>
           <button
             type="button"
             onClick={onCancelReply}
             aria-label="Cancel reply"
-            className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors"
+            className="flex-shrink-0 text-meta hover:text-ink transition-colors"
           >
-            <IconX size={14} />
+            <IconX size={16} />
           </button>
         </div>
       )}
@@ -211,153 +201,105 @@ export function ChatInput({
 
       {/* Media preview */}
       {mediaPreview && (
-        <div className="relative inline-block mb-3">
-          <div className="relative w-20 h-20 rounded-sm overflow-hidden">
-            <Image
-              src={mediaPreview}
-              alt="Preview"
-              fill
-              className="object-cover"
-            />
+        <div className="relative mb-3 inline-block">
+          <div className="relative h-20 w-20 overflow-hidden">
+            <Image src={mediaPreview} alt="Preview" fill className="object-cover" />
           </div>
           <button
             onClick={handleClearMedia}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-vocl-like text-white flex items-center justify-center shadow-lg"
+            aria-label="Remove attachment"
+            className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center bg-accent text-white"
           >
             <IconX size={14} />
           </button>
         </div>
       )}
 
-      {/* GIF Picker - rendered outside flex to avoid layout interference */}
-      <GifPicker
-        isOpen={showGifPicker}
-        onClose={() => setShowGifPicker(false)}
-        onSelect={handleGifSelect}
+      <GifPicker isOpen={showGifPicker} onClose={() => setShowGifPicker(false)} onSelect={handleGifSelect} />
+
+      {/* Growing serif field — no box */}
+      <textarea
+        ref={inputRef}
+        value={message}
+        onChange={(e) => handleChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled || isSending}
+        rows={1}
+        className="w-full max-w-[62ch] resize-none border-0 bg-transparent font-serif text-[17px] leading-[1.6] text-ink placeholder:italic placeholder:text-meta-dim focus:outline-none disabled:opacity-50"
+        style={{ maxHeight: "160px" }}
       />
 
-      {/* Input area */}
-      <div className="flex items-center gap-2">
-        {/* Media & GIF buttons - collapse when input is focused */}
-        <div
-          className={`flex items-center gap-0 overflow-hidden transition-all duration-200 ${
-            isFocused ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"
-          }`}
+      {/* Action row */}
+      <div className="mt-2 flex items-center gap-5 border-t border-rule pt-3.5">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isSending}
+          className={actionClass()}
         >
-          {/* Media button */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled || isSending}
-            className="flex-shrink-0 p-2.5 rounded-sm text-foreground/50 hover:text-foreground hover:bg-vocl-hover transition-colors disabled:opacity-50"
-            title="Upload image or video"
-          >
-            <IconPhoto size={20} />
-          </button>
-
-          {/* GIF button */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowGifPicker(!showGifPicker);
-              setShowEmojiPicker(false);
-            }}
-            disabled={disabled || isSending}
-            className={`flex-shrink-0 p-2.5 rounded-sm transition-colors disabled:opacity-50 ${
-              showGifPicker
-                ? "bg-vocl-primary text-white"
-                : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
-            }`}
-            title="Send a GIF"
-          >
-            <IconGif size={20} />
-          </button>
-
-          {/* Voice note button */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowVoiceRecorder((v) => !v);
-              setShowGifPicker(false);
-              setShowEmojiPicker(false);
-            }}
-            disabled={disabled || isSending}
-            className={`flex-shrink-0 p-2.5 rounded-sm transition-colors disabled:opacity-50 ${
-              showVoiceRecorder
-                ? "bg-vocl-primary text-white"
-                : "text-foreground/50 hover:text-foreground hover:bg-vocl-hover"
-            }`}
-            title="Record a voice note"
-          >
-            <IconMicrophone size={20} />
-          </button>
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,video/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
-
-        {/* Text input */}
-        <div className="flex-1 relative">
-          <textarea
-            ref={inputRef}
-            value={message}
-            onChange={(e) => handleChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder={placeholder}
-            disabled={disabled || isSending}
-            rows={1}
-            className="w-full py-2.5 px-4 pr-10 rounded-sm bg-vocl-surface-muted text-foreground border border-vocl-border placeholder:text-foreground/50 focus:outline-none focus:border-vocl-primary transition-colors type-body resize-none disabled:opacity-50 dark:bg-vocl-surface-dark dark:text-foreground dark:placeholder:text-foreground/40"
-            style={{ maxHeight: "120px" }}
+          Attach photo
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setShowGifPicker(!showGifPicker);
+            setShowEmojiPicker(false);
+          }}
+          disabled={disabled || isSending}
+          className={actionClass(showGifPicker)}
+        >
+          GIF
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setShowVoiceRecorder((v) => !v);
+            setShowGifPicker(false);
+            setShowEmojiPicker(false);
+          }}
+          disabled={disabled || isSending}
+          className={actionClass(showVoiceRecorder)}
+        >
+          Voice
+        </button>
+        <div className="relative">
+          <EmojiPicker
+            isOpen={showEmojiPicker}
+            onClose={() => setShowEmojiPicker(false)}
+            onSelect={handleEmojiSelect}
           />
-          {/* Emoji button and picker */}
-          <div className="absolute right-3 bottom-2.5">
-            <EmojiPicker
-              isOpen={showEmojiPicker}
-              onClose={() => setShowEmojiPicker(false)}
-              onSelect={handleEmojiSelect}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setShowEmojiPicker(!showEmojiPicker);
-                setShowGifPicker(false);
-              }}
-              className={`transition-colors ${
-                showEmojiPicker
-                  ? "text-vocl-primary"
-                  : "text-foreground/40 hover:text-foreground"
-              }`}
-            >
-              <IconMoodSmile size={18} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowEmojiPicker(!showEmojiPicker);
+              setShowGifPicker(false);
+            }}
+            aria-label="Add emoji"
+            className={showEmojiPicker ? "text-accent" : "text-meta hover:text-accent transition-colors"}
+          >
+            <IconMoodSmile size={18} />
+          </button>
         </div>
 
-        {/* Send button */}
         <button
           type="button"
           onClick={handleSend}
           disabled={(!message.trim() && !mediaFile) || disabled || isSending}
-          className="flex-shrink-0 p-2.5 rounded-sm bg-vocl-primary text-white hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ml-auto inline-flex items-center gap-2 bg-accent px-6 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSending ? (
-            <IconLoader2 size={20} className="animate-spin" />
-          ) : (
-            <IconSend size={20} />
-          )}
+          {isSending && <IconLoader2 size={14} className="animate-spin" />}
+          Send
         </button>
       </div>
 
-      {/* Hint */}
-      <p className="type-meta text-foreground/30 mt-2 text-center">
-        Press Enter to send, Shift+Enter for new line
-      </p>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
     </div>
   );
 }
