@@ -182,7 +182,7 @@ export function PostMenu({
       <div
         ref={menuRef}
         style={menuStyle}
-        className="z-[61] min-w-[200px] max-h-[80vh] overflow-y-auto rounded-xl bg-vocl-surface-dark shadow-xl border border-vocl-border py-1"
+        className="z-[61] min-w-[200px] max-h-[80vh] overflow-y-auto rounded-none bg-vocl-surface-dark border border-rule py-1"
         role="menu"
         aria-orientation="vertical"
       >
