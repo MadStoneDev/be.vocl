@@ -260,7 +260,7 @@ function PostHeader({
                 {" · "}
                 <Link
                   href={`/thread/${threadId}`}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/60 text-xs hover:bg-white/20 transition-colors"
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-none bg-white/10 text-foreground/60 text-xs hover:bg-white/20 transition-colors"
                 >
                   Collection {threadPosition}/{threadLength}
                 </Link>
@@ -421,7 +421,7 @@ function PostActionBar({
       {/* Reblog button */}
       <button
         onClick={onReblogClick}
-        className={`group absolute right-0 bottom-0 w-14 h-14 rounded-full ${expandedPanel ? "" : "shadow-lg shadow-vocl-primary/40"} bg-vocl-primary transition-all duration-300 ${
+        className={`group absolute right-0 bottom-0 w-14 h-14 rounded-full bg-vocl-primary transition-all duration-300 ${
           isReblogMenuOpen ? "scale-105" : "hover:scale-105"
         } z-50`}
         aria-label="Echo options"
@@ -486,7 +486,7 @@ function ReblogFabMenu({ isOpen, onSelect }: ReblogFabMenuProps) {
           <button
             key={item.type}
             onClick={() => onSelect(item.type)}
-            className={`absolute z-40 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 ease-out hover:scale-110 ${
+            className={`absolute z-40 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white transition-all duration-300 ease-out hover:scale-110 ${
               isOpen ? "pointer-events-auto" : "pointer-events-none"
             }`}
             style={{
@@ -558,7 +558,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
               maxLength={2000}
-              className={`flex-1 px-3 py-2 text-sm bg-vocl-hover rounded-full text-foreground/90 placeholder:text-foreground/45 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-primary"}`}
+              className={`flex-1 px-3 py-2 text-sm bg-vocl-hover rounded-none text-foreground/90 placeholder:text-foreground/45 focus:outline-none focus:ring-2 ${newComment.length >= 2000 ? "border border-vocl-like focus:ring-vocl-like" : "focus:ring-vocl-primary"}`}
             />
             {postId && (
               <button
@@ -593,7 +593,7 @@ function CommentsList({ comments, onSubmit, postId }: CommentsListProps) {
           </div>
         )}
         {recordedAudioUrl && (
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-vocl-primary/10 rounded-full">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 border border-rule rounded-none">
             <IconMicrophone size={16} className="text-vocl-primary" />
             <span className="text-xs text-foreground/75">
               Voice reply ({recordedDuration}s)
@@ -686,7 +686,7 @@ function CommentAudioPlayer({ src, duration }: { src: string; duration?: number 
   const [progress, setProgress] = useState(0);
 
   return (
-    <div className="mt-1.5 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-vocl-hover">
+    <div className="mt-1.5 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-none bg-vocl-hover">
       <button
         type="button"
         onClick={() => {
@@ -706,7 +706,7 @@ function CommentAudioPlayer({ src, duration }: { src: string; duration?: number 
       <span className="text-xs text-foreground/65 font-mono">
         {duration ? `${duration}s` : "Voice"}
       </span>
-      <div className="w-24 h-1 rounded-full bg-vocl-hover overflow-hidden">
+      <div className="w-24 h-1 rounded-none bg-vocl-hover overflow-hidden">
         <div className="h-full bg-vocl-primary" style={{ width: `${progress}%` }} />
       </div>
       <audio
@@ -799,7 +799,7 @@ function ExpandedPanel({
   return (
     <div
       className="bg-vocl-surface-dark overflow-hidden transition-all duration-300 ease-out"
-      style={{ borderRadius: "0 0 20px 20px" }}
+      style={{ borderRadius: "0" }}
     >
       {/* Panel header */}
       <div className="flex items-center justify-between px-4 py-2 bg-vocl-hover border-b border-vocl-border">
@@ -1273,7 +1273,7 @@ export const Post = memo(function Post({
           {/* Content Warning overlay */}
           {contentWarning && !isCWDismissed && !showNSFWOverlay && (
             <div
-              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay/95 backdrop-blur-sm"
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay/95"
               style={{ borderRadius: contentBorderRadius }}
             >
               <div className="text-center px-6 max-w-sm">
@@ -1285,7 +1285,7 @@ export const Post = memo(function Post({
                 </p>
                 <button
                   onClick={() => setIsCWDismissed(true)}
-                  className="px-5 py-2 rounded-full bg-vocl-primary text-neutral-900 font-medium text-sm hover:brightness-110 transition-all"
+                  className="px-5 py-2 rounded-none bg-vocl-primary text-neutral-900 font-medium text-sm hover:brightness-110 transition-all"
                 >
                   Show Content
                 </button>
@@ -1394,12 +1394,12 @@ export const Post = memo(function Post({
       {/* Expanded Panel - OUTSIDE article, below action bar */}
       {!hideActions && (
       <div
-        className={`overflow-hidden ${bare ? "" : "bg-vocl-surface-dark shadow-lg"}`}
+        className={`overflow-hidden ${bare ? "" : "bg-vocl-surface-dark border border-rule"}`}
         style={{
           maxHeight: expandedPanel ? "384px" : "0px",
           opacity: expandedPanel ? 1 : 0,
           transition: "max-height 300ms ease-out, opacity 200ms ease-out",
-          borderRadius: bare ? "0" : isMobile ? "0" : "0 0 20px 20px",
+          borderRadius: "0",
           marginTop: "0px",
           position: "relative",
           zIndex: 1,

@@ -827,13 +827,23 @@ export async function sendMessage(
       .update({ updated_at: new Date().toISOString() })
       .eq("id", conversationId);
 
+    // A still-pending message request stays quiet: no notification until the
+    // recipient accepts (they discover it via the Requests tab). Once accepted
+    // (is_request=false), normal message notifications resume.
+    const { data: convState } = await supabase
+      .from("conversations")
+      .select("is_request")
+      .eq("id", conversationId)
+      .maybeSingle();
+    const isPendingRequest = Boolean(convState?.is_request);
+
     // Notify every other member who hasn't muted the conversation and isn't in a
     // block relationship with the sender (reuses the participant list fetched
     // above — no per-recipient round trips).
     const recipients = otherParticipants.filter(
       (p) => !p.is_muted && !blockedIds.has(p.profile_id)
     );
-    if (recipients.length > 0) {
+    if (!isPendingRequest && recipients.length > 0) {
       const notifications: TablesInsert<"notifications">[] = recipients.map((p) => ({
         recipient_id: p.profile_id,
         actor_id: user.id,
