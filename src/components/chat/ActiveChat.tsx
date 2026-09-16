@@ -131,6 +131,9 @@ interface ActiveChatProps {
   requestedByMe?: boolean;
   onAcceptRequest?: () => void;
   onDeclineRequest?: () => void;
+  onBlockRequest?: () => void;
+  /** Open the "share one of my posts into this thread" picker. */
+  onSharePost?: () => void;
   isTyping: boolean;
   isLoading?: boolean;
   onBack: () => void;
@@ -164,6 +167,8 @@ export function ActiveChat({
   requestedByMe = false,
   onAcceptRequest,
   onDeclineRequest,
+  onBlockRequest,
+  onSharePost,
   isTyping,
   isLoading = false,
   onBack,
@@ -302,6 +307,9 @@ export function ActiveChat({
           </p>
         </div>
         <div className="flex flex-none gap-5">
+          {onSharePost && !(isRequest && !requestedByMe) && (
+            <button onClick={onSharePost} className="byline text-meta hover:text-accent transition-colors">Share a post</button>
+          )}
           {onMuteNotifications && (
             <button onClick={onMuteNotifications} className="byline text-meta hover:text-accent transition-colors">Mute</button>
           )}
@@ -420,6 +428,15 @@ export function ActiveChat({
             >
               Decline
             </button>
+            {onBlockRequest && (
+              <button
+                type="button"
+                onClick={onBlockRequest}
+                className="ml-auto font-sans text-xs font-medium uppercase tracking-[0.16em] text-meta-dim transition-colors hover:text-vocl-like"
+              >
+                Block
+              </button>
+            )}
           </div>
         </div>
       ) : (

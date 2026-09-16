@@ -5,6 +5,7 @@ import { IconX, IconLoader2 } from "@tabler/icons-react";
 import { ConversationList, type Conversation } from "./ConversationList";
 import { ActiveChat, type Message, type Participant } from "./ActiveChat";
 import { NewChatModal } from "./NewChatModal";
+import { PostPickerModal } from "./PostPickerModal";
 import { UserReportDialog } from "@/components/Post/UserReportDialog";
 import { useChat, useMessages } from "@/hooks/useChat";
 import { useTypingPresence } from "@/hooks/useTypingPresence";
@@ -75,6 +76,8 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
 
   // Inbox vs the pending-requests column.
   const [listMode, setListMode] = useState<"inbox" | "requests">("inbox");
+  // "Share one of my posts into this thread" picker.
+  const [showPostPicker, setShowPostPicker] = useState(false);
 
   // Get participant IDs for online status check
   const participantIds = rawConversations.map((c) => c.participant.id);
@@ -224,6 +227,22 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     } else {
       toast.error("Failed to decline request");
     }
+  }, [declineRequest, requests.length]);
+
+  // Decline + block: delete the request thread and block the sender in one step.
+  const handleBlockRequest = useCallback(async (conversationId: string, userId: string) => {
+    const [declined, blocked] = await Promise.all([
+      declineRequest(conversationId),
+      blockUser(userId),
+    ]);
+    if (declined && blocked.success) {
+      toast.success("Declined and blocked");
+    } else {
+      toast.error("Couldn't block this person");
+    }
+    setView("list");
+    setActiveConversation(null);
+    setListMode(requests.length > 1 ? "requests" : "inbox");
   }, [declineRequest, requests.length]);
 
   // Open a just-created conversation as soon as the refreshed list contains it.
@@ -634,6 +653,10 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       requestedByMe={activeConversation.requestedByMe}
       onAcceptRequest={() => handleAcceptRequest(activeConversation.id)}
       onDeclineRequest={() => handleDeclineRequest(activeConversation.id)}
+      onBlockRequest={() =>
+        handleBlockRequest(activeConversation.id, activeConversation.participant.id)
+      }
+      onSharePost={() => setShowPostPicker(true)}
       isTyping={isParticipantTyping}
       isLoading={messagesLoading}
       onLoadMore={loadMoreMessages}
@@ -727,6 +750,16 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
         onConversationCreated={handleConversationCreated}
         currentUserId={currentUserId}
       />
+
+      {/* Share one of my posts into the open thread */}
+      {activeConversation && (
+        <PostPickerModal
+          isOpen={showPostPicker}
+          onClose={() => setShowPostPicker(false)}
+          conversationId={activeConversation.id}
+          currentUserId={currentUserId}
+        />
+      )}
 
       {/* Delete Conversation Confirmation */}
       <ConfirmDialog
