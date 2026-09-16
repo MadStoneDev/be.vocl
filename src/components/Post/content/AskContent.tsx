@@ -75,7 +75,7 @@ export function AskContent({ content, article }: AskContentProps) {
         <div className="flex items-start gap-3">
           {/* Asker avatar or anonymous icon */}
           {content.is_anonymous ? (
-            <div className="w-10 h-10 rounded-full bg-vocl-hover flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-none bg-vocl-hover flex items-center justify-center flex-shrink-0">
               <IconUserQuestion size={20} className="text-foreground/55" />
             </div>
           ) : content.asker_id ? (
@@ -91,7 +91,7 @@ export function AskContent({ content, article }: AskContentProps) {
               />
             </Link>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-vocl-hover flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-none bg-vocl-hover flex items-center justify-center flex-shrink-0">
               <IconUserQuestion size={20} className="text-foreground/55" />
             </div>
           )}

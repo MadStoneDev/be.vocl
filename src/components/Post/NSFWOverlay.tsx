@@ -26,7 +26,7 @@ export function NSFWOverlay({ onReveal }: NSFWOverlayProps) {
 
   return (
     <div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-linear-to-br from-vocl-overlay/95 via-vocl-overlay/98 to-vocl-overlay/95 backdrop-blur-xl"
+      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay/98"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -46,12 +46,12 @@ export function NSFWOverlay({ onReveal }: NSFWOverlayProps) {
       {/* Content */}
       <div className="relative text-center px-6">
         {/* Icon */}
-        <div className={`mx-auto mb-4 w-16 h-16 rounded-full bg-vocl-like/20 flex items-center justify-center transition-transform duration-300 ${isHovering ? 'scale-110' : ''}`}>
+        <div className="mx-auto mb-4 w-16 h-16 rounded-none bg-vocl-like/20 flex items-center justify-center">
           <IconEyeOff size={32} className="text-vocl-like" />
         </div>
 
         {/* Message */}
-        <h3 className="text-xl font-semibold text-foreground mb-1">
+        <h3 className="font-display text-2xl text-foreground mb-1">
           {message.title}
         </h3>
         <p className="text-foreground/50 text-sm mb-6">
@@ -62,9 +62,9 @@ export function NSFWOverlay({ onReveal }: NSFWOverlayProps) {
         <button
           type="button"
           onClick={onReveal}
-          className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+          className={`inline-flex items-center gap-2 px-6 py-3 rounded-none font-sans font-medium uppercase tracking-[0.16em] text-xs transition-colors ${
             isHovering
-              ? 'bg-vocl-primary text-white shadow-lg shadow-vocl-primary/30 scale-105'
+              ? 'bg-accent text-white'
               : 'bg-white/10 text-foreground hover:bg-white/20'
           }`}
         >

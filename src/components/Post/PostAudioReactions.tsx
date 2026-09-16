@@ -135,7 +135,7 @@ export function PostAudioReactions({
               setOpen(true);
               if (!loaded) void load();
             }}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-vocl-primary/10 text-vocl-primary type-meta font-medium hover:bg-vocl-primary/20 transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-none border border-rule text-accent type-meta font-medium hover:bg-vocl-hover transition-colors"
           >
             <IconMicrophone size={14} />
             {myReactionId ? "Re-react" : "Speak"}
@@ -151,7 +151,7 @@ export function PostAudioReactions({
         <div className="px-3 pb-3 space-y-3">
           {/* Recorder */}
           {recording && isLoggedIn && (
-            <div className="rounded-xl border border-vocl-border p-3">
+            <div className="rounded-none border border-vocl-border p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="type-meta font-medium text-foreground/70">
                   Record your reaction

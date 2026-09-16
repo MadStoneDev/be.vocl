@@ -3,9 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import {
-  IconArrowLeft,
-  IconCamera,
+import {  IconCamera,
   IconLoader2,
   IconPlus,
   IconTrash,

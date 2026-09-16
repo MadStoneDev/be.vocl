@@ -97,7 +97,7 @@ export function VoiceReactionsPanel({
         <button
           type="button"
           onClick={() => (isLoggedIn ? setRecording(true) : onRequireAuth?.())}
-          className="mb-3 inline-flex items-center gap-1.5 rounded-sm border px-3 py-1.5 type-meta uppercase tracking-widest font-semibold transition-colors border-vocl-border text-foreground/60 hover:border-vocl-primary hover:text-vocl-primary"
+          className="mb-3 inline-flex items-center gap-1.5 rounded-none border px-3 py-1.5 type-meta uppercase tracking-widest font-semibold transition-colors border-vocl-border text-foreground/60 hover:border-accent hover:text-accent"
         >
           <IconMicrophone size={14} />
           {myReactionId ? "Re-record" : "Add Voice Reaction"}
@@ -106,7 +106,7 @@ export function VoiceReactionsPanel({
 
       {/* Recorder */}
       {recording && isLoggedIn && (
-        <div className="rounded-sm border border-vocl-border p-3 mb-3">
+        <div className="rounded-none border border-vocl-border p-3 mb-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-foreground/70">Record your reaction</span>
             <button
