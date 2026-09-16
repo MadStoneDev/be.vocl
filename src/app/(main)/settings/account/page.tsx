@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  IconArrowLeft,
-  IconLoader2,
+import {  IconLoader2,
   IconDownload,
   IconAlertOctagon,
   IconTrash,

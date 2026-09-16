@@ -696,6 +696,8 @@ export type Database = {
           is_group: boolean
           name: string | null
           owner_id: string | null
+          is_request: boolean
+          requested_by: string | null
         }
         Insert: {
           id?: string
@@ -704,6 +706,8 @@ export type Database = {
           is_group?: boolean
           name?: string | null
           owner_id?: string | null
+          is_request?: boolean
+          requested_by?: string | null
         }
         Update: {
           id?: string
@@ -712,11 +716,20 @@ export type Database = {
           is_group?: boolean
           name?: string | null
           owner_id?: string | null
+          is_request?: boolean
+          requested_by?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "conversations_owner_id_fkey"
             columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_requested_by_fkey"
+            columns: ["requested_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1342,6 +1355,7 @@ export type Database = {
           updated_at: string | null
           reply_to_id: string | null
           media_duration: number | null
+          shared_post_id: string | null
         }
         Insert: {
           id?: string
@@ -1356,6 +1370,7 @@ export type Database = {
           updated_at?: string | null
           reply_to_id?: string | null
           media_duration?: number | null
+          shared_post_id?: string | null
         }
         Update: {
           id?: string
@@ -1370,6 +1385,7 @@ export type Database = {
           updated_at?: string | null
           reply_to_id?: string | null
           media_duration?: number | null
+          shared_post_id?: string | null
         }
         Relationships: [
           {
@@ -1391,6 +1407,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_shared_post_id_fkey"
+            columns: ["shared_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]

@@ -35,15 +35,20 @@ export default function AdminEmailPage() {
   const [activeTab, setActiveTab] = useState<Tab>("compose");
 
   return (
-    <div className="py-6">
+    <div>
       <title>Admin — Email | be.vocl</title>
-      <div className="flex items-center gap-3 mb-6">
-        <IconMail size={28} className="text-accent" />
-        <h1 className="type-display text-foreground">Email Management</h1>
+
+      {/* Title row */}
+      <div className="flex items-end justify-between gap-4 pt-8 pb-4.5">
+        <div>
+          <div className="kicker kicker-accent mb-2.5">The desk</div>
+          <h1 className="type-display text-ink">Email</h1>
+        </div>
+        <span className="slug text-meta-dim hidden sm:block">Announcements · templates · tags</span>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-rule pb-2 overflow-x-auto">
+      <div className="flex gap-6 border-b border-rule pb-3 overflow-x-auto">
         {[
           { id: "compose" as Tab, label: "Compose", icon: IconSend },
           { id: "templates" as Tab, label: "Templates", icon: IconTemplate },
@@ -52,23 +57,23 @@ export default function AdminEmailPage() {
         ].map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-none type-meta font-semibold transition-colors shrink-0 ${
-              activeTab === tab.id
-                ? "bg-vocl-primary text-white"
-                : "text-foreground/60 hover:bg-panel"
-            }`}
+            data-active={activeTab === tab.id}
+            className="section-tab flex items-center gap-2 whitespace-nowrap hover:text-ink transition-colors shrink-0"
           >
-            <tab.icon size={18} />
+            <tab.icon size={16} />
             {tab.label}
           </button>
         ))}
       </div>
 
-      {activeTab === "compose" && <ComposeTab />}
-      {activeTab === "templates" && <TemplatesTab />}
-      {activeTab === "tags" && <TagsTab />}
-      {activeTab === "history" && <HistoryTab />}
+      <div className="pt-7">
+        {activeTab === "compose" && <ComposeTab />}
+        {activeTab === "templates" && <TemplatesTab />}
+        {activeTab === "tags" && <TagsTab />}
+        {activeTab === "history" && <HistoryTab />}
+      </div>
     </div>
   );
 }
@@ -165,32 +170,26 @@ function ComposeTab() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Compose Form */}
       <div className="space-y-6">
         {/* Template Type */}
         <div>
-          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-            Template Type
-          </label>
-          <div className="flex gap-2">
+          <label className="slug text-meta-dim block mb-3">Template Type</label>
+          <div className="flex gap-6 border-b border-rule pb-2.5">
             <button
+              type="button"
               onClick={() => setTemplateType("announcement")}
-              className={`flex-1 py-2 px-4 rounded-none type-meta font-semibold transition-colors ${
-                templateType === "announcement"
-                  ? "bg-vocl-primary text-white"
-                  : "bg-panel text-foreground/60 hover:bg-vocl-hover"
-              }`}
+              data-active={templateType === "announcement"}
+              className="section-tab hover:text-ink transition-colors"
             >
               Announcement
             </button>
             <button
+              type="button"
               onClick={() => setTemplateType("founder_message")}
-              className={`flex-1 py-2 px-4 rounded-none type-meta font-semibold transition-colors ${
-                templateType === "founder_message"
-                  ? "bg-vocl-primary text-white"
-                  : "bg-panel text-foreground/60 hover:bg-vocl-hover"
-              }`}
+              data-active={templateType === "founder_message"}
+              className="section-tab hover:text-ink transition-colors"
             >
               Founder Message
             </button>
@@ -199,103 +198,95 @@ function ComposeTab() {
 
         {/* Recipients */}
         <div>
-          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-            Recipients
-          </label>
+          <label className="slug text-meta-dim block mb-3">Recipients</label>
           <div className="space-y-3">
-            <div className="flex gap-2">
+            <div className="flex gap-6 border-b border-rule pb-2.5">
               <button
+                type="button"
                 onClick={() => setRecipientType("all")}
-                className={`py-2 px-4 rounded-none type-meta font-semibold transition-colors ${
-                  recipientType === "all"
-                    ? "bg-vocl-primary text-white"
-                    : "bg-panel text-foreground/60 hover:bg-vocl-hover"
-                }`}
+                data-active={recipientType === "all"}
+                className="section-tab hover:text-ink transition-colors"
               >
                 All Users
               </button>
               <button
+                type="button"
                 onClick={() => setRecipientType("tags")}
-                className={`py-2 px-4 rounded-none type-meta font-semibold transition-colors ${
-                  recipientType === "tags"
-                    ? "bg-vocl-primary text-white"
-                    : "bg-panel text-foreground/60 hover:bg-vocl-hover"
-                }`}
+                data-active={recipientType === "tags"}
+                className="section-tab hover:text-ink transition-colors"
               >
                 By Tag
               </button>
             </div>
 
             {recipientType === "tags" && (
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    onClick={() => {
-                      setSelectedTags((prev) =>
-                        prev.includes(tag.id)
-                          ? prev.filter((id) => id !== tag.id)
-                          : [...prev, tag.id]
-                      );
-                    }}
-                    className={`px-3 py-1.5 rounded-full type-meta transition-colors ${
-                      selectedTags.includes(tag.id)
-                        ? "text-white"
-                        : "bg-panel text-foreground/60 hover:bg-vocl-hover"
-                    }`}
-                    style={{
-                      backgroundColor: selectedTags.includes(tag.id)
-                        ? (tag.color ?? undefined)
-                        : undefined,
-                    }}
-                  >
-                    {tag.name}
-                    {tag.userCount !== undefined && (
-                      <span className="ml-1 opacity-70">({tag.userCount})</span>
-                    )}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-2.5">
+                {tags.map((tag) => {
+                  const isSelected = selectedTags.includes(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      onClick={() => {
+                        setSelectedTags((prev) =>
+                          prev.includes(tag.id)
+                            ? prev.filter((id) => id !== tag.id)
+                            : [...prev, tag.id]
+                        );
+                      }}
+                      className={`flex items-center gap-1.5 border px-3 py-1.5 font-sans text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                        isSelected
+                          ? "border-foreground text-ink"
+                          : "border-rule text-meta hover:text-ink"
+                      }`}
+                    >
+                      <span
+                        className="inline-block h-2 w-2 flex-none"
+                        style={{ backgroundColor: tag.color ?? undefined }}
+                      />
+                      {tag.name}
+                      {tag.userCount !== undefined && (
+                        <span className="text-meta-dim">({tag.userCount})</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            <p className="type-meta text-foreground/60">
+            <p className="byline text-meta flex items-center gap-1.5">
               {isLoadingRecipients ? (
-                <IconLoader2 size={14} className="inline animate-spin mr-1" />
+                <IconLoader2 size={14} className="animate-spin" />
               ) : (
-                <IconUsers size={14} className="inline mr-1" />
+                <IconUsers size={14} />
               )}
-              {recipientCount !== null ? `${recipientCount} recipients` : "Loading..."}
+              {recipientCount !== null ? `${recipientCount} recipients` : "Loading…"}
             </p>
           </div>
         </div>
 
         {/* Subject */}
         <div>
-          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-            Subject
-          </label>
+          <label className="slug text-meta-dim block mb-2">Subject</label>
           <input
             type="text"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="Enter email subject..."
-            className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+            placeholder="Enter email subject…"
+            className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
           />
         </div>
 
         {/* Content */}
         <div>
-          <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-            Content
-          </label>
+          <label className="slug text-meta-dim block mb-2">Content</label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your message here..."
+            placeholder="Write your message here…"
             rows={8}
-            className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
+            className="w-full resize-none border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
           />
-          <p className="type-meta text-foreground/45 mt-1">
+          <p className="byline text-meta-dim mt-1.5">
             Use line breaks to create paragraphs
           </p>
         </div>
@@ -303,27 +294,23 @@ function ComposeTab() {
         {/* CTA */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-              Button Text (optional)
-            </label>
+            <label className="slug text-meta-dim block mb-2">Button Text (optional)</label>
             <input
               type="text"
               value={ctaText}
               onChange={(e) => setCtaText(e.target.value)}
               placeholder="e.g., Learn More"
-              className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+              className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
             />
           </div>
           <div>
-            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-              Button URL (optional)
-            </label>
+            <label className="slug text-meta-dim block mb-2">Button URL (optional)</label>
             <input
               type="url"
               value={ctaUrl}
               onChange={(e) => setCtaUrl(e.target.value)}
-              placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+              placeholder="https://…"
+              className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
             />
           </div>
         </div>
@@ -333,63 +320,57 @@ function ComposeTab() {
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-                  Founder Name
-                </label>
+                <label className="slug text-meta-dim block mb-2">Founder Name</label>
                 <input
                   type="text"
                   value={founderName}
                   onChange={(e) => setFounderName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+                  className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-                  Title
-                </label>
+                <label className="slug text-meta-dim block mb-2">Title</label>
                 <input
                   type="text"
                   value={founderTitle}
                   onChange={(e) => setFounderTitle(e.target.value)}
                   placeholder="e.g., Founder, be.vocl"
-                  className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+                  className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
                 />
               </div>
             </div>
             <div>
-              <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-                Custom Signature (optional)
-              </label>
+              <label className="slug text-meta-dim block mb-2">Custom Signature (optional)</label>
               <textarea
                 value={signature}
                 onChange={(e) => setSignature(e.target.value)}
                 placeholder="e.g., Cheers,&#10;John"
                 rows={2}
-                className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary resize-none"
+                className="w-full resize-none border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
               />
             </div>
           </>
         )}
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button
             onClick={() => setShowPreview(true)}
-            className="flex-1 py-2.5 rounded-none bg-panel text-foreground font-semibold hover:bg-vocl-hover transition-colors flex items-center justify-center gap-2"
+            className="flex flex-1 items-center justify-center gap-2 border border-foreground px-6 py-3 font-sans font-medium uppercase tracking-[0.16em] text-xs text-ink hover:bg-vocl-hover transition-colors"
           >
-            <IconEye size={18} />
+            <IconEye size={16} />
             Preview
           </button>
           <button
             onClick={handleSend}
             disabled={isSending || !subject || !content || recipientCount === 0}
-            className="flex-1 py-2.5 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex flex-1 items-center justify-center gap-2 bg-accent px-6 py-3 font-sans font-medium uppercase tracking-[0.16em] text-xs text-white hover:opacity-[0.88] transition-opacity disabled:opacity-50"
           >
             {isSending ? (
-              <IconLoader2 size={18} className="animate-spin" />
+              <IconLoader2 size={16} className="animate-spin" />
             ) : (
-              <IconSend size={18} />
+              <IconSend size={16} />
             )}
             Send Email
           </button>
@@ -397,12 +378,12 @@ function ComposeTab() {
       </div>
 
       {/* Preview Panel */}
-      <div className="bg-panel rounded-none p-6">
-        <h3 className="type-heading font-semibold text-foreground mb-4 flex items-center gap-2">
-          <IconEye size={20} />
+      <div className="border border-rule p-6">
+        <h3 className="slug text-meta-dim mb-4 flex items-center gap-2">
+          <IconEye size={16} />
           Preview
         </h3>
-        <div className="bg-[#1a1a1a] rounded-none p-6 min-h-[400px]">
+        <div className="bg-[#1a1a1a] p-6 min-h-[400px]">
           <EmailPreview
             templateType={templateType}
             subject={subject}
@@ -458,10 +439,8 @@ function EmailPreview({
       {/* Badge */}
       <div className="text-center mb-4">
         <span
-          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-            templateType === "announcement"
-              ? "bg-[#5B9A8B] text-white"
-              : "bg-[#F59E0B] text-[#1a1a1a]"
+          className={`inline-block font-sans text-[11px] uppercase tracking-[0.2em] ${
+            templateType === "announcement" ? "text-[#5B9A8B]" : "text-[#F59E0B]"
           }`}
         >
           {templateType === "announcement" ? "ANNOUNCEMENT" : `A MESSAGE FROM ${(founderName || "THE FOUNDER").toUpperCase()}`}
@@ -469,7 +448,7 @@ function EmailPreview({
       </div>
 
       {/* Subject */}
-      <h2 className="text-xl font-semibold text-center mb-4">
+      <h2 className="font-display text-2xl text-center mb-4">
         {subject || "Your subject here..."}
       </h2>
 
@@ -488,7 +467,7 @@ function EmailPreview({
       {/* CTA Button */}
       {ctaText && ctaUrl && (
         <div className="text-center my-6">
-          <span className="inline-block bg-[#5B9A8B] text-white px-6 py-3 rounded-none font-semibold">
+          <span className="inline-block bg-accent text-white px-6 py-3 font-sans font-medium uppercase tracking-[0.16em] text-xs">
             {ctaText}
           </span>
         </div>
@@ -503,7 +482,7 @@ function EmailPreview({
           </>
         ) : (
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-none bg-panel flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-12 h-12 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-lg">
               {(founderName || "F").charAt(0).toUpperCase()}
             </div>
             <div>
@@ -511,7 +490,7 @@ function EmailPreview({
                 <p className="italic whitespace-pre-line">{signature}</p>
               ) : (
                 <>
-                  <p className="font-semibold">{founderName || "Founder Name"}</p>
+                  <p className="font-sans font-medium">{founderName || "Founder Name"}</p>
                   <p className="text-[#888888] text-xs">{founderTitle || "Founder, be.vocl"}</p>
                 </>
               )}
@@ -546,38 +525,39 @@ function TemplatesTab() {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Template List */}
-      <div className="lg:col-span-1 space-y-2">
-        <h3 className="type-heading font-semibold text-foreground mb-4">Email Templates</h3>
+      <div className="lg:col-span-1">
+        <h3 className="slug text-meta-dim border-b border-rule pb-2.5 mb-1">Email Templates</h3>
         {templates.map((template) => (
           <button
             key={template.id}
             onClick={() => setSelectedTemplate(template.id)}
-            className={`w-full text-left p-3 rounded-none transition-colors ${
+            data-active={selectedTemplate === template.id}
+            className={`w-full text-left border-b border-rule py-3 transition-colors ${
               selectedTemplate === template.id
-                ? "bg-vocl-primary/20 border border-vocl-primary/40"
-                : "bg-panel hover:bg-vocl-hover"
+                ? "border-l-2 border-l-accent pl-3.5"
+                : "pl-0 hover:pl-3.5"
             }`}
           >
-            <p className="font-semibold text-foreground">{template.name}</p>
-            <p className="type-meta text-foreground/60">{template.description}</p>
+            <p className="font-sans text-sm font-medium text-ink">{template.name}</p>
+            <p className="editorial-caption text-meta not-italic">{template.description}</p>
           </button>
         ))}
       </div>
 
       {/* Template Preview */}
       <div className="lg:col-span-2">
-        <div className="bg-panel rounded-none p-6">
-          <h3 className="type-heading font-semibold text-foreground mb-4">
+        <div className="border border-rule p-6">
+          <h3 className="slug text-meta-dim mb-4">
             {selectedTemplate ? "Template Preview" : "Select a template"}
           </h3>
           {selectedTemplate ? (
-            <div className="bg-[#1a1a1a] rounded-none p-6 min-h-[400px] overflow-auto">
+            <div className="bg-[#1a1a1a] p-6 min-h-[400px] overflow-auto">
               <TemplatePreview templateId={selectedTemplate} />
             </div>
           ) : (
-            <p className="type-body text-foreground/60 text-center py-20">
+            <p className="editorial-body text-meta text-center py-20">
               Select a template from the list to preview it
             </p>
           )}
@@ -611,7 +591,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
 
   const Button = ({ children }: { children: React.ReactNode }) => (
     <div className="text-center my-6">
-      <span className="inline-block bg-[#5B9A8B] text-white px-6 py-3 rounded-none font-semibold">
+      <span className="inline-block bg-accent text-white px-6 py-3 font-sans font-medium uppercase tracking-[0.16em] text-xs">
         {children}
       </span>
     </div>
@@ -622,7 +602,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Welcome to be.vocl! 🎉</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Welcome to be.vocl</h2>
           <p className="mb-4">Hey @username,</p>
           <p className="mb-4 leading-relaxed">
             Welcome to be.vocl! We&apos;re thrilled to have you join our community of creators and voices.
@@ -639,7 +619,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Sign in to be.vocl</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Sign in to be.vocl</h2>
           <p className="mb-4">Hey there,</p>
           <p className="mb-4 leading-relaxed">
             Click the button below to sign in to your be.vocl account. This link will expire in 1 hour.
@@ -656,7 +636,7 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Reset Your Password</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Reset Your Password</h2>
           <p className="mb-4">Hey @username,</p>
           <p className="mb-4 leading-relaxed">
             We received a request to reset your password. Click the button below to create a new password.
@@ -673,14 +653,14 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">You have a new follower!</h2>
+          <h2 className="font-display text-2xl text-center mb-4">You have a new follower!</h2>
           <p className="mb-4">Hey @username,</p>
-          <div className="flex items-center gap-3 bg-[#2a2a2a] p-4 rounded-none mb-4">
-            <div className="w-12 h-12 rounded-none bg-panel flex items-center justify-center text-white font-bold">
+          <div className="flex items-center gap-3 border border-[#2a2a2a] p-4 mb-4">
+            <div className="w-12 h-12 bg-[#2a2a2a] flex items-center justify-center text-white font-display">
               J
             </div>
             <div>
-              <p className="font-semibold">@johndoe</p>
+              <p className="font-sans font-medium">@johndoe</p>
               <p className="text-[#888] text-xs">started following you</p>
             </div>
           </div>
@@ -693,14 +673,14 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Someone liked your post! ❤️</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Someone liked your post</h2>
           <p className="mb-4">Hey @username,</p>
-          <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
+          <div className="border border-[#2a2a2a] p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-sm">
                 J
               </div>
-              <span className="font-semibold">@johndoe</span>
+              <span className="font-sans font-medium">@johndoe</span>
               <span className="text-[#888]">liked your post</span>
             </div>
             <p className="text-[#888] text-sm italic border-l-2 border-[#5B9A8B] pl-3">
@@ -716,14 +696,14 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">New comment on your post 💬</h2>
+          <h2 className="font-display text-2xl text-center mb-4">New comment on your post</h2>
           <p className="mb-4">Hey @username,</p>
-          <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
+          <div className="border border-[#2a2a2a] p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-sm">
                 J
               </div>
-              <span className="font-semibold">@johndoe</span>
+              <span className="font-sans font-medium">@johndoe</span>
               <span className="text-[#888]">commented</span>
             </div>
             <p className="text-sm leading-relaxed">
@@ -739,14 +719,14 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Your post was echoed! 🔄</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Your post was echoed</h2>
           <p className="mb-4">Hey @username,</p>
-          <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
+          <div className="border border-[#2a2a2a] p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-sm">
                 J
               </div>
-              <span className="font-semibold">@johndoe</span>
+              <span className="font-sans font-medium">@johndoe</span>
               <span className="text-[#888]">reblogged your post</span>
             </div>
             <p className="text-[#888] text-sm italic border-l-2 border-[#5B9A8B] pl-3">
@@ -762,14 +742,14 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">You have a new message! 💬</h2>
+          <h2 className="font-display text-2xl text-center mb-4">You have a new message</h2>
           <p className="mb-4">Hey @username,</p>
-          <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
+          <div className="border border-[#2a2a2a] p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-sm">
                 J
               </div>
-              <span className="font-semibold">@johndoe</span>
+              <span className="font-sans font-medium">@johndoe</span>
             </div>
             <p className="text-sm leading-relaxed">
               &quot;Hey! I saw your latest post and wanted to reach out...&quot;
@@ -784,14 +764,14 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">You were mentioned! 👋</h2>
+          <h2 className="font-display text-2xl text-center mb-4">You were mentioned</h2>
           <p className="mb-4">Hey @username,</p>
-          <div className="bg-[#2a2a2a] p-4 rounded-none mb-4">
+          <div className="border border-[#2a2a2a] p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-none bg-panel flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-sm">
                 J
               </div>
-              <span className="font-semibold">@johndoe</span>
+              <span className="font-sans font-medium">@johndoe</span>
               <span className="text-[#888]">mentioned you</span>
             </div>
             <p className="text-sm leading-relaxed">
@@ -807,26 +787,26 @@ function TemplatePreview({ templateId }: { templateId: string }) {
       return (
         <div className={baseStyles}>
           <Logo />
-          <h2 className="text-xl font-semibold text-center mb-4">Your Daily Digest 📬</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Your Daily Digest</h2>
           <p className="mb-4">Hey @username,</p>
           <p className="mb-4 leading-relaxed">Here&apos;s what you missed today:</p>
 
           <div className="space-y-3 mb-4">
-            <div className="bg-[#2a2a2a] p-3 rounded-none flex items-center gap-3">
+            <div className="border border-[#2a2a2a] p-3 flex items-center gap-3">
               <span className="text-lg">❤️</span>
               <div>
                 <p className="font-medium">3 new likes</p>
                 <p className="text-[#888] text-xs">on your posts</p>
               </div>
             </div>
-            <div className="bg-[#2a2a2a] p-3 rounded-none flex items-center gap-3">
+            <div className="border border-[#2a2a2a] p-3 flex items-center gap-3">
               <span className="text-lg">💬</span>
               <div>
                 <p className="font-medium">2 new comments</p>
                 <p className="text-[#888] text-xs">from @johndoe, @janedoe</p>
               </div>
             </div>
-            <div className="bg-[#2a2a2a] p-3 rounded-none flex items-center gap-3">
+            <div className="border border-[#2a2a2a] p-3 flex items-center gap-3">
               <span className="text-lg">👥</span>
               <div>
                 <p className="font-medium">1 new follower</p>
@@ -845,11 +825,11 @@ function TemplatePreview({ templateId }: { templateId: string }) {
         <div className={baseStyles}>
           <Logo />
           <div className="text-center mb-4">
-            <span className="inline-block bg-[#5B9A8B] text-white px-3 py-1 rounded-full text-xs font-bold">
+            <span className="inline-block text-[#5B9A8B] font-sans text-[11px] uppercase tracking-[0.2em]">
               ANNOUNCEMENT
             </span>
           </div>
-          <h2 className="text-xl font-semibold text-center mb-4">New Feature: Queue Scheduling!</h2>
+          <h2 className="font-display text-2xl text-center mb-4">New Feature: Queue Scheduling!</h2>
           <p className="mb-4">Hey @username,</p>
           <p className="mb-4 leading-relaxed">
             We&apos;re excited to announce a new feature that lets you schedule your posts in advance!
@@ -871,11 +851,11 @@ function TemplatePreview({ templateId }: { templateId: string }) {
         <div className={baseStyles}>
           <Logo />
           <div className="text-center mb-4">
-            <span className="inline-block bg-[#F59E0B] text-[#1a1a1a] px-3 py-1 rounded-full text-xs font-bold">
+            <span className="inline-block text-[#F59E0B] font-sans text-[11px] uppercase tracking-[0.2em]">
               A MESSAGE FROM THE FOUNDER
             </span>
           </div>
-          <h2 className="text-xl font-semibold text-center mb-4">Thank You for Being Here</h2>
+          <h2 className="font-display text-2xl text-center mb-4">Thank You for Being Here</h2>
           <p className="mb-4">Hey @username,</p>
           <p className="mb-4 leading-relaxed">
             I wanted to take a moment to personally thank you for being part of be.vocl.
@@ -885,11 +865,11 @@ function TemplatePreview({ templateId }: { templateId: string }) {
           </p>
           <div className="border-t border-[#2a2a2a] pt-4 mt-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-none bg-panel flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-12 h-12 bg-[#2a2a2a] flex items-center justify-center text-white font-display text-lg">
                 R
               </div>
               <div>
-                <p className="font-semibold">Richard</p>
+                <p className="font-sans font-medium">Richard</p>
                 <p className="text-[#888] text-xs">Founder, be.vocl</p>
               </div>
             </div>
@@ -982,55 +962,49 @@ function TagsTab() {
 
   return (
     <div className="max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="type-heading font-semibold text-foreground">User Tags</h3>
+      <div className="flex items-center justify-between border-b border-rule pb-3 mb-6">
+        <h3 className="type-heading text-ink">User Tags</h3>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors"
+          className="flex items-center gap-2 border border-foreground px-5 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs text-ink hover:bg-vocl-hover transition-colors"
         >
-          {showCreateForm ? <IconX size={18} /> : <IconPlus size={18} />}
+          {showCreateForm ? <IconX size={16} /> : <IconPlus size={16} />}
           {showCreateForm ? "Cancel" : "Create Tag"}
         </button>
       </div>
 
       {/* Create Form */}
       {showCreateForm && (
-        <div className="bg-panel rounded-none p-4 mb-6 space-y-4">
+        <div className="border border-rule p-4 mb-6 space-y-4">
           <div>
-            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-              Tag Name
-            </label>
+            <label className="slug text-meta-dim block mb-2">Tag Name</label>
             <input
               type="text"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               placeholder="e.g., beta-tester"
-              className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+              className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
             />
           </div>
           <div>
-            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-              Description (optional)
-            </label>
+            <label className="slug text-meta-dim block mb-2">Description (optional)</label>
             <input
               type="text"
               value={newTagDescription}
               onChange={(e) => setNewTagDescription(e.target.value)}
-              placeholder="Brief description..."
-              className="w-full px-4 py-2.5 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary"
+              placeholder="Brief description…"
+              className="w-full border border-rule bg-transparent px-4 py-2.5 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none"
             />
           </div>
           <div>
-            <label className="block type-meta font-semibold uppercase tracking-wide text-foreground/50 mb-2">
-              Color
-            </label>
-            <div className="flex gap-2 flex-wrap">
+            <label className="slug text-meta-dim block mb-2">Color</label>
+            <div className="flex gap-2.5 flex-wrap">
               {colors.map((color) => (
                 <button
                   key={color}
                   onClick={() => setNewTagColor(color)}
-                  className={`w-8 h-8 rounded-full transition-transform ${
-                    newTagColor === color ? "ring-2 ring-white scale-110" : ""
+                  className={`w-8 h-8 transition-shadow ${
+                    newTagColor === color ? "ring-2 ring-accent" : ""
                   }`}
                   style={{ backgroundColor: color }}
                 />
@@ -1040,12 +1014,12 @@ function TagsTab() {
           <button
             onClick={handleCreateTag}
             disabled={isCreating}
-            className="w-full py-2.5 rounded-none bg-vocl-primary text-white font-semibold hover:bg-vocl-primary-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2 bg-accent px-6 py-3 font-sans font-medium uppercase tracking-[0.16em] text-xs text-white hover:opacity-[0.88] transition-opacity disabled:opacity-50"
           >
             {isCreating ? (
-              <IconLoader2 size={18} className="animate-spin" />
+              <IconLoader2 size={16} className="animate-spin" />
             ) : (
-              <IconCheck size={18} />
+              <IconCheck size={16} />
             )}
             Create Tag
           </button>
@@ -1053,36 +1027,36 @@ function TagsTab() {
       )}
 
       {/* Tags List */}
-      <div className="space-y-2">
+      <div>
         {tags.length === 0 ? (
-          <p className="type-body text-foreground/60 text-center py-8">
+          <p className="editorial-body text-meta text-center py-8">
             No tags created yet. Create one to start grouping users.
           </p>
         ) : (
           tags.map((tag) => (
             <div
               key={tag.id}
-              className="flex items-center justify-between p-4 rounded-none bg-panel"
+              className="flex items-center justify-between border-b border-rule py-3.5"
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="w-4 h-4 rounded-full"
+                  className="w-4 h-4 flex-none"
                   style={{ backgroundColor: tag.color ?? undefined }}
                 />
                 <div>
-                  <p className="font-semibold text-foreground">{tag.name}</p>
+                  <p className="font-sans text-sm font-medium text-ink">{tag.name}</p>
                   {tag.description && (
-                    <p className="type-meta text-foreground/60">{tag.description}</p>
+                    <p className="editorial-caption text-meta not-italic">{tag.description}</p>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className="type-meta text-foreground/60">
+                <span className="byline text-meta">
                   {tag.userCount} users
                 </span>
                 <button
                   onClick={() => handleDeleteTag(tag.id, tag.name)}
-                  className="p-2 rounded-none text-foreground/60 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                  className="p-2 text-meta hover:text-vocl-like transition-colors"
                 >
                   <IconTrash size={18} />
                 </button>
@@ -1136,39 +1110,39 @@ function HistoryTab() {
 
   return (
     <div>
-      <h3 className="type-heading font-semibold text-foreground mb-6">Email History</h3>
+      <h3 className="type-heading text-ink border-b border-rule pb-3 mb-2">Email History</h3>
 
       {history.length === 0 ? (
-        <p className="type-body text-foreground/60 text-center py-12">
+        <p className="editorial-body text-meta text-center py-12">
           No emails sent yet
         </p>
       ) : (
-        <div className="space-y-2">
+        <div>
           {history.map((record) => (
             <div
               key={record.id}
-              className="flex items-center justify-between p-4 rounded-none bg-panel"
+              className="flex items-center justify-between border-b border-rule py-3.5"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground truncate">
+                <p className="font-sans text-sm font-medium text-ink truncate">
                   {record.subject}
                 </p>
-                <p className="type-meta text-foreground/60">
+                <p className="byline text-meta normal-case tracking-normal mt-0.5">
                   {record.templateType.replace("_", " ")} • {record.recipientCount} recipients
                   {record.sentBy && ` • sent by @${record.sentBy.username}`}
                 </p>
               </div>
               <div className="text-right shrink-0 ml-4">
-                <p className={`type-meta font-semibold ${
+                <p className={`byline ${
                   record.status === "completed"
-                    ? "text-green-400"
+                    ? "text-accent"
                     : record.status === "failed"
-                    ? "text-red-400"
-                    : "text-yellow-400"
+                    ? "text-vocl-like"
+                    : "text-meta"
                 }`}>
                   {record.status}
                 </p>
-                <p className="type-meta text-foreground/45">
+                <p className="slug text-meta-dim mt-1">
                   {formatDate(record.createdAt)}
                 </p>
               </div>

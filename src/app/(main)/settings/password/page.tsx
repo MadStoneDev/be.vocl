@@ -8,9 +8,7 @@ import {
   IconEye,
   IconEyeOff,
   IconLoader2,
-  IconCheck,
-  IconArrowLeft,
-} from "@tabler/icons-react";
+  IconCheck,} from "@tabler/icons-react";
 import Link from "next/link";
 import { toast, LoadingSpinner } from "@/components/ui";
 

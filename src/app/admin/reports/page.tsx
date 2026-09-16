@@ -31,7 +31,7 @@ function PostContentPreview({ post }: { post: NonNullable<ReportWithDetails["pos
     [];
 
   return (
-    <div className="rounded-none border border-rule bg-panel p-3 space-y-3 max-h-80 overflow-y-auto">
+    <div className="rounded-none border border-rule p-3 space-y-3 max-h-80 overflow-y-auto">
       {type === "text" && (c.html || c.plain) && (
         <div
           className="type-body text-foreground/90 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5"
@@ -145,14 +145,17 @@ export default function AdminReportsPage() {
   return (
     <div>
       <title>Admin — Reports | be.vocl</title>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="type-display text-2xl font-bold text-foreground">Reports</h1>
+      <div className="flex items-end justify-between gap-4 pt-8 pb-4.5">
+        <div>
+          <div className="kicker kicker-accent mb-2.5">Moderation</div>
+          <h1 className="type-display text-ink">Reports</h1>
+        </div>
 
         {/* Status Filter */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 rounded-none bg-panel border border-rule text-foreground focus:outline-none focus:border-vocl-primary"
+          className="border-b border-rule bg-transparent pb-1.5 font-sans text-[11px] uppercase tracking-[0.16em] text-ink-secondary focus:border-foreground focus:outline-none"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -167,24 +170,22 @@ export default function AdminReportsPage() {
           <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : reports.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-foreground/50">No reports found</p>
-        </div>
+        <p className="editorial-body text-meta py-16 text-center">No reports on the desk.</p>
       ) : (
-        <div className="space-y-4">
+        <div>
           {reports.map((report) => (
             <div
               key={report.id}
-              className="bg-panel rounded-none p-5 border border-rule"
+              className="border-b border-rule py-5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
+                    <span className={`slug ${
                       report.source === "auto_moderation"
-                        ? "bg-amber-500/20 text-amber-500"
-                        : "bg-vocl-primary/20 text-accent"
+                        ? "text-amber-500"
+                        : "text-accent"
                     }`}>
                       {report.source === "auto_moderation" ? (
                         <span className="flex items-center gap-1">
@@ -195,32 +196,32 @@ export default function AdminReportsPage() {
                         "User Report"
                       )}
                     </span>
-                    <span className="type-meta text-foreground/50">
+                    <span className="slug text-meta-dim">
                       {formatDate(report.createdAt)}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full type-meta font-semibold ${
+                    <span className={`slug ${
                       report.status === "pending"
-                        ? "bg-amber-500/20 text-amber-500"
+                        ? "text-amber-500"
                         : report.status === "reviewing"
-                        ? "bg-blue-500/20 text-blue-500"
+                        ? "text-blue-500"
                         : report.status.startsWith("resolved")
-                        ? "bg-green-500/20 text-green-500"
-                        : "bg-vocl-hover text-foreground/50"
+                        ? "text-green-500"
+                        : "text-meta-dim"
                     }`}>
                       {report.status.replace("resolved_", "").replace("_", " ")}
                     </span>
                   </div>
 
                   {/* Subject */}
-                  <div className="font-semibold text-foreground mb-1">
+                  <h3 className="type-heading text-ink mb-1">
                     {SUBJECT_LABELS[report.subject] || report.subject}
-                  </div>
+                  </h3>
 
                   {/* Reported User */}
-                  <div className="flex items-center gap-2 type-body text-foreground/70 mb-2">
+                  <div className="flex items-center gap-2 byline text-meta mb-2">
                     <span>Reported:</span>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-none bg-panel overflow-hidden">
+                      <div className="w-5 h-5 overflow-hidden ph-image">
                         {report.reportedUser.avatarUrl ? (
                           <Image
                             src={report.reportedUser.avatarUrl}
@@ -235,13 +236,13 @@ export default function AdminReportsPage() {
                           </div>
                         )}
                       </div>
-                      <span className="font-semibold">@{report.reportedUser.username}</span>
+                      <span className="text-ink">@{report.reportedUser.username}</span>
                     </div>
                   </div>
 
                   {/* Comments */}
                   {report.comments && (
-                    <p className="type-body text-foreground/60 line-clamp-2">
+                    <p className="editorial-body text-meta line-clamp-2">
                       {report.comments}
                     </p>
                   )}
@@ -251,7 +252,7 @@ export default function AdminReportsPage() {
                 {report.status === "pending" && (
                   <button
                     onClick={() => setSelectedReport(report)}
-                    className="px-4 py-2 bg-vocl-primary text-white rounded-none type-meta font-semibold hover:bg-vocl-primary-hover transition-colors"
+                    className="flex-none font-sans text-[11px] uppercase tracking-[0.16em] text-ink hover:text-accent transition-colors"
                   >
                     Review
                   </button>
@@ -264,40 +265,41 @@ export default function AdminReportsPage() {
 
       {/* Review Modal */}
       {selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60"
             onClick={() => setSelectedReport(null)}
           />
-          <div className="relative w-full max-w-lg mx-4 bg-background border border-rule rounded-none shadow-2xl">
+          <div className="relative w-full max-w-lg bg-background border border-rule">
             <div className="p-6">
-              <h2 className="type-heading text-xl font-bold text-foreground mb-4">Review Report</h2>
+              <div className="kicker kicker-accent mb-2.5">Review · decision logged</div>
+              <h2 className="type-heading text-ink mb-4">Review Report</h2>
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="type-meta font-semibold text-foreground/50">Subject</label>
-                  <p className="text-foreground font-semibold">
+                  <label className="slug text-meta-dim">Subject</label>
+                  <p className="editorial-body text-ink">
                     {SUBJECT_LABELS[selectedReport.subject] || selectedReport.subject}
                   </p>
                 </div>
 
                 <div>
-                  <label className="type-meta font-semibold text-foreground/50">Reported User</label>
-                  <p className="text-foreground font-semibold">
+                  <label className="slug text-meta-dim">Reported User</label>
+                  <p className="editorial-body text-ink">
                     @{selectedReport.reportedUser.username}
                   </p>
                 </div>
 
                 {selectedReport.comments && (
                   <div>
-                    <label className="type-meta font-semibold text-foreground/50">Details</label>
-                    <p className="text-foreground">{selectedReport.comments}</p>
+                    <label className="slug text-meta-dim">Details</label>
+                    <p className="editorial-body text-ink">{selectedReport.comments}</p>
                   </div>
                 )}
 
                 {selectedReport.post && (
                   <div>
-                    <label className="type-meta font-semibold text-foreground/50 block mb-2">
+                    <label className="slug text-meta-dim block mb-2">
                       Reported content
                     </label>
                     <PostContentPreview post={selectedReport.post} />
@@ -305,7 +307,7 @@ export default function AdminReportsPage() {
                 )}
 
                 <div>
-                  <label className="type-meta font-semibold text-foreground/50 block mb-2">
+                  <label className="slug text-meta-dim block mb-2">
                     Resolution Notes
                   </label>
                   <textarea
@@ -313,7 +315,7 @@ export default function AdminReportsPage() {
                     onChange={(e) => setResolutionNotes(e.target.value)}
                     placeholder="Add notes about this decision..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-none bg-panel border border-rule text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-vocl-primary resize-none"
+                    className="w-full border border-rule bg-transparent p-3 font-serif text-[15px] text-ink placeholder:text-meta-dim focus:border-foreground focus:outline-none resize-none"
                   />
                 </div>
               </div>
@@ -322,7 +324,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_approved")}
                   disabled={resolving}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-3 bg-green-600 text-white rounded-none type-meta font-semibold hover:bg-green-600/90 disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 border border-rule px-4 py-2.5 mb-3 font-sans font-medium uppercase tracking-[0.16em] text-xs text-green-600 hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Approve &amp; publish post
@@ -333,7 +335,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_ban")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-like text-white rounded-none type-meta font-semibold hover:bg-vocl-like/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 border border-rule px-4 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs text-vocl-like hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <IconX size={18} />
                   Ban User
@@ -341,7 +343,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_restrict")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-none type-meta font-semibold hover:bg-amber-500/90 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 border border-rule px-4 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs text-amber-500 hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <IconAlertTriangle size={18} />
                   Restrict
@@ -349,7 +351,7 @@ export default function AdminReportsPage() {
                 <button
                   onClick={() => handleResolve("resolved_dismissed")}
                   disabled={resolving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vocl-hover text-foreground rounded-none type-meta font-semibold hover:bg-white/20 disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 border border-rule px-4 py-2.5 font-sans font-medium uppercase tracking-[0.16em] text-xs text-ink hover:bg-vocl-hover transition-colors disabled:opacity-50"
                 >
                   <IconCheck size={18} />
                   Dismiss

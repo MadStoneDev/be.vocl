@@ -10,6 +10,11 @@ import {
   deleteMessage,
   markConversationAsRead,
   startConversation,
+  getMessageRequests,
+  acceptMessageRequest,
+  declineMessageRequest,
+  getSharedPostPreview,
+  type SharedPostPreview,
 } from "@/actions/messages";
 import { toggleMessageReaction } from "@/actions/message-reactions";
 
@@ -36,6 +41,8 @@ interface Conversation {
   lastMessage?: LastMessage;
   unreadCount: number;
   isMuted?: boolean;
+  isRequest?: boolean;
+  requestedByMe?: boolean;
 }
 
 interface MessageReaction {
@@ -64,15 +71,19 @@ interface Message {
   createdAt: string;
   reactions: MessageReaction[];
   replyTo?: ReplyContext;
+  sharedPost?: SharedPostPreview;
 }
 
 interface UseChatReturn {
   conversations: Conversation[];
+  requests: Conversation[];
   isLoading: boolean;
   error: string | null;
   totalUnread: number;
   refreshConversations: (opts?: { silent?: boolean }) => Promise<void>;
   startNewConversation: (participantId: string) => Promise<string | null>;
+  acceptRequest: (conversationId: string) => Promise<boolean>;
+  declineRequest: (conversationId: string) => Promise<boolean>;
 }
 
 interface UseMessagesReturn {
@@ -99,6 +110,7 @@ interface UseMessagesReturn {
  */
 export function useChat(currentUserId?: string): UseChatReturn {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [requests, setRequests] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,12 +121,19 @@ export function useChat(currentUserId?: string): UseChatReturn {
     setError(null);
 
     try {
-      const result = await getConversations();
+      // Inbox + pending requests in parallel.
+      const [result, reqResult] = await Promise.all([
+        getConversations(),
+        getMessageRequests(),
+      ]);
       if (result.success && result.conversations) {
         setConversations(result.conversations);
       } else {
         console.error("Get conversations error:", result.error);
         setError(result.error || "Failed to load conversations");
+      }
+      if (reqResult.success && reqResult.conversations) {
+        setRequests(reqResult.conversations);
       }
     } catch (err) {
       console.error("Get conversations exception:", err);
@@ -123,6 +142,24 @@ export function useChat(currentUserId?: string): UseChatReturn {
 
     if (!opts?.silent) setIsLoading(false);
   }, []);
+
+  const acceptRequest = useCallback(
+    async (conversationId: string): Promise<boolean> => {
+      const res = await acceptMessageRequest(conversationId);
+      if (res.success) await refreshConversations({ silent: true });
+      return res.success;
+    },
+    [refreshConversations]
+  );
+
+  const declineRequest = useCallback(
+    async (conversationId: string): Promise<boolean> => {
+      const res = await declineMessageRequest(conversationId);
+      if (res.success) await refreshConversations({ silent: true });
+      return res.success;
+    },
+    [refreshConversations]
+  );
 
   // Initial load
   useEffect(() => {
@@ -180,11 +217,14 @@ export function useChat(currentUserId?: string): UseChatReturn {
 
   return {
     conversations,
+    requests,
     isLoading,
     error,
     totalUnread,
     refreshConversations,
     startNewConversation,
+    acceptRequest,
+    declineRequest,
   };
 }
 
@@ -278,7 +318,21 @@ export function useMessages(
             createdAt: newMessage.created_at,
             reactions: [],
             replyTo: undefined,
+            sharedPost: undefined,
           };
+          // A shared post arrives as just an id on the realtime row — resolve its
+          // preview and patch the message once it lands.
+          if (newMessage.shared_post_id) {
+            getSharedPostPreview(newMessage.shared_post_id).then((res) => {
+              if (res.success && res.post) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === mapped.id ? { ...m, sharedPost: res.post } : m
+                  )
+                );
+              }
+            });
+          }
           // Dedup by id so realtime echoes / multi-tab inserts don't append twice.
           setMessages((prev) => {
             if (prev.some((m) => m.id === mapped.id)) return prev;

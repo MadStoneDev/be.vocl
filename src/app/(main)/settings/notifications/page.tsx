@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  IconArrowLeft,
-  IconLoader2,
+import {  IconLoader2,
   IconHeart,
   IconAt,
   IconMail,

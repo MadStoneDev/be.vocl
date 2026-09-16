@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   IconDots,
@@ -28,6 +29,17 @@ interface ReplyPreview {
   preview: string;
 }
 
+/** A post embedded in a message (resolved for display). */
+interface SharedPost {
+  id: string;
+  postType: string;
+  authorUsername: string;
+  authorAvatarUrl?: string;
+  excerpt: string;
+  thumbnailUrl?: string;
+  isSensitive: boolean;
+}
+
 interface MessageBubbleProps {
   id: string;
   content: string;
@@ -47,6 +59,8 @@ interface MessageBubbleProps {
   isLastInGroup?: boolean;
   reactions?: MessageReaction[];
   replyTo?: ReplyPreview;
+  /** A post shared into this message, if any. */
+  sharedPost?: SharedPost;
   currentUserId?: string;
   /** Pen name the viewer is writing under, shown on their own entries. */
   sendingAs?: string;
@@ -131,6 +145,7 @@ export function MessageBubble({
   senderName,
   reactions = [],
   replyTo,
+  sharedPost,
   sendingAs,
   onEdit,
   onDelete,
@@ -227,6 +242,31 @@ export function MessageBubble({
           </div>
         ) : (
           content && <p className={`font-serif text-[17px] leading-[1.7] ${bodyColor} ${bodyMax} whitespace-pre-wrap break-words`}>{content}</p>
+        )}
+
+        {/* Shared post — a flat clipping, not a card */}
+        {!isEditing && sharedPost && (
+          <Link
+            href={`/post/${sharedPost.id}`}
+            className={`mt-2.5 flex gap-3 border border-rule p-3 transition-colors hover:bg-vocl-hover ${bodyMax}`}
+          >
+            {sharedPost.thumbnailUrl && !sharedPost.isSensitive && (
+              <span className="relative h-16 w-16 flex-none overflow-hidden bg-panel">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sharedPost.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+              </span>
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="slug block text-meta-dim">
+                Shared post · @{sharedPost.authorUsername}
+              </span>
+              <span className="mt-1 block font-serif text-[15px] leading-[1.55] text-ink line-clamp-3">
+                {sharedPost.isSensitive
+                  ? "Sensitive post — open to view."
+                  : sharedPost.excerpt || `A ${sharedPost.postType} post`}
+              </span>
+            </span>
+          </Link>
         )}
 
         {/* Link previews */}

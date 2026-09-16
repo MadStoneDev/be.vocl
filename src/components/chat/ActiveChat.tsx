@@ -82,6 +82,16 @@ interface ReplyContext {
   preview: string;
 }
 
+interface SharedPost {
+  id: string;
+  postType: string;
+  authorUsername: string;
+  authorAvatarUrl?: string;
+  excerpt: string;
+  thumbnailUrl?: string;
+  isSensitive: boolean;
+}
+
 interface Message {
   id: string;
   content: string;
@@ -95,6 +105,7 @@ interface Message {
   createdAt: string;
   reactions: MessageReaction[];
   replyTo?: ReplyContext;
+  sharedPost?: SharedPost;
 }
 
 interface Participant {
@@ -113,6 +124,13 @@ interface ActiveChatProps {
   members?: Participant[];
   messages: Message[];
   currentUserId: string;
+  /** The viewer's display name, shown as "You · as …" on their own entries. */
+  myDisplayName?: string;
+  /** Pending incoming message request — shows an Accept / Decline banner. */
+  isRequest?: boolean;
+  requestedByMe?: boolean;
+  onAcceptRequest?: () => void;
+  onDeclineRequest?: () => void;
   isTyping: boolean;
   isLoading?: boolean;
   onBack: () => void;
@@ -141,6 +159,11 @@ export function ActiveChat({
   members,
   messages,
   currentUserId,
+  myDisplayName,
+  isRequest = false,
+  requestedByMe = false,
+  onAcceptRequest,
+  onDeclineRequest,
   isTyping,
   isLoading = false,
   onBack,
@@ -357,6 +380,10 @@ export function ActiveChat({
                         }
                       : undefined
                   }
+                  sharedPost={row.message.sharedPost}
+                  sendingAs={
+                    row.message.senderId === currentUserId ? myDisplayName : undefined
+                  }
                   currentUserId={currentUserId}
                   onEdit={onEditMessage}
                   onDelete={onDeleteMessage}
@@ -371,17 +398,51 @@ export function ActiveChat({
         )}
       </div>
 
-      {/* Input */}
-      <ChatInput
-        conversationId={conversationId}
-        onSend={handleSend}
-        onSendGif={onSendGif}
-        onSendVoice={handleVoice}
-        onTyping={onTyping}
-        placeholder={`Write to @${participant.username}…`}
-        replyingTo={replyingTo}
-        onCancelReply={() => setReplyingTo(null)}
-      />
+      {/* Incoming request: gate the input behind Accept / Decline. */}
+      {isRequest && !requestedByMe ? (
+        <div className="flex flex-col gap-3 rule-double-t px-5 md:px-10 py-4">
+          <p className="editorial-body text-meta">
+            <span className="text-ink">@{participant.username}</span> wants to start a
+            correspondence. Accept to reply, or decline to remove it.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onAcceptRequest}
+              className="bg-accent px-5 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-[0.88]"
+            >
+              Accept
+            </button>
+            <button
+              type="button"
+              onClick={onDeclineRequest}
+              className="border border-rule px-5 py-2.5 font-sans text-xs font-medium uppercase tracking-[0.16em] text-meta transition-colors hover:text-ink hover:bg-vocl-hover"
+            >
+              Decline
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {isRequest && requestedByMe && (
+            <div className="rule-double-t px-5 md:px-10 pt-3 pb-1">
+              <p className="slug text-meta-dim">
+                Request pending · they haven&apos;t accepted yet
+              </p>
+            </div>
+          )}
+          <ChatInput
+            conversationId={conversationId}
+            onSend={handleSend}
+            onSendGif={onSendGif}
+            onSendVoice={handleVoice}
+            onTyping={onTyping}
+            placeholder={`Write to @${participant.username}…`}
+            replyingTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
+          />
+        </>
+      )}
     </div>
     </MotionConfig>
   );

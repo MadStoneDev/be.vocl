@@ -51,9 +51,10 @@ export default function AdminAuditPage() {
   return (
     <div>
       <title>Admin — Audit Log | be.vocl</title>
-      <div className="mb-6">
-        <h1 className="type-display text-2xl font-bold text-foreground">Audit Log</h1>
-        <p className="type-body text-foreground/50 mt-1">
+      <div className="pt-8 pb-4.5">
+        <div className="kicker kicker-accent mb-2.5">The record</div>
+        <h1 className="type-display text-ink">Audit Log</h1>
+        <p className="editorial-deck text-body mt-2">
           Every moderation action, most recent first.
         </p>
       </div>
@@ -63,19 +64,19 @@ export default function AdminAuditPage() {
           <IconLoader2 size={32} className="animate-spin text-accent" />
         </div>
       ) : error ? (
-        <div className="text-center py-20 text-foreground/50">{error}</div>
+        <p className="editorial-body text-meta py-16 text-center">{error}</p>
       ) : logs.length === 0 ? (
-        <div className="text-center py-20 text-foreground/50">No actions recorded yet</div>
+        <p className="editorial-body text-meta py-16 text-center">No actions recorded yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-none border border-rule">
           <table className="w-full type-body">
             <thead>
-              <tr className="text-left text-foreground/50 border-b border-rule">
-                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">When</th>
-                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Moderator</th>
-                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Action</th>
-                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Target</th>
-                <th className="px-4 py-3 type-meta font-semibold uppercase tracking-wide">Details</th>
+              <tr className="text-left text-meta-dim border-b border-rule">
+                <th className="px-4 py-3 slug">When</th>
+                <th className="px-4 py-3 slug">Moderator</th>
+                <th className="px-4 py-3 slug">Action</th>
+                <th className="px-4 py-3 slug">Target</th>
+                <th className="px-4 py-3 slug">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -89,10 +90,10 @@ export default function AdminAuditPage() {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full type-meta font-semibold ${
+                      className={`slug ${
                         STRONG.has(log.action)
-                          ? "bg-vocl-like/15 text-vocl-like"
-                          : "bg-panel text-foreground/70"
+                          ? "text-vocl-like"
+                          : "text-ink-secondary"
                       }`}
                     >
                       {ACTION_LABELS[log.action] || log.action}

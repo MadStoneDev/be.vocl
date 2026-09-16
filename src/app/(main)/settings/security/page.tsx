@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
-  IconShieldLock,
-  IconArrowLeft,
-  IconCheck,
+  IconShieldLock,  IconCheck,
   IconLoader2,
   IconCopy,
   IconTrash,
