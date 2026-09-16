@@ -29,6 +29,9 @@ interface Conversation {
     isRead: boolean;
   };
   unreadCount: number;
+  isMuted?: boolean;
+  isRequest?: boolean;
+  requestedByMe?: boolean;
 }
 
 interface ConversationListProps {

@@ -65,10 +65,16 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
   // Use chat hook for conversations
   const {
     conversations: rawConversations,
+    requests,
     isLoading: conversationsLoading,
     error: conversationsError,
     refreshConversations,
+    acceptRequest,
+    declineRequest,
   } = useChat(currentUserId);
+
+  // Inbox vs the pending-requests column.
+  const [listMode, setListMode] = useState<"inbox" | "requests">("inbox");
 
   // Get participant IDs for online status check
   const participantIds = rawConversations.map((c) => c.participant.id);
@@ -186,14 +192,39 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     }
   }, [activeConversation, conversations]);
 
-  // Handle conversation selection
+  // Handle conversation selection (inbox or requests column).
   const handleSelectConversation = useCallback((conversationId: string) => {
-    const conversation = conversations.find((c) => c.id === conversationId);
+    const conversation =
+      conversations.find((c) => c.id === conversationId) ??
+      requests.find((c) => c.id === conversationId);
     if (conversation) {
       setActiveConversation(conversation);
       setView("chat");
     }
-  }, [conversations]);
+  }, [conversations, requests]);
+
+  // Accept / decline a pending request from the open thread.
+  const handleAcceptRequest = useCallback(async (conversationId: string) => {
+    const ok = await acceptRequest(conversationId);
+    if (ok) {
+      toast.success("Request accepted");
+      setListMode("inbox");
+    } else {
+      toast.error("Failed to accept request");
+    }
+  }, [acceptRequest]);
+
+  const handleDeclineRequest = useCallback(async (conversationId: string) => {
+    const ok = await declineRequest(conversationId);
+    if (ok) {
+      toast.success("Request declined");
+      setView("list");
+      setActiveConversation(null);
+      setListMode(requests.length > 1 ? "requests" : "inbox");
+    } else {
+      toast.error("Failed to decline request");
+    }
+  }, [declineRequest, requests.length]);
 
   // Open a just-created conversation as soon as the refreshed list contains it.
   useEffect(() => {
@@ -448,6 +479,7 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
     createdAt: m.createdAt,
     reactions: m.reactions,
     replyTo: m.replyTo,
+    sharedPost: m.sharedPost,
   }));
 
   // The conversation-list pane. Reused in both mobile (single-pane) and
@@ -477,8 +509,28 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
         </div>
       </div>
 
+      {/* Inbox / Requests columns — only once a request exists */}
+      {requests.length > 0 && (
+        <div className="flex items-center gap-6 border-b border-rule px-6 pt-3 pb-2 flex-shrink-0">
+          {(["inbox", "requests"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setListMode(mode)}
+              className={`slug pb-1 transition-colors ${
+                listMode === mode
+                  ? "border-b-2 border-accent text-ink"
+                  : "text-meta-dim hover:text-ink"
+              }`}
+            >
+              {mode === "inbox" ? "Inbox" : `Requests · ${requests.length}`}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Search — mono line on a rule */}
-      {conversations.length > 0 && (
+      {listMode === "inbox" && conversations.length > 0 && (
         <div className="px-6 pb-3 pt-3 border-b border-rule flex-shrink-0">
           <input
             type="text"
@@ -506,6 +558,20 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
               Try again
             </button>
           </div>
+        ) : listMode === "requests" ? (
+          <ConversationList
+            conversations={requests}
+            searchQuery=""
+            activeConversationId={activeConversation?.id}
+            currentUserId={currentUserId}
+            onSelect={handleSelectConversation}
+            onNewChat={handleNewChat}
+            onDeleteConversation={handleDeleteConversation}
+            onMarkAsRead={handleMarkAsRead}
+            onMuteNotifications={handleMuteNotifications}
+            onBlockUser={handleBlockUser}
+            onReportUser={handleReportUser}
+          />
         ) : (
           <>
             {searchQuery.trim().length >= 2 && visibleMessageResults.length > 0 && (
@@ -559,6 +625,15 @@ export function ChatSidebar({ isOpen, onClose, currentUserId, initialConversatio
       members={(activeConversation.participants as Participant[] | undefined) ?? []}
       messages={chatMessages}
       currentUserId={currentUserId || ""}
+      myDisplayName={
+        profile?.displayName && profile.displayName !== profile.username
+          ? profile.displayName
+          : undefined
+      }
+      isRequest={activeConversation.isRequest}
+      requestedByMe={activeConversation.requestedByMe}
+      onAcceptRequest={() => handleAcceptRequest(activeConversation.id)}
+      onDeclineRequest={() => handleDeclineRequest(activeConversation.id)}
       isTyping={isParticipantTyping}
       isLoading={messagesLoading}
       onLoadMore={loadMoreMessages}

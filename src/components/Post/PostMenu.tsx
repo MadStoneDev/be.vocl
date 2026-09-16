@@ -24,6 +24,7 @@ import {
   IconMessagePlus,
   IconCode,
 } from "@tabler/icons-react";
+import { SharePostModal } from "@/components/chat/SharePostModal";
 
 interface PostMenuProps {
   postId: string;
@@ -79,10 +80,14 @@ export function PostMenu({
 }: PostMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [showShareToChat, setShowShareToChat] = useState(false);
 
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // The share-to-chat modal renders on top of the menu; its clicks are
+      // "outside" the menu but must not dismiss it (that would unmount the modal).
+      if (showShareToChat) return;
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
@@ -95,14 +100,18 @@ export function PostMenu({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, showShareToChat]);
 
   // Close on escape key
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
+      if (event.key !== "Escape") return;
+      // Escape closes the share modal first, leaving the menu open.
+      if (showShareToChat) {
+        setShowShareToChat(false);
+        return;
       }
+      onClose();
     }
 
     if (isOpen) {
@@ -112,7 +121,7 @@ export function PostMenu({
     return () => {
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, showShareToChat]);
 
   const [embedCopied, setEmbedCopied] = useState(false);
 
@@ -229,6 +238,16 @@ export function PostMenu({
             <span>Share</span>
           </button>
         )}
+
+        {/* Send in a message */}
+        <button
+          onClick={() => setShowShareToChat(true)}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-vocl-hover-strong transition-colors"
+          role="menuitem"
+        >
+          <IconMessagePlus size={18} />
+          <span>Send in a message</span>
+        </button>
 
         {/* Bookmark */}
         <button
@@ -430,6 +449,16 @@ export function PostMenu({
           </>
         )}
       </div>
+
+      {/* Send-in-a-message picker — sits above the menu (z-[80]) */}
+      <SharePostModal
+        isOpen={showShareToChat}
+        onClose={() => {
+          setShowShareToChat(false);
+          onClose();
+        }}
+        postId={postId}
+      />
     </>,
     document.body
   );

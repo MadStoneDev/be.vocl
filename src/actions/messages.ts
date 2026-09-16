@@ -43,6 +43,19 @@ interface ReplyContext {
   preview: string;
 }
 
+/** Compact preview of a post embedded ("shared") in a message. */
+export interface SharedPostPreview {
+  id: string;
+  postType: string;
+  authorUsername: string;
+  authorAvatarUrl?: string;
+  /** Best-effort text snippet (plain body / caption / poll question). */
+  excerpt: string;
+  /** First image/thumbnail URL, when the post has one. */
+  thumbnailUrl?: string;
+  isSensitive: boolean;
+}
+
 interface Message {
   id: string;
   content: string;
@@ -60,6 +73,43 @@ interface Message {
   reactions: MessageReaction[];
   /** Context of the message this one replies to, if any. */
   replyTo?: ReplyContext;
+  /** A post embedded in this message, if any (resolved for display). */
+  sharedPost?: SharedPostPreview;
+}
+
+/** Strip HTML tags and collapse whitespace into a short plain-text snippet. */
+function toExcerpt(raw: string | null | undefined, max = 140): string {
+  if (!raw) return "";
+  const text = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+}
+
+/** Derive a compact preview from a post row (JSONB content varies by type). */
+function shapeSharedPost(
+  post: { id: string; post_type: string; content: any; is_sensitive: boolean | null },
+  author: { username: string; avatar_url: string | null } | undefined
+): SharedPostPreview {
+  const c = post.content ?? {};
+  const excerpt =
+    toExcerpt(c.plain) ||
+    toExcerpt(c.caption_html) ||
+    toExcerpt(c.question) ||
+    toExcerpt(c.html);
+  const thumbnailUrl: string | undefined =
+    (Array.isArray(c.urls) && c.urls[0]) ||
+    (Array.isArray(c.items) && c.items[0]?.url) ||
+    c.url ||
+    c.album_art_url ||
+    undefined;
+  return {
+    id: post.id,
+    postType: post.post_type,
+    authorUsername: author?.username ?? "someone",
+    authorAvatarUrl: author?.avatar_url ?? undefined,
+    excerpt,
+    thumbnailUrl,
+    isSensitive: Boolean(post.is_sensitive),
+  };
 }
 
 interface Conversation {
@@ -87,17 +137,25 @@ interface Conversation {
   unreadCount: number;
   /** Whether the current user has muted this conversation. */
   isMuted?: boolean;
+  /** A pending message request (DM from a non-follower, awaiting acceptance). */
+  isRequest?: boolean;
+  /** True when the CURRENT user is the one who opened the pending request. */
+  requestedByMe?: boolean;
 }
 
 /**
  * Get all conversations for current user
  * Optimized: Uses batch queries instead of N+1
  */
-export async function getConversations(): Promise<{
+export async function getConversations(opts?: {
+  /** When true, return ONLY incoming pending requests instead of the inbox. */
+  requestsOnly?: boolean;
+}): Promise<{
   success: boolean;
   conversations?: Conversation[];
   error?: string;
 }> {
+  const requestsOnly = opts?.requestsOnly ?? false;
   try {
     const supabase = await createClient();
     const {
@@ -162,14 +220,22 @@ export async function getConversations(): Promise<{
       }
     }
 
-    // Group metadata (is_group / name) for these conversations.
+    // Group metadata (is_group / name / request state) for these conversations.
     const { data: convRows } = await supabase
       .from("conversations")
-      .select("id, is_group, name")
+      .select("id, is_group, name, is_request, requested_by")
       .in("id", conversationIds);
-    const convMetaMap = new Map<string, { is_group: boolean; name: string | null }>();
+    const convMetaMap = new Map<
+      string,
+      { is_group: boolean; name: string | null; is_request: boolean; requested_by: string | null }
+    >();
     for (const c of convRows ?? []) {
-      convMetaMap.set(c.id, { is_group: c.is_group, name: c.name });
+      convMetaMap.set(c.id, {
+        is_group: c.is_group,
+        name: c.name,
+        is_request: c.is_request ?? false,
+        requested_by: c.requested_by ?? null,
+      });
     }
 
     const lastMessageMap = new Map<string, any>();
@@ -244,6 +310,14 @@ export async function getConversations(): Promise<{
       // even if it momentarily has no other members.
       if (others.length === 0 && !isGroup) continue;
 
+      // Request routing: an incoming request (someone else opened it) shows only
+      // in the Requests inbox; everything else (my own outgoing requests included)
+      // shows in the normal inbox.
+      const isRequest = Boolean(meta?.is_request && meta?.requested_by);
+      const requestedByMe = isRequest && meta?.requested_by === user.id;
+      const isIncomingRequest = isRequest && !requestedByMe;
+      if (requestsOnly ? !isIncomingRequest : isIncomingRequest) continue;
+
       const primary = others[0];
       const lastMessage = lastMessageMap.get(part.conversation_id);
       const lastReadAt = part.last_read_at;
@@ -275,6 +349,8 @@ export async function getConversations(): Promise<{
           : undefined,
         unreadCount: unreadCountMap.get(part.conversation_id) || 0,
         isMuted: part.is_muted ?? false,
+        isRequest,
+        requestedByMe,
       });
     }
 
@@ -292,6 +368,149 @@ export async function getConversations(): Promise<{
     return { success: true, conversations };
   } catch (error) {
     console.error("Get conversations error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Resolve a single shared-post preview (used by the realtime path so a live-
+ * received shared post shows its card without a full reload).
+ */
+export async function getSharedPostPreview(
+  postId: string
+): Promise<{ success: boolean; post?: SharedPostPreview }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false };
+
+    const { data: post } = await supabase
+      .from("posts")
+      .select("id, author_id, post_type, content, is_sensitive")
+      .eq("id", postId)
+      .maybeSingle();
+    if (!post) return { success: false };
+
+    const { data: author } = await supabase
+      .from("profiles")
+      .select("username, avatar_url")
+      .eq("id", post.author_id)
+      .maybeSingle();
+
+    return { success: true, post: shapeSharedPost(post, author ?? undefined) };
+  } catch (error) {
+    console.error("Get shared post preview error:", error);
+    return { success: false };
+  }
+}
+
+/**
+ * Incoming message requests: DMs opened by someone the current user does not
+ * follow, awaiting acceptance. Thin wrapper over getConversations.
+ */
+export async function getMessageRequests(): Promise<{
+  success: boolean;
+  conversations?: Conversation[];
+  error?: string;
+}> {
+  return getConversations({ requestsOnly: true });
+}
+
+/**
+ * Accept a pending message request — moves the conversation into the normal
+ * inbox for both people. Only the recipient (not the initiator) can accept.
+ */
+export async function acceptMessageRequest(
+  conversationId: string
+): Promise<MessageResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    // Must be a participant, the conversation must be a pending request, and the
+    // caller must NOT be the one who opened it.
+    const { data: isParticipant } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .eq("conversation_id", conversationId)
+      .eq("profile_id", user.id)
+      .maybeSingle();
+    if (!isParticipant) return { success: false, error: "Access denied" };
+
+    const { data: conv } = await supabase
+      .from("conversations")
+      .select("is_request, requested_by")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (!conv?.is_request) return { success: true, conversationId }; // already accepted
+    if (conv.requested_by === user.id) {
+      return { success: false, error: "You opened this request." };
+    }
+
+    // Clear the request flag with the admin client (no members-can-update policy
+    // on conversations; startConversation already relies on admin for writes).
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("conversations")
+      .update({ is_request: false, requested_by: null })
+      .eq("id", conversationId);
+    if (error) return { success: false, error: "Failed to accept request" };
+
+    revalidatePath("/");
+    return { success: true, conversationId };
+  } catch (error) {
+    console.error("Accept request error:", error);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Decline a pending message request — deletes the conversation (cascades its
+ * participants and messages). Only the recipient can decline.
+ */
+export async function declineMessageRequest(
+  conversationId: string
+): Promise<MessageResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const { data: isParticipant } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .eq("conversation_id", conversationId)
+      .eq("profile_id", user.id)
+      .maybeSingle();
+    if (!isParticipant) return { success: false, error: "Access denied" };
+
+    const { data: conv } = await supabase
+      .from("conversations")
+      .select("is_request, requested_by")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (!conv?.is_request || conv.requested_by === user.id) {
+      return { success: false, error: "Nothing to decline." };
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId);
+    if (error) return { success: false, error: "Failed to decline request" };
+
+    revalidatePath("/");
+    return { success: true, conversationId };
+  } catch (error) {
+    console.error("Decline request error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
 }
@@ -435,6 +654,33 @@ export async function getMessages(
       }
     }
 
+    // --- Shared posts: resolve embedded posts (+ authors) in two queries. ---
+    const sharedPostMap = new Map<string, SharedPostPreview>();
+    const sharedPostIds = Array.from(
+      new Set(rows.map((m) => m.shared_post_id).filter(Boolean))
+    );
+    if (sharedPostIds.length > 0) {
+      const { data: postRows } = await supabase
+        .from("posts")
+        .select("id, author_id, post_type, content, is_sensitive")
+        .in("id", sharedPostIds);
+      const authorIds = Array.from(
+        new Set((postRows || []).map((p: any) => p.author_id))
+      );
+      const authorMap = new Map<string, { username: string; avatar_url: string | null }>();
+      if (authorIds.length > 0) {
+        const { data: authors } = await supabase
+          .from("profiles")
+          .select("id, username, avatar_url")
+          .in("id", authorIds);
+        for (const a of authors || [])
+          authorMap.set(a.id, { username: a.username, avatar_url: a.avatar_url });
+      }
+      for (const p of postRows || []) {
+        sharedPostMap.set(p.id, shapeSharedPost(p, authorMap.get(p.author_id)));
+      }
+    }
+
     // The other participant's read cursor drives "seen" receipts on OUR sent
     // messages (a real receipt, not a blanket true).
     const { data: otherReaders } = await supabase
@@ -466,6 +712,7 @@ export async function getMessages(
       createdAt: msg.created_at,
       reactions: reactionMap.get(msg.id) || [],
       replyTo: msg.reply_to_id ? replyMap.get(msg.reply_to_id) : undefined,
+      sharedPost: msg.shared_post_id ? sharedPostMap.get(msg.shared_post_id) : undefined,
     }));
 
     return { success: true, messages };
@@ -484,7 +731,8 @@ export async function sendMessage(
   mediaUrl?: string,
   mediaType?: string,
   mediaDuration?: number,
-  replyToId?: string
+  replyToId?: string,
+  sharedPostId?: string
 ): Promise<MessageResult> {
   try {
     const supabase = await createClient();
@@ -563,6 +811,7 @@ export async function sendMessage(
         media_type: mediaType || null,
         media_duration: mediaDuration ?? null,
         reply_to_id: replyToId || null,
+        shared_post_id: sharedPostId || null,
       })
       .select("id")
       .single();
@@ -600,6 +849,55 @@ export async function sendMessage(
     console.error("Send message error:", error);
     return { success: false, error: "An unexpected error occurred" };
   }
+}
+
+/**
+ * Share a post into a DM with `recipientId`, reusing or creating the
+ * conversation, optionally with a short note. Returns the conversation id so the
+ * client can open it. Honours blocks + DM-privacy (via startConversation) and
+ * routes to the recipient's requests inbox when they don't follow the sender.
+ */
+export async function sharePostToUser(
+  recipientId: string,
+  postId: string,
+  note?: string
+): Promise<MessageResult> {
+  const convo = await startConversation(recipientId);
+  if (!convo.success || !convo.conversationId) return convo;
+  const sent = await sendMessage(
+    convo.conversationId,
+    note?.trim() || "",
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    postId
+  );
+  if (!sent.success) return sent;
+  return {
+    success: true,
+    conversationId: convo.conversationId,
+    messageId: sent.messageId,
+  };
+}
+
+/**
+ * Share a post into an existing conversation (thin wrapper over sendMessage).
+ */
+export async function sharePostToConversation(
+  conversationId: string,
+  postId: string,
+  note?: string
+): Promise<MessageResult> {
+  return sendMessage(
+    conversationId,
+    note?.trim() || "",
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    postId
+  );
 }
 
 /**
@@ -701,13 +999,32 @@ export async function startConversation(
       }
     }
 
+    // Message request routing: under the permissive "everyone" setting, a DM from
+    // someone the recipient does NOT follow lands as a pending request rather than
+    // straight in their inbox. ("following"/"none" are already hard-gated above, so
+    // any conversation that reaches here under those settings is a real one.)
+    let isRequest = false;
+    if (dmPrivacy === "everyone") {
+      const { data: recipFollowsSender } = await supabase
+        .from("follows")
+        .select("follower_id")
+        .eq("follower_id", participantId)
+        .eq("following_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      isRequest = !recipFollowsSender;
+    }
+
     // Create new conversation and add both participants using admin client
     // (RLS only allows inserting conversation_participants for your own profile_id)
     const admin = createAdminClient();
 
     const { data: conversation, error: convError } = await admin
       .from("conversations")
-      .insert({})
+      .insert({
+        is_request: isRequest,
+        requested_by: isRequest ? user.id : null,
+      })
       .select("id")
       .single();
 
