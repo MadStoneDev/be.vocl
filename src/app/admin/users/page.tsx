@@ -32,11 +32,14 @@ function SquareAvatar({ src, username, size = 36 }: { src?: string | null; usern
 export default function AdminUsersPage() {
   const searchParams = useSearchParams();
   const initialStatus = searchParams.get("status") || "all";
+  // Deep link from the moderation queue ("Open dossier →") pre-fills the search
+  // with the reported user so their row is front and centre.
+  const initialSearch = searchParams.get("u") || "";
 
   const [users, setUsers] = useState<UserWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   // Row click opens the full dossier modal (all member actions live inside it).
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 

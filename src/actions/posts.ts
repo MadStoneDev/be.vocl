@@ -321,8 +321,14 @@ async function handleTags(supabase: any, postId: string, tagNames: string[]) {
 
   if (normalizedTags.length === 0) return;
 
-  // Batch fetch: Get all existing tags case-insensitively
-  const orFilter = normalizedTags.map(name => `name.ilike.${name}`).join(",");
+  // Batch fetch: Get all existing tags case-insensitively. Sanitize each name —
+  // it's interpolated into a PostgREST .or() filter, so reserved chars (commas,
+  // parens, operators) must be stripped to avoid filter injection.
+  const orFilter = normalizedTags
+    .map(name => `name.ilike.${sanitizeIlikeTerm(name)}`)
+    .filter(clause => clause !== "name.ilike.")
+    .join(",");
+  if (orFilter.length === 0) return;
   const { data: existingTags } = await supabase
     .from("tags")
     .select("id, name")

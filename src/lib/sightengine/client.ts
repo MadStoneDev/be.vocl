@@ -409,7 +409,21 @@ export async function moderateContent(
   const client = getSightEngineClient();
 
   if (!client) {
-    // No moderation configured - allow all (NOT a hold: keys simply aren't set).
+    // No moderation configured. In production this must FAIL CLOSED — a missing
+    // or forgotten API key must not silently let unscreened media onto a 21+
+    // platform. Hold the content for manual review instead of auto-publishing.
+    // Outside production (local dev / tests) allow, so work isn't blocked.
+    if (process.env.NODE_ENV === 'production') {
+      return {
+        safe: false,
+        flagged: false,
+        hold: true,
+        errored: true,
+        confidence: 0,
+        suggestSensitive: false,
+        reason: 'Moderation unavailable — held for manual review',
+      };
+    }
     return {
       safe: true,
       flagged: false,
@@ -417,7 +431,7 @@ export async function moderateContent(
       errored: false,
       confidence: 0,
       suggestSensitive: false,
-      reason: 'Moderation not configured',
+      reason: 'Moderation not configured (non-production)',
     };
   }
 
