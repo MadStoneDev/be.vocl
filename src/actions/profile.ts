@@ -382,8 +382,14 @@ export async function setDateOfBirth(
       return { success: false, error: "Please enter a valid date." };
     }
     const age = ageFromDob(dob);
-    if (age === null || age < 13 || age > 120) {
+    if (age === null || age > 120) {
       return { success: false, error: "Please enter a valid date of birth." };
+    }
+    if (age < SENSITIVE_MIN_AGE) {
+      return {
+        success: false,
+        error: `You must be ${SENSITIVE_MIN_AGE} or older to use be.vocl.`,
+      };
     }
 
     // Immutable once set.

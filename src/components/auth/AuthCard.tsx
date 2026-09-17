@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { validateUsernameFormat } from "@/lib/validation";
 import { checkUsernameAvailability } from "@/actions/profile";
 import { validateInviteCode } from "@/actions/invites";
+import { ageFromDob, isAtLeast, SENSITIVE_MIN_AGE } from "@/lib/age";
 
 type AuthMode = "login" | "signup" | "forgot";
 
@@ -98,6 +99,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [dob, setDob] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -241,6 +243,16 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
             setError(availabilityResult.error || "Username is not available");
             return;
           }
+          // 21+ age gate (self-attested). Blocked here for UX; the handle_new_user
+          // trigger is the server-side backstop that also aborts under-21 signups.
+          if (!dob) {
+            setError("Enter your date of birth to confirm you're 21 or older.");
+            return;
+          }
+          if (!isAtLeast(dob, SENSITIVE_MIN_AGE)) {
+            setError(`You must be ${SENSITIVE_MIN_AGE} or older to join be.vocl.`);
+            return;
+          }
           const { error: signUpError } = await supabase.auth.signUp({
             email,
             password,
@@ -250,6 +262,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                 username: username.toLowerCase().trim(),
                 display_name: username,
                 invite_code: formattedCode,
+                date_of_birth: dob,
               },
             },
           });
@@ -442,7 +455,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                   Redeem &amp; join
                 </button>
                 <p className="editorial-caption mt-4 text-meta">
-                  You&apos;ll confirm you&apos;re 21 or older on the next page. We ask once, and we don&apos;t keep the document.
+                  You&apos;ll confirm you&apos;re 21 or older when you join. We ask once, and it stays private.
                 </p>
               </div>
             </>
@@ -505,8 +518,35 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                   disabled={isPending}
                   autoComplete="new-password"
                 />
+                <Field
+                  label="Date of birth"
+                  value={dob}
+                  onChange={setDob}
+                  type="date"
+                  disabled={isPending}
+                  autoComplete="bday"
+                  hint={
+                    dob && ageFromDob(dob) !== null && !isAtLeast(dob, SENSITIVE_MIN_AGE) ? (
+                      <p className="editorial-caption mt-2 text-accent">
+                        You must be {SENSITIVE_MIN_AGE} or older to join be.vocl.
+                      </p>
+                    ) : dob && isAtLeast(dob, SENSITIVE_MIN_AGE) ? (
+                      <p className="editorial-caption mt-2 text-meta not-italic">
+                        Thanks — that confirms you&apos;re {SENSITIVE_MIN_AGE}+.
+                      </p>
+                    ) : (
+                      <p className="editorial-caption mt-2 text-meta">
+                        be.vocl is {SENSITIVE_MIN_AGE}+. We record this once; it can&apos;t be changed later.
+                      </p>
+                    )
+                  }
+                />
                 {feedback}
-                <button type="submit" disabled={isPending} className={`mt-7 ${accentBtn}`}>
+                <button
+                  type="submit"
+                  disabled={isPending || !isAtLeast(dob, SENSITIVE_MIN_AGE)}
+                  className={`mt-7 ${accentBtn}`}
+                >
                   {isPending ? "Creating account…" : "Redeem & join"}
                 </button>
               </form>
@@ -514,7 +554,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                 ← Already a member? Sign in
               </button>
               <p className="editorial-caption mt-6 text-meta">
-                You&apos;ll confirm you&apos;re 21 or older on the next page. By joining you agree to the{" "}
+                We record your date of birth once to confirm you&apos;re {SENSITIVE_MIN_AGE}+; it isn&apos;t shown on your profile. By joining you agree to the{" "}
                 <a href="/terms" className="text-ink hover:text-accent transition-colors">Terms</a> and{" "}
                 <a href="/privacy" className="text-ink hover:text-accent transition-colors">Privacy Policy</a>.
               </p>
