@@ -37,11 +37,14 @@ function SquareAvatar({ src, username, size = 36 }: { src?: string | null; usern
 export default function AdminUsersPage() {
   const searchParams = useSearchParams();
   const initialStatus = searchParams.get("status") || "all";
+  // Deep link from the moderation queue ("Open dossier →") pre-fills the search
+  // with the reported user so their row is front and centre.
+  const initialSearch = searchParams.get("u") || "";
 
   const [users, setUsers] = useState<UserWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedUser, setSelectedUser] = useState<UserWithDetails | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [banReason, setBanReason] = useState("");
