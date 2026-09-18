@@ -532,6 +532,15 @@ async function notifyStaffOfFlag(
   try {
     const supabase = await createClient();
 
+    // The flagged post — carried on the notification so it opens the FLAG queue
+    // (/admin/flags) rather than the user-report queue. A moderation alert with a
+    // post_id is a post-flag; one without is a user report (see NotificationItem).
+    const { data: flagRow } = await supabase
+      .from("flags")
+      .select("post_id")
+      .eq("id", flagId)
+      .maybeSingle();
+
     // Get staff at or above the role level
     const { data: staff } = await supabase
       .from("profiles")
@@ -544,6 +553,7 @@ async function notifyStaffOfFlag(
     const notifications: TablesInsert<"notifications">[] = staff.map((s: any) => ({
       recipient_id: s.id,
       notification_type: "moderation",
+      post_id: flagRow?.post_id ?? null,
       is_read: false,
     }));
 

@@ -298,10 +298,16 @@ export function NotificationItem({
     );
   }
 
-  // Moderation + appeal alerts open the relevant admin queue.
+  // Moderation alerts open the relevant admin queue: a post-flag carries the
+  // flagged post (post_id) and opens the flag queue; a user report has no post
+  // and opens the reports queue.
   if (type === "moderation") {
     return (
-      <Link href="/admin/reports" onClick={handleClick} className={baseClassName}>
+      <Link
+        href={postId ? "/admin/flags" : "/admin/reports"}
+        onClick={handleClick}
+        className={baseClassName}
+      >
         {innerContent}
       </Link>
     );

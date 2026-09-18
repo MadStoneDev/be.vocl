@@ -222,11 +222,13 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         .gte("role", 10);
 
       if (admins && admins.length > 0) {
+        // No post_id: this is a held-content REPORT (reports queue). The
+        // notification's post_id is what routes moderation alerts to the FLAG
+        // queue, so leaving it off keeps this one pointed at /admin/reports.
         const notifications = admins.map((admin): TablesInsert<"notifications"> => ({
           recipient_id: admin.id,
           actor_id: user.id,
           notification_type: "moderation",
-          post_id: post.id,
           is_read: false,
         }));
         await supabase.from("notifications").insert(notifications);
