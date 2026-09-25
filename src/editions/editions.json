@@ -1,0 +1,1854 @@
+{
+  "version": 1,
+  "defaultEdition": "late-edition",
+  "editions": [
+    {
+      "id": "late-edition",
+      "designRef": "1a",
+      "name": "Late Edition",
+      "group": "house",
+      "audience": "Default · dark",
+      "tier": "free",
+      "order": 0,
+      "colors": {
+        "paper": "#121212",
+        "ink": "#ECE7DF",
+        "body": "#C6BEB4",
+        "meta": "#8C8680",
+        "rule": "#2A2724",
+        "accent": "#D10F50",
+        "accentText": "#E0336B",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#1b1b1b",
+        "placeholderStripeB": "#161616"
+      },
+      "fonts": {
+        "nameplate": "Gloock, serif",
+        "headline": "Gloock, serif",
+        "body": "'Source Serif 4', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 48,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #2A2724",
+        "sectionBreak": "3px double #2A2724",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Est. 2026 · Late edition",
+      "description": "The house default. Evening broadsheet — warm ink on near-black, one red mark per view.",
+      "fontsSummary": "Gloock · Source Serif 4 · Plex Sans"
+    },
+    {
+      "id": "newsprint",
+      "designRef": "1b",
+      "name": "Newsprint",
+      "group": "house",
+      "audience": "Default · light",
+      "tier": "free",
+      "order": 1,
+      "colors": {
+        "paper": "#F3EFE7",
+        "ink": "#14120F",
+        "body": "#3E3934",
+        "meta": "#6A645C",
+        "rule": "#CFC7B8",
+        "accent": "#D10F50",
+        "accentText": "#C00C48",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#E4DED2",
+        "placeholderStripeB": "#EFEAE0"
+      },
+      "fonts": {
+        "nameplate": "Gloock, serif",
+        "headline": "Gloock, serif",
+        "body": "'Source Serif 4', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 48,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #CFC7B8",
+        "sectionBreak": "3px double #CFC7B8",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Est. 2026 · Morning edition",
+      "description": "Same paper, morning printing. Grain keeps it from reading as generic light mode.",
+      "fontsSummary": "Gloock · Source Serif 4 · Plex Sans"
+    },
+    {
+      "id": "sunday-supplement",
+      "designRef": "1c",
+      "name": "Sunday Supplement",
+      "group": "house",
+      "audience": "Long-form · essays",
+      "tier": "free",
+      "order": 2,
+      "colors": {
+        "paper": "#EFE8DA",
+        "ink": "#1B1A16",
+        "body": "#3D3A33",
+        "meta": "#6B665B",
+        "rule": "#CEC4B0",
+        "accent": "#1F5A3F",
+        "accentText": "#1F5A3F",
+        "onAccent": "#F4EFE4",
+        "placeholderStripeA": "#E0D8C6",
+        "placeholderStripeB": "#E8E1D2"
+      },
+      "fonts": {
+        "nameplate": "Gloock, serif",
+        "headline": "Gloock, serif",
+        "body": "Newsreader, serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 52,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #CEC4B0",
+        "sectionBreak": "3px double #CEC4B0",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "The Sunday magazine",
+      "description": "Slower, roomier, green ink. For people who write 3,000 words and want them to feel like a magazine feature.",
+      "fontsSummary": "Gloock · Newsreader · Plex Sans"
+    },
+    {
+      "id": "clear-print",
+      "designRef": "1d",
+      "name": "Clear Print",
+      "group": "house",
+      "audience": "Accessibility",
+      "tier": "free",
+      "order": 3,
+      "colors": {
+        "paper": "#000000",
+        "ink": "#FFFFFF",
+        "body": "#F2F2F2",
+        "meta": "#CFCFCF",
+        "rule": "#5A5A5A",
+        "accent": "#FFD400",
+        "accentText": "#FFD400",
+        "onAccent": "#000",
+        "placeholderStripeA": "#1a1a1a",
+        "placeholderStripeB": "#0d0d0d"
+      },
+      "fonts": {
+        "nameplate": "'Atkinson Hyperlegible', sans-serif",
+        "headline": "'Atkinson Hyperlegible', sans-serif",
+        "body": "'Atkinson Hyperlegible', sans-serif",
+        "ui": "'Atkinson Hyperlegible', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 44,
+        "nameplateWeight": 700,
+        "headlineWeight": 700,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1.08,
+        "bodyItalicAllowed": false,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #5A5A5A",
+        "sectionBreak": "2px solid #FFFFFF",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Large print edition",
+      "description": "Reading edition first. Hyperlegible type, no italics, bigger body, 7:1 contrast. Always available, never a premium unlock.",
+      "fontsSummary": "Atkinson Hyperlegible throughout"
+    },
+    {
+      "id": "penny-dreadful",
+      "designRef": "1e",
+      "name": "Penny Dreadful",
+      "group": "genre",
+      "audience": "Horror · gothic",
+      "tier": "plus",
+      "order": 4,
+      "colors": {
+        "paper": "#0D0B0A",
+        "ink": "#E6DDD0",
+        "body": "#BFB3A3",
+        "meta": "#857A6D",
+        "rule": "#2E2622",
+        "accent": "#8E1B1B",
+        "accentText": "#CF4A3F",
+        "onAccent": "#F1E6DA",
+        "placeholderStripeA": "#18130F",
+        "placeholderStripeB": "#100D0B"
+      },
+      "fonts": {
+        "nameplate": "'UnifrakturMaguntia', serif",
+        "headline": "'EB Garamond', serif",
+        "body": "'EB Garamond', serif",
+        "ui": "'EB Garamond', serif"
+      },
+      "type": {
+        "nameplateSizePx": 52,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "none",
+        "uiTracking": "0.04em",
+        "uiScale": 1.25
+      },
+      "rules": {
+        "hairline": "1px solid #2E2622",
+        "sectionBreak": "3px double #2E2622",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Printed after midnight",
+      "description": "Blackletter nameplate only; everything else is Garamond so it stays readable. Oxblood fills, candlelit ink.",
+      "fontsSummary": "Unifraktur · EB Garamond"
+    },
+    {
+      "id": "pulp",
+      "designRef": "1f",
+      "name": "Pulp",
+      "group": "genre",
+      "audience": "Crime · noir · thrillers",
+      "tier": "plus",
+      "order": 5,
+      "colors": {
+        "paper": "#E9DCB9",
+        "ink": "#16120C",
+        "body": "#3A3122",
+        "meta": "#6B5D44",
+        "rule": "#BFAE86",
+        "accent": "#B3202A",
+        "accentText": "#A31C25",
+        "onAccent": "#F4EAD0",
+        "placeholderStripeA": "#DCCDA5",
+        "placeholderStripeB": "#E3D5B0"
+      },
+      "fonts": {
+        "nameplate": "'Alfa Slab One', serif",
+        "headline": "'Alfa Slab One', serif",
+        "body": "'Crimson Pro', serif",
+        "ui": "'Archivo Narrow', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 42,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "uppercase",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #BFAE86",
+        "sectionBreak": "4px solid #16120C",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "10¢ · Complete in this issue",
+      "description": "Yellowed stock, slab headlines, heavy rule under the tabs. Loud but still a column grid.",
+      "fontsSummary": "Alfa Slab One · Crimson Pro · Archivo Narrow"
+    },
+    {
+      "id": "boudoir",
+      "designRef": "1g",
+      "name": "Boudoir",
+      "group": "genre",
+      "audience": "Romance · erotica",
+      "tier": "plus",
+      "order": 6,
+      "colors": {
+        "paper": "#170D12",
+        "ink": "#F0DEDA",
+        "body": "#CDB5B2",
+        "meta": "#96807F",
+        "rule": "#35222A",
+        "accent": "#C73E67",
+        "accentText": "#E7668C",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#221319",
+        "placeholderStripeB": "#1B0F14"
+      },
+      "fonts": {
+        "nameplate": "'Bodoni Moda', serif",
+        "headline": "'Bodoni Moda', serif",
+        "body": "'Cormorant Garamond', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 48,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": true,
+        "headlineCase": "none",
+        "headlineItalic": true,
+        "bodyScale": 1.1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #35222A",
+        "sectionBreak": "3px double #35222A",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "For adult readers · 21+",
+      "description": "Plum paper, blush ink, italic Bodoni. Sensual without going pink-neon — it’s a letter, not a club flyer.",
+      "fontsSummary": "Bodoni Moda italic · Cormorant"
+    },
+    {
+      "id": "observatory",
+      "designRef": "1h",
+      "name": "Observatory",
+      "group": "genre",
+      "audience": "Astrology · poetry · night",
+      "tier": "plus",
+      "order": 7,
+      "colors": {
+        "paper": "#0D1220",
+        "ink": "#E7E2D4",
+        "body": "#BDB8AA",
+        "meta": "#858A99",
+        "rule": "#232A3D",
+        "accent": "#C9A24A",
+        "accentText": "#D4AF5A",
+        "onAccent": "#0D1220",
+        "placeholderStripeA": "#151B2C",
+        "placeholderStripeB": "#10152A"
+      },
+      "fonts": {
+        "nameplate": "'Cormorant Garamond', serif",
+        "headline": "'Cormorant Garamond', serif",
+        "body": "'EB Garamond', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 56,
+        "nameplateWeight": 500,
+        "headlineWeight": 500,
+        "nameplateCase": "none",
+        "nameplateTracking": "0.02em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #232A3D",
+        "sectionBreak": "3px double #232A3D",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Moon in Scorpio · Waning",
+      "description": "Midnight blue and old gold. The dateline slug becomes the moon phase — a small, niche delight.",
+      "fontsSummary": "Cormorant · EB Garamond · Plex Sans"
+    },
+    {
+      "id": "almanac",
+      "designRef": "1i",
+      "name": "Almanac",
+      "group": "genre",
+      "audience": "Slow living · cottage",
+      "tier": "plus",
+      "order": 8,
+      "colors": {
+        "paper": "#ECE5D2",
+        "ink": "#26301F",
+        "body": "#46503B",
+        "meta": "#626757",
+        "rule": "#C8C0A8",
+        "accent": "#A2461F",
+        "accentText": "#A2461F",
+        "onAccent": "#F4EEDD",
+        "placeholderStripeA": "#DFD7C0",
+        "placeholderStripeB": "#E6DFCA"
+      },
+      "fonts": {
+        "nameplate": "'Young Serif', serif",
+        "headline": "'Young Serif', serif",
+        "body": "Newsreader, serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 46,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #C8C0A8",
+        "sectionBreak": "3px double #C8C0A8",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Autumn equinox · First frost soon",
+      "description": "Oat paper, moss ink, terracotta. Seasonal slug in the masthead. Soft, but still ruled and square.",
+      "fontsSummary": "Young Serif · Newsreader"
+    },
+    {
+      "id": "archive",
+      "designRef": "1j",
+      "name": "Archive",
+      "group": "genre",
+      "audience": "Literary · history · fanfic",
+      "tier": "plus",
+      "order": 9,
+      "colors": {
+        "paper": "#E6D9BE",
+        "ink": "#2A1F14",
+        "body": "#4A3B2A",
+        "meta": "#6E5B44",
+        "rule": "#C4B08E",
+        "accent": "#6B3E1E",
+        "accentText": "#6B3E1E",
+        "onAccent": "#F1E7D2",
+        "placeholderStripeA": "#D9CBAE",
+        "placeholderStripeB": "#E0D3B7"
+      },
+      "fonts": {
+        "nameplate": "'IM Fell English', serif",
+        "headline": "'IM Fell English', serif",
+        "body": "'EB Garamond', serif",
+        "ui": "'EB Garamond', serif"
+      },
+      "type": {
+        "nameplateSizePx": 52,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": true,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "none",
+        "uiTracking": "0.03em",
+        "uiScale": 1.25
+      },
+      "rules": {
+        "hairline": "1px solid #C4B08E",
+        "sectionBreak": "3px double #C4B08E",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Vol. III · Bound edition",
+      "description": "Foxed sepia and letterpress Fell type. Metadata in small caps-ish Garamond instead of sans — a book, not an app.",
+      "fontsSummary": "IM Fell English · EB Garamond"
+    },
+    {
+      "id": "photocopy",
+      "designRef": "1k",
+      "name": "Photocopy",
+      "group": "scene",
+      "audience": "Zine · punk · DIY",
+      "tier": "plus",
+      "order": 10,
+      "colors": {
+        "paper": "#F2F1EC",
+        "ink": "#0A0A0A",
+        "body": "#1E1E1E",
+        "meta": "#4A4A4A",
+        "rule": "#0A0A0A",
+        "accent": "#FF2E88",
+        "accentText": "#C8005F",
+        "onAccent": "#0A0A0A",
+        "placeholderStripeA": "#DADAD4",
+        "placeholderStripeB": "#E8E8E2"
+      },
+      "fonts": {
+        "nameplate": "'Special Elite', monospace",
+        "headline": "'Special Elite', monospace",
+        "body": "'Courier Prime', monospace",
+        "ui": "'Courier Prime', monospace"
+      },
+      "type": {
+        "nameplateSizePx": 44,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #0A0A0A",
+        "sectionBreak": "2px solid #0A0A0A",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(90deg, rgba(0,0,0,0.035) 0 1px, transparent 1px 4px), repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 5px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": "2px solid #0A0A0A"
+      },
+      "sampleMastheadLine": "Issue #7 · Please steal this",
+      "description": "Xerox grey, typewriter, one highlighter-pink fill. Black text on the pink button so it still reads.",
+      "fontsSummary": "Special Elite · Courier Prime"
+    },
+    {
+      "id": "terminal",
+      "designRef": "1l",
+      "name": "Terminal",
+      "group": "scene",
+      "audience": "Gaming · tech · hackers",
+      "tier": "plus",
+      "order": 11,
+      "colors": {
+        "paper": "#0A0E0A",
+        "ink": "#A8E6A0",
+        "body": "#8CCB85",
+        "meta": "#5E8A59",
+        "rule": "#1E3320",
+        "accent": "#FFB000",
+        "accentText": "#FFB000",
+        "onAccent": "#0A0E0A",
+        "placeholderStripeA": "#122012",
+        "placeholderStripeB": "#0D160D"
+      },
+      "fonts": {
+        "nameplate": "VT323, monospace",
+        "headline": "VT323, monospace",
+        "body": "'IBM Plex Mono', monospace",
+        "ui": "'IBM Plex Mono', monospace"
+      },
+      "type": {
+        "nameplateSizePx": 56,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 0.92,
+        "bodyItalicAllowed": false,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #1E3320",
+        "sectionBreak": "1px dashed #5E8A59",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(0,0,0,0.28) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": "0 0 8px rgba(168,230,160,0.35)",
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "BBS node 03 · 2400 baud",
+      "description": "Phosphor green, amber actions, scanlines. The one theme allowed a glow — on the name only.",
+      "fontsSummary": "VT323 · Plex Mono"
+    },
+    {
+      "id": "tabloid",
+      "designRef": "1m",
+      "name": "Tabloid",
+      "group": "scene",
+      "audience": "Memes · gossip · shitposts",
+      "tier": "plus",
+      "order": 12,
+      "colors": {
+        "paper": "#FFFFFF",
+        "ink": "#0A0A0A",
+        "body": "#1C1C1C",
+        "meta": "#555",
+        "rule": "#0A0A0A",
+        "accent": "#D90A0A",
+        "accentText": "#D90A0A",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#EAEAEA",
+        "placeholderStripeB": "#F4F4F4"
+      },
+      "fonts": {
+        "nameplate": "Anton, sans-serif",
+        "headline": "Anton, sans-serif",
+        "body": "'Source Serif 4', serif",
+        "ui": "'Archivo Narrow', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 60,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "uppercase",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "uppercase",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #0A0A0A",
+        "sectionBreak": "4px solid #0A0A0A",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Exclusive · Shock · Horror",
+      "description": "Red-top energy. Condensed caps, black rules, red kickers. Good for people whose whole page is a bit.",
+      "fontsSummary": "Anton · Source Serif 4 · Archivo Narrow"
+    },
+    {
+      "id": "riso",
+      "designRef": "1n",
+      "name": "Riso",
+      "group": "scene",
+      "audience": "Art · photo · illustration",
+      "tier": "plus",
+      "order": 13,
+      "colors": {
+        "paper": "#F5F0E6",
+        "ink": "#1F3A93",
+        "body": "#2E478F",
+        "meta": "#5A6A9A",
+        "rule": "#C6CBE0",
+        "accent": "#FF48B0",
+        "accentText": "#C71F84",
+        "onAccent": "#142661",
+        "placeholderStripeA": "#E6E2F0",
+        "placeholderStripeB": "#EFEAEB"
+      },
+      "fonts": {
+        "nameplate": "'Bricolage Grotesque', sans-serif",
+        "headline": "'Bricolage Grotesque', sans-serif",
+        "body": "Newsreader, serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 50,
+        "nameplateWeight": 600,
+        "headlineWeight": 600,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.02em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #C6CBE0",
+        "sectionBreak": "3px double #C6CBE0",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": "2px 1px 0 rgba(255,72,176,0.75)",
+        "headlineTextShadow": "1px 1px 0 rgba(255,72,176,0.6)",
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "2-colour print · Blue + fluoro pink",
+      "description": "Two spot inks and a slight misregistration on headlines. Photo placeholders print blue-on-cream.",
+      "fontsSummary": "Bricolage Grotesque · Newsreader"
+    },
+    {
+      "id": "wire",
+      "designRef": "1o",
+      "name": "Wire",
+      "group": "scene",
+      "audience": "News junkies · minimalists",
+      "tier": "free",
+      "order": 14,
+      "colors": {
+        "paper": "#E3E1DB",
+        "ink": "#141414",
+        "body": "#2E2E2E",
+        "meta": "#5C5B57",
+        "rule": "#B9B6AE",
+        "accent": "#C23A12",
+        "accentText": "#B3340F",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#D6D3CC",
+        "placeholderStripeB": "#DDDAD3"
+      },
+      "fonts": {
+        "nameplate": "'IBM Plex Sans', sans-serif",
+        "headline": "'IBM Plex Sans', sans-serif",
+        "body": "'IBM Plex Mono', monospace",
+        "ui": "'IBM Plex Mono', monospace"
+      },
+      "type": {
+        "nameplateSizePx": 44,
+        "nameplateWeight": 500,
+        "headlineWeight": 500,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.02em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 0.9,
+        "bodyItalicAllowed": false,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #B9B6AE",
+        "sectionBreak": "1px solid #141414",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Filed 21:04 AEST · Wire copy",
+      "description": "Teleprinter copy. No serifs, no italics, timestamps up front. The least decorated edition.",
+      "fontsSummary": "Plex Sans · Plex Mono"
+    },
+    {
+      "id": "player-one",
+      "designRef": "2a",
+      "name": "Player One",
+      "group": "audience",
+      "audience": "Gamers",
+      "tier": "plus",
+      "order": 15,
+      "colors": {
+        "paper": "#100C1B",
+        "ink": "#EEEAF8",
+        "body": "#C4BDD8",
+        "meta": "#8C84A6",
+        "rule": "#2A2340",
+        "accent": "#7CFF4F",
+        "accentText": "#8CFF62",
+        "onAccent": "#100C1B",
+        "placeholderStripeA": "#1B1530",
+        "placeholderStripeB": "#140F24"
+      },
+      "fonts": {
+        "nameplate": "'Press Start 2P', monospace",
+        "headline": "'Chakra Petch', sans-serif",
+        "body": "'Chakra Petch', sans-serif",
+        "ui": "'Chakra Petch', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 30,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "0",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": false,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #2A2340",
+        "sectionBreak": "2px solid #7CFF4F",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Save file 03 · 184h played",
+      "description": "Pixel nameplate, clean techy body so posts stay readable. Lime is the one “press start” colour. Distinct from Terminal: modern console, not retro BBS.",
+      "fontsSummary": "Press Start 2P · Chakra Petch"
+    },
+    {
+      "id": "sakura",
+      "designRef": "2b",
+      "name": "Sakura",
+      "group": "audience",
+      "audience": "Anime · cute · shōjo",
+      "tier": "plus",
+      "order": 16,
+      "colors": {
+        "paper": "#FFF4F6",
+        "ink": "#4A2B3A",
+        "body": "#6B4A5A",
+        "meta": "#8E6E7D",
+        "rule": "#F2CCD8",
+        "accent": "#D6336C",
+        "accentText": "#C92A63",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#FCE3EA",
+        "placeholderStripeB": "#FFF0F4"
+      },
+      "fonts": {
+        "nameplate": "'Mochiy Pop One', sans-serif",
+        "headline": "'Mochiy Pop One', sans-serif",
+        "body": "'M PLUS Rounded 1c', sans-serif",
+        "ui": "'M PLUS Rounded 1c', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 42,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": false,
+        "uiCase": "uppercase",
+        "uiTracking": "0.1em",
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #F2CCD8",
+        "sectionBreak": "2px dotted #E68AA8",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "第7話 · Episode 7 · Spring arc",
+      "description": "Blossom paper, plum ink, bubbly Japanese display that also sets kana. Episode-numbered masthead. Cute stays square — no rounded boxes, dotted rule instead.",
+      "fontsSummary": "Mochiy Pop One · M PLUS Rounded"
+    },
+    {
+      "id": "varsity",
+      "designRef": "2c",
+      "name": "Varsity",
+      "group": "audience",
+      "audience": "Sport · fitness · fans",
+      "tier": "plus",
+      "order": 17,
+      "colors": {
+        "paper": "#F3F0E8",
+        "ink": "#0E1A2B",
+        "body": "#2B3748",
+        "meta": "#5B6474",
+        "rule": "#C9C6BC",
+        "accent": "#C2410C",
+        "accentText": "#B93D0B",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#E4E0D5",
+        "placeholderStripeB": "#ECE8DF"
+      },
+      "fonts": {
+        "nameplate": "'Big Shoulders Display', sans-serif",
+        "headline": "'Big Shoulders Display', sans-serif",
+        "body": "Barlow, sans-serif",
+        "ui": "'Barlow Condensed', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 66,
+        "nameplateWeight": 800,
+        "headlineWeight": 800,
+        "nameplateCase": "uppercase",
+        "nameplateTracking": "0",
+        "nameplateItalic": false,
+        "headlineCase": "uppercase",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1.1
+      },
+      "rules": {
+        "hairline": "1px solid #C9C6BC",
+        "sectionBreak": "4px solid #0E1A2B",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Rd 24 · Home fixture · 7:30 kick-off",
+      "description": "Navy and burnt orange, stadium condensed caps, a scoreboard-weight rule under the tabs. Stats row reads like a box score.",
+      "fontsSummary": "Big Shoulders · Barlow"
+    },
+    {
+      "id": "rulebook",
+      "designRef": "2d",
+      "name": "Rulebook",
+      "group": "audience",
+      "audience": "Board games · TTRPG",
+      "tier": "plus",
+      "order": 18,
+      "colors": {
+        "paper": "#EEE5D0",
+        "ink": "#2B2320",
+        "body": "#4A3F38",
+        "meta": "#6F6358",
+        "rule": "#C9BB9C",
+        "accent": "#2E6E8E",
+        "accentText": "#255E7A",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#E2D7BE",
+        "placeholderStripeB": "#E8DFC8"
+      },
+      "fonts": {
+        "nameplate": "'Alegreya SC', serif",
+        "headline": "'Alegreya SC', serif",
+        "body": "Alegreya, serif",
+        "ui": "'Alegreya Sans SC', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 50,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "none",
+        "uiTracking": "0.06em",
+        "uiScale": 1.15
+      },
+      "rules": {
+        "hairline": "1px solid #C9BB9C",
+        "sectionBreak": "3px double #C9BB9C",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "2–5 players · 60 min · Ages 21+",
+      "description": "The box-insert manual: small caps headings, Alegreya body, teal like a player token. Masthead slug is the back-of-box player count.",
+      "fontsSummary": "Alegreya SC · Alegreya · Alegreya Sans SC"
+    },
+    {
+      "id": "manuscript",
+      "designRef": "2e",
+      "name": "Manuscript",
+      "group": "audience",
+      "audience": "Serious writers",
+      "tier": "free",
+      "order": 19,
+      "colors": {
+        "paper": "#FAF8F3",
+        "ink": "#161616",
+        "body": "#2E2E2E",
+        "meta": "#6B6B6B",
+        "rule": "#DAD6CC",
+        "accent": "#23408E",
+        "accentText": "#23408E",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#EEEBE3",
+        "placeholderStripeB": "#F4F2EC"
+      },
+      "fonts": {
+        "nameplate": "'Libre Caslon Display', serif",
+        "headline": "'Libre Caslon Display', serif",
+        "body": "Spectral, serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 58,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1.05,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #DAD6CC",
+        "sectionBreak": "3px double #DAD6CC",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Draft 4 · 82,140 words · Chapter 11",
+      "description": "Almost nothing: white stock, Caslon, Spectral at a generous size, ink-blue as the only mark. Word count in the slug. The page gets out of the way of the prose.",
+      "fontsSummary": "Libre Caslon Display · Spectral"
+    },
+    {
+      "id": "quarterly",
+      "designRef": "2f",
+      "name": "Quarterly",
+      "group": "audience",
+      "audience": "Professionals",
+      "tier": "free",
+      "order": 20,
+      "colors": {
+        "paper": "#F6F6F4",
+        "ink": "#111111",
+        "body": "#333333",
+        "meta": "#666666",
+        "rule": "#D9D9D5",
+        "accent": "#1D4ED8",
+        "accentText": "#1D4ED8",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#E9E9E6",
+        "placeholderStripeB": "#F0F0EE"
+      },
+      "fonts": {
+        "nameplate": "'Instrument Serif', serif",
+        "headline": "'Instrument Serif', serif",
+        "body": "'Instrument Sans', sans-serif",
+        "ui": "'Instrument Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 58,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.02em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #D9D9D5",
+        "sectionBreak": "3px double #D9D9D5",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Brisbane · Strategy & operations",
+      "description": "Annual-report calm. Serif name, sans everything else, one corporate blue. For people who post under their real name and want it to look like it.",
+      "fontsSummary": "Instrument Serif · Instrument Sans"
+    },
+    {
+      "id": "liner-notes",
+      "designRef": "2g",
+      "name": "Liner Notes",
+      "group": "audience",
+      "audience": "Music · vinyl · DJs",
+      "tier": "plus",
+      "order": 21,
+      "colors": {
+        "paper": "#161412",
+        "ink": "#EFE7DA",
+        "body": "#C9BFB0",
+        "meta": "#8F867A",
+        "rule": "#2E2A25",
+        "accent": "#E0691A",
+        "accentText": "#F07A2A",
+        "onAccent": "#161412",
+        "placeholderStripeA": "#221F1B",
+        "placeholderStripeB": "#1B1916"
+      },
+      "fonts": {
+        "nameplate": "'DM Serif Display', serif",
+        "headline": "'DM Serif Display', serif",
+        "body": "'Libre Franklin', sans-serif",
+        "ui": "'Libre Franklin', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 52,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 0.95,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #2E2A25",
+        "sectionBreak": "3px double #2E2A25",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Side A · 33⅓ RPM · Track 4",
+      "description": "Record-sleeve back: fat serif, tight Franklin, orange label. Listen posts become the lead block for these pages.",
+      "fontsSummary": "DM Serif Display · Libre Franklin"
+    },
+    {
+      "id": "marquee",
+      "designRef": "2h",
+      "name": "Marquee",
+      "group": "audience",
+      "audience": "Film · TV · critics",
+      "tier": "plus",
+      "order": 22,
+      "colors": {
+        "paper": "#120A08",
+        "ink": "#F3EBD9",
+        "body": "#CFC4B0",
+        "meta": "#948A7A",
+        "rule": "#33211C",
+        "accent": "#C9302C",
+        "accentText": "#E5534B",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#1E120F",
+        "placeholderStripeB": "#170D0B"
+      },
+      "fonts": {
+        "nameplate": "Limelight, serif",
+        "headline": "'Libre Baskerville', serif",
+        "body": "'Libre Baskerville', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 48,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 0.92,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #33211C",
+        "sectionBreak": "3px double #33211C",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Now showing · Reel 2 of 3",
+      "description": "Picture-palace deco on the nameplate, Baskerville for reviews, curtain red. Dark like the theatre before the trailers.",
+      "fontsSummary": "Limelight · Libre Baskerville"
+    },
+    {
+      "id": "test-kitchen",
+      "designRef": "2i",
+      "name": "Test Kitchen",
+      "group": "audience",
+      "audience": "Food · recipes",
+      "tier": "plus",
+      "order": 23,
+      "colors": {
+        "paper": "#FBF5E9",
+        "ink": "#2A211B",
+        "body": "#4A3D33",
+        "meta": "#7A6A5C",
+        "rule": "#E3D6C0",
+        "accent": "#3F6B2A",
+        "accentText": "#3F6B2A",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#F0E6D2",
+        "placeholderStripeB": "#F6EEDF"
+      },
+      "fonts": {
+        "nameplate": "Caprasimo, serif",
+        "headline": "Literata, serif",
+        "body": "Literata, serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 48,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #E3D6C0",
+        "sectionBreak": "3px double #E3D6C0",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Serves 2 · Prep 20 min · Cook 1 hr",
+      "description": "Butter paper, herb green, a chunky friendly nameplate. Recipe metadata replaces the edition slug.",
+      "fontsSummary": "Caprasimo · Literata"
+    },
+    {
+      "id": "field-notes",
+      "designRef": "2j",
+      "name": "Field Notes",
+      "group": "audience",
+      "audience": "Travel · outdoors",
+      "tier": "plus",
+      "order": 24,
+      "colors": {
+        "paper": "#D8CDB2",
+        "ink": "#1F2A22",
+        "body": "#36402F",
+        "meta": "#555A48",
+        "rule": "#B5A887",
+        "accent": "#D9480F",
+        "accentText": "#A8370A",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#CBBF9F",
+        "placeholderStripeB": "#D2C6A8"
+      },
+      "fonts": {
+        "nameplate": "'Zilla Slab', serif",
+        "headline": "'Zilla Slab', serif",
+        "body": "'Source Serif 4', serif",
+        "ui": "'Space Mono', monospace"
+      },
+      "type": {
+        "nameplateSizePx": 50,
+        "nameplateWeight": 600,
+        "headlineWeight": 600,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #B5A887",
+        "sectionBreak": "3px double #B5A887",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "−27.47, 153.02 · Day 12 · 18°C",
+      "description": "Kraft-paper notebook with safety orange. Coordinates and weather in the slug; mono metadata like a logbook.",
+      "fontsSummary": "Zilla Slab · Source Serif 4 · Space Mono"
+    },
+    {
+      "id": "leather",
+      "designRef": "2k",
+      "name": "Leather",
+      "group": "audience",
+      "audience": "Kink · 21+ community",
+      "tier": "plus",
+      "order": 25,
+      "colors": {
+        "paper": "#0B0B0C",
+        "ink": "#E9E4DC",
+        "body": "#BDB6AC",
+        "meta": "#85807A",
+        "rule": "#2A2A2E",
+        "accent": "#7B2FF7",
+        "accentText": "#A57CFF",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#17171A",
+        "placeholderStripeB": "#101012"
+      },
+      "fonts": {
+        "nameplate": "Oswald, sans-serif",
+        "headline": "Oswald, sans-serif",
+        "body": "'Crimson Pro', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 50,
+        "nameplateWeight": 500,
+        "headlineWeight": 500,
+        "nameplateCase": "uppercase",
+        "nameplateTracking": "0.08em",
+        "nameplateItalic": false,
+        "headlineCase": "uppercase",
+        "headlineItalic": false,
+        "bodyScale": 1.05,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #2A2A2E",
+        "sectionBreak": "1px solid #E9E4DC",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Members only · 21+ · Consent first",
+      "description": "Black, bone and violet; spaced caps, soft serif body. Frank without being lurid — suits the platform’s 21+ core audience.",
+      "fontsSummary": "Oswald · Crimson Pro"
+    },
+    {
+      "id": "arcana",
+      "designRef": "3a",
+      "name": "Arcana",
+      "group": "community",
+      "audience": "Tarot · witchcraft",
+      "tier": "plus",
+      "order": 26,
+      "colors": {
+        "paper": "#14101A",
+        "ink": "#EAE3D2",
+        "body": "#C2B9A6",
+        "meta": "#8A8196",
+        "rule": "#2E2638",
+        "accent": "#B08D3C",
+        "accentText": "#CFA94F",
+        "onAccent": "#14101A",
+        "placeholderStripeA": "#1F1828",
+        "placeholderStripeB": "#18121F"
+      },
+      "fonts": {
+        "nameplate": "'Cinzel Decorative', serif",
+        "headline": "'EB Garamond', serif",
+        "body": "'EB Garamond', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 40,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1.08,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #2E2638",
+        "sectionBreak": "3px double #2E2638",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Card of the day · The Star, upright",
+      "description": "Aubergine, bone and brass. Decorative capitals on the nameplate only; the daily card replaces the edition slug. Warmer and more occult than Observatory.",
+      "fontsSummary": "Cinzel Decorative · EB Garamond"
+    },
+    {
+      "id": "deck-tape",
+      "designRef": "3b",
+      "name": "Deck Tape",
+      "group": "community",
+      "audience": "Skate · streetwear",
+      "tier": "plus",
+      "order": 27,
+      "colors": {
+        "paper": "#1A1A1A",
+        "ink": "#F2F2EE",
+        "body": "#CFCFC8",
+        "meta": "#8F8F88",
+        "rule": "#333333",
+        "accent": "#E8FF3A",
+        "accentText": "#E8FF3A",
+        "onAccent": "#111",
+        "placeholderStripeA": "#262626",
+        "placeholderStripeB": "#1F1F1F"
+      },
+      "fonts": {
+        "nameplate": "'Rubik Mono One', sans-serif",
+        "headline": "'Work Sans', sans-serif",
+        "body": "'Work Sans', sans-serif",
+        "ui": "'Work Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 36,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "uppercase",
+        "nameplateTracking": "-0.02em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #333333",
+        "sectionBreak": "3px solid #F2F2EE",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(45deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 4px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Drop 04 · Limited · No restocks",
+      "description": "Grip-tape grain, heavy wide caps, one hi-vis yellow. Slug reads like a product drop.",
+      "fontsSummary": "Rubik Mono One · Work Sans"
+    },
+    {
+      "id": "con-badge",
+      "designRef": "3c",
+      "name": "Con Badge",
+      "group": "community",
+      "audience": "Cosplay · fandom",
+      "tier": "plus",
+      "order": 28,
+      "colors": {
+        "paper": "#F4F2FA",
+        "ink": "#1C1733",
+        "body": "#3B3556",
+        "meta": "#655E80",
+        "rule": "#D6D1E6",
+        "accent": "#5B2EE6",
+        "accentText": "#5024D6",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#E6E1F4",
+        "placeholderStripeB": "#EEEBF8"
+      },
+      "fonts": {
+        "nameplate": "Bungee, sans-serif",
+        "headline": "'Work Sans', sans-serif",
+        "body": "'Work Sans', sans-serif",
+        "ui": "'Work Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 40,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #D6D1E6",
+        "sectionBreak": "3px solid #1C1733",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Day 2 · Hall B · Badge #0311",
+      "description": "Convention lanyard: signage-style nameplate, violet ink, badge number in the slug. Photo tab would lead for these profiles.",
+      "fontsSummary": "Bungee · Work Sans"
+    },
+    {
+      "id": "pride-print",
+      "designRef": "3d",
+      "name": "Pride Print",
+      "group": "community",
+      "audience": "Queer community",
+      "tier": "free",
+      "order": 29,
+      "colors": {
+        "paper": "#F7F4EE",
+        "ink": "#16131A",
+        "body": "#38333E",
+        "meta": "#645E6B",
+        "rule": "#D8D2CA",
+        "accent": "#732982",
+        "accentText": "#732982",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#EBE6DE",
+        "placeholderStripeB": "#F1EDE6"
+      },
+      "fonts": {
+        "nameplate": "'DM Serif Display', serif",
+        "headline": "'DM Serif Display', serif",
+        "body": "Figtree, sans-serif",
+        "ui": "Figtree, sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 54,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #D8D2CA",
+        "sectionBreak": "3px double #D8D2CA",
+        "sectionBreakImage": "linear-gradient(90deg,#E40303 0 16.66%,#FF8C00 0 33.33%,#FFED00 0 50%,#008026 0 66.66%,#24408E 0 83.33%,#732982 0) 1"
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Out since forever · Pride edition",
+      "description": "The flag appears once, as a hard-stop stripe rule under the tabs — printed, not glowing. Everything else stays calm; purple is the accent.",
+      "fontsSummary": "DM Serif Display · Figtree"
+    },
+    {
+      "id": "chapbook",
+      "designRef": "3e",
+      "name": "Chapbook",
+      "group": "community",
+      "audience": "Poetry",
+      "tier": "plus",
+      "order": 30,
+      "colors": {
+        "paper": "#F1ECE2",
+        "ink": "#231F1B",
+        "body": "#3F3932",
+        "meta": "#6E665C",
+        "rule": "#D6CDBD",
+        "accent": "#8C2F39",
+        "accentText": "#8C2F39",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#E6DFD1",
+        "placeholderStripeB": "#ECE6DA"
+      },
+      "fonts": {
+        "nameplate": "Italiana, serif",
+        "headline": "'Cormorant Garamond', serif",
+        "body": "'Cormorant Garamond', serif",
+        "ui": "'IBM Plex Sans', sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 54,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "0.04em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": true,
+        "bodyScale": 1.18,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #D6CDBD",
+        "sectionBreak": "3px double #D6CDBD",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": "repeating-linear-gradient(0deg, rgba(20,18,15,0.03) 0 1px, transparent 1px 3px)",
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Twenty-two poems · Hand-stitched",
+      "description": "Small-press booklet: thin display caps, large Cormorant for verse, wine-red mark. Line breaks matter here, so body sets bigger than any other edition.",
+      "fontsSummary": "Italiana · Cormorant Garamond"
+    },
+    {
+      "id": "quiet-room",
+      "designRef": "3f",
+      "name": "Quiet Room",
+      "group": "community",
+      "audience": "Mental health · journaling",
+      "tier": "free",
+      "order": 31,
+      "colors": {
+        "paper": "#E9ECE6",
+        "ink": "#1F2A26",
+        "body": "#35423C",
+        "meta": "#5C6862",
+        "rule": "#CDD3CB",
+        "accent": "#3D6B5C",
+        "accentText": "#355E51",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#DDE2DA",
+        "placeholderStripeB": "#E4E8E1"
+      },
+      "fonts": {
+        "nameplate": "Literata, serif",
+        "headline": "Literata, serif",
+        "body": "Lexend, sans-serif",
+        "ui": "Lexend, sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 44,
+        "nameplateWeight": 400,
+        "headlineWeight": 400,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": false,
+        "uiCase": "none",
+        "uiTracking": "0.02em",
+        "uiScale": 1.15
+      },
+      "rules": {
+        "hairline": "1px solid #CDD3CB",
+        "sectionBreak": "1px solid #CDD3CB",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Entry 211 · No streaks, no counts",
+      "description": "Low-stimulation reading: sage paper, no caps shouting, no heavy rules. Pairs with an option to hide like/subscriber counts.",
+      "fontsSummary": "Literata · Lexend"
+    },
+    {
+      "id": "good-boy",
+      "designRef": "3g",
+      "name": "Good Boy",
+      "group": "community",
+      "audience": "Pets",
+      "tier": "plus",
+      "order": 32,
+      "colors": {
+        "paper": "#FFF7EA",
+        "ink": "#2B1E12",
+        "body": "#4D3A28",
+        "meta": "#7A6450",
+        "rule": "#EAD9BF",
+        "accent": "#1B7F8C",
+        "accentText": "#16707C",
+        "onAccent": "#fff",
+        "placeholderStripeA": "#F6E9D2",
+        "placeholderStripeB": "#FBF1E0"
+      },
+      "fonts": {
+        "nameplate": "Fredoka, sans-serif",
+        "headline": "Fredoka, sans-serif",
+        "body": "Nunito, sans-serif",
+        "ui": "Nunito, sans-serif"
+      },
+      "type": {
+        "nameplateSizePx": 48,
+        "nameplateWeight": 600,
+        "headlineWeight": 600,
+        "nameplateCase": "none",
+        "nameplateTracking": "-0.01em",
+        "nameplateItalic": false,
+        "headlineCase": "none",
+        "headlineItalic": false,
+        "bodyScale": 1,
+        "bodyItalicAllowed": true,
+        "uiCase": "uppercase",
+        "uiTracking": null,
+        "uiScale": 1
+      },
+      "rules": {
+        "hairline": "1px solid #EAD9BF",
+        "sectionBreak": "2px dashed #D9C3A1",
+        "sectionBreakImage": null
+      },
+      "effects": {
+        "texture": null,
+        "nameplateTextShadow": null,
+        "headlineTextShadow": null,
+        "buttonBorder": null
+      },
+      "sampleMastheadLine": "Walks today: 2 · Treats: too many",
+      "description": "Warm biscuit paper, friendly rounded display, teal like a collar tag. The Photo tab would lead these pages.",
+      "fontsSummary": "Fredoka · Nunito"
+    }
+  ]
+}

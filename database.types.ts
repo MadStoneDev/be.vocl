@@ -901,6 +901,53 @@ export type Database = {
           },
         ]
       }
+      entitlements: {
+        Row: {
+          id: string
+          user_id: string
+          product: string
+          status: string
+          processor: string | null
+          processor_ref: string | null
+          granted_at: string | null
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          product: string
+          status?: string
+          processor?: string | null
+          processor_ref?: string | null
+          granted_at?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          product?: string
+          status?: string
+          processor?: string | null
+          processor_ref?: string | null
+          granted_at?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entitlements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escalation_history: {
         Row: {
           id: string
@@ -1793,6 +1840,7 @@ export type Database = {
           queued_at: string | null
           search_vector: string | null
           audience: Database["public"]["Enums"]["post_audience"]
+          is_adult: boolean
         }
         Insert: {
           id?: string
@@ -1825,6 +1873,7 @@ export type Database = {
           queued_at?: string | null
           search_vector?: string | null
           audience?: Database["public"]["Enums"]["post_audience"]
+          is_adult?: boolean
         }
         Update: {
           id?: string
@@ -1857,6 +1906,7 @@ export type Database = {
           queued_at?: string | null
           search_vector?: string | null
           audience?: Database["public"]["Enums"]["post_audience"]
+          is_adult?: boolean
         }
         Relationships: [
           {
@@ -1987,6 +2037,15 @@ export type Database = {
           is_profile_public: boolean
           date_of_birth: string | null
           beta_access: boolean
+          reading_edition: string
+          reading_edition_light: string | null
+          reading_edition_dark: string | null
+          match_system_theme: boolean
+          paper_texture: boolean
+          always_read_in_my_edition: boolean
+          profile_edition: string
+          custom_nameplate_font: string | null
+          masthead_line: string | null
         }
         Insert: {
           id: string
@@ -2043,6 +2102,15 @@ export type Database = {
           is_profile_public?: boolean
           date_of_birth?: string | null
           beta_access?: boolean
+          reading_edition?: string
+          reading_edition_light?: string | null
+          reading_edition_dark?: string | null
+          match_system_theme?: boolean
+          paper_texture?: boolean
+          always_read_in_my_edition?: boolean
+          profile_edition?: string
+          custom_nameplate_font?: string | null
+          masthead_line?: string | null
         }
         Update: {
           id?: string
@@ -2099,6 +2167,15 @@ export type Database = {
           is_profile_public?: boolean
           date_of_birth?: string | null
           beta_access?: boolean
+          reading_edition?: string
+          reading_edition_light?: string | null
+          reading_edition_dark?: string | null
+          match_system_theme?: boolean
+          paper_texture?: boolean
+          always_read_in_my_edition?: boolean
+          profile_edition?: string
+          custom_nameplate_font?: string | null
+          masthead_line?: string | null
         }
         Relationships: [
           {

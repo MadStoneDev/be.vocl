@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3111",
+    "prebuild": "npm run validate:editions && npm run gen:editions",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate:editions": "node scripts/validate-editions.mjs",
+    "gen:editions": "node scripts/generate-editions-css.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.975.0",

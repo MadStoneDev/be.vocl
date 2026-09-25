@@ -60,6 +60,29 @@
   --rule: #CFC7B8;           /* hairlines, double rules, progress track */
   --paper-grain: repeating-linear-gradient(0deg, rgba(20, 18, 15, 0.022) 0 1px, transparent 1px 3px);
 
+  /* ---- Edition token layer (see src/editions/) ----
+     Editions ("printings of the same paper") re-skin the app by overriding
+     these on a [data-edition] scope (src/app/editions.generated.css). They are
+     defined here at the house defaults (Newsprint light / Late dark) so nothing
+     breaks when no edition is applied.
+
+     Fonts are indirected through edition-owned vars because Tailwind's
+     `@theme inline` (below) inlines the mapped value into utilities: the font
+     utilities resolve through --font-headline/body/ui/slug, which an edition can
+     override, whereas the next/font vars are set on <body> and could not be. */
+  --font-nameplate: var(--font-gloock--display);
+  --font-headline: var(--font-gloock--display);
+  --font-body: var(--font-source-serif);
+  --font-ui: var(--font-plex-sans);
+  --font-slug: var(--font-plex-mono);
+
+  /* accent used AS text (kickers, wordmark, glyphs); on-accent = text on an
+     accent fill; section break replaces the base 3px double rule. Editions
+     override; house defaults derive from --accent / --rule. */
+  --accent-text: var(--accent);
+  --on-accent: #ffffff;
+  --section-break: 3px double var(--rule);
+
   --background: var(--paper);
   --foreground: var(--ink);
   --vocl-surface-dark: #ffffff;
@@ -136,13 +159,17 @@
   --color-meta-dim: var(--meta-dim);
   --color-caption: var(--caption);
   --color-rule: var(--rule);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
 
-  /* Type system: UI/meta = IBM Plex Sans, editorial body = Source Serif 4,
-     mono = IBM Plex Mono, display = Gloock. */
-  --font-sans: var(--font-plex-sans);
-  --font-serif: var(--font-source-serif);
-  --font-mono: var(--font-plex-mono);
-  --font-display: var(--font-gloock--display);
+  /* Type system resolves through the edition font layer (see :root above) so
+     `font-display` / `font-serif` / `font-sans` / `font-mono` re-skin per
+     edition. House defaults: display = Gloock, body = Source Serif 4,
+     UI/meta = IBM Plex Sans, mono = IBM Plex Mono. */
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-body);
+  --font-mono: var(--font-slug);
+  --font-display: var(--font-headline);
 }
 
 /* Paint the root too, not just <body>. On mobile the browser fills any area
@@ -261,6 +288,18 @@ html.theme-transition body {
   font-weight: 400;
 }
 
+/* Nameplate — the profile display name / desk name. Its own edition font role
+   (some editions set a distinct nameplate face from their headline face). */
+.font-nameplate {
+  font-family: var(--font-nameplate), Georgia, "Times New Roman", serif;
+}
+
+/* Paper texture opt-out (Settings → Appearance). Set data-texture="off" on the
+   editioned scope to drop the grain/texture for that reader. */
+[data-texture="off"] {
+  --paper-grain: none;
+}
+
 /* =============================================================================
    Broadsheet editorial primitives (design/broadsheet-foundation)
    Reusable across every screen — the vocabulary of the paper. Geometry is
@@ -347,12 +386,16 @@ html.theme-transition body {
   color: var(--ink);
 }
 
-/* Section break — 3px double rule (under dateline rows, above folds). */
+/* Section break — 3px double rule by default (under dateline rows, above
+   folds). Edition-aware via --section-break; Pride Print supplies a flag
+   border-image via --section-break-image. */
 .rule-double {
-  border-top: 3px double var(--rule);
+  border-top: var(--section-break);
+  border-image: var(--section-break-image, none);
 }
 .rule-double-b {
-  border-bottom: 3px double var(--rule);
+  border-bottom: var(--section-break);
+  border-image: var(--section-break-image, none);
 }
 
 /* 21+ stamp — 1px accent box, accent text, mono 10/0.14em. */

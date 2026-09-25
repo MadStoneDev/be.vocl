@@ -37,6 +37,8 @@ export interface ComposerState {
   tags: string[];
   selectedCommunityIds: string[];
   isSensitive: boolean;
+  /** Adult (sexual) content — a stricter, separately-gated flag than isSensitive. */
+  isAdult: boolean;
   /** Per-post audience tier: public / members / followers. */
   audience: PostAudience;
   contentWarning: string;
@@ -110,6 +112,7 @@ export function createInitialState(overrides?: Partial<ComposerState>): Composer
     tags: [],
     selectedCommunityIds: [],
     isSensitive: false,
+    isAdult: false,
     // Privacy-first default: posts are Members-only unless the author opts into
     // Public (or narrows to Followers) via the Audience selector.
     audience: "members",
@@ -203,6 +206,7 @@ const PERSISTED_KEYS: (keyof ComposerState)[] = [
   "tags",
   "selectedCommunityIds",
   "isSensitive",
+  "isAdult",
   "audience",
   "contentWarning",
   "publishMode",
@@ -419,6 +423,7 @@ export function useComposerState(
             postId: editPostId,
             reblogComment: s.content.html || null,
             isSensitive: s.isSensitive,
+            isAdult: s.isAdult,
             audience: s.audience,
             tags: s.tags,
           });
@@ -451,6 +456,7 @@ export function useComposerState(
           postId: editPostId,
           content: updatedContent,
           isSensitive: s.isSensitive,
+          isAdult: s.isAdult,
           audience: s.audience,
           tags: s.tags,
         });
@@ -601,6 +607,7 @@ export function useComposerState(
         postType: actualPostType,
         content: postContent,
         isSensitive: s.isSensitive,
+        isAdult: s.isAdult,
         audience: s.audience,
         tags: s.tags,
         publishMode: s.publishMode,

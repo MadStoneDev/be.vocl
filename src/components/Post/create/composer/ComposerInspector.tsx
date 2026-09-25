@@ -361,6 +361,48 @@ export function ComposerInspector({
           </button>
         </section>
 
+        {/* Adult (21+) toggle — a stricter flag than Sensitive. Adult content is
+            hard-gated out of the SFW feed and forces Sensitive on. */}
+        <section>
+          <h3 className="slug text-meta mb-3">Adult · 21+</h3>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={state.isAdult}
+            onClick={() =>
+              patch({
+                isAdult: !state.isAdult,
+                // Adult implies sensitive; turning adult on also turns sensitive on.
+                isSensitive: !state.isAdult ? true : state.isSensitive,
+              })
+            }
+            className="flex items-center gap-3 w-full text-left"
+          >
+            <div
+              className="relative w-11 h-6 rounded-none transition-colors flex-shrink-0"
+              style={{
+                backgroundColor: state.isAdult ? "var(--accent)" : "var(--vocl-border)",
+              }}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all ${
+                  state.isAdult ? "left-6" : "left-1"
+                }`}
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 text-foreground text-sm font-medium">
+                <span className="stamp-21">21+</span>
+                Adult content
+              </div>
+              <p className="text-foreground/45 text-xs mt-0.5">
+                Sexual content. Hidden from the main feed and only shown to
+                verified adults.
+              </p>
+            </div>
+          </button>
+        </section>
+
         {/* Content warning */}
         <section>
           <label className="block slug text-meta mb-3">Content warning</label>

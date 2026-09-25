@@ -4,7 +4,12 @@ import { QueryProvider, ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui";
 import { Analytics } from "@/components/analytics/Analytics";
 import { ACCENT_BOOT_SCRIPT } from "@/lib/accent";
+import { EDITION_BOOT_SCRIPT } from "@/editions/client";
 import "./globals.css";
+// Imported AFTER globals.css so an active [data-edition] block wins over the
+// base :root/.dark tokens on equal specificity. Generated from editions.json —
+// run `npm run gen:editions` (also runs in prebuild).
+import "./editions.generated.css";
 
 // Broadsheet type system (design/broadsheet-foundation):
 //   Display — Gloock (headlines, wordmark, masthead tagline)
@@ -74,8 +79,10 @@ export default function RootLayout({
       <body
         className={`${gloock.variable} ${sourceSerif.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
       >
-        {/* Apply the saved UI accent before first paint (no colour flash). */}
+        {/* Apply the saved UI accent + reading edition before first paint (no
+            colour/theme flash). */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: EDITION_BOOT_SCRIPT }} />
         <ThemeProvider>
           <QueryProvider>
             <a href="#main-content" className="skip-link">

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { PRODUCT_PLUS, PLUS_GRACE_DAYS } from "@/lib/entitlements";
 import crypto from "crypto";
 
 /**
@@ -138,11 +140,77 @@ export async function POST(request: NextRequest) {
       }
 
       case "subscription.created":
+      case "subscription.activated":
       case "subscription.updated":
-      case "subscription.canceled":
-        // Handle subscription events if needed in the future
-        console.log("Subscription event:", eventType, data);
+      case "subscription.resumed":
+      case "subscription.trialing":
+      case "subscription.past_due":
+      case "subscription.paused":
+      case "subscription.canceled": {
+        // be.vocl Plus (theme paywall). The checkout carries
+        // custom_data.type === "plus" and the app user id, mirroring the
+        // verification flow. Entitlement writes go through the SERVICE-ROLE
+        // client because RLS blocks entitlement writes for everyone else.
+        const customData = data.custom_data || {};
+        if (customData.type !== "plus") {
+          console.log("Non-plus subscription event ignored:", eventType);
+          break;
+        }
+        const userId = customData.user_id;
+        if (!userId) {
+          console.error("Plus subscription event missing user_id:", eventType);
+          break;
+        }
+
+        // Map Paddle's subscription status to our entitlement status + expiry.
+        // Grace: a lapsed sub keeps Plus editions for PLUS_GRACE_DAYS (handoff §3).
+        const graceMs = PLUS_GRACE_DAYS * 24 * 60 * 60 * 1000;
+        const periodEndsAt: string | undefined =
+          data.current_billing_period?.ends_at;
+        const paddleStatus: string = data.status || "";
+
+        let status: "active" | "past_due" | "canceled";
+        let expiresAt: string | null;
+        if (
+          eventType === "subscription.canceled" ||
+          paddleStatus === "canceled" ||
+          eventType === "subscription.paused" ||
+          paddleStatus === "paused"
+        ) {
+          status = "canceled";
+          const base = periodEndsAt ? new Date(periodEndsAt).getTime() : Date.now();
+          expiresAt = new Date(base + graceMs).toISOString();
+        } else if (eventType === "subscription.past_due" || paddleStatus === "past_due") {
+          status = "past_due";
+          expiresAt = new Date(Date.now() + graceMs).toISOString();
+        } else {
+          status = "active";
+          expiresAt = null; // active, no forced expiry
+        }
+
+        const admin = createAdminClient();
+        const { error: entErr } = await admin.from("entitlements").upsert(
+          {
+            user_id: userId,
+            product: PRODUCT_PLUS,
+            status,
+            processor: "paddle",
+            processor_ref: data.id,
+            granted_at: new Date().toISOString(),
+            expires_at: expiresAt,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,product" },
+        );
+        if (entErr) {
+          console.error("Failed to upsert Plus entitlement:", entErr);
+          return NextResponse.json(
+            { error: "Entitlement write failed" },
+            { status: 500 },
+          );
+        }
         break;
+      }
 
       default:
         console.log("Unhandled event type:", eventType);

@@ -44,6 +44,7 @@ export interface ExistingPostData {
   postType: string;
   content: any;
   isSensitive: boolean;
+  isAdult?: boolean;
   excludeFromPublic?: boolean;
   audience?: PostAudience;
   tags: Array<{ id: string; name: string }>;
@@ -88,6 +89,9 @@ function buildEditInitial(
   const base: Partial<ComposerState> = {
     postType: editType,
     isSensitive: post.isSensitive,
+    // Preserve the adult flag on edit — without this the composer's default
+    // (false) would silently un-flag an existing adult post on save.
+    isAdult: post.isAdult ?? false,
     audience: post.audience ?? (post.excludeFromPublic ? "members" : "public"),
     tags: tagsToNames(post.tags),
   };

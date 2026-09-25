@@ -1,12 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import {
-  IconSun,
-  IconMoon,
-  IconDeviceDesktop,
   IconCheck,
   IconTextSize,
   IconPalette,
@@ -14,6 +10,7 @@ import {
 import { toast } from "@/components/ui";
 import { updateAccentColor, getCurrentProfile } from "@/actions/profile";
 import { ACCENTS, applyAccent } from "@/lib/accent";
+import { EditionsSettings } from "@/components/settings/EditionsSettings";
 
 type Theme = "light" | "dark" | "system";
 type FontSize = "small" | "medium" | "large";
@@ -31,12 +28,6 @@ const defaultSettings: AppearanceSettings = {
   accentColor: "pink",
   reducedMotion: false,
 };
-
-const themeOptions: { value: Theme; label: string; icon: typeof IconSun }[] = [
-  { value: "dark", label: "Late edition", icon: IconMoon },
-  { value: "light", label: "Newsprint edition", icon: IconSun },
-  { value: "system", label: "System", icon: IconDeviceDesktop },
-];
 
 const fontSizeOptions: { value: FontSize; label: string; sample: string }[] = [
   { value: "small", label: "Small", sample: "Aa" },
@@ -72,10 +63,6 @@ export default function AppearanceSettingsPage() {
   const [settings, setSettings] = useState<AppearanceSettings>(defaultSettings);
   const [profileAccent, setProfileAccent] = useState<string>("#F20D5E");
   const [savingAccent, setSavingAccent] = useState(false);
-  // Theme is owned by next-themes (same system as the sidebar toggle), so the
-  // selection actually persists and survives reloads.
-  const { theme: activeTheme, setTheme } = useTheme();
-
   useEffect(() => {
     // Load settings from localStorage and apply the saved UI accent.
     const saved = localStorage.getItem("appearance-settings");
@@ -140,37 +127,14 @@ export default function AppearanceSettingsPage() {
         <h1 className="type-display font-display text-ink mt-3">Appearance</h1>
       </div>
 
-      {/* Edition Selection */}
+      {/* Editions — reading + profile edition pickers (33 editions; Plus paywall) */}
       <section className="mb-10">
-        <h2 className="type-heading font-display text-ink mb-1">Edition</h2>
+        <h2 className="type-heading font-display text-ink mb-1">Editions</h2>
         <p className="editorial-caption not-italic text-meta mb-4">
-          Choose how be.vocl looks to you — the dark late edition or the light newsprint edition.
+          Each edition is a different printing of the same paper — colours, type
+          and rules change; the layout never does.
         </p>
-
-        <div className="grid grid-cols-3 gap-3">
-          {themeOptions.map((option) => {
-            const Icon = option.icon;
-            const isSelected = (activeTheme ?? "dark") === option.value;
-
-            return (
-              <button
-                key={option.value}
-                onClick={() => {
-                  setTheme(option.value);
-                  toast.success("Appearance updated");
-                }}
-                className={`relative flex flex-col items-center gap-2 p-4 border transition-colors ${
-                  isSelected
-                    ? "border-accent text-ink"
-                    : "border-rule text-meta hover:text-ink"
-                }`}
-              >
-                <Icon size={26} className={isSelected ? "text-accent" : "text-meta"} />
-                <span className="text-xs font-medium text-center">{option.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        <EditionsSettings />
       </section>
 
       {/* Font Size */}

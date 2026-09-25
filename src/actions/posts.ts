@@ -25,6 +25,8 @@ interface CreatePostInput {
   postType: PostType;
   content: PostContent;
   isSensitive?: boolean;
+  /** Adult (sexual) content — stricter, hard-gated sibling of isSensitive. */
+  isAdult?: boolean;
   /** Per-post audience tier (public / members / followers). Source of truth. */
   audience?: PostAudience;
   /** Legacy boolean mirror. Ignored when `audience` is provided. */
@@ -65,7 +67,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
       return { success: false, error: "Your account is restricted from posting" };
     }
 
-    const { postType, content, isSensitive, audience, excludeFromPublic, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
+    const { postType, content, isSensitive, isAdult, audience, excludeFromPublic, tags, publishMode, scheduledFor, threadId, startThread, pendingCommunityIds } = input;
 
     // Extract media URLs for moderation
     const mediaUrls = extractMediaUrls(postType, content);
@@ -137,7 +139,11 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
 
     // Create the post
     // Auto-tag as sensitive if moderation detected nudity/gore (even if user didn't mark it)
-    const finalIsSensitive = isSensitive || autoSensitive;
+    const finalIsAdult = !!isAdult;
+    // Adult content is inherently sensitive, so all sensitive handling (blur,
+    // discovery opt-in, public exclusion) also covers it. The DB trigger
+    // enforces this invariant too (defense in depth).
+    const finalIsSensitive = isSensitive || autoSensitive || finalIsAdult;
 
     // Audience is the source of truth (fall back to the legacy boolean).
     // Hard rule: sensitive/NSFW is NEVER public — a public+sensitive post is
@@ -169,6 +175,7 @@ export async function createPost(input: CreatePostInput): Promise<CreatePostResu
         post_type: postType,
         content: content as unknown as Json,
         is_sensitive: finalIsSensitive,
+        is_adult: finalIsAdult,
         audience: finalAudience,
         exclude_from_public: finalExcludeFromPublic,
         status,
@@ -374,6 +381,8 @@ interface UpdatePostInput {
   content?: PostContent;
   reblogComment?: string | null;
   isSensitive?: boolean;
+  /** Adult (sexual) content — stricter, hard-gated sibling of isSensitive. */
+  isAdult?: boolean;
   /** Per-post audience tier (public / members / followers). Source of truth. */
   audience?: PostAudience;
   /** Legacy boolean mirror. Ignored when `audience` is provided. */
@@ -392,12 +401,12 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
       return { success: false, error: "Unauthorized" };
     }
 
-    const { postId, content, reblogComment, isSensitive, audience, excludeFromPublic, tags } = input;
+    const { postId, content, reblogComment, isSensitive, isAdult, audience, excludeFromPublic, tags } = input;
 
     // Verify ownership (and fetch the fields needed to re-derive visibility).
     const { data: existingPost } = await supabase
       .from("posts")
-      .select("author_id, post_type, is_sensitive, exclude_from_public, audience")
+      .select("author_id, post_type, is_sensitive, is_adult, exclude_from_public, audience")
       .eq("id", postId)
       .single();
 
@@ -449,7 +458,14 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     // Sensitivity is the greater of what the author asked for and what the screen
     // found — an author cannot un-flag content moderation considers sensitive.
     const requestedSensitive = isSensitive !== undefined ? isSensitive : !!existingPost.is_sensitive;
-    const finalIsSensitive = requestedSensitive || autoSensitive;
+    // Adult flag is STICKY on edit: an edit can raise it, but the generic editor
+    // never silently lowers it (edit forms aren't always hydrated with the flag,
+    // and accidentally un-gating adult content is the dangerous direction).
+    // Clearing it is a deliberate action / moderator tool, not a side effect.
+    // Adult implies sensitive.
+    const existingIsAdult = !!(existingPost as { is_adult?: boolean }).is_adult;
+    const finalIsAdult = existingIsAdult || isAdult === true;
+    const finalIsSensitive = requestedSensitive || autoSensitive || finalIsAdult;
     // Audience is the source of truth; fall back to the caller's legacy boolean,
     // then to the post's existing audience. Hard rule: sensitive is never public.
     const requestedAudience: PostAudience =
@@ -462,6 +478,7 @@ export async function updatePost(input: UpdatePostInput): Promise<CreatePostResu
     const finalAudience: PostAudience =
       finalIsSensitive && requestedAudience === "public" ? "members" : requestedAudience;
     updateData.is_sensitive = finalIsSensitive;
+    updateData.is_adult = finalIsAdult;
     updateData.audience = finalAudience;
     updateData.exclude_from_public = finalAudience !== "public";
 
@@ -1751,6 +1768,13 @@ export async function getFeedPosts(options?: {
     if (mutedIds.length > 0) {
       query = query.not("author_id", "in", `(${mutedIds.join(",")})`);
     }
+
+    // Adult-content hard wall: the standard SFW feed never surfaces is_adult
+    // posts, for anyone. This is the separable seam for the future adult product
+    // (see the segregation plan) — that surface will open this gate only for
+    // verified-21+, opted-in viewers. `is_adult` posts are already forced
+    // sensitive + non-public by the DB trigger; this is the stricter feed gate.
+    query = query.eq("is_adult", false);
 
     query = query.order("created_at", { ascending: false });
     query = query.range(offset, offset + limit - 1); // PostgREST range is inclusive on both ends
