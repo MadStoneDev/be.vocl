@@ -9,7 +9,6 @@ import {
   applyPaperTexture,
   isDarkEdition,
 } from "@/editions/client";
-import { loadEditionFonts } from "@/editions/fonts";
 import {
   getMyAppearance,
   updateReadingEdition,
@@ -17,6 +16,7 @@ import {
   updatePaperTexture,
   updateAlwaysReadInMyEdition,
 } from "@/actions/editions";
+import { EditionSpecimen } from "@/components/settings/EditionSpecimen";
 import { PlusUpgradeSheet } from "@/components/payments/PlusUpgradeSheet";
 import { toast } from "@/components/ui";
 
@@ -53,63 +53,62 @@ function isGated(ed: Edition): boolean {
   return EDITIONS_PAYWALL_ENABLED && ed.tier === "plus";
 }
 
-function Swatches({ ed }: { ed: Edition }) {
-  const { paper, ink, body, meta, rule, accent } = ed.colors;
-  return (
-    <span className="flex shrink-0" aria-hidden>
-      {[paper, ink, body, meta, rule, accent].map((c, i) => (
-        <span
-          key={i}
-          className="w-[18px] h-[18px]"
-          style={{ backgroundColor: c, outline: "1px solid var(--rule)", outlineOffset: "-1px" }}
-        />
-      ))}
-    </span>
-  );
+interface Viewer {
+  name?: string | null;
+  handle?: string | null;
 }
 
-function EditionRow({
+function EditionTile({
   ed,
+  variant,
+  viewer,
   selected,
-  entitled,
   onSelect,
 }: {
   ed: Edition;
+  variant: "feed" | "profile";
+  viewer: Viewer;
   selected: boolean;
-  entitled: boolean;
   onSelect: (id: string) => void;
 }) {
-  const gated = isGated(ed) && !entitled;
   return (
     <button
       type="button"
       onClick={() => onSelect(ed.id)}
-      onMouseEnter={() => loadEditionFonts(ed.id)}
-      onFocus={() => loadEditionFonts(ed.id)}
-      className="flex items-center gap-4 w-full py-3 border-b border-rule text-left"
       aria-pressed={selected}
+      title={ed.description}
+      className={`group text-left border transition-colors ${
+        selected ? "border-accent" : "border-rule hover:border-meta"
+      }`}
     >
-      <Swatches ed={ed} />
-      <span className="flex-1 min-w-0">
+      {/* Themed specimen thumbnail */}
+      <div
+        className={`aspect-[4/3] overflow-hidden border-b ${
+          selected ? "border-accent" : "border-rule"
+        }`}
+      >
+        <EditionSpecimen edition={ed} variant={variant} viewer={viewer} scale={0.92} />
+      </div>
+      {/* Caption row */}
+      <div className="flex items-center justify-between gap-2 px-2.5 py-2">
         <span
-          className="block text-ink leading-none"
-          style={{ fontFamily: ed.fonts.nameplate, fontSize: "22px" }}
+          className="truncate text-ink"
+          style={{ fontFamily: ed.fonts.nameplate, fontSize: "15px" }}
         >
           {ed.name}
         </span>
-        <span className="byline text-meta mt-1 block">{ed.audience}</span>
-      </span>
-      {EDITIONS_PAYWALL_ENABLED && ed.tier === "plus" && (
-        <span
-          className="stamp-21 shrink-0"
-          title={gated ? "Requires be.vocl Plus" : "Plus edition"}
-        >
-          PLUS
+        <span className="flex items-center gap-1.5 shrink-0">
+          {EDITIONS_PAYWALL_ENABLED && ed.tier === "plus" && (
+            <span className="stamp-21">PLUS</span>
+          )}
+          <span
+            className="text-base leading-none"
+            style={{ color: selected ? "var(--accent)" : "var(--meta)" }}
+          >
+            {selected ? "●" : "○"}
+          </span>
         </span>
-      )}
-      <span className="shrink-0 text-lg" style={{ color: selected ? "var(--accent)" : "var(--meta)" }}>
-        {selected ? "●" : "○"}
-      </span>
+      </div>
     </button>
   );
 }
@@ -122,7 +121,7 @@ function FilterTabs({
   onChange: (f: FilterKey) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-4 mb-2 border-b border-rule pb-2">
+    <div className="flex flex-wrap gap-4 mb-4 border-b border-rule pb-2">
       {FILTERS.map((f) => (
         <button
           key={f.key}
@@ -138,12 +137,41 @@ function FilterTabs({
   );
 }
 
+function Gallery({
+  editions,
+  variant,
+  viewer,
+  selectedId,
+  onSelect,
+}: {
+  editions: Edition[];
+  variant: "feed" | "profile";
+  viewer: Viewer;
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+      {editions.map((ed) => (
+        <EditionTile
+          key={ed.id}
+          ed={ed}
+          variant={variant}
+          viewer={viewer}
+          selected={selectedId === ed.id}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function EditionsSettings() {
   const { setTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [isPlus, setIsPlus] = useState(false);
+  const [viewer, setViewer] = useState<Viewer>({});
 
-  // Saved (persisted) vs. pending (selected in the picker) editions.
   const [savedReading, setSavedReading] = useState("late-edition");
   const [savedProfile, setSavedProfile] = useState("late-edition");
   const [pendingReading, setPendingReading] = useState("late-edition");
@@ -164,6 +192,7 @@ export function EditionsSettings() {
       if (res.success && res.appearance) {
         const a = res.appearance;
         setIsPlus(a.isPlus);
+        setViewer({ name: a.displayName, handle: a.username });
         setSavedReading(a.readingEdition);
         setSavedProfile(a.profileEdition);
         setPendingReading(a.readingEdition);
@@ -196,7 +225,6 @@ export function EditionsSettings() {
       toast.error(res.error || "Could not apply edition");
       return;
     }
-    // Persisted — reflect it live and sync light/dark to the edition's luminance.
     applyReadingEdition(id);
     setTheme(isDarkEdition(id) ? "dark" : "light");
     setSavedReading(id);
@@ -219,7 +247,6 @@ export function EditionsSettings() {
     toast.success("Profile edition applied");
   };
 
-  // After a successful upgrade, refresh entitlement and apply the pending pick.
   const onUpgraded = async () => {
     const target = upgrade?.target;
     const id = upgrade?.id;
@@ -253,20 +280,17 @@ export function EditionsSettings() {
       <section className="mb-10">
         <span className="kicker text-meta">Reading edition</span>
         <p className="editorial-caption not-italic text-meta mt-1 mb-4">
-          How be.vocl looks to you — your feed, posts, messages and sidebar.
+          How be.vocl looks to you — each tile is a live sample of your feed in
+          that edition.
         </p>
         <FilterTabs value={readingFilter} onChange={setReadingFilter} />
-        <div className="border-t border-rule">
-          {readingList.map((ed) => (
-            <EditionRow
-              key={ed.id}
-              ed={ed}
-              entitled={isPlus}
-              selected={pendingReading === ed.id}
-              onSelect={setPendingReading}
-            />
-          ))}
-        </div>
+        <Gallery
+          editions={readingList}
+          variant="feed"
+          viewer={viewer}
+          selectedId={pendingReading}
+          onSelect={setPendingReading}
+        />
         <ApplyBar
           pending={pendingReading}
           saved={savedReading}
@@ -275,13 +299,8 @@ export function EditionsSettings() {
           onApply={() => applyReading(pendingReading)}
         />
 
-        {/* Toggles */}
         <div className="mt-6">
-          <ToggleRow
-            label="Paper texture"
-            checked={paperTexture}
-            onChange={toggleTexture}
-          />
+          <ToggleRow label="Paper texture" checked={paperTexture} onChange={toggleTexture} />
           <ToggleRow
             label="Always read in my edition"
             help="Show everyone's profile in your reading edition instead of theirs."
@@ -297,7 +316,8 @@ export function EditionsSettings() {
       <section className="mb-4">
         <span className="kicker text-meta">Profile edition</span>
         <p className="editorial-caption not-italic text-meta mt-1 mb-4">
-          How your public profile looks to visitors. Your sidebar and settings are unaffected.
+          How your public profile looks to visitors — each tile shows your
+          profile in that edition. Your sidebar and settings are unaffected.
         </p>
         <button
           type="button"
@@ -307,17 +327,13 @@ export function EditionsSettings() {
           Same as my reading edition
         </button>
         <FilterTabs value={profileFilter} onChange={setProfileFilter} />
-        <div className="border-t border-rule">
-          {profileList.map((ed) => (
-            <EditionRow
-              key={ed.id}
-              ed={ed}
-              entitled={isPlus}
-              selected={pendingProfile === ed.id}
-              onSelect={setPendingProfile}
-            />
-          ))}
-        </div>
+        <Gallery
+          editions={profileList}
+          variant="profile"
+          viewer={viewer}
+          selectedId={pendingProfile}
+          onSelect={setPendingProfile}
+        />
         <ApplyBar
           pending={pendingProfile}
           saved={savedProfile}

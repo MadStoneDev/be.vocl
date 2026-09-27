@@ -25,6 +25,10 @@ export interface MyAppearance {
   isPlus: boolean;
   /** Reading edition after entitlement resolution — what should actually render. */
   resolvedReadingEdition: string;
+  /** Viewer identity, for personalising the picker specimens. */
+  displayName: string | null;
+  username: string | null;
+  avatarUrl: string | null;
 }
 
 interface ActionResult {
@@ -50,7 +54,7 @@ export async function getMyAppearance(): Promise<{
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "reading_edition, profile_edition, reading_edition_light, reading_edition_dark, match_system_theme, paper_texture, always_read_in_my_edition, custom_nameplate_font, masthead_line, accent_color",
+      "reading_edition, profile_edition, reading_edition_light, reading_edition_dark, match_system_theme, paper_texture, always_read_in_my_edition, custom_nameplate_font, masthead_line, accent_color, display_name, username, avatar_url",
     )
     .eq("id", user.id)
     .single();
@@ -74,6 +78,9 @@ export async function getMyAppearance(): Promise<{
       accentColor: profile?.accent_color ?? null,
       isPlus,
       resolvedReadingEdition: resolveEdition(readingPref, { entitled: isPlus }).id,
+      displayName: profile?.display_name ?? null,
+      username: profile?.username ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
     },
   };
 }
