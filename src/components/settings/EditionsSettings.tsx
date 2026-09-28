@@ -92,10 +92,10 @@ function EditionTile({
         <EditionSpecimen edition={ed} variant={variant} viewer={viewer} />
       </div>
       {/* Caption row */}
-      <div className="flex items-center justify-between gap-2 px-2.5 py-2">
+      <div className="flex items-center justify-between gap-2 px-3 py-2.5">
         <span
           className="truncate text-ink"
-          style={{ fontFamily: ed.fonts.nameplate, fontSize: "15px" }}
+          style={{ fontFamily: ed.fonts.nameplate, fontSize: "19px" }}
         >
           {ed.name}
         </span>
@@ -153,7 +153,7 @@ function Gallery({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
       {editions.map((ed) => (
         <EditionTile
           key={ed.id}
