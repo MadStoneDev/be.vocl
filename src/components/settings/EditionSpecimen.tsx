@@ -5,25 +5,32 @@ import type { Edition } from "@/editions/types";
 import { loadEditionFonts } from "@/editions/fonts";
 
 /**
- * A self-contained, faithful sample of a feed card or profile header rendered in
- * one edition. Built entirely from the edition's own token data (colours, fonts,
- * and the case/italic/weight/tracking flags) with inline styles, so it renders
- * correctly anywhere without depending on the generated [data-edition] CSS.
+ * A faithful sample of a be.vocl PAGE (left nav rail + main column) rendered in
+ * one edition, built entirely from the edition's own token data (colours, fonts,
+ * and the case/italic/weight/tracking flags) with inline styles.
+ *
+ * It renders at near-native size and is WIDER/taller than its container on
+ * purpose: the caller clips it in a fixed window (overflow:hidden) so each tile
+ * shows the top-left corner of the page — content running off the right edge
+ * (~horizontal middle) and the bottom (whatever fits). No shrink-to-fit.
  *
  * Fonts load lazily when the specimen scrolls into view, so a full 33-tile
  * gallery doesn't request ~40 font families at once.
  */
+
+// Native layout dimensions of the mock page. The tile window is narrower/shorter,
+// so the right side (past ~PAGE_WIDTH/2) and the bottom get clipped.
+const PAGE_WIDTH = 480;
+const RAIL_WIDTH = 116;
+
 export function EditionSpecimen({
   edition,
   variant,
   viewer,
-  scale = 1,
 }: {
   edition: Edition;
   variant: "feed" | "profile";
   viewer?: { name?: string | null; handle?: string | null };
-  /** Multiplies every internal size. ~1 for a grid tile, ~1.6 for the large preview. */
-  scale?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -51,19 +58,26 @@ export function EditionSpecimen({
   const c = edition.colors;
   const f = edition.fonts;
   const t = edition.type;
-  const px = (n: number) => `${n * scale}px`;
 
-  const rootStyle: CSSProperties = {
+  const pageStyle: CSSProperties = {
+    width: PAGE_WIDTH,
+    minWidth: PAGE_WIDTH,
+    display: "flex",
     background: edition.effects.texture
       ? `${edition.effects.texture}, ${c.paper}`
       : c.paper,
     color: c.ink,
-    padding: px(14),
-    height: "100%",
-    overflow: "hidden",
   };
 
-  const nameplateStyle: CSSProperties = {
+  const uiStyle = (sizePx: number, color = c.meta): CSSProperties => ({
+    fontFamily: f.ui,
+    color,
+    textTransform: t.uiCase === "uppercase" ? "uppercase" : "none",
+    letterSpacing: t.uiTracking ?? "0.14em",
+    fontSize: sizePx,
+    lineHeight: 1.5,
+  });
+  const nameplateStyle = (sizePx: number): CSSProperties => ({
     fontFamily: f.nameplate,
     color: c.ink,
     textTransform: t.nameplateCase === "uppercase" ? "uppercase" : "none",
@@ -71,29 +85,24 @@ export function EditionSpecimen({
     fontWeight: t.nameplateWeight,
     letterSpacing: t.nameplateTracking,
     lineHeight: 1.05,
-  };
-  const headlineStyle: CSSProperties = {
+    fontSize: sizePx,
+  });
+  const headlineStyle = (sizePx: number): CSSProperties => ({
     fontFamily: f.headline,
     color: c.ink,
     textTransform: t.headlineCase === "uppercase" ? "uppercase" : "none",
     fontStyle: t.headlineItalic ? "italic" : "normal",
     fontWeight: t.headlineWeight,
     lineHeight: 1.12,
-  };
-  const bodyStyle: CSSProperties = {
+    fontSize: sizePx,
+  });
+  const bodyStyle = (sizePx: number): CSSProperties => ({
     fontFamily: f.body,
     color: c.body,
     fontStyle: t.bodyItalicAllowed ? "italic" : "normal",
-    lineHeight: 1.4,
-  };
-  const uiStyle = (sizePx: number): CSSProperties => ({
-    fontFamily: f.ui,
-    color: c.meta,
-    textTransform: t.uiCase === "uppercase" ? "uppercase" : "none",
-    letterSpacing: t.uiTracking ?? "0.14em",
-    fontSize: px(sizePx),
+    lineHeight: 1.45,
+    fontSize: sizePx,
   });
-  const hairline: CSSProperties = { borderTop: `1px solid ${c.rule}` };
   const sectionBreak: CSSProperties = {
     borderTop: edition.rules.sectionBreak,
     ...(edition.rules.sectionBreakImage
@@ -106,75 +115,92 @@ export function EditionSpecimen({
     fontFamily: f.ui,
     textTransform: t.uiCase === "uppercase" ? "uppercase" : "none",
     letterSpacing: t.uiTracking ?? "0.14em",
-    fontSize: px(8.5),
-    padding: `${px(4)} ${px(9)}`,
+    fontSize: 9,
+    padding: "5px 11px",
     display: "inline-block",
   };
+
   const name = viewer?.name?.trim() || "Your Name";
   const handle = viewer?.handle?.trim() || "you";
 
-  if (variant === "profile") {
-    return (
-      <div ref={ref} style={rootStyle}>
-        {/* banner */}
-        <div
-          style={{
-            height: px(26),
-            margin: `${px(-14)} ${px(-14)} ${px(10)}`,
-            background: `repeating-linear-gradient(135deg, ${c.placeholderStripeA} 0 6px, ${c.placeholderStripeB} 6px 12px)`,
-            borderBottom: `1px solid ${c.rule}`,
-          }}
-        />
-        <div style={{ ...nameplateStyle, fontSize: px(22) }}>{name}</div>
-        <div style={{ ...uiStyle(8.5), marginTop: px(4) }}>
-          @{handle} · 128 posts · 2.4k readers
-        </div>
-        <div style={{ ...bodyStyle, fontSize: px(11.5), marginTop: px(8) }}>
-          {edition.description}
-        </div>
-        {/* tabs */}
-        <div style={{ ...sectionBreak, marginTop: px(10), paddingTop: px(8), display: "flex", gap: px(14) }}>
-          {["Posts", "Media", "About"].map((tab, i) => (
-            <span
-              key={tab}
-              style={{
-                ...uiStyle(8.5),
-                color: i === 0 ? c.ink : c.meta,
-                paddingBottom: px(3),
-                borderBottom: i === 0 ? `2px solid ${c.accent}` : "2px solid transparent",
-              }}
-            >
-              {tab}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const nav = ["Home", "Feed", "Messages", "Queue", "Profile"];
 
-  // feed variant
   return (
-    <div ref={ref} style={rootStyle}>
-      {/* masthead */}
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: px(6) }}>
-        <span style={{ fontFamily: f.headline, color: c.accentText, fontSize: px(13), letterSpacing: "-0.01em" }}>
+    <div ref={ref} style={pageStyle}>
+      {/* Left nav rail — persistent app chrome */}
+      <div
+        style={{
+          width: RAIL_WIDTH,
+          minWidth: RAIL_WIDTH,
+          borderRight: `1px solid ${c.rule}`,
+          padding: "12px 10px",
+        }}
+      >
+        <div style={{ fontFamily: f.headline, color: c.accentText, fontSize: 15, letterSpacing: "-0.01em", marginBottom: 12 }}>
           be.vocl
-        </span>
-        <span style={{ fontFamily: "ui-monospace, monospace", color: c.meta, fontSize: px(7.5), letterSpacing: "0.16em", textTransform: "uppercase", textAlign: "right", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-          {edition.sampleMastheadLine}
-        </span>
+        </div>
+        {nav.map((item, i) => (
+          <div key={item} style={{ ...uiStyle(9.5, i === 1 ? c.ink : c.meta), marginBottom: 8 }}>
+            {item}
+          </div>
+        ))}
       </div>
-      <div style={{ ...hairline, margin: `${px(8)} 0` }} />
-      <div style={{ ...uiStyle(7.5), color: c.accentText }}>Column</div>
-      <div style={{ ...headlineStyle, fontSize: px(17), marginTop: px(3) }}>
-        Same paper, a new printing
-      </div>
-      <div style={{ ...bodyStyle, fontSize: px(11.5), marginTop: px(6) }}>
-        Colours, type and rules change — the layout never does.
-      </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: px(10) }}>
-        <span style={uiStyle(8)}>By {name} · 2h</span>
-        <span style={accentButton}>Follow</span>
+
+      {/* Main column */}
+      <div style={{ flex: 1, padding: 14, minWidth: 0 }}>
+        {variant === "profile" ? (
+          <>
+            <div
+              style={{
+                height: 34,
+                margin: "-14px -14px 10px",
+                background: `repeating-linear-gradient(135deg, ${c.placeholderStripeA} 0 7px, ${c.placeholderStripeB} 7px 14px)`,
+                borderBottom: `1px solid ${c.rule}`,
+              }}
+            />
+            <div style={nameplateStyle(27)}>{name}</div>
+            <div style={{ ...uiStyle(9), marginTop: 5 }}>@{handle} · 128 posts · 2.4k readers</div>
+            <div style={{ ...bodyStyle(13), marginTop: 9 }}>{edition.description}</div>
+            <div style={{ ...sectionBreak, marginTop: 12, paddingTop: 9, display: "flex", gap: 16 }}>
+              {["Posts", "Media", "About"].map((tab, i) => (
+                <span
+                  key={tab}
+                  style={{
+                    ...uiStyle(9, i === 0 ? c.ink : c.meta),
+                    paddingBottom: 3,
+                    borderBottom: i === 0 ? `2px solid ${c.accent}` : "2px solid transparent",
+                  }}
+                >
+                  {tab}
+                </span>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+              <span style={uiStyle(8.5, c.accentText)}>The Feed</span>
+              <span style={{ fontFamily: "ui-monospace, monospace", color: c.meta, fontSize: 8, letterSpacing: "0.16em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                {edition.sampleMastheadLine}
+              </span>
+            </div>
+            <div style={{ borderTop: `1px solid ${c.rule}`, margin: "9px 0" }} />
+            <div style={uiStyle(8, c.accentText)}>Column</div>
+            <div style={{ ...headlineStyle(19), marginTop: 4 }}>Same paper, a new printing</div>
+            <div style={{ ...bodyStyle(13), marginTop: 7 }}>
+              Colours, type and rules change — the layout never does. Every edition
+              is a different printing of the same page.
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 11 }}>
+              <span style={uiStyle(8.5)}>By {name} · 2h</span>
+              <span style={accentButton}>Follow</span>
+            </div>
+            <div style={{ ...sectionBreak, marginTop: 13, paddingTop: 11 }}>
+              <div style={uiStyle(8, c.accentText)}>Column</div>
+              <div style={{ ...headlineStyle(17), marginTop: 4 }}>A second dispatch, below the fold</div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

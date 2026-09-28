@@ -81,13 +81,15 @@ function EditionTile({
         selected ? "border-accent" : "border-rule hover:border-meta"
       }`}
     >
-      {/* Themed specimen thumbnail */}
+      {/* Fixed window onto the top-left of the (wider/taller) page mock — the
+          specimen overflows right (~horizontal middle) and bottom, clipped here. */}
       <div
-        className={`aspect-[4/3] overflow-hidden border-b ${
+        className={`overflow-hidden border-b ${
           selected ? "border-accent" : "border-rule"
         }`}
+        style={{ height: 168 }}
       >
-        <EditionSpecimen edition={ed} variant={variant} viewer={viewer} scale={0.92} />
+        <EditionSpecimen edition={ed} variant={variant} viewer={viewer} />
       </div>
       {/* Caption row */}
       <div className="flex items-center justify-between gap-2 px-2.5 py-2">
