@@ -273,26 +273,22 @@ export async function validateInviteCode(code: string): Promise<{
     const supabase = await createClient();
     const normalizedCode = code.toUpperCase().trim();
 
-    const { data: inviteCode } = await supabase
-      .from("invite_codes")
-      .select("id, max_uses, uses, expires_at, is_revoked")
-      .eq("code", normalizedCode)
-      .single();
+    // Validate via a SECURITY DEFINER function rather than a direct table read:
+    // SEC-10 (20260620_security_hardening.sql) dropped the public SELECT policy on
+    // invite_codes, so the anonymous signup client can no longer read the table.
+    // The function checks the exact code without exposing/enumerating the table.
+    const { data, error } = await supabase.rpc("validate_invite_code", {
+      p_code: normalizedCode,
+    });
 
-    if (!inviteCode) {
-      return { valid: false, error: "Invalid invite code" };
+    if (error) {
+      console.error("Validate invite code error:", error);
+      return { valid: false, error: "Failed to validate code" };
     }
 
-    if (inviteCode.is_revoked) {
-      return { valid: false, error: "This invite code has been revoked" };
-    }
-
-    if (inviteCode.expires_at && new Date(inviteCode.expires_at) < new Date()) {
-      return { valid: false, error: "This invite code has expired" };
-    }
-
-    if (inviteCode.max_uses !== null && (inviteCode.uses ?? 0) >= inviteCode.max_uses) {
-      return { valid: false, error: "This invite code has reached its maximum uses" };
+    const result = (data ?? {}) as { valid?: boolean; error?: string };
+    if (!result.valid) {
+      return { valid: false, error: result.error || "Invalid invite code" };
     }
 
     return { valid: true };

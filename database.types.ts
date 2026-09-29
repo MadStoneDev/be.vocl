@@ -2594,6 +2594,12 @@ export type Database = {
         }
         Returns: Json
       }
+      validate_invite_code: {
+        Args: {
+          p_code: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       appeal_status: "pending" | "approved" | "denied" | "blocked"
