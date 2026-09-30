@@ -398,8 +398,11 @@ export async function searchPosts(
         { count: "exact" }
       )
       .eq("status", "published")
+      // Use ->> (text extraction), not -> (jsonb): ilike needs text. With -> the
+      // clauses never matched, so post search returned nothing while tag/people
+      // search worked.
       .or(
-        `content->plain.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->html.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->caption_html.ilike.%${sanitizeFilterTerm(searchTerm)}%`
+        `content->>plain.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->>html.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->>caption_html.ilike.%${sanitizeFilterTerm(searchTerm)}%`
       );
 
     // Apply advanced filters
