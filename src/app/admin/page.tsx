@@ -17,6 +17,7 @@ interface Stats {
 }
 
 function ageOf(iso: string): string {
+  if (!/\d{4}/.test(iso)) return iso;
   const ms = Date.now() - new Date(iso).getTime();
   const h = Math.floor(ms / 3_600_000);
   if (h < 1) return `${Math.max(1, Math.floor(ms / 60_000))}m`;

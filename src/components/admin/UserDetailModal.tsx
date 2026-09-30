@@ -22,6 +22,7 @@ import {
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
+  if (!/\d{4}/.test(iso)) return iso;
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "—";
   return d.toLocaleString(undefined, {

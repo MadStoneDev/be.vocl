@@ -111,6 +111,9 @@ function tileThumb(p: PostData): string | null {
   return c.urls?.[0] || c.thumbnail_url || c.album_art_url || null;
 }
 function shortDate(iso: string): string {
+  // Guard against an already-formatted string (no 4-digit year) — new Date("Jul 7")
+  // would resolve to year 2001. Return it unchanged.
+  if (!/\d{4}/.test(iso)) return iso;
   try {
     return new Date(iso).toLocaleDateString("en-AU", { month: "short", day: "numeric" });
   } catch {

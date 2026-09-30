@@ -16,6 +16,8 @@ import { LinkPreviewCarousel } from "@/components/Post/content/LinkPreviewCarous
 import type { VideoEmbedPlatform } from "@/types/database";
 
 function formatRelativeTime(dateString: string): string {
+  // Already-formatted string (no 4-digit year) → return as-is (new Date("Jul 7") -> 2001).
+  if (!/\d{4}/.test(dateString)) return dateString;
   const date = new Date(dateString);
   const now = new Date();
   const diff = now.getTime() - date.getTime();
