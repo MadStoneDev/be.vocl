@@ -241,6 +241,17 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
     [go]
   );
 
+  // Live refs so the focus-trap effect can read the current rows/activeIndex/runRow
+  // without listing them as dependencies. Depending on them would re-run the effect
+  // on every keystroke, and its cleanup (focus restore) would steal focus from the
+  // input mid-type — the "only the first character registers" bug.
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+  const runRowRef = useRef(runRow);
+  runRowRef.current = runRow;
+
   // A11y: focus management + focus trap while open.
   useEffect(() => {
     if (!isOpen) return;
@@ -256,20 +267,20 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
       }
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setActiveIndex((i) => (rows.length === 0 ? 0 : (i + 1) % rows.length));
+        const len = rowsRef.current.length;
+        setActiveIndex((i) => (len === 0 ? 0 : (i + 1) % len));
         return;
       }
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setActiveIndex((i) =>
-          rows.length === 0 ? 0 : (i - 1 + rows.length) % rows.length
-        );
+        const len = rowsRef.current.length;
+        setActiveIndex((i) => (len === 0 ? 0 : (i - 1 + len) % len));
         return;
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        const row = rows[activeIndex];
-        if (row) runRow(row);
+        const row = rowsRef.current[activeIndexRef.current];
+        if (row) runRowRef.current(row);
         return;
       }
       if (e.key !== "Tab") return;
@@ -298,7 +309,9 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
       document.removeEventListener("keydown", handleKeyDown);
       previouslyFocused.current?.focus?.();
     };
-  }, [isOpen, rows, activeIndex, runRow, close]);
+    // Only re-run on open/close — NOT on rows/activeIndex changes (see refs above),
+    // otherwise the cleanup's focus-restore fires mid-type and drops keystrokes.
+  }, [isOpen, close]);
 
   // Scroll the active row into view.
   useEffect(() => {
