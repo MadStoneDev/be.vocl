@@ -75,10 +75,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${gloock.variable} ${sourceSerif.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      // next/font variables live on <html> (not <body>) so the :root font
+      // aliases in globals.css (--font-body: var(--font-source-serif), etc.) can
+      // resolve them — :root can't see body-scoped custom properties.
+      className={`${gloock.variable} ${sourceSerif.variable} ${plexSans.variable} ${plexMono.variable}`}
+    >
+      <body className="antialiased">
         {/* Apply the saved UI accent + reading edition before first paint (no
             colour/theme flash). */}
         <script dangerouslySetInnerHTML={{ __html: ACCENT_BOOT_SCRIPT }} />
