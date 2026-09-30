@@ -67,6 +67,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <Link
       key={item.href}
       href={item.href}
+      // Don't prefetch every admin section on mount — the burst was overloading
+      // the proxy (503s). They load on click instead.
+      prefetch={false}
       aria-current={isActive(item.href, item.exact) ? "page" : undefined}
       className={`block border-l-2 px-6 py-2.5 text-[13.5px] transition-colors ${
         isActive(item.href, item.exact)
@@ -127,6 +130,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               data-active={isActive(item.href, item.exact)}
               className="section-tab whitespace-nowrap hover:text-ink transition-colors"
             >

@@ -180,7 +180,7 @@ function TileShell({
 }) {
   return (
     <div className="flex flex-col gap-2" data-post-id={post.id}>
-      <Link href={hrefOf(post)} className={`group block ${className}`}>
+      <Link href={hrefOf(post)} prefetch={false} className={`group block ${className}`}>
         {children}
       </Link>
       {byline}
@@ -273,7 +273,7 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
   return (
     <div className="group flex flex-col gap-2.5">
       {isVideo ? (
-        <Link href={hrefOf(post)} className="block">
+        <Link href={hrefOf(post)} prefetch={false} className="block">
           {media}
         </Link>
       ) : (
@@ -291,7 +291,7 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
       )}
 
       {(caption || isVideo) && (
-        <Link href={hrefOf(post)} className="block">
+        <Link href={hrefOf(post)} prefetch={false} className="block">
           <p
             className={`${prominence === "lead" ? "type-body-lg" : "type-body"} text-foreground/85 hover:text-vocl-primary transition-colors`}
           >
