@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -17,24 +17,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const { profile, isLoading } = useAuth();
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+  // Authorization is derived from the already-loaded useAuth profile — not a
+  // separate /api/admin/check-access fetch, which raced on a fresh page load
+  // (direct URL / refresh / emailed link) and bounced admins to /feed before the
+  // session settled. The proxy (src/lib/supabase/proxy.ts) still enforces
+  // role >= 5 server-side for /admin; this is the client mirror of that threshold.
+  const authorized = !isLoading && !!profile && (profile.role ?? 0) >= 5;
 
   useEffect(() => {
     if (isLoading) return;
-    const checkAccess = async () => {
-      if (!profile) {
-        router.replace("/login");
-        return;
-      }
-      const response = await fetch("/api/admin/check-access");
-      const data = await response.json();
-      if (!data.authorized) {
-        router.replace("/feed");
-        return;
-      }
-      setIsAuthorized(true);
-    };
-    checkAccess();
+    if (!profile) router.replace("/login");
+    else if ((profile.role ?? 0) < 5) router.replace("/feed");
   }, [profile, isLoading, router]);
 
   const handleLogout = async () => {
@@ -43,14 +37,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/login");
   };
 
-  if (isLoading || isAuthorized === null) {
+  // Spinner while loading, and while a non-admin is being redirected away.
+  if (!authorized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <IconLoader2 size={32} className="animate-spin text-accent" />
       </div>
     );
   }
-  if (!isAuthorized) return null;
 
   const groups: { label: string; items: { href: string; label: string; exact?: boolean }[] }[] = [
     {
