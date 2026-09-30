@@ -60,11 +60,13 @@ export async function getNotifications(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Get notifications with actor profile
-    const { data, error } = await supabase
-      .from("notifications")
-      .select(
-        `
+    // Fetch the list and the unread count in parallel — they're independent and
+    // ran sequentially before (two round-trips instead of one).
+    const [{ data, error }, { count: unreadCount }] = await Promise.all([
+      supabase
+        .from("notifications")
+        .select(
+          `
         id,
         notification_type,
         post_id,
@@ -87,22 +89,21 @@ export async function getNotifications(
           conversation_id
         )
       `
-      )
-      .eq("recipient_id", user.id)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+        )
+        .eq("recipient_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
+      supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("recipient_id", user.id)
+        .eq("is_read", false),
+    ]);
 
     if (error) {
       console.error("Get notifications error:", error);
       return { success: false, error: "Failed to fetch notifications" };
     }
-
-    // Get unread count
-    const { count: unreadCount } = await supabase
-      .from("notifications")
-      .select("*", { count: "exact", head: true })
-      .eq("recipient_id", user.id)
-      .eq("is_read", false);
 
     // Transform notifications
     const notifications: Notification[] = (data || []).map((n: any) => {

@@ -4,8 +4,23 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { IconLoader2 } from "@tabler/icons-react";
-import { EditorialComposer, type ExistingPostData } from "@/components/Post/create";
+import dynamic from "next/dynamic";
+import type { ExistingPostData } from "@/components/Post/create";
 import { getPostById } from "@/actions/posts";
+
+// Code-split the heavy Tiptap editor and show a spinner while its chunk loads,
+// instead of a blank screen for several seconds.
+const EditorialComposer = dynamic(
+  () => import("@/components/Post/create").then((m) => m.EditorialComposer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+        <IconLoader2 size={32} className="animate-spin text-[var(--vocl-primary)]" />
+      </div>
+    ),
+  },
+);
 
 function CreatePageInner() {
   const router = useRouter();
