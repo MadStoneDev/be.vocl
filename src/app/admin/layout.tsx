@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -18,18 +17,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const { profile, isLoading } = useAuth();
 
-  // Authorization is derived from the already-loaded useAuth profile — not a
-  // separate /api/admin/check-access fetch, which raced on a fresh page load
-  // (direct URL / refresh / emailed link) and bounced admins to /feed before the
-  // session settled. The proxy (src/lib/supabase/proxy.ts) still enforces
-  // role >= 5 server-side for /admin; this is the client mirror of that threshold.
-  const authorized = !isLoading && !!profile && (profile.role ?? 0) >= 5;
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (!profile) router.replace("/login");
-    else if ((profile.role ?? 0) < 5) router.replace("/feed");
-  }, [profile, isLoading, router]);
+  // No client-side authorization redirect. The proxy (src/lib/supabase/proxy.ts)
+  // already enforces role >= 5 server-side for every /admin route (and sends
+  // logged-out users to /login), so anyone who reaches this layout is authorized.
+  // A client redirect here raced useAuth's loading phase — the role read as empty
+  // (< 5) for a tick and bounced real admins to /feed. We only wait for the profile
+  // to load so the rail footer/username render.
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -37,8 +30,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/login");
   };
 
-  // Spinner while loading, and while a non-admin is being redirected away.
-  if (!authorized) {
+  // Wait only for auth to finish loading (so the profile-dependent footer renders).
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <IconLoader2 size={32} className="animate-spin text-accent" />
