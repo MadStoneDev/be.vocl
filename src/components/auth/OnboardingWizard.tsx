@@ -475,12 +475,12 @@ export function OnboardingWizard({ username, onComplete }: OnboardingWizardProps
                 <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
               </div>
             ) : suggestedTags.length > 0 ? (
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="flex flex-wrap gap-2 justify-center max-h-[40vh] sm:max-h-80 overflow-y-auto py-1">
                 {suggestedTags.map((tag) => (
                   <button
                     key={tag.id}
                     onClick={() => toggleTag(tag.name)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-sm text-sm font-medium transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm text-sm font-medium transition-all ${
                       selectedTags.has(tag.name)
                         ? "bg-vocl-primary text-white"
                         : "bg-vocl-surface-dark border border-white/10 text-foreground hover:bg-white/5"
