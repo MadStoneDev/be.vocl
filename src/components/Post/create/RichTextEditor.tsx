@@ -38,6 +38,9 @@ export function RichTextEditor({
         heading: false,
         codeBlock: false,
         code: false,
+        // StarterKit v3 bundles Link; disable it here so the custom Link.configure
+        // below is the only Link extension (avoids the duplicate-extension warning).
+        link: false,
       }),
       Link.configure({
         openOnClick: false,

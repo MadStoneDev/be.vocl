@@ -157,7 +157,7 @@ export default function CommunitiesPage() {
                 ? "You haven't joined any desks yet."
                 : search
                   ? "No desks match your search."
-                  : "No desks yet — be the first to open one."}
+                  : "No public desks to discover yet — open one, or check back soon."}
             </p>
           </div>
         ) : (

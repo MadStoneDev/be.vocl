@@ -67,6 +67,9 @@ export function EditorialEditor({
         codeBlock: false,
         code: false,
         // Blockquote stays ENABLED (StarterKit default) for the pull-quote.
+        // StarterKit v3 bundles Link; disable it so the custom Link.configure below
+        // is the only Link extension (avoids the duplicate-extension warning).
+        link: false,
       }),
       Link.configure({
         openOnClick: false,

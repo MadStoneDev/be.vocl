@@ -14,7 +14,7 @@ const STATUS_TABS = [
   { value: "banned", label: "Banned" },
 ];
 
-const ROLE_LABELS: Record<number, string> = { 0: "User", 5: "Moderator", 10: "Admin" };
+const ROLE_LABELS: Record<number, string> = { 0: "User", 1: "Trusted", 5: "Moderator", 10: "Admin" };
 
 /** Square avatar per the broadsheet spec — never circular. */
 function SquareAvatar({ src, username, size = 36 }: { src?: string | null; username: string; size?: number }) {
