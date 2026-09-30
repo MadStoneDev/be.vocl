@@ -1881,7 +1881,10 @@ export async function getFeedPosts(options?: {
         isPinned: post.is_pinned,
         isOwn: user ? post.author_id === user.id : false,
         isFollowingAuthor: followingSet.has(post.author_id),
-        createdAt: formatTimeAgo(post.created_at),
+        // Raw ISO — the client renders it through <TimeAgo>, which formats it in
+        // the viewer's timezone. Pre-formatting here caused wrong years/day shifts
+        // (new Date("Jul 7") -> 2001) and a stale, non-live datetime attribute.
+        createdAt: post.created_at,
         likeCount: stats.likeCountMap.get(post.id) || 0,
         commentCount: stats.commentCountMap.get(post.id) || 0,
         reblogCount: stats.reblogCountMap.get(post.id) || 0,
