@@ -5,7 +5,7 @@ import { AuthCard } from "@/components/auth";
 import { LoadingSpinner } from "@/components/ui";
 
 export const metadata = {
-  title: "Sign up | be.vocl",
+  title: "Sign up",
   description: "Create your be.vocl account",
 };
 

@@ -7,6 +7,7 @@ import { validateUsernameFormat } from "@/lib/validation";
 import { checkUsernameAvailability } from "@/actions/profile";
 import { validateInviteCode } from "@/actions/invites";
 import { ageFromDob, isAtLeast, SENSITIVE_MIN_AGE } from "@/lib/age";
+import { editionNumber, editionDateline } from "@/lib/edition-slug";
 
 type AuthMode = "login" | "signup" | "forgot";
 
@@ -314,12 +315,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     });
   };
 
-  const dateline = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const dateline = editionDateline();
 
   const accentBtn =
     "block w-full text-center bg-accent text-white font-sans font-medium uppercase tracking-[0.16em] text-xs py-3.5 transition-opacity hover:opacity-[0.88] disabled:opacity-50 disabled:cursor-not-allowed";
@@ -337,7 +333,7 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
     <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-14">
       {/* Utility bar */}
       <div className="flex items-center justify-between border-b border-rule py-3.5">
-        <span className="slug text-meta-dim">EST. 2026 · LATE EDITION · NO. 0311</span>
+        <span className="slug text-meta-dim">EST. 2026 · LATE EDITION · NO. {editionNumber()}</span>
         <span className="flex gap-5 byline text-meta">
           <a href="/" className="hover:text-accent transition-colors">Front page</a>
           <a href="/terms" className="hover:text-accent transition-colors">The terms</a>

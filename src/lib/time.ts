@@ -9,6 +9,12 @@ const MONTHS = [
  * already-formatted strings pass through safely.
  */
 export function formatTimeAgo(input: string | number | Date, now: number = Date.now()): string {
+  // An already-formatted or relative string ("Aug 24", "5m", "now", "Yesterday")
+  // has no 4-digit year — return it unchanged rather than misparsing it. Without
+  // this, new Date("Aug 24") resolves to year 2001, rendering "Aug 24, 2001".
+  // Real ISO timestamps and epoch-millis strings always contain a 4-digit run.
+  if (typeof input === "string" && !/\d{4}/.test(input)) return input;
+
   const date = input instanceof Date ? input : new Date(input);
   const ms = date.getTime();
   if (Number.isNaN(ms)) return typeof input === "string" ? input : "";

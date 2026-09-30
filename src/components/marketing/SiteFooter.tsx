@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { editionNumber } from "@/lib/edition-slug";
 
 /** Broadsheet "classified" footer for public/marketing pages (home, discover,
  *  comparison pages). Rules, not cards; a mono colophon on the right. Only links
@@ -61,7 +62,7 @@ export function SiteFooter() {
           <div className="col-span-2 text-left slug leading-loose text-meta-dim sm:col-span-1 sm:text-right">
             be.vocl
             <br />
-            Late edition · No. 0311
+            Late edition · No. {editionNumber()}
             <br />
             © 2026 · Adults only
           </div>

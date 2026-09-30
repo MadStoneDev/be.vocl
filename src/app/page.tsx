@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicFrontPagePosts } from "@/actions/posts";
+import { editionNumber, editionDateline } from "@/lib/edition-slug";
 import type { FeedPost } from "@/components/feed/FeedList";
 import { FrontPageTile } from "@/components/feed/frontpage/FrontPageTiles";
 import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
@@ -118,17 +119,10 @@ export default async function Home() {
       poll?: { question: string; options: Array<{ label: string; votes: number }>; totalVotes: number } | null;
     })?.poll ?? null;
 
-  // Dateline + edition slug.
+  // Dateline + edition slug (shared helper so header/footer/auth pages match).
   const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / 86_400_000);
-  const editionNo = String(dayOfYear).padStart(4, "0");
-  const dateLine = now.toLocaleDateString("en-AU", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const editionNo = editionNumber(now);
+  const dateLine = editionDateline(now);
 
   const jsonLd = {
     "@context": "https://schema.org",

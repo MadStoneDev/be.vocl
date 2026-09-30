@@ -477,9 +477,9 @@ html.theme-transition body {
   top: 0;
 }
 
-/* Focus visible styles */
+/* Focus visible styles — use the editorial pink accent, not the teal brand accent. */
 :focus-visible {
-  outline: 2px solid var(--vocl-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
