@@ -467,6 +467,23 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
               <h2 className="font-display mb-6 mt-5 text-[32px] leading-[1.08] text-ink">
                 Redeem your invitation.
               </h2>
+              {success ? (
+                <div className="mt-5">
+                  <p className="editorial-body text-ink">{success}</p>
+                  <p className="editorial-caption mt-3 text-meta">
+                    We&apos;ve sent it to <span className="text-ink not-italic">{email}</span>. Open the link
+                    there to finish setting up your account — you can close this page.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setMode("login"); setSuccess(null); setError(null); }}
+                    className={`${TEXT_ACTION} mt-6`}
+                  >
+                    ← Back to sign in
+                  </button>
+                </div>
+              ) : (
+              <>
               <form onSubmit={handleSubmit}>
                 <Field
                   label="Invite code"
@@ -558,6 +575,8 @@ export function AuthCard({ initialMode = "login" }: AuthCardProps) {
                 <a href="/terms" className="text-ink hover:text-accent transition-colors">Terms</a> and{" "}
                 <a href="/privacy" className="text-ink hover:text-accent transition-colors">Privacy Policy</a>.
               </p>
+              </>
+              )}
             </>
           )}
 
