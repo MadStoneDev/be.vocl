@@ -17,6 +17,41 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Classify the route up-front (pure string checks, no Supabase call) so the
+  // getUser failure handler below can fail CLOSED on protected routes (the proxy
+  // is the only gate on /admin) and fail open only on public pages.
+  //  - /api authenticates per-route; RSS/embed/profile/discover/post/featured and
+  //    the auth/legal pages are public.
+  const machineOrPublicPrefixes = [
+    "/api",
+    "/rss",
+    "/embed",
+    "/profile/",
+    "/discover",
+    "/post/",
+    "/featured/",
+    "/vs",
+    "/login",
+    "/email-templates",
+    "/signup",
+    "/auth/callback",
+    "/terms",
+    "/privacy",
+    // The private-beta landing (where the beta gate sends users without access).
+    "/beta-closed",
+    // Crawl-control + discovery files must be reachable by logged-out bots.
+    "/sitemap.xml",
+    "/robots.txt",
+    "/llms.txt",
+    // Google Search Console HTML-file verification.
+    "/google731fe34a4a843607.html",
+  ];
+  const isPublicRoute = machineOrPublicPrefixes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+  // Account status page is accessible to locked users.
+  const isAccountStatusRoute = request.nextUrl.pathname.startsWith("/account-status");
+
   const supabase = createServerClient(
     supabaseUrl,
     supabaseAnonKey,
@@ -67,56 +102,23 @@ export async function updateSession(request: NextRequest) {
     }
     user = result.data.user;
   } catch (err) {
-    console.error("[proxy] getUser failed — passing request through", {
+    console.error("[proxy] getUser failed", {
       path: request.nextUrl.pathname,
       message: err instanceof Error ? err.message : String(err),
     });
-    return supabaseResponse;
+    // FAIL CLOSED on protected routes (incl. /admin): the proxy is the gate, so a
+    // failed session check must never grant access. Public pages fail open so a
+    // transient GoTrue blip doesn't 503 the feed/profile/post surfaces.
+    if (isPublicRoute || isAccountStatusRoute || request.nextUrl.pathname === "/") {
+      return supabaseResponse;
+    }
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
-  // Routes that run outside the user-auth flow:
-  //  - API routes authenticate per-route (CRON_SECRET, webhook signatures, or
-  //    their own createServerClient), so skipping user-session redirects here
-  //    avoids turning a 401 JSON response into an HTML redirect to /login.
-  //  - RSS feeds must be reachable by external readers (no cookie jar).
-  //  - /embed/* renders a public iframe view.
-  //  - /profile/[username] passes through here: logged-out visitors get the
-  //    public, server-rendered profile view (private profiles show a gated
-  //    shell). The in-app interactive view is served to logged-in users. The
-  //    archive sub-route server-gates itself with a ?next= login redirect.
-  //  - /discover is the public newspaper page of Public posts.
-  //  - /post/* is reachable by logged-out visitors; the post page server-gates
-  //    Members-only / sensitive posts to login itself.
-  const machineOrPublicPrefixes = [
-    "/api",
-    "/rss",
-    "/embed",
-    "/profile/",
-    "/discover",
-    "/post/",
-    "/featured/",
-    "/vs",
-    "/login",
-    "/email-templates",
-    "/signup",
-    "/auth/callback",
-    "/terms",
-    "/privacy",
-    // The private-beta landing (where the beta gate sends users without access).
-    "/beta-closed",
-    // Crawl-control + discovery files must be reachable by logged-out bots.
-    "/sitemap.xml",
-    "/robots.txt",
-    "/llms.txt",
-    // Google Search Console HTML-file verification.
-    "/google731fe34a4a843607.html",
-  ];
-  const isPublicRoute = machineOrPublicPrefixes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
-
-  // Account status page is accessible to locked users
-  const isAccountStatusRoute = request.nextUrl.pathname.startsWith("/account-status");
+  // (isPublicRoute / isAccountStatusRoute computed above, before getUser.)
 
   // Step-up MFA: a signed-in user who enrolled a TOTP factor but only holds an
   // AAL1 session must complete the challenge before reaching any gated route.
