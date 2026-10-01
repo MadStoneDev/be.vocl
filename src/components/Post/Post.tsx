@@ -192,7 +192,7 @@ function PostHeader({
     <div className="flex items-center justify-between pl-3 pr-1 sm:pl-4 sm:pr-1.5 pt-1 pb-2.5 border-b border-vocl-border z-50">
       <div className="flex items-center gap-3">
         <Link
-          href={`/profile/${author.username}`}
+          href={`/profile/${author.username}`} prefetch={false}
           className="hover:opacity-90 transition-opacity"
         >
           <Avatar src={author.avatarUrl} username={author.username} size="lg" />
@@ -200,7 +200,7 @@ function PostHeader({
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <Link
-              href={`/profile/${author.username}`}
+              href={`/profile/${author.username}`} prefetch={false}
               className="font-display text-base sm:text-lg font-normal text-foreground hover:underline"
             >
               {author.username}
@@ -864,7 +864,7 @@ function TagsOverlay({ tags, isVisible }: TagsOverlayProps) {
         {tags.map((tag) => (
           <Link
             key={tag.id}
-            href={`/tag/${encodeURIComponent(tag.name)}`}
+            href={`/tag/${encodeURIComponent(tag.name)}`} prefetch={false}
             onClick={(e) => e.stopPropagation()}
             className={`px-2 py-0.5 text-xs font-medium rounded bg-black/60 text-white truncate max-w-full transition-opacity ${
               isVisible ? "opacity-90 hover:opacity-100" : "opacity-0"
@@ -890,7 +890,7 @@ function MobileTagsStrip({ tags, bare }: { tags: PostTag[]; bare?: boolean }) {
           {tags.map((tag) => (
             <Link
               key={tag.id}
-              href={`/tag/${encodeURIComponent(tag.name)}`}
+              href={`/tag/${encodeURIComponent(tag.name)}`} prefetch={false}
               className="px-2.5 py-1 text-xs font-medium rounded-sm border border-vocl-border text-foreground/60 hover:text-vocl-primary hover:border-vocl-primary/50 transition-colors truncate"
               style={{ maxWidth: "150px" }}
             >
@@ -908,7 +908,7 @@ function MobileTagsStrip({ tags, bare }: { tags: PostTag[]; bare?: boolean }) {
         {tags.map((tag) => (
           <Link
             key={tag.id}
-            href={`/tag/${encodeURIComponent(tag.name)}`}
+            href={`/tag/${encodeURIComponent(tag.name)}`} prefetch={false}
             className="px-2 py-1 text-xs font-medium rounded bg-vocl-hover text-foreground/65 truncate"
             style={{ maxWidth: "150px" }}
           >
@@ -941,7 +941,7 @@ function TextPostTags({
           {tags.map((tag) => (
             <Link
               key={tag.id}
-              href={`/tag/${encodeURIComponent(tag.name)}`}
+              href={`/tag/${encodeURIComponent(tag.name)}`} prefetch={false}
               className="px-2.5 py-1 text-xs font-medium rounded-sm border border-vocl-border text-foreground/60 hover:text-vocl-primary hover:border-vocl-primary/50 transition-colors truncate"
               style={{ maxWidth: "180px" }}
             >
@@ -964,7 +964,7 @@ function TextPostTags({
           {tags.map((tag) => (
             <Link
               key={tag.id}
-              href={`/tag/${encodeURIComponent(tag.name)}`}
+              href={`/tag/${encodeURIComponent(tag.name)}`} prefetch={false}
               className={`px-2 py-1 text-xs font-medium rounded bg-vocl-hover text-foreground/65 truncate transition-opacity ${
                 isHovered
                   ? "opacity-80 hover:opacity-100"

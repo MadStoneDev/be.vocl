@@ -133,6 +133,7 @@ function Byline({ post }: { post: FeedPost }) {
     <div className="flex items-center gap-2 text-foreground/55 type-meta">
       <Link
         href={`/profile/${post.author.username}`}
+        prefetch={false}
         onClick={stop}
         className="flex items-center gap-2 hover:text-foreground/90 transition-colors"
       >
@@ -149,6 +150,7 @@ function Byline({ post }: { post: FeedPost }) {
       {post.isOwn && (
         <Link
           href={`/create?edit=${post.id}`}
+          prefetch={false}
           onClick={stop}
           aria-label="Edit post"
           className="ml-auto inline-flex items-center gap-1 text-foreground/45 hover:text-vocl-primary transition-colors"
