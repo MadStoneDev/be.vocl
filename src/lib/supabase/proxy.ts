@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { isBetaGateEnabled, canAccessBeta } from "@/lib/beta";
 
@@ -43,9 +44,35 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The proxy runs getUser() on EVERY matched request. On a full page load the
+  // browser fires a burst of RSC prefetches + server actions at once, so getUser
+  // hits self-hosted GoTrue many times concurrently. Previously a hang/error here
+  // had no handling, so the request was rejected and surfaced as a 503 right after
+  // load. Time-box getUser and FAIL OPEN: log the cause and let the request through
+  // (per-route checks + RLS still apply) rather than 503-ing it.
+  let user: User | null = null;
+  try {
+    const result = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("getUser timeout (3s)")), 3000),
+      ),
+    ]);
+    if (result.error && result.error.name !== "AuthSessionMissingError") {
+      console.error("[proxy] getUser error", {
+        path: request.nextUrl.pathname,
+        status: result.error.status,
+        message: result.error.message,
+      });
+    }
+    user = result.data.user;
+  } catch (err) {
+    console.error("[proxy] getUser failed — passing request through", {
+      path: request.nextUrl.pathname,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    return supabaseResponse;
+  }
 
   // Routes that run outside the user-auth flow:
   //  - API routes authenticate per-route (CRON_SECRET, webhook signatures, or
