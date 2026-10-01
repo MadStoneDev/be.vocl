@@ -263,6 +263,7 @@ export function LeftSidebar({
               <li key={item.href}>
                 <Link
                   href={item.href!}
+                  prefetch={false}
                   title={collapsed ? item.label : undefined}
                   aria-current={isActive ? "page" : undefined}
                   className={`${base} ${state}`}
@@ -281,6 +282,7 @@ export function LeftSidebar({
         {role >= 5 && (
           <Link
             href="/admin"
+            prefetch={false}
             title={collapsed ? "Admin" : undefined}
             aria-current={pathname.startsWith("/admin") ? "page" : undefined}
             className={`flex items-center rounded-sm transition-all duration-300 ${
@@ -301,6 +303,7 @@ export function LeftSidebar({
         {/* Settings */}
         <Link
           href="/settings"
+          prefetch={false}
           title={collapsed ? "Settings" : undefined}
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
           className={`flex items-center border-l-2 transition-colors duration-200 ${
@@ -321,6 +324,7 @@ export function LeftSidebar({
         {username ? (
           <Link
             href={`/profile/${username}`}
+            prefetch={false}
             title={collapsed ? `@${username}` : undefined}
             aria-label="Your profile"
             className={`flex items-center mt-1 border-l-2 transition-colors duration-200 ${

@@ -290,6 +290,7 @@ export function NotificationItem({
     return (
       <Link
         href={`/profile/${actor.username}`}
+        prefetch={false}
         onClick={handleClick}
         className={baseClassName}
       >
@@ -305,6 +306,7 @@ export function NotificationItem({
     return (
       <Link
         href={postId ? "/admin/flags" : "/admin/reports"}
+        prefetch={false}
         onClick={handleClick}
         className={baseClassName}
       >
@@ -314,7 +316,7 @@ export function NotificationItem({
   }
   if (type === "appeal") {
     return (
-      <Link href="/admin/appeals" onClick={handleClick} className={baseClassName}>
+      <Link href="/admin/appeals" prefetch={false} onClick={handleClick} className={baseClassName}>
         {innerContent}
       </Link>
     );
@@ -322,7 +324,7 @@ export function NotificationItem({
   // Tips link to the sender's profile.
   if (type === "tip") {
     return (
-      <Link href={`/profile/${actor.username}`} onClick={handleClick} className={baseClassName}>
+      <Link href={`/profile/${actor.username}`} prefetch={false} onClick={handleClick} className={baseClassName}>
         {innerContent}
       </Link>
     );
@@ -333,6 +335,7 @@ export function NotificationItem({
     return (
       <Link
         href={`/post/${postId}`}
+        prefetch={false}
         onClick={handleClick}
         className={baseClassName}
       >
@@ -344,7 +347,7 @@ export function NotificationItem({
   // A received ask with no answering post yet opens the asks inbox.
   if (type === "ask") {
     return (
-      <Link href="/asks" onClick={handleClick} className={baseClassName}>
+      <Link href="/asks" prefetch={false} onClick={handleClick} className={baseClassName}>
         {innerContent}
       </Link>
     );
