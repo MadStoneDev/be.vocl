@@ -63,9 +63,13 @@ export function FeedTabs({
                 onClick={() => onLayoutChange(opt.id)}
                 title={opt.description}
                 aria-pressed={layout === opt.id}
-                className={`slug whitespace-nowrap transition-colors ${
-                  layout === opt.id ? "text-ink" : "hover:text-ink"
+                // Accent underline marks the selected layout. The ink colour is
+                // set inline because `.slug`'s own colour wins over a `text-ink`
+                // class in the cascade (so both looked grey before).
+                className={`slug whitespace-nowrap transition-colors pb-0.5 border-b-2 ${
+                  layout === opt.id ? "border-accent" : "border-transparent hover:text-ink"
                 }`}
+                style={layout === opt.id ? { color: "var(--ink)" } : undefined}
               >
                 {opt.label}
               </button>

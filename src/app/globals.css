@@ -497,6 +497,13 @@ html.theme-transition body {
   outline-offset: 2px;
 }
 
+/* Tailwind v4 dropped the default pointer cursor on buttons. Restore it for all
+   interactive elements (disabled ones keep the default arrow). */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
