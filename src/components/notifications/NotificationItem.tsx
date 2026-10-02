@@ -211,7 +211,7 @@ export function NotificationItem({
               </div>
             ))}
             <div
-              className={`relative w-6 h-6 rounded-full ${config.bgColor} flex items-center justify-center ring-2 ring-background`}
+              className={`relative w-6 h-6 rounded-full bg-white flex items-center justify-center ring-2 ring-background`}
               style={{ zIndex: stackedActors.length + 1 }}
             >
               <Icon size={14} className={config.color} />
@@ -238,7 +238,7 @@ export function NotificationItem({
             </div>
             {/* Type icon badge */}
             <div
-              className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full ${config.bgColor} flex items-center justify-center ring-2 ring-background`}
+              className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white flex items-center justify-center ring-2 ring-background`}
             >
               <Icon size={14} className={config.color} />
             </div>
