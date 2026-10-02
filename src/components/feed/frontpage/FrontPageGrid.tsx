@@ -63,8 +63,10 @@ export function FrontPageGrid({
             variants={staggerContainer(0.08)}
           >
             {features.map((p) => (
-              <motion.div key={p.id} className="py-6 first:pt-0 last:pb-0" variants={fadeUp}>
-                <FrontPageTile post={p} prominence="feature" />
+              <motion.div key={p.id} className="py-6 first:pt-0 last:pb-0 flex-1 flex flex-col" variants={fadeUp}>
+                <div className="flex-1 flex flex-col">
+                  <FrontPageTile post={p} prominence="feature" />
+                </div>
                 <TileEngagement postId={p.id} comments={p.stats?.comments} likes={p.stats?.likes} voice={p.stats?.voiceReactions} reblogs={p.stats?.reblogs} hasLiked={p.interactions?.hasLiked} hasReblogged={p.interactions?.hasReblogged} />
               </motion.div>
             ))}
@@ -87,8 +89,10 @@ export function FrontPageGrid({
             variants={staggerContainer(0.04)}
           >
             {standards.map((p) => (
-              <motion.div key={p.id} className="cv-tile border-t border-vocl-border pt-5" variants={fadeUp}>
-                <FrontPageTile post={p} prominence="standard" />
+              <motion.div key={p.id} className="cv-tile border-t border-vocl-border pt-5 h-full flex flex-col" variants={fadeUp}>
+                <div className="flex-1 flex flex-col">
+                  <FrontPageTile post={p} prominence="standard" />
+                </div>
                 <TileEngagement postId={p.id} comments={p.stats?.comments} likes={p.stats?.likes} voice={p.stats?.voiceReactions} reblogs={p.stats?.reblogs} hasLiked={p.interactions?.hasLiked} hasReblogged={p.interactions?.hasReblogged} />
               </motion.div>
             ))}

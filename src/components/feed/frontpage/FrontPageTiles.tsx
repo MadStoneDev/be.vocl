@@ -181,11 +181,11 @@ function TileShell({
   className?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2" data-post-id={post.id}>
+    <div className="flex h-full flex-col gap-2" data-post-id={post.id}>
       <Link href={hrefOf(post)} prefetch={false} className={`group block ${className}`}>
         {children}
       </Link>
-      {byline}
+      {byline && <div className="mt-auto pt-2">{byline}</div>}
     </div>
   );
 }
@@ -274,7 +274,7 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
   );
 
   return (
-    <div className="group flex flex-col gap-2.5">
+    <div className="group flex h-full flex-col gap-2.5">
       {isVideo ? (
         <Link href={hrefOf(post)} prefetch={false} className="block">
           {media}
@@ -302,7 +302,9 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
           </p>
         </Link>
       )}
-      <Byline post={post} />
+      <div className="mt-auto">
+        <Byline post={post} />
+      </div>
 
       {!isVideo && (
         <ImageLightbox
