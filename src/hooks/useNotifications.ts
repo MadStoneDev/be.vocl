@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getUnreadCount } from "@/actions/notifications";
 
 interface UseNotificationsReturn {
   unreadCount: number;
@@ -18,12 +17,23 @@ export function useNotifications(currentUserId?: string): UseNotificationsReturn
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUnreadCount = useCallback(async () => {
-    const result = await getUnreadCount();
-    if (result.success && result.count !== undefined) {
-      setUnreadCount(result.count);
+    if (!currentUserId) {
+      setIsLoading(false);
+      return;
     }
+    // Direct client count query rather than a server action. Next serializes
+    // server actions, so this badge was queuing behind every other action fired
+    // on page load (~450ms each). A client-side count (RLS-scoped to the user)
+    // runs in parallel with the rest.
+    const supabase = createClient();
+    const { count } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("recipient_id", currentUserId)
+      .eq("is_read", false);
+    setUnreadCount(count ?? 0);
     setIsLoading(false);
-  }, []);
+  }, [currentUserId]);
 
   // Initial load
   useEffect(() => {

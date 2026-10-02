@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { getQueueCount } from "@/actions/reblogs";
+import { createClient } from "@/lib/supabase/client";
 import { MainNav, BottomNav, LeftSidebar, CommandPaletteHost, OPEN_CHAT_EVENT } from "@/components/layout";
 import { KeyboardShortcuts } from "@/components/layout/KeyboardShortcuts";
 import { ChatSidebar } from "@/components/chat";
@@ -84,10 +84,18 @@ export function AppChrome({
   }, [router]);
 
   // Queue count for the nav badge. Refetched on navigation (cheap head count)
-  // so it stays fresh after adding/removing/publishing queued posts.
+  // so it stays fresh after adding/removing/publishing queued posts. Done as a
+  // direct client count query, not a server action — server actions serialize, so
+  // this badge was queuing behind other on-load actions (~450ms each).
   useEffect(() => {
     if (!profile?.id) return;
-    getQueueCount().then(setQueueCount);
+    const supabase = createClient();
+    supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", profile.id)
+      .eq("status", "queued")
+      .then(({ count }) => setQueueCount(count ?? 0));
   }, [profile?.id, pathname]);
 
   // Update page title with unread count
