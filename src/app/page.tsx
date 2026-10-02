@@ -7,6 +7,7 @@ import { getPublicFrontPagePosts } from "@/actions/posts";
 import { editionNumber, editionDateline } from "@/lib/edition-slug";
 import type { FeedPost } from "@/components/feed/FeedList";
 import { FrontPageTile } from "@/components/feed/frontpage/FrontPageTiles";
+import { leadEligible } from "@/components/feed/frontpage/useFeedLayout";
 import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
 import { TimeAgo } from "@/components/ui";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
@@ -109,13 +110,10 @@ export default async function Home() {
   // the curated Listen / Briefs / Poll slots draw from still-unused posts of the
   // right type, then More stories catches ALL remaining posts in order (no 3-item
   // cap, which previously stranded later posts).
-  const hasCaption = (p: FeedPost) =>
-    (p.content.captionHtml ?? "").replace(/<[^>]*>/g, "").trim().length > 0;
-  const leadEligible = (p: FeedPost) =>
-    p.contentType === "text" || (p.contentType === "image" && hasCaption(p));
-
-  // Lead = newest text / captioned-image post; fall back to the newest of any
-  // type. Pulled out of the list; everything else keeps strict date order.
+  // Lead eligibility is shared with the logged-in Front Page (single source of
+  // truth in useFeedLayout): newest text / captioned image or gallery / titled
+  // link post, falling back to the newest of any type. Pulled out of the list;
+  // everything else keeps strict date order.
   const lead = posts.find(leadEligible) ?? posts[0];
   const rest = posts.filter((p) => lead && p.id !== lead.id);
   const secondary = rest.slice(0, 2);

@@ -328,7 +328,10 @@ function AudioTile({ post }: { post: FeedPost; prominence: Prominence }) {
 function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: Prominence; preview: LinkPreviewData }) {
   const domain = preview.siteName || domainOf(preview.url);
   const headline = preview.title || headlineOf(post);
-  const standfirst = preview.description || standfirstOf(post);
+  // The poster's own words lead, with the link's meta description as fallback. A
+  // bare pasted URL (the body is just the link) is dropped so it isn't shown raw.
+  const posterWords = standfirstOf(post).replace(preview.url, "").trim();
+  const standfirst = posterWords || preview.description || "";
   const showStandfirst = prominence !== "standard" && !!standfirst;
 
   if (preview.image) {
