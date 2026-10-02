@@ -30,7 +30,7 @@ import {
   IconCornerDownLeft,
   IconLoader2,
 } from "@tabler/icons-react";
-import { Portal, Avatar } from "@/components/ui";
+import { Portal, Avatar, ImageWithPlaceholder } from "@/components/ui";
 import { searchUsers, searchPosts } from "@/actions/search";
 import { searchCommunities } from "@/actions/communities";
 import { scaleIn } from "@/lib/motion";
@@ -64,6 +64,30 @@ interface PostResult {
   id: string;
   label: string;
   authorUsername: string;
+  thumbnailUrl: string | null;
+  postType: string;
+}
+
+/** First image/thumbnail for a post search result, or null for text/other. */
+function postThumb(
+  content:
+    | {
+        urls?: string[];
+        thumbnail_url?: string;
+        album_art_url?: string;
+        spotify_data?: { album_art?: string };
+      }
+    | null
+    | undefined,
+): string | null {
+  if (!content) return null;
+  return (
+    content.urls?.[0] ||
+    content.thumbnail_url ||
+    content.album_art_url ||
+    content.spotify_data?.album_art ||
+    null
+  );
 }
 
 interface CommunityResult {
@@ -96,6 +120,23 @@ function postLabel(
     "";
   const text = String(raw).replace(/<[^>]*>/g, "").trim();
   return text ? text.slice(0, 70) : `Post by @${authorUsername}`;
+}
+
+/** Wrap the first case-insensitive match of `term` in `text` for emphasis. */
+function highlightMatch(text: string, term: string): ReactNode {
+  const t = term.trim();
+  if (!t) return text;
+  const idx = text.toLowerCase().indexOf(t.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-transparent text-vocl-primary font-medium">
+        {text.slice(idx, idx + t.length)}
+      </mark>
+      {text.slice(idx + t.length)}
+    </>
+  );
 }
 
 export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandPaletteProps) {
@@ -268,6 +309,8 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
               id: p.id,
               label: postLabel(p.content, p.author.username),
               authorUsername: p.author.username,
+              thumbnailUrl: postThumb(p.content),
+              postType: p.postType,
             }))
           : [],
       );
@@ -517,6 +560,7 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
                                 index={idx}
                                 post={post}
                                 active={idx === activeIndex}
+                                highlight={query.trim()}
                                 onHover={() => setActiveIndex(idx)}
                                 onSelect={() => runRow({ kind: "post", post })}
                               />
@@ -661,12 +705,14 @@ function PostRow({
   index,
   post,
   active,
+  highlight,
   onHover,
   onSelect,
 }: {
   index: number;
   post: PostResult;
   active: boolean;
+  highlight: string;
   onHover: () => void;
   onSelect: () => void;
 }) {
@@ -679,11 +725,26 @@ function PostRow({
       aria-selected={active}
       className={rowClass(active)}
     >
-      <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-vocl-hover text-foreground/70 flex-shrink-0">
-        <IconFileText size={18} />
+      {/* Thumbnail for media posts; a post-type icon otherwise so rows line up. */}
+      <span className="relative w-12 h-12 flex-shrink-0 overflow-hidden rounded-lg bg-vocl-hover flex items-center justify-center">
+        {post.thumbnailUrl ? (
+          <ImageWithPlaceholder
+            src={post.thumbnailUrl}
+            alt=""
+            colorKey={post.id}
+            fill
+            sizes="48px"
+            unoptimized
+            className="object-cover"
+          />
+        ) : (
+          <IconFileText size={18} className="text-foreground/50" />
+        )}
       </span>
       <span className="flex flex-col min-w-0">
-        <span className="text-sm text-foreground truncate">{post.label}</span>
+        <span className="text-sm text-foreground truncate">
+          {highlightMatch(post.label, highlight)}
+        </span>
         <span className="text-xs text-foreground/50 truncate">@{post.authorUsername}</span>
       </span>
     </button>
