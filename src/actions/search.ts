@@ -398,11 +398,13 @@ export async function searchPosts(
         { count: "exact" }
       )
       .eq("status", "published")
-      // Use ->> (text extraction), not -> (jsonb): ilike needs text. With -> the
-      // clauses never matched, so post search returned nothing while tag/people
-      // search worked.
+      // Use ->> (text extraction), not -> (jsonb): ilike needs text. Match the
+      // plain body and media caption only — both backed by pg_trgm GIN indexes
+      // (20261002_post_search_trgm.sql) so these ILIKEs are fast. The raw `html`
+      // field is dropped: it's tag-laden noise and wasn't indexed (would force a
+      // seq scan and defeat the trigram indexes).
       .or(
-        `content->>plain.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->>html.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->>caption_html.ilike.%${sanitizeFilterTerm(searchTerm)}%`
+        `content->>plain.ilike.%${sanitizeFilterTerm(searchTerm)}%,content->>caption_html.ilike.%${sanitizeFilterTerm(searchTerm)}%`
       );
 
     // Apply advanced filters
