@@ -7,7 +7,7 @@ import { getPublicFrontPagePosts } from "@/actions/posts";
 import { editionNumber, editionDateline } from "@/lib/edition-slug";
 import type { FeedPost } from "@/components/feed/FeedList";
 import { FrontPageTile } from "@/components/feed/frontpage/FrontPageTiles";
-import { leadEligible } from "@/components/feed/frontpage/useFeedLayout";
+import { leadEligible } from "@/components/feed/frontpage/leadEligible";
 import { TileEngagement } from "@/components/feed/frontpage/TileEngagement";
 import { TimeAgo } from "@/components/ui";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
