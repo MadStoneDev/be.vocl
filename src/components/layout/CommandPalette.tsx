@@ -31,7 +31,8 @@ import {
   IconLoader2,
 } from "@tabler/icons-react";
 import { Portal, Avatar } from "@/components/ui";
-import { searchUsers } from "@/actions/search";
+import { searchUsers, searchPosts } from "@/actions/search";
+import { listCommunities } from "@/actions/communities";
 import { scaleIn } from "@/lib/motion";
 import { OPEN_CHAT_EVENT, OPEN_COMMAND_PALETTE_EVENT } from "./commandPaletteEvents";
 
@@ -59,9 +60,43 @@ interface UserResult {
   avatarUrl: string | null;
 }
 
+interface PostResult {
+  id: string;
+  label: string;
+  authorUsername: string;
+}
+
+interface CommunityResult {
+  id: string;
+  slug: string;
+  name: string;
+  iconUrl: string | null;
+  memberCount: number;
+}
+
 type Row =
   | { kind: "action"; action: CommandAction }
-  | { kind: "user"; user: UserResult };
+  | { kind: "user"; user: UserResult }
+  | { kind: "post"; post: PostResult }
+  | { kind: "community"; community: CommunityResult };
+
+/** Short, plain-text label for a post search result. */
+function postLabel(
+  content:
+    | { plain?: string; html?: string; caption_html?: string; question?: string }
+    | null
+    | undefined,
+  authorUsername: string,
+): string {
+  const raw =
+    content?.plain ||
+    content?.html ||
+    content?.caption_html ||
+    content?.question ||
+    "";
+  const text = String(raw).replace(/<[^>]*>/g, "").trim();
+  return text ? text.slice(0, 70) : `Post by @${authorUsername}`;
+}
 
 export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandPaletteProps) {
   const router = useRouter();
@@ -71,6 +106,8 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [users, setUsers] = useState<UserResult[]>([]);
+  const [posts, setPosts] = useState<PostResult[]>([]);
+  const [communities, setCommunities] = useState<CommunityResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
@@ -82,6 +119,8 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
     setIsOpen(false);
     setQuery("");
     setUsers([]);
+    setPosts([]);
+    setCommunities([]);
     setActiveIndex(0);
   }, []);
 
@@ -89,6 +128,8 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
     setIsOpen(true);
     setQuery("");
     setUsers([]);
+    setPosts([]);
+    setCommunities([]);
     setActiveIndex(0);
   }, []);
 
@@ -100,6 +141,8 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
         setIsOpen((v) => !v);
         setQuery("");
         setUsers([]);
+        setPosts([]);
+        setCommunities([]);
         setActiveIndex(0);
       }
     };
@@ -196,24 +239,49 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
     const term = query.trim();
     if (term.length < 2) {
       setUsers([]);
+      setPosts([]);
+      setCommunities([]);
       setIsSearching(false);
       return;
     }
     setIsSearching(true);
     const handle = window.setTimeout(async () => {
-      const result = await searchUsers(term, { limit: 6 });
-      if (result.success && result.users) {
-        setUsers(
-          result.users.map((u) => ({
-            id: u.id,
-            username: u.username,
-            displayName: u.displayName,
-            avatarUrl: u.avatarUrl,
-          }))
-        );
-      } else {
-        setUsers([]);
-      }
+      const [userRes, postRes, communityRes] = await Promise.all([
+        searchUsers(term, { limit: 5 }),
+        searchPosts(term, { limit: 5 }),
+        listCommunities({ search: term, limit: 4 }),
+      ]);
+
+      setUsers(
+        userRes.success && userRes.users
+          ? userRes.users.map((u) => ({
+              id: u.id,
+              username: u.username,
+              displayName: u.displayName,
+              avatarUrl: u.avatarUrl,
+            }))
+          : [],
+      );
+      setPosts(
+        postRes.success && postRes.posts
+          ? postRes.posts.map((p) => ({
+              id: p.id,
+              label: postLabel(p.content, p.author.username),
+              authorUsername: p.author.username,
+            }))
+          : [],
+      );
+      setCommunities(
+        communityRes.success && communityRes.communities
+          ? communityRes.communities.map((c) => ({
+              id: c.id,
+              slug: c.slug,
+              name: c.name,
+              iconUrl: c.iconUrl,
+              memberCount: c.memberCount,
+            }))
+          : [],
+      );
       setIsSearching(false);
     }, 250);
     return () => window.clearTimeout(handle);
@@ -225,8 +293,10 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
     filteredNav.forEach((action) => r.push({ kind: "action", action }));
     filteredQuick.forEach((action) => r.push({ kind: "action", action }));
     users.forEach((user) => r.push({ kind: "user", user }));
+    posts.forEach((post) => r.push({ kind: "post", post }));
+    communities.forEach((community) => r.push({ kind: "community", community }));
     return r;
-  }, [filteredNav, filteredQuick, users]);
+  }, [filteredNav, filteredQuick, users, posts, communities]);
 
   // Keep activeIndex in range as the list changes.
   useEffect(() => {
@@ -236,7 +306,9 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
   const runRow = useCallback(
     (row: Row) => {
       if (row.kind === "action") row.action.run();
-      else go(`/profile/${row.user.username}`);
+      else if (row.kind === "user") go(`/profile/${row.user.username}`);
+      else if (row.kind === "post") go(`/post/${row.post.id}`);
+      else go(`/c/${row.community.slug}`);
     },
     [go]
   );
@@ -435,6 +507,40 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
                           })}
                         </Section>
                       )}
+                      {posts.length > 0 && (
+                        <Section title="Posts">
+                          {posts.map((post) => {
+                            const idx = nextIndex();
+                            return (
+                              <PostRow
+                                key={post.id}
+                                index={idx}
+                                post={post}
+                                active={idx === activeIndex}
+                                onHover={() => setActiveIndex(idx)}
+                                onSelect={() => runRow({ kind: "post", post })}
+                              />
+                            );
+                          })}
+                        </Section>
+                      )}
+                      {communities.length > 0 && (
+                        <Section title="Communities">
+                          {communities.map((community) => {
+                            const idx = nextIndex();
+                            return (
+                              <CommunityRow
+                                key={community.id}
+                                index={idx}
+                                community={community}
+                                active={idx === activeIndex}
+                                onHover={() => setActiveIndex(idx)}
+                                onSelect={() => runRow({ kind: "community", community })}
+                              />
+                            );
+                          })}
+                        </Section>
+                      )}
                     </>
                   )}
                 </div>
@@ -546,6 +652,74 @@ function UserRow({
           <span className="text-sm text-foreground truncate">{user.displayName}</span>
         )}
         <span className="text-xs text-foreground/50 truncate">@{user.username}</span>
+      </span>
+    </button>
+  );
+}
+
+function PostRow({
+  index,
+  post,
+  active,
+  onHover,
+  onSelect,
+}: {
+  index: number;
+  post: PostResult;
+  active: boolean;
+  onHover: () => void;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      data-row-index={index}
+      onMouseMove={onHover}
+      onClick={onSelect}
+      aria-selected={active}
+      className={rowClass(active)}
+    >
+      <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-vocl-hover text-foreground/70 flex-shrink-0">
+        <IconFileText size={18} />
+      </span>
+      <span className="flex flex-col min-w-0">
+        <span className="text-sm text-foreground truncate">{post.label}</span>
+        <span className="text-xs text-foreground/50 truncate">@{post.authorUsername}</span>
+      </span>
+    </button>
+  );
+}
+
+function CommunityRow({
+  index,
+  community,
+  active,
+  onHover,
+  onSelect,
+}: {
+  index: number;
+  community: CommunityResult;
+  active: boolean;
+  onHover: () => void;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      data-row-index={index}
+      onMouseMove={onHover}
+      onClick={onSelect}
+      aria-selected={active}
+      className={rowClass(active)}
+    >
+      <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-vocl-hover text-foreground/70 flex-shrink-0">
+        <IconUsersGroup size={18} />
+      </span>
+      <span className="flex flex-col min-w-0">
+        <span className="text-sm text-foreground truncate">{community.name}</span>
+        <span className="text-xs text-foreground/50 truncate">
+          {community.memberCount} {community.memberCount === 1 ? "member" : "members"}
+        </span>
       </span>
     </button>
   );
