@@ -87,13 +87,34 @@ function stripHtml(s: string): string {
   return s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/** A human noun for a post with no text, by type: "Photo by @user" etc. */
+function mediaNoun(postType: string): string {
+  switch (postType) {
+    case "image":
+      return "Photo";
+    case "gallery":
+      return "Gallery";
+    case "video":
+      return "Video";
+    case "audio":
+      return "Audio";
+    default:
+      return "Post";
+  }
+}
+
 function postTitle(p: PostMeta): string {
   const c = p.content || {};
   const raw: string =
     c.essay_title || c.plain || c.text || stripHtml(c.caption_html || c.html || "") || "";
   const trimmed = raw.replace(/\s+/g, " ").trim();
+  // No-text posts read as "Photo by @user" / "Post by @user" — never the bare
+  // brand (which the "%s | be.vocl" template would then double).
+  if (!trimmed) {
+    const noun = mediaNoun(p.post_type);
+    return p.author?.username ? `${noun} by @${p.author.username}` : `${noun} on be.vocl`;
+  }
   const handle = p.author?.username ? `@${p.author.username}` : "be.vocl";
-  if (!trimmed) return `Post by ${handle}`;
   // Cut at a word boundary (never mid-word), leaving room for the " — @handle".
   return `${truncateWords(trimmed, 60)} — ${handle}`;
 }
@@ -183,10 +204,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: { absolute: "Page not found | be.vocl" }, robots: { index: false, follow: false } };
   }
 
-  // Members-only posts get a generic, non-indexed card.
+  // Members-only / non-public posts (incl. sensitive-flagged media) get a
+  // meaningful, non-indexed card — e.g. "Photo by @user" — not the bare brand.
   if (!isPublic(p)) {
     return {
-      title: "be.vocl",
+      title: postTitle(p),
       description: "Log in to view this post on be.vocl.",
       robots: { index: false, follow: false },
     };

@@ -11,7 +11,8 @@ interface Props {
 // at /post/[id] (server-gated), but the aggregated thread — which can include
 // Members-only siblings — requires login. Never indexed.
 export const metadata: Metadata = {
-  title: "Thread | be.vocl",
+  // `absolute` so the root "%s | be.vocl" template doesn't double the suffix.
+  title: { absolute: "Thread | be.vocl" },
   robots: { index: false, follow: false },
 };
 

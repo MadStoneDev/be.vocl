@@ -134,9 +134,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   const data = await getProfile(username, true);
 
+  // 404 for an unknown username HERE (generateMetadata resolves before the body
+  // streams), so it returns a real 404 status even though the route has a
+  // loading.tsx — a notFound() in the page component would arrive after the
+  // loading shell has already flushed a 200. getProfile returns null only when
+  // the username genuinely doesn't exist (publicOnly filters posts, not rows).
   if (!data) {
-    // `absolute` so the root "%s | be.vocl" template doesn't double the suffix.
-    return { title: { absolute: "Page not found | be.vocl" }, robots: { index: false, follow: false } };
+    notFound();
   }
 
   const { profile } = data;
@@ -185,16 +189,10 @@ export default async function ProfilePage({ params }: Props) {
     data: { user },
   } = await authClient.auth.getUser();
 
-  // Logged-in members get the full interactive in-app profile (client-rendered),
-  // but an unknown username is still a real 404 — not a soft 200 shell.
+  // Logged-in members get the full interactive in-app profile (client-rendered).
+  // Unknown usernames are already 404'd by generateMetadata (before the loading
+  // shell streams), so no extra existence check is needed here.
   if (user) {
-    const admin = createAdminClient();
-    const { data: exists } = await admin
-      .from("profiles")
-      .select("id")
-      .eq("username", username)
-      .maybeSingle();
-    if (!exists) notFound();
     return <ProfileClient />;
   }
 

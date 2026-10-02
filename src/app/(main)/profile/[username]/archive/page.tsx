@@ -69,10 +69,12 @@ async function getArchive(username: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   const data = await getArchive(username);
-  if (!data) return { title: "Archive not found | be.vocl" };
+  // 404 here (before the parent route's loading.tsx streams a 200) so a missing
+  // archive returns a real 404 status.
+  if (!data) notFound();
   const name = data.profile.display_name || data.profile.username;
   return {
-    title: `${name}'s archive | be.vocl`,
+    title: `${name}'s archive`,
     description: `Browse all ${data.totalPosts} posts from @${data.profile.username}`,
     ...(data.profile.allow_search_indexing === false && {
       robots: { index: false, follow: false },
