@@ -29,10 +29,14 @@ export function formatTimeAgo(input: string | number | Date, now: number = Date.
   const day = Math.round(hr / 24);
   if (day < 7) return `${day}d`;
 
-  // Older than a week → absolute date (deterministic: built from UTC parts).
-  const sameYear = date.getUTCFullYear() === new Date(now).getUTCFullYear();
-  const base = `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}`;
-  return sameYear ? base : `${base}, ${date.getUTCFullYear()}`;
+  // Older than a week → absolute date in the VIEWER's local timezone, matching
+  // the other date formatters (PublicPost etc.). Using UTC parts here made the
+  // same post read a day off between pages (e.g. "Aug 24" vs "August 25"). The
+  // <TimeAgo> wrapper is client-only with suppressHydrationWarning, so local
+  // time is safe despite SSR.
+  const sameYear = date.getFullYear() === new Date(now).getFullYear();
+  const base = `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+  return sameYear ? base : `${base}, ${date.getFullYear()}`;
 }
 
 /** Compare two dates by local calendar day. */

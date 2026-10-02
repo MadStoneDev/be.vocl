@@ -253,6 +253,11 @@ export function NotificationItem({
             <span className="font-semibold">{grouped.lead}</span>{" "}
             <span className="text-foreground/70">{grouped.rest}</span>
           </p>
+        ) : type === "moderation" || type === "system" ? (
+          // Self-contained messages with no acting user — don't prefix a
+          // username (moderation alerts carry no actor_id, so "@unsunghero
+          // Content flagged" wrongly read as if they did the flagging).
+          <p className="type-body text-foreground/80">{config.getText(actor.username)}</p>
         ) : (
           <p className="type-body text-foreground">
             <span className="font-semibold">@{actor.username}</span>{" "}

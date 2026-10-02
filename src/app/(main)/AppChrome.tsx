@@ -98,11 +98,14 @@ export function AppChrome({
       .then(({ count }) => setQueueCount(count ?? 0));
   }, [profile?.id, pathname]);
 
-  // Update page title with unread count
+  // Prefix the unread count onto the page's own <title> — don't replace it with
+  // "be.vocl", which was clobbering every page name (Communities, Activity, etc.).
+  // Re-runs on navigation so the prefix follows the new page's title.
   useEffect(() => {
     const total = (notificationCount || 0) + (totalUnread || 0);
-    document.title = total > 0 ? `(${total}) be.vocl` : "be.vocl";
-  }, [notificationCount, totalUnread]);
+    const base = document.title.replace(/^\(\d+\)\s*/, "");
+    document.title = total > 0 ? `(${total}) ${base}` : base;
+  }, [notificationCount, totalUnread, pathname]);
 
   // Redirect banned users to account-status page
   useEffect(() => {
