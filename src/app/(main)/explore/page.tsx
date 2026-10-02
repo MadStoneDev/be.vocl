@@ -152,7 +152,6 @@ export default function ExplorePage() {
 
   return (
     <PullToRefresh onRefresh={loadData}>
-      <title>Explore | be.vocl</title>
     <MotionConfig reducedMotion="user">
     <div className="py-6 max-w-6xl mx-auto px-4 sm:px-6">
       {/* Editorial masthead */}

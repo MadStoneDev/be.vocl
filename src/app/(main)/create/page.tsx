@@ -1,147 +1,21 @@
-"use client";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { appPageMetadata } from "@/lib/metadata";
+import CreateClient from "./CreateClient";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { IconLoader2 } from "@tabler/icons-react";
-import dynamic from "next/dynamic";
-import type { ExistingPostData } from "@/components/Post/create";
-import { getPostById } from "@/actions/posts";
+type Props = { searchParams: Promise<{ edit?: string | string[] }> };
 
-// Code-split the heavy Tiptap editor and show a spinner while its chunk loads,
-// instead of a blank screen for several seconds.
-const EditorialComposer = dynamic(
-  () => import("@/components/Post/create").then((m) => m.EditorialComposer),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-        <IconLoader2 size={32} className="animate-spin text-[var(--vocl-primary)]" />
-      </div>
-    ),
-  },
-);
-
-function CreatePageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
-
-  const editId = searchParams.get("edit");
-  const isEdit = !!editId;
-
-  // Deep link to add a new story to an existing collection (thread).
-  const collectionId = searchParams.get("collection");
-
-  const [existingPost, setExistingPost] = useState<ExistingPostData | null>(null);
-  const [loadingPost, setLoadingPost] = useState(isEdit);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!editId) return;
-    let active = true;
-    setLoadingPost(true);
-    getPostById(editId).then((res) => {
-      if (!active) return;
-      if (res.success && res.post) {
-        if (!res.post.isOwn) {
-          setLoadError("You can only edit your own posts.");
-        } else {
-          setExistingPost({
-            id: res.post.id,
-            postType: res.post.postType,
-            content: res.post.content,
-            isSensitive: res.post.isSensitive,
-            // Preserve the audience (Members vs Public) on edit — without this the
-            // composer defaulted excludeFromPublic to false, flipping the post Public.
-            excludeFromPublic: res.post.excludeFromPublic,
-            tags: res.post.tags || [],
-          });
-        }
-      } else {
-        setLoadError(res.error || "Post not found.");
-      }
-      setLoadingPost(false);
-    });
-    return () => {
-      active = false;
-    };
-  }, [editId]);
-
-  const handleClose = () => {
-    router.back();
-  };
-
-  const handleSuccess = (postId: string) => {
-    queryClient.invalidateQueries({ queryKey: ["feed"] });
-    router.push("/feed");
-  };
-
-  // The composer calls onEditSuccess() and then onClose() on a successful edit.
-  // onClose (handleClose → router.back()) owns the single navigation back to
-  // wherever the edit was opened from (e.g. the queue), so this handler must NOT
-  // navigate too — doing so double-pops history and lands on Home. router.refresh
-  // clears the App Router cache so the destination (queue/feed) shows the edit.
-  const handleEditSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["feed"] });
-    router.refresh();
-  };
-
-  if (isEdit && loadingPost) {
-    return (
-      <>
-        <title>Edit post | be.vocl</title>
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <IconLoader2 size={32} className="animate-spin text-[var(--vocl-primary)]" />
-        </div>
-      </>
-    );
-  }
-
-  if (isEdit && (loadError || !existingPost)) {
-    return (
-      <>
-        <title>Edit post | be.vocl</title>
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-black/60 text-center px-6">
-          <p className="text-foreground">{loadError || "Post not found."}</p>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-5 py-2.5 rounded-none text-white font-medium"
-            style={{ backgroundColor: "var(--vocl-primary)" }}
-          >
-            Go back
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <title>{isEdit ? "Edit post | be.vocl" : "New post | be.vocl"}</title>
-      <EditorialComposer
-        mode={isEdit ? "edit" : "create"}
-        threadId={!isEdit ? collectionId || undefined : undefined}
-        existingPost={existingPost || undefined}
-        onSuccess={handleSuccess}
-        onEditSuccess={handleEditSuccess}
-        onClose={handleClose}
-      />
-    </>
-  );
+// New post | be.vocl, or Edit post | be.vocl with ?edit=<id>. Never indexed.
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const sp = await searchParams;
+  const isEdit = !!(Array.isArray(sp.edit) ? sp.edit[0] : sp.edit);
+  return appPageMetadata(isEdit ? "Edit post" : "New post");
 }
 
 export default function CreatePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <IconLoader2 size={32} className="animate-spin text-[var(--vocl-primary)]" />
-        </div>
-      }
-    >
-      <CreatePageInner />
+    <Suspense fallback={null}>
+      <CreateClient />
     </Suspense>
   );
 }

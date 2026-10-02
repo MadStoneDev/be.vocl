@@ -96,8 +96,6 @@ function SettingsContent() {
 
   return (
     <div className="py-8 max-w-2xl mx-auto">
-      <title>Settings | be.vocl</title>
-
       {/* Editorial masthead */}
       <header className="mb-8 border-b border-rule pb-6">
         <p className="kicker kicker-accent">Your account</p>

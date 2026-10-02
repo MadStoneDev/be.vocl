@@ -420,7 +420,6 @@ export function ProfileClient() {
                 isMutual={mutual}
                 role={profile.role}
                 joinedYear={profile.createdAt ? new Date(profile.createdAt).getFullYear() : undefined}
-                location={profile.timezone}
                 allowsAsks={allowsAsks}
                 stats={stats}
                 onStatClick={(stat) => {

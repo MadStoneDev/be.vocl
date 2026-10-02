@@ -33,7 +33,6 @@ interface ProfileHeaderProps {
   isMutual?: boolean;
   role?: number;
   joinedYear?: number;
-  location?: string;
   allowsAsks?: boolean;
   stats?: { posts: number; followers: number; following: number };
   onStatClick?: (stat: StatKey) => void;
@@ -57,8 +56,8 @@ function formatCount(num: number): string {
 
 /**
  * Broadsheet profile masthead (artboard 03 — "The Columnist"). The banner is
- * rendered by the page above this; here: kicker → big Gloock name → handle ·
- * location → serif bio → one ruled row carrying the Gloock stat figures AND the
+ * rendered by the page above this; here: kicker → big Gloock name → handle →
+ * serif bio → one ruled row carrying the Gloock stat figures AND the
  * Subscribe / Message actions. The section tabs render immediately below (page).
  */
 export function ProfileHeader({
@@ -72,7 +71,6 @@ export function ProfileHeader({
   isMutual: isMutualProp,
   role = 0,
   joinedYear,
-  location,
   allowsAsks,
   stats,
   onStatClick,
@@ -139,10 +137,7 @@ export function ProfileHeader({
               <StaffBadge role={role} size={22} />
             </h1>
             <div className="mt-1.5 flex items-center gap-2">
-              <span className="byline text-meta">
-                @{username}
-                {location && <span> · {location}</span>}
-              </span>
+              <span className="byline text-meta">@{username}</span>
               {isMutualProp && <MutualBadge />}
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { jsonLdScript } from "@/lib/jsonLd";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { truncateWords } from "@/lib/metadata";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { PostPageClient } from "./PostPageClient";
@@ -93,8 +94,8 @@ function postTitle(p: PostMeta): string {
   const trimmed = raw.replace(/\s+/g, " ").trim();
   const handle = p.author?.username ? `@${p.author.username}` : "be.vocl";
   if (!trimmed) return `Post by ${handle}`;
-  const snippet = trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed;
-  return `${snippet} — ${handle}`;
+  // Cut at a word boundary (never mid-word), leaving room for the " — @handle".
+  return `${truncateWords(trimmed, 60)} — ${handle}`;
 }
 
 function postDescription(p: PostMeta): string {
@@ -102,7 +103,7 @@ function postDescription(p: PostMeta): string {
   const raw: string = c.plain || c.text || stripHtml(c.caption_html || c.html || "") || "";
   const trimmed = raw.replace(/\s+/g, " ").trim();
   if (!trimmed) return `A post on be.vocl.`;
-  return trimmed.length > 200 ? `${trimmed.slice(0, 200)}…` : trimmed;
+  return truncateWords(trimmed, 155);
 }
 
 function ogImage(p: PostMeta): string | null {
@@ -178,7 +179,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await getPostMeta(id);
 
   if (!p || !isViewable(p)) {
-    return { title: "Post not found | be.vocl", robots: { index: false, follow: false } };
+    // `absolute` so the root "%s | be.vocl" template doesn't double the suffix.
+    return { title: { absolute: "Page not found | be.vocl" }, robots: { index: false, follow: false } };
   }
 
   // Members-only posts get a generic, non-indexed card.
@@ -234,7 +236,9 @@ export default async function PostPage({ params }: Props) {
     // Members-only post viewed by a logged-out visitor → send them to log in.
     redirect(`/login?next=${encodeURIComponent(`/post/${id}`)}`);
   }
-  if (!p && !user) {
+  // A missing / unknown post is a real 404 for everyone (logged in or not) —
+  // not a soft 200 "not found" screen.
+  if (!p) {
     notFound();
   }
 

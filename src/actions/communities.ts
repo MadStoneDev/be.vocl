@@ -552,6 +552,85 @@ export async function listCommunityMembers(
   }
 }
 
+/** Shared row → CommunityMember mapper for the member-listing queries. */
+function toMember(m: any): CommunityMember {
+  return {
+    userId: m.user_id,
+    username: m.user?.username || "unknown",
+    displayName: m.user?.display_name || null,
+    avatarUrl: m.user?.avatar_url || null,
+    role: m.role,
+    joinedAt: m.joined_at,
+  };
+}
+
+const MEMBER_SELECT = `
+  role, joined_at, user_id,
+  user:profiles!community_members_user_id_fkey(id, username, display_name, avatar_url)
+`;
+
+/**
+ * The community's staff (owner + moderators) for the members page, ordered
+ * owner first, then moderators by join date. Small set, so not paginated.
+ */
+export async function listCommunityStaff(
+  communityId: string
+): Promise<{ success: boolean; members?: CommunityMember[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("community_members")
+      .select(MEMBER_SELECT)
+      .eq("community_id", communityId)
+      .in("role", ["owner", "moderator"])
+      .order("joined_at", { ascending: true });
+
+    if (error) return { success: false, error: error.message };
+
+    const members = ((data as any[]) || [])
+      .map(toMember)
+      // Owner(s) before moderators; join order preserved within each tier.
+      .sort((a, b) => (a.role === "owner" ? 0 : 1) - (b.role === "owner" ? 0 : 1));
+
+    return { success: true, members };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * The rank-and-file members (role "member" only) for the members page, newest
+ * joiner first, paginated. `hasMore` is computed by over-fetching one row.
+ */
+export async function listCommunityMembersPage(
+  communityId: string,
+  opts?: { limit?: number; offset?: number }
+): Promise<{ success: boolean; members?: CommunityMember[]; hasMore?: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const limit = opts?.limit ?? 50;
+    const offset = opts?.offset ?? 0;
+
+    const { data, error } = await supabase
+      .from("community_members")
+      .select(MEMBER_SELECT)
+      .eq("community_id", communityId)
+      .eq("role", "member")
+      .order("joined_at", { ascending: false })
+      .range(offset, offset + limit);
+
+    if (error) return { success: false, error: error.message };
+
+    const rows = (data as any[]) || [];
+    const hasMore = rows.length > limit;
+    const members = (hasMore ? rows.slice(0, limit) : rows).map(toMember);
+
+    return { success: true, members, hasMore };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
 export async function changeMemberRole(
   communityId: string,
   userId: string,

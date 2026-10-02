@@ -135,7 +135,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getProfile(username, true);
 
   if (!data) {
-    return { title: "Profile not found | be.vocl" };
+    // `absolute` so the root "%s | be.vocl" template doesn't double the suffix.
+    return { title: { absolute: "Page not found | be.vocl" }, robots: { index: false, follow: false } };
   }
 
   const { profile } = data;
@@ -184,8 +185,16 @@ export default async function ProfilePage({ params }: Props) {
     data: { user },
   } = await authClient.auth.getUser();
 
-  // Logged-in members get the full interactive in-app profile (client-rendered).
+  // Logged-in members get the full interactive in-app profile (client-rendered),
+  // but an unknown username is still a real 404 — not a soft 200 shell.
   if (user) {
+    const admin = createAdminClient();
+    const { data: exists } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
+    if (!exists) notFound();
     return <ProfileClient />;
   }
 

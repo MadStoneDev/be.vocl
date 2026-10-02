@@ -17,6 +17,10 @@ const DISALLOW = [
   "/onboarding",
   "/account-status",
   "/thread/",
+  "/queue",
+  "/create",
+  "/drafts",
+  "/analytics",
 ];
 
 // Answer/generative-engine crawlers we deliberately welcome on public surfaces.

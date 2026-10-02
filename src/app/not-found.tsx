@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IconHome, IconSearch } from '@tabler/icons-react';
+
+export const metadata: Metadata = {
+  // `absolute` so the root "%s | be.vocl" template doesn't double the suffix.
+  title: { absolute: 'Page not found | be.vocl' },
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (

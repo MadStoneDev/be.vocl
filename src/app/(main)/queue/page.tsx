@@ -167,7 +167,6 @@ export default function QueuePage() {
 
   return (
     <div className={`mx-auto px-4 py-6 ${viewMode === "calendar" ? "max-w-5xl" : "max-w-2xl"}`}>
-      <title>Queue | be.vocl</title>
       {/* Header */}
       <div className="flex items-end justify-between gap-4 mb-6">
         <div>

@@ -1,0 +1,976 @@
+"use client";
+
+import { useState, useEffect, useCallback, Suspense, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  IconSearch,
+  IconLoader2,
+  IconUser,
+  IconHash,
+  IconFileText,
+  IconAlertTriangle,
+  IconX,
+  IconFilter,
+  IconChevronDown,
+  IconChevronUp,
+} from "@tabler/icons-react";
+import {
+  searchUsers,
+  searchTags,
+  searchPosts,
+  checkSensitiveSearch,
+  getTrendingTags,
+  getSuggestedUsers,
+  getPostsByTag,
+  type SearchResult,
+} from "@/actions/search";
+import { followUser, unfollowUser } from "@/actions/follows";
+import { followTag, unfollowTag, isFollowingTag } from "@/actions/tags";
+import { toast, TimeAgo, ImageWithPlaceholder } from "@/components/ui";
+
+type SearchTab = "all" | "users" | "tags" | "posts";
+
+/** Editorial section band: uppercase kicker + hairline rule, optional action. */
+function SectionBand({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex items-center gap-3">
+      <span className="type-meta uppercase tracking-widest text-foreground/50 font-semibold">
+        {children}
+      </span>
+      <span className="h-px flex-1 bg-vocl-border" />
+      {action}
+    </div>
+  );
+}
+
+function SearchLoading() {
+  return (
+    <div className="py-6 px-4 max-w-2xl mx-auto">
+      <div className="animate-pulse">
+        <div className="h-12 bg-vocl-hover-strong rounded-sm mb-6" />
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 bg-vocl-hover rounded-sm" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchLoading />}>
+      <SearchContent />
+    </Suspense>
+  );
+}
+
+function SearchContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+  const initialTab = (searchParams.get("tab") as SearchTab) || "all";
+  const tagParam = searchParams.get("tag");
+
+  const [query, setQuery] = useState(initialQuery);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // /search with no query lives at /explore now — bounce there.
+  useEffect(() => {
+    if (!initialQuery && !tagParam) {
+      router.replace("/explore");
+    }
+  }, [initialQuery, tagParam, router]);
+
+  useEffect(() => {
+    function focusInput() {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }
+    focusInput();
+    window.addEventListener("vocl:focus-search", focusInput);
+    return () => window.removeEventListener("vocl:focus-search", focusInput);
+  }, []);
+  const [activeTab, setActiveTab] = useState<SearchTab>(initialTab);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Results
+  const [users, setUsers] = useState<SearchResult["users"]>([]);
+  const [tags, setTags] = useState<SearchResult["tags"]>([]);
+  const [posts, setPosts] = useState<SearchResult["posts"]>([]);
+
+  // Counts
+  const [userCount, setUserCount] = useState(0);
+  const [tagCount, setTagCount] = useState(0);
+  const [postCount, setPostCount] = useState(0);
+
+  // Sensitive content warning
+  const [showSensitiveWarning, setShowSensitiveWarning] = useState(false);
+  const [pendingQuery, setPendingQuery] = useState("");
+  const [sensitiveConfirmed, setSensitiveConfirmed] = useState(false);
+
+  // Discovery content
+  const [trendingTags, setTrendingTags] = useState<SearchResult["tags"]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<SearchResult["users"]>([]);
+  const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true);
+
+  // Advanced filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterPostType, setFilterPostType] = useState<string>("");
+  const [filterSortBy, setFilterSortBy] = useState<"recent" | "popular">("recent");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [filterHasMedia, setFilterHasMedia] = useState(false);
+  const [filterAuthor, setFilterAuthor] = useState("");
+
+  // Tag browsing
+  const [browsingTag, setBrowsingTag] = useState<{
+    id: string;
+    name: string;
+    postCount: number;
+  } | null>(null);
+  const [isFollowingBrowsingTag, setIsFollowingBrowsingTag] = useState(false);
+  const [isTogglingTagFollow, setIsTogglingTagFollow] = useState(false);
+
+  // Load discovery content on mount
+  useEffect(() => {
+    const loadDiscovery = async () => {
+      setIsLoadingDiscovery(true);
+      const [tagsResult, usersResult] = await Promise.all([
+        getTrendingTags(10),
+        getSuggestedUsers(5),
+      ]);
+
+      if (tagsResult.success && tagsResult.tags) {
+        setTrendingTags(tagsResult.tags);
+      }
+      if (usersResult.success && usersResult.users) {
+        setSuggestedUsers(usersResult.users);
+      }
+      setIsLoadingDiscovery(false);
+    };
+
+    loadDiscovery();
+  }, []);
+
+  // Handle tag param on mount
+  useEffect(() => {
+    if (tagParam) {
+      handleTagClick(tagParam);
+    }
+  }, [tagParam]);
+
+  const performSearch = useCallback(
+    async (searchQuery: string, forceIncludeSensitive = false) => {
+      if (!searchQuery.trim()) {
+        setUsers([]);
+        setTags([]);
+        setPosts([]);
+        setUserCount(0);
+        setTagCount(0);
+        setPostCount(0);
+        return;
+      }
+
+      setIsSearching(true);
+
+      // Determine search type based on prefix
+      const isUserSearch = searchQuery.startsWith("@");
+      const isTagSearch = searchQuery.startsWith("#");
+
+      // Check for sensitive content if not confirmed
+      if (!forceIncludeSensitive && !sensitiveConfirmed) {
+        const { isSensitive, userAllowsSensitive } = await checkSensitiveSearch(searchQuery);
+        if (isSensitive && !userAllowsSensitive) {
+          setShowSensitiveWarning(true);
+          setPendingQuery(searchQuery);
+          setIsSearching(false);
+          return;
+        }
+      }
+
+      try {
+        if (isUserSearch || activeTab === "users") {
+          const result = await searchUsers(searchQuery);
+          if (result.success) {
+            setUsers(result.users || []);
+            setUserCount(result.total || 0);
+          }
+          if (isUserSearch) {
+            setTags([]);
+            setPosts([]);
+            setTagCount(0);
+            setPostCount(0);
+          }
+        }
+
+        if (isTagSearch || activeTab === "tags") {
+          const result = await searchTags(searchQuery);
+          if (result.success) {
+            setTags(result.tags || []);
+            setTagCount(result.total || 0);
+          }
+          if (isTagSearch) {
+            setUsers([]);
+            setPosts([]);
+            setUserCount(0);
+            setPostCount(0);
+          }
+        }
+
+        if (!isUserSearch && !isTagSearch && (activeTab === "all" || activeTab === "posts")) {
+          const [usersResult, tagsResult, postsResult] = await Promise.all([
+            activeTab === "all" ? searchUsers(searchQuery, { limit: 5 }) : Promise.resolve({ success: true, users: [], total: 0 }),
+            activeTab === "all" ? searchTags(searchQuery, { limit: 5 }) : Promise.resolve({ success: true, tags: [], total: 0 }),
+            searchPosts(searchQuery, {
+              includeSensitive: forceIncludeSensitive,
+              postType: filterPostType || undefined,
+              dateFrom: filterDateFrom || undefined,
+              dateTo: filterDateTo || undefined,
+              sortBy: filterSortBy,
+              hasMedia: filterHasMedia || undefined,
+              authorUsername: filterAuthor || undefined,
+            }),
+          ]);
+
+          if (usersResult.success) {
+            setUsers(usersResult.users || []);
+            setUserCount(usersResult.total || 0);
+          }
+          if (tagsResult.success) {
+            setTags(tagsResult.tags || []);
+            setTagCount(tagsResult.total || 0);
+          }
+          if (postsResult.success) {
+            setPosts(postsResult.posts || []);
+            setPostCount(postsResult.total || 0);
+          }
+        }
+      } catch (error) {
+        toast.error("Search failed");
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [activeTab, sensitiveConfirmed, filterPostType, filterSortBy, filterDateFrom, filterDateTo, filterHasMedia, filterAuthor]
+  );
+
+  // Search on query change (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query && !browsingTag) {
+        performSearch(query);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query, performSearch, browsingTag]);
+
+  const handleTagClick = async (tagName: string) => {
+    setQuery("");
+    setIsSearching(true);
+
+    const result = await getPostsByTag(tagName);
+    if (result.success) {
+      setBrowsingTag(result.tag || null);
+      setPosts(result.posts || []);
+      setPostCount(result.total || 0);
+      setUsers([]);
+      setTags([]);
+      setUserCount(0);
+      setTagCount(0);
+
+      // Check if user is following this tag
+      if (result.tag?.id) {
+        const following = await isFollowingTag(result.tag.id);
+        setIsFollowingBrowsingTag(following);
+      }
+    }
+
+    setIsSearching(false);
+  };
+
+  const handleTagFollowToggle = async () => {
+    if (!browsingTag) return;
+
+    setIsTogglingTagFollow(true);
+    const result = isFollowingBrowsingTag
+      ? await unfollowTag(browsingTag.id)
+      : await followTag(browsingTag.id);
+
+    if (result.success) {
+      setIsFollowingBrowsingTag(!isFollowingBrowsingTag);
+      toast.success(isFollowingBrowsingTag ? `Unfollowed #${browsingTag.name}` : `Following #${browsingTag.name}!`);
+    } else {
+      toast.error(result.error || "Failed to update tag follow");
+    }
+    setIsTogglingTagFollow(false);
+  };
+
+  const handleSensitiveConfirm = () => {
+    setShowSensitiveWarning(false);
+    setSensitiveConfirmed(true);
+    performSearch(pendingQuery, true);
+  };
+
+  const handleFollowToggle = async (userId: string, isFollowing: boolean) => {
+    const result = isFollowing ? await unfollowUser(userId) : await followUser(userId);
+
+    if (result.success) {
+      // Update local state
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isFollowing: !isFollowing } : u))
+      );
+      setSuggestedUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isFollowing: !isFollowing } : u))
+      );
+      toast.success(isFollowing ? "Unsubscribed" : "Subscribed!");
+    }
+  };
+
+  const clearTagBrowsing = () => {
+    setBrowsingTag(null);
+    setPosts([]);
+    setPostCount(0);
+    setIsFollowingBrowsingTag(false);
+  };
+
+  const hasResults = users.length > 0 || tags.length > 0 || posts.length > 0;
+  const showDiscovery = !query && !browsingTag && !isSearching;
+
+  return (
+    <div className="py-6 px-4 max-w-2xl mx-auto">
+      {/* Editorial masthead */}
+      <header className="mb-5 border-b border-vocl-border pb-5">
+        <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+          The Index
+        </span>
+        <h1 className="type-display-lg text-foreground mt-1 flex items-center gap-3">
+          <IconSearch size={30} className="text-vocl-primary flex-shrink-0" />
+          Search
+        </h1>
+      </header>
+      {/* Search Input */}
+      <div className="relative mb-8">
+        <IconSearch
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40"
+        />
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setBrowsingTag(null);
+          }}
+          placeholder="Search @users, #tags, or posts..."
+          className="w-full pl-12 pr-4 py-3 rounded-full bg-vocl-surface-dark border border-vocl-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+        />
+        {(query || browsingTag) && (
+          <button
+            onClick={() => {
+              setQuery("");
+              clearTagBrowsing();
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground"
+          >
+            <IconX size={20} />
+          </button>
+        )}
+      </div>
+
+      {/* Sensitive Content Warning Modal */}
+      {showSensitiveWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-vocl-surface-dark rounded-sm p-6 max-w-md w-full">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                <IconAlertTriangle size={24} className="text-yellow-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Sensitive Content Warning</h3>
+                <p className="text-sm text-foreground/60">This search may contain adult content</p>
+              </div>
+            </div>
+            <p className="text-foreground/70 mb-6">
+              Some content from this search may be sensitive. Do you want to continue with this search anyway?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSensitiveWarning(false)}
+                className="flex-1 py-2.5 rounded-sm bg-vocl-hover-strong text-foreground font-medium hover:bg-vocl-hover-strong transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSensitiveConfirm}
+                className="flex-1 py-2.5 rounded-sm bg-vocl-primary text-white font-medium hover:bg-vocl-primary-hover transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Browsing Tag Header */}
+      {browsingTag && (
+        <div className="mb-6 border-b border-vocl-border pb-5">
+          <span className="type-meta uppercase tracking-widest text-vocl-primary font-semibold">
+            Section
+          </span>
+          <div className="flex items-start justify-between gap-4 mt-1">
+            <div className="min-w-0">
+              <h2 className="type-display text-foreground flex items-center gap-1.5 break-words">
+                <IconHash size={24} className="text-vocl-primary flex-shrink-0" />
+                {browsingTag.name}
+              </h2>
+              <p className="type-meta text-foreground/55 mt-1">
+                {browsingTag.postCount.toLocaleString()} posts
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleTagFollowToggle}
+                disabled={isTogglingTagFollow}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  isFollowingBrowsingTag
+                    ? "border border-vocl-border text-foreground hover:bg-vocl-like/20 hover:text-vocl-like"
+                    : "bg-vocl-primary text-white hover:bg-vocl-primary-hover"
+                }`}
+              >
+                {isTogglingTagFollow ? (
+                  <IconLoader2 size={16} className="animate-spin" />
+                ) : isFollowingBrowsingTag ? (
+                  "Following"
+                ) : (
+                  "Follow"
+                )}
+              </button>
+              <button
+                onClick={clearTagBrowsing}
+                className="p-2 rounded-lg hover:bg-vocl-hover-strong transition-colors"
+              >
+                <IconX size={20} className="text-foreground/60" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabs (when searching) */}
+      {query && !browsingTag && (
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {(["all", "users", "tags", "posts"] as const).map((tab) => {
+            const counts = {
+              all: userCount + tagCount + postCount,
+              users: userCount,
+              tags: tagCount,
+              posts: postCount,
+            };
+            const icons = {
+              all: IconSearch,
+              users: IconUser,
+              tags: IconHash,
+              posts: IconFileText,
+            };
+            const Icon = icons[tab];
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${
+                  activeTab === tab
+                    ? "bg-vocl-primary text-white border-vocl-primary"
+                    : "border-vocl-border text-foreground/70 hover:border-vocl-primary/50"
+                }`}
+              >
+                <Icon size={16} />
+                <span className="capitalize">{tab}</span>
+                {counts[tab] > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-xs ${
+                    activeTab === tab ? "bg-white/20" : "bg-vocl-hover-strong"
+                  }`}>
+                    {counts[tab]}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Advanced Filters (shown on posts tab when searching) */}
+      {query && !browsingTag && (activeTab === "posts" || activeTab === "all") && (
+        <div className="mb-6">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 rounded-sm bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong transition-colors text-sm font-medium"
+          >
+            <IconFilter size={16} />
+            <span>Filters</span>
+            {showFilters ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+          </button>
+
+          {showFilters && (
+            <div className="mt-3 p-4 rounded-sm bg-vocl-hover border border-vocl-border space-y-5">
+              {/* Post Type */}
+              <div>
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
+                  Post Type
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: "", label: "All" },
+                    { value: "text", label: "Text" },
+                    { value: "image", label: "Image" },
+                    { value: "video", label: "Video" },
+                    { value: "audio", label: "Audio" },
+                    { value: "gallery", label: "Gallery" },
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => setFilterPostType(type.value)}
+                      className={`px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
+                        filterPostType === type.value
+                          ? "bg-vocl-primary text-white"
+                          : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sort By */}
+              <div>
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
+                  Sort By
+                </label>
+                <div className="flex gap-2">
+                  {([
+                    { value: "recent" as const, label: "Recent" },
+                    { value: "popular" as const, label: "Popular" },
+                  ]).map((sort) => (
+                    <button
+                      key={sort.value}
+                      onClick={() => setFilterSortBy(sort.value)}
+                      className={`px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
+                        filterSortBy === sort.value
+                          ? "bg-vocl-primary text-white"
+                          : "bg-vocl-hover text-foreground/70 hover:bg-vocl-hover-strong"
+                      }`}
+                    >
+                      {sort.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-foreground/70 mb-2">
+                  Date Range
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="date"
+                    value={filterDateFrom}
+                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                    placeholder="From"
+                  />
+                  <span className="text-foreground/40 text-sm">to</span>
+                  <input
+                    type="date"
+                    value={filterDateTo}
+                    onChange={(e) => setFilterDateTo(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                    placeholder="To"
+                  />
+                </div>
+              </div>
+
+              {/* Has Media + Author row */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Has Media */}
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="hasMedia"
+                    className="text-sm font-medium text-foreground/70"
+                  >
+                    Media only
+                  </label>
+                  <button
+                    id="hasMedia"
+                    role="switch"
+                    aria-checked={filterHasMedia}
+                    onClick={() => setFilterHasMedia(!filterHasMedia)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      filterHasMedia ? "bg-vocl-primary" : "bg-vocl-hover-strong"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        filterHasMedia ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Author */}
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={filterAuthor}
+                    onChange={(e) => setFilterAuthor(e.target.value)}
+                    placeholder="Filter by username..."
+                    className="w-full px-3 py-2 rounded-sm bg-vocl-surface-dark border border-vocl-border text-foreground text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-vocl-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Clear Filters */}
+              {(filterPostType || filterSortBy !== "recent" || filterDateFrom || filterDateTo || filterHasMedia || filterAuthor) && (
+                <button
+                  onClick={() => {
+                    setFilterPostType("");
+                    setFilterSortBy("recent");
+                    setFilterDateFrom("");
+                    setFilterDateTo("");
+                    setFilterHasMedia(false);
+                    setFilterAuthor("");
+                  }}
+                  className="text-sm text-vocl-primary hover:underline"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Loading */}
+      {isSearching && (
+        <div className="flex justify-center py-12">
+          <IconLoader2 size={32} className="animate-spin text-vocl-primary" />
+        </div>
+      )}
+
+      {/* Discovery Content */}
+      {showDiscovery && (
+        <div className="space-y-10">
+          {/* Trending Tags */}
+          <section>
+            <SectionBand>Trending Tags</SectionBand>
+            {isLoadingDiscovery ? (
+              <div className="flex justify-center py-6">
+                <IconLoader2 size={24} className="animate-spin text-foreground/40" />
+              </div>
+            ) : trendingTags.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {trendingTags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagClick(tag.name)}
+                    className="group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-vocl-border hover:border-vocl-primary/50 transition-colors"
+                  >
+                    <IconHash size={14} className="text-vocl-primary" />
+                    <span className="text-sm text-foreground group-hover:text-vocl-primary transition-colors">{tag.name}</span>
+                    <span className="type-meta text-foreground/40">{tag.postCount}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="type-body text-foreground/45">No trending tags yet.</p>
+            )}
+          </section>
+
+          {/* Suggested Users */}
+          <section>
+            <SectionBand>Who to Follow</SectionBand>
+            {isLoadingDiscovery ? (
+              <div className="flex justify-center py-6">
+                <IconLoader2 size={24} className="animate-spin text-foreground/40" />
+              </div>
+            ) : suggestedUsers.length > 0 ? (
+              <div className="divide-y divide-vocl-border">
+                {suggestedUsers.map((user) => (
+                  <UserCard
+                    key={user.id}
+                    user={user}
+                    onFollowToggle={() => handleFollowToggle(user.id, user.isFollowing)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="type-body text-foreground/45">No suggestions available.</p>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* Search Results */}
+      {!isSearching && !showDiscovery && (
+        <div className="space-y-6">
+          {/* Users */}
+          {users.length > 0 && (activeTab === "all" || activeTab === "users") && (
+            <section>
+              {activeTab === "all" && (
+                <SectionBand
+                  action={
+                    userCount > 5 ? (
+                      <button
+                        onClick={() => setActiveTab("users")}
+                        className="type-meta text-vocl-primary hover:underline normal-case tracking-normal"
+                      >
+                        See all {userCount}
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  People
+                </SectionBand>
+              )}
+              <div className="divide-y divide-vocl-border">
+                {users.map((user) => (
+                  <UserCard
+                    key={user.id}
+                    user={user}
+                    onFollowToggle={() => handleFollowToggle(user.id, user.isFollowing)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Tags */}
+          {tags.length > 0 && (activeTab === "all" || activeTab === "tags") && (
+            <section>
+              {activeTab === "all" && (
+                <SectionBand
+                  action={
+                    tagCount > 5 ? (
+                      <button
+                        onClick={() => setActiveTab("tags")}
+                        className="type-meta text-vocl-primary hover:underline normal-case tracking-normal"
+                      >
+                        See all {tagCount}
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  Tags
+                </SectionBand>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagClick(tag.name)}
+                    className="group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-vocl-border hover:border-vocl-primary/50 transition-colors"
+                  >
+                    <IconHash size={14} className="text-vocl-primary" />
+                    <span className="text-sm text-foreground group-hover:text-vocl-primary transition-colors">{tag.name}</span>
+                    <span className="type-meta text-foreground/40">{tag.postCount}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Posts */}
+          {posts.length > 0 && (activeTab === "all" || activeTab === "posts" || browsingTag) && (
+            <section>
+              {activeTab === "all" && !browsingTag && (
+                <SectionBand
+                  action={
+                    postCount > 5 ? (
+                      <button
+                        onClick={() => setActiveTab("posts")}
+                        className="type-meta text-vocl-primary hover:underline normal-case tracking-normal"
+                      >
+                        See all {postCount}
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  Posts
+                </SectionBand>
+              )}
+              <div className="space-y-6">
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} query={query} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* No results */}
+          {!hasResults && query && (
+            <div className="text-center py-12">
+              <IconSearch size={48} className="mx-auto text-foreground/20 mb-4" />
+              <h3 className="type-display text-foreground mb-2">No results found</h3>
+              <p className="type-body text-foreground/50">
+                Try searching for something else or browse trending tags.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// User Card Component
+function UserCard({
+  user,
+  onFollowToggle,
+}: {
+  user: SearchResult["users"][0];
+  onFollowToggle: () => void;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoading(true);
+    await onFollowToggle();
+    setIsLoading(false);
+  };
+
+  return (
+    <Link
+      href={`/profile/${user.username}`}
+      className="group flex items-center gap-3 py-4 first:pt-0 transition-colors"
+    >
+      <div className="relative w-12 h-12 rounded-none overflow-hidden flex-shrink-0">
+        {user.avatarUrl ? (
+          <Image
+            src={user.avatarUrl}
+            alt={user.username}
+            fill
+            sizes="48px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-vocl-primary to-vocl-primary-hover flex items-center justify-center">
+            <span className="text-lg font-bold text-white">
+              {user.username.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="type-heading text-foreground truncate group-hover:text-vocl-primary transition-colors">
+          {user.displayName || user.username}
+        </p>
+        <p className="type-meta text-foreground/50 truncate">@{user.username}</p>
+        {user.bio && (
+          <p className="type-body text-foreground/60 mt-1 line-clamp-1">{user.bio}</p>
+        )}
+      </div>
+      <button
+        onClick={handleFollow}
+        disabled={isLoading}
+        className={`flex-shrink-0 border px-4 py-1.5 font-sans font-medium uppercase tracking-[0.16em] text-[11px] transition-colors ${
+          user.isFollowing
+            ? "border-foreground text-ink hover:bg-vocl-hover"
+            : "border-accent text-accent hover:bg-accent/10"
+        }`}
+      >
+        {isLoading ? (
+          <IconLoader2 size={16} className="animate-spin" />
+        ) : user.isFollowing ? (
+          "Subscribing"
+        ) : (
+          "Subscribe"
+        )}
+      </button>
+    </Link>
+  );
+}
+
+/** Strip HTML tags and collapse whitespace. */
+function stripTags(html?: string | null): string {
+  return (html ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/** Wrap the first case-insensitive match of `term` in `text`. */
+function highlight(text: string, term: string): React.ReactNode {
+  const t = term.trim();
+  if (!t) return text;
+  const idx = text.toLowerCase().indexOf(t.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-transparent text-vocl-primary font-medium">
+        {text.slice(idx, idx + t.length)}
+      </mark>
+      {text.slice(idx + t.length)}
+    </>
+  );
+}
+
+// Compact search result: thumbnail on the left, title/excerpt + author/date on
+// the right, whole card a real link to the post.
+function PostCard({ post, query }: { post: SearchResult["posts"][0]; query: string }) {
+  const c = post.content ?? {};
+  const thumb: string | null =
+    c.urls?.[0] || c.thumbnail_url || c.album_art_url || c.spotify_data?.album_art || null;
+  const title: string | undefined = c.essay_title;
+  const excerpt = stripTags(c.plain || c.caption_html || c.html) || `@${post.author.username}`;
+
+  return (
+    <Link
+      href={`/post/${post.id}`}
+      prefetch={false}
+      className="group flex gap-4 border-b border-rule pb-6"
+    >
+      <div className="relative w-[120px] sm:w-[140px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-vocl-hover flex items-center justify-center">
+        {thumb ? (
+          <ImageWithPlaceholder
+            src={thumb}
+            alt=""
+            colorKey={post.id}
+            fill
+            sizes="140px"
+            unoptimized
+            className="object-cover"
+          />
+        ) : (
+          <IconFileText size={30} className="text-foreground/40" />
+        )}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {title ? (
+          <h3 className="type-heading text-ink transition-colors group-hover:text-accent">
+            {highlight(title, query)}
+          </h3>
+        ) : (
+          <p className="editorial-body text-editorial-body line-clamp-2">
+            {highlight(excerpt, query)}
+          </p>
+        )}
+        <div className="byline mt-auto pt-2 text-meta">
+          @{post.author.username} · <TimeAgo iso={post.createdAt} />
+        </div>
+      </div>
+    </Link>
+  );
+}
