@@ -226,6 +226,20 @@ body {
   .img-skeleton::after { animation: none; }
 }
 
+/* Image loading placeholder (ImageWithPlaceholder) — a calm, slow gradient pan
+   behind media while it loads. Colour is set inline per image. */
+@keyframes img-pan {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+.img-placeholder {
+  animation: img-pan 3.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .img-placeholder { animation: none; background-position: 0% 0%; }
+}
+
 /* Smooth color transition when toggling themes (not on every element to avoid jank) */
 html.theme-transition,
 html.theme-transition body {

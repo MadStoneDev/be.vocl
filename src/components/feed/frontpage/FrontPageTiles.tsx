@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled, IconPencil } from "@tabler/icons-react";
-import { Avatar, TimeAgo, toast } from "@/components/ui";
+import { Avatar, TimeAgo, toast, ImageWithPlaceholder } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLike } from "@/hooks/useLike";
 import { reblogPost } from "@/actions/reblogs";
@@ -249,9 +249,10 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
 
   const media = (
     <div className={`relative w-full ${aspect} overflow-hidden bg-vocl-hover`}>
-      <Image
+      <ImageWithPlaceholder
         src={src}
         alt={alt}
+        colorKey={post.id}
         fill
         sizes="(max-width: 1024px) 100vw, 50vw"
         priority={prominence === "lead"}
@@ -360,9 +361,10 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
     return (
       <TileShell post={post} className="flex flex-col gap-2.5" byline={<Byline post={post} />}>
         <div className={`relative w-full ${aspect} overflow-hidden bg-vocl-hover`}>
-          <Image
+          <ImageWithPlaceholder
             src={preview.image}
             alt={headline}
+            colorKey={post.id}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             unoptimized

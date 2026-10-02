@@ -15,3 +15,4 @@ export { StaffBadge } from './StaffBadge';
 export { MutualBadge } from './MutualBadge';
 export { PullToRefresh } from './PullToRefresh';
 export { TimeAgo } from './TimeAgo';
+export { ImageWithPlaceholder } from './ImageWithPlaceholder';
