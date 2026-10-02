@@ -32,7 +32,7 @@ import {
 } from "@tabler/icons-react";
 import { Portal, Avatar } from "@/components/ui";
 import { searchUsers, searchPosts } from "@/actions/search";
-import { listCommunities } from "@/actions/communities";
+import { searchCommunities } from "@/actions/communities";
 import { scaleIn } from "@/lib/motion";
 import { OPEN_CHAT_EVENT, OPEN_COMMAND_PALETTE_EVENT } from "./commandPaletteEvents";
 
@@ -249,7 +249,7 @@ export function CommandPalette({ username, onOpenChat, initiallyOpen }: CommandP
       const [userRes, postRes, communityRes] = await Promise.all([
         searchUsers(term, { limit: 5 }),
         searchPosts(term, { limit: 5 }),
-        listCommunities({ search: term, limit: 4 }),
+        searchCommunities(term, 4),
       ]);
 
       setUsers(

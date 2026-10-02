@@ -185,6 +185,55 @@ export async function listCommunities(opts?: {
   }
 }
 
+/**
+ * Search communities for the command palette. Matches name OR slug, and returns
+ * communities the viewer can actually open: public ones, plus any they're a
+ * member of (so non-public desks they've joined are findable — listCommunities'
+ * public-only filter hid those).
+ */
+export async function searchCommunities(
+  query: string,
+  limit = 5,
+): Promise<{ success: boolean; communities?: CommunitySummary[]; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const term = query.trim();
+    if (!term) return { success: true, communities: [] };
+
+    let myIds: string[] = [];
+    if (user) {
+      const { data: mine } = await supabase
+        .from("community_members")
+        .select("community_id")
+        .eq("user_id", user.id);
+      myIds = (mine || []).map((m: any) => m.community_id);
+    }
+
+    // Strip PostgREST filter reserved chars from the term before interpolating.
+    const safe = term.replace(/[,()*:%]/g, "").trim();
+    if (!safe) return { success: true, communities: [] };
+
+    const { data, error } = await supabase
+      .from("communities")
+      .select("*")
+      // (name OR slug matches) AND (public OR a community the viewer belongs to)
+      .or(`name.ilike.%${safe}%,slug.ilike.%${safe}%`)
+      .or(`visibility.eq.public${myIds.length ? `,id.in.(${myIds.join(",")})` : ""}`)
+      .order("member_count", { ascending: false })
+      .limit(limit);
+
+    if (error) return { success: false, error: error.message };
+    const myIdSet = new Set(myIds);
+    return {
+      success: true,
+      communities: (data || []).map((r: any) => toSummary(r, myIdSet.has(r.id))),
+    };
+  } catch (e: any) {
+    return { success: false, error: e.message || "Failed to search communities" };
+  }
+}
+
 export async function joinCommunity(
   communityId: string,
   message?: string

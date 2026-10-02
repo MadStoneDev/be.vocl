@@ -79,7 +79,6 @@ export default function CommunitiesPage() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="py-3 sm:py-6 px-2 sm:px-4 max-w-3xl mx-auto">
-        <title>Communities | be.vocl</title>
 
         {/* Editorial masthead */}
         <motion.header
