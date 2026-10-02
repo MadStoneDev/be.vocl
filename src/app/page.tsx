@@ -109,8 +109,16 @@ export default async function Home() {
   // the curated Listen / Briefs / Poll slots draw from still-unused posts of the
   // right type, then More stories catches ALL remaining posts in order (no 3-item
   // cap, which previously stranded later posts).
-  const lead = posts[0];
-  const secondary = posts.slice(1, 3);
+  const hasCaption = (p: FeedPost) =>
+    (p.content.captionHtml ?? "").replace(/<[^>]*>/g, "").trim().length > 0;
+  const leadEligible = (p: FeedPost) =>
+    p.contentType === "text" || (p.contentType === "image" && hasCaption(p));
+
+  // Lead = newest text / captioned-image post; fall back to the newest of any
+  // type. Pulled out of the list; everything else keeps strict date order.
+  const lead = posts.find(leadEligible) ?? posts[0];
+  const rest = posts.filter((p) => lead && p.id !== lead.id);
+  const secondary = rest.slice(0, 2);
   const used = new Set([lead, ...secondary].filter(Boolean).map((p) => p.id));
 
   const listen = posts

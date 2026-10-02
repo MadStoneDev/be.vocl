@@ -22,21 +22,30 @@ export function postHasMedia(p: FeedPost): boolean {
   );
 }
 
+/** Non-empty caption text (HTML tags stripped, whitespace trimmed). */
+function hasCaption(p: FeedPost): boolean {
+  return (p.content.captionHtml ?? "").replace(/<[^>]*>/g, "").trim().length > 0;
+}
+
+/** Reads well as the lead headline: a text post, or an image post with a caption. */
+function leadEligible(p: FeedPost): boolean {
+  return p.contentType === "text" || (p.contentType === "image" && hasCaption(p));
+}
+
 /**
- * Lay the front page out STRICTLY in the feed's order (same sorted list the
- * Reader uses — newest first). Fill slots in sequence: lead = first post, the
- * two features beside it = next two, and every remaining post flows into the
- * "More stories" river in order. No scoring, no type/engagement reshuffle, no
- * promotion that reorders the river, and no post is ever dropped or duplicated
- * (lead + features + standards partition the array).
+ * Lay the front page out in the feed's order (same sorted list the Reader uses —
+ * newest first). The lead is the newest post that reads as a headline story (a
+ * text post, or an image post with a caption), falling back to the newest post
+ * of any type. The lead is simply pulled out of the list; the two features are
+ * the next two remaining and "More stories" is the rest, all in strict date
+ * order. Nothing is dropped or duplicated (lead + features + standards partition
+ * the array).
  */
 export function useFeedLayout(posts: FeedPost[]): FeedLayout {
   return useMemo(() => {
     if (posts.length === 0) return { lead: null, features: [], standards: [] };
-    return {
-      lead: posts[0],
-      features: posts.slice(1, 3),
-      standards: posts.slice(3),
-    };
+    const lead = posts.find(leadEligible) ?? posts[0];
+    const rest = posts.filter((p) => p.id !== lead.id);
+    return { lead, features: rest.slice(0, 2), standards: rest.slice(2) };
   }, [posts]);
 }
