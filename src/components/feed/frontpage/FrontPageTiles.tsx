@@ -9,7 +9,6 @@ import { Avatar, TimeAgo, toast, ImageWithPlaceholder } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLike } from "@/hooks/useLike";
 import { reblogPost } from "@/actions/reblogs";
-import { ImageLightbox } from "@/components/Post/content/ImageLightbox";
 import type { FeedPost } from "../FeedList";
 import type { Prominence } from "./useFeedLayout";
 import type { LinkPreviewData } from "@/types/database";
@@ -232,8 +231,6 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
 
 function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominence }) {
   const src = mediaSrc(post);
-  const [lbOpen, setLbOpen] = useState(false);
-  const [lbIndex, setLbIndex] = useState(0);
 
   if (!src) return <ArticleTile post={post} prominence={prominence} />;
 
@@ -244,8 +241,6 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
   const isGallery = post.contentType === "gallery";
   const isVideo = post.contentType === "video";
   const count = post.content.imageUrls?.length ?? 0;
-  // Images/galleries open the lightbox in place; video navigates to the post (to play).
-  const lightboxImages = isGallery && count > 0 ? post.content.imageUrls! : [src];
 
   const media = (
     <div className={`relative w-full ${aspect} overflow-hidden bg-vocl-hover`}>
@@ -275,25 +270,14 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
 
   return (
     <div className="group flex h-full flex-col gap-2.5">
-      {isVideo ? (
-        <Link href={hrefOf(post)} prefetch={false} className="block">
-          {media}
-        </Link>
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setLbIndex(0);
-            setLbOpen(true);
-          }}
-          className="block w-full cursor-zoom-in"
-          aria-label="View image"
-        >
-          {media}
-        </button>
-      )}
+      {/* The whole media is a real link to the post (works with middle-click /
+          open-in-new-tab / screen readers / crawlers); the full view + lightbox
+          live on the post page. */}
+      <Link href={hrefOf(post)} prefetch={false} className="block" aria-label={alt}>
+        {media}
+      </Link>
 
-      {(caption || isVideo) && (
+      {caption && (
         <Link href={hrefOf(post)} prefetch={false} className="block">
           <p
             className={`${prominence === "lead" ? "type-body-lg" : "type-body"} text-foreground/85 hover:text-vocl-primary transition-colors`}
@@ -305,17 +289,6 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
       <div className="mt-auto">
         <Byline post={post} />
       </div>
-
-      {!isVideo && (
-        <ImageLightbox
-          images={lightboxImages}
-          currentIndex={lbIndex}
-          isOpen={lbOpen}
-          onClose={() => setLbOpen(false)}
-          onNavigate={setLbIndex}
-          alt={alt}
-        />
-      )}
     </div>
   );
 }

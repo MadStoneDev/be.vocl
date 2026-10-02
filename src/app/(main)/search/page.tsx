@@ -28,9 +28,7 @@ import {
 } from "@/actions/search";
 import { followUser, unfollowUser } from "@/actions/follows";
 import { followTag, unfollowTag, isFollowingTag } from "@/actions/tags";
-import { toast } from "@/components/ui";
-import { sanitizeHtmlWithSafeLinks } from "@/lib/sanitize";
-import { InteractivePost, ImageContent, TextContent, LinkPreviewCarousel } from "@/components/Post";
+import { toast, TimeAgo, ImageWithPlaceholder } from "@/components/ui";
 
 type SearchTab = "all" | "users" | "tags" | "posts";
 
@@ -816,7 +814,7 @@ function SearchContent() {
               )}
               <div className="space-y-6">
                 {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <PostCard key={post.id} post={post} query={query} />
                 ))}
               </div>
             </section>
@@ -908,60 +906,72 @@ function UserCard({
   );
 }
 
-// Post Card Component (simplified)
-function PostCard({ post }: { post: SearchResult["posts"][0] }) {
-  const contentType = post.postType as "text" | "image" | "video" | "audio" | "gallery";
+/** Strip HTML tags and collapse whitespace. */
+function stripTags(html?: string | null): string {
+  return (html ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/** Wrap the first case-insensitive match of `term` in `text`. */
+function highlight(text: string, term: string): React.ReactNode {
+  const t = term.trim();
+  if (!t) return text;
+  const idx = text.toLowerCase().indexOf(t.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-transparent text-vocl-primary font-medium">
+        {text.slice(idx, idx + t.length)}
+      </mark>
+      {text.slice(idx + t.length)}
+    </>
+  );
+}
+
+// Compact search result: thumbnail on the left, title/excerpt + author/date on
+// the right, whole card a real link to the post.
+function PostCard({ post, query }: { post: SearchResult["posts"][0]; query: string }) {
+  const c = post.content ?? {};
+  const thumb: string | null =
+    c.urls?.[0] || c.thumbnail_url || c.album_art_url || c.spotify_data?.album_art || null;
+  const title: string | undefined = c.essay_title;
+  const excerpt = stripTags(c.plain || c.caption_html || c.html) || `@${post.author.username}`;
 
   return (
-    <div className="max-w-xl mx-auto">
-      <InteractivePost
-        id={post.id}
-        author={{
-          username: post.author.username,
-          avatarUrl: post.author.avatarUrl || "https://via.placeholder.com/100",
-        }}
-        authorId={post.authorId}
-        timestamp={post.createdAt}
-        contentType={contentType}
-        initialStats={{
-          comments: post.commentCount,
-          likes: post.likeCount,
-          reblogs: 0,
-        }}
-        initialInteractions={{
-          hasCommented: false,
-          hasLiked: false,
-          hasReblogged: false,
-        }}
-        isSensitive={post.isSensitive}
-        tags={post.tags}
-      >
-        {contentType === "image" && post.content?.urls?.[0] && (
-          <ImageContent src={post.content.urls[0]} alt="" />
+    <Link
+      href={`/post/${post.id}`}
+      prefetch={false}
+      className="group flex gap-4 border-b border-rule pb-6"
+    >
+      <div className="relative w-[120px] sm:w-[140px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-vocl-hover flex items-center justify-center">
+        {thumb ? (
+          <ImageWithPlaceholder
+            src={thumb}
+            alt=""
+            colorKey={post.id}
+            fill
+            sizes="140px"
+            unoptimized
+            className="object-cover"
+          />
+        ) : (
+          <IconFileText size={30} className="text-foreground/40" />
         )}
-        {contentType === "text" && post.content?.html && (
-          <>
-            <TextContent>
-              <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlWithSafeLinks(post.content.html) }} />
-            </TextContent>
-            {post.content.link_previews?.length > 0 && (
-              <div className="">
-                <LinkPreviewCarousel previews={post.content.link_previews} />
-              </div>
-            )}
-          </>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {title ? (
+          <h3 className="type-heading text-ink transition-colors group-hover:text-accent">
+            {highlight(title, query)}
+          </h3>
+        ) : (
+          <p className="editorial-body text-editorial-body line-clamp-2">
+            {highlight(excerpt, query)}
+          </p>
         )}
-        {contentType === "text" && post.content?.plain && !post.content?.html && (
-          <>
-            <TextContent>{post.content.plain}</TextContent>
-            {post.content.link_previews?.length > 0 && (
-              <div className="">
-                <LinkPreviewCarousel previews={post.content.link_previews} />
-              </div>
-            )}
-          </>
-        )}
-      </InteractivePost>
-    </div>
+        <div className="byline mt-auto pt-2 text-meta">
+          @{post.author.username} · <TimeAgo iso={post.createdAt} />
+        </div>
+      </div>
+    </Link>
   );
 }
