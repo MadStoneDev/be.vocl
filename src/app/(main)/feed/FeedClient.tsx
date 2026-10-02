@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, useEffect, useSyncExternalStore } from "reac
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { FeedTabs, FeedList, WhoToFollow, FeedRail, type FeedTab } from "@/components/feed";
+import { FeedTabs, FeedList, WhoToFollow, type FeedTab } from "@/components/feed";
 import { OPEN_COMMAND_PALETTE_EVENT } from "@/components/layout/commandPaletteEvents";
 
 // SSR stays on so the broadsheet HTML is in the first paint (no blank frame
@@ -449,8 +449,7 @@ export default function FeedClient({
           // grid takes the full width. The main column still switches between the
           // front-page grid (xl+) and the reader (below), matching SSR via CSS
           // while isWide is unmeasured.
-          <div className="2xl:grid 2xl:grid-cols-[minmax(0,1fr)_320px] 2xl:gap-10">
-            <div className="min-w-0">
+          <div className="min-w-0">
               {isWide === null ? (
                 <>
                   <div className="hidden xl:block">
@@ -475,10 +474,6 @@ export default function FeedClient({
                   showWhoToFollow={activeTab === "engagement"}
                 />
               )}
-            </div>
-            <aside className="hidden 2xl:block border-l border-rule pl-8">
-              <FeedRail posts={feedListPosts} />
-            </aside>
           </div>
         ) : (
           <FeedList

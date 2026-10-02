@@ -104,16 +104,27 @@ export default async function Home() {
 
   const posts = (await getPublicFrontPagePosts({ limit: 24 })) as unknown as FeedPost[];
 
-  // Editorial slicing of the public river into a broadsheet.
+  // Editorial slicing of the public river into a broadsheet. Each post is placed
+  // exactly once and nothing is dropped: lead + right column take the newest,
+  // the curated Listen / Briefs / Poll slots draw from still-unused posts of the
+  // right type, then More stories catches ALL remaining posts in order (no 3-item
+  // cap, which previously stranded later posts).
   const lead = posts[0];
   const secondary = posts.slice(1, 3);
-  const moreStories = posts.slice(3, 6);
-  const used = new Set([lead, ...secondary, ...moreStories].filter(Boolean).map((p) => p.id));
+  const used = new Set([lead, ...secondary].filter(Boolean).map((p) => p.id));
+
+  const listen = posts
+    .filter((p) => !used.has(p.id) && p.contentType === "audio")
+    .slice(0, 2);
+  listen.forEach((p) => used.add(p.id));
   const briefs = posts
-    .filter((p) => p.contentType === "text" && !p.content.isEssay && !used.has(p.id))
+    .filter((p) => !used.has(p.id) && p.contentType === "text" && !p.content.isEssay)
     .slice(0, 3);
-  const listen = posts.filter((p) => p.contentType === "audio").slice(0, 2);
-  const pollPost = posts.find((p) => p.contentType === "poll");
+  briefs.forEach((p) => used.add(p.id));
+  const pollPost = posts.find((p) => !used.has(p.id) && p.contentType === "poll");
+  if (pollPost) used.add(pollPost.id);
+
+  const moreStories = posts.filter((p) => !used.has(p.id));
   const pollData =
     (pollPost as unknown as {
       poll?: { question: string; options: Array<{ label: string; votes: number }>; totalVotes: number } | null;
