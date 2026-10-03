@@ -26,7 +26,7 @@ export function NSFWOverlay({ onReveal }: NSFWOverlayProps) {
 
   return (
     <div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay/98"
+      className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay backdrop-blur-xl"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >

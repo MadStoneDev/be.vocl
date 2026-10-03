@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled, IconPencil } from "@tabler/icons-react";
+import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled, IconPencil, IconEyeOff } from "@tabler/icons-react";
 import { Avatar, TimeAgo, toast, ImageWithPlaceholder } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLike } from "@/hooks/useLike";
@@ -466,7 +466,36 @@ export function TileActions({ post }: { post: FeedPost }) {
   );
 }
 
+/**
+ * Placeholder shown on the Front Page in place of a sensitive post's real
+ * headline/image/caption, so the broadsheet never leaks flagged content at a
+ * glance. Links through to the post, where the reader can reveal it.
+ */
+function SensitiveTile({ post, prominence }: { post: FeedPost; prominence: Prominence }) {
+  return (
+    <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
+      <span className="kicker kicker-accent">Sensitive</span>
+      <div className="flex items-center gap-2.5 border-y border-vocl-border py-4 text-foreground/55">
+        <IconEyeOff size={prominence === "lead" ? 26 : 18} className="flex-shrink-0" />
+        <span className={prominence === "lead" ? "type-body-lg" : "type-body"}>
+          Sensitive content — open to view
+        </span>
+      </div>
+    </TileShell>
+  );
+}
+
 export function FrontPageTile({ post, prominence }: { post: FeedPost; prominence: Prominence }) {
+  // Honour the same reveal rule as the feed: own posts and viewers who turned
+  // off "blur sensitive by default" see content; everyone else gets a warning
+  // placeholder instead of the headline/image. (Sensitive posts never reach the
+  // logged-out homepage — they're filtered server-side — so this is the feed.)
+  const { profile } = useAuth();
+  const autoReveal = post.isOwn || profile?.blurSensitiveByDefault === false;
+  if (post.isSensitive && !autoReveal) {
+    return <SensitiveTile post={post} prominence={prominence} />;
+  }
+
   switch (post.contentType) {
     case "image":
     case "gallery":

@@ -1273,7 +1273,7 @@ export const Post = memo(function Post({
           {/* Content Warning overlay */}
           {contentWarning && !isCWDismissed && !showNSFWOverlay && (
             <div
-              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay/95"
+              className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-vocl-overlay backdrop-blur-xl"
               style={{ borderRadius: contentBorderRadius }}
             >
               <div className="text-center px-6 max-w-sm">
