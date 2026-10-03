@@ -52,7 +52,9 @@ function clamp(s: string, n: number): string {
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
 function hrefOf(post: FeedPost): string {
-  return post.threadId ? `/thread/${post.threadId}` : `/post/${post.id}`;
+  // The homepage is logged-out only (authed users are redirected to /feed), so
+  // always link to the single post — /thread/ is login-gated for members.
+  return `/post/${post.id}`;
 }
 function briefText(post: FeedPost): string {
   return clamp(post.content.text || stripHtml(post.content.html), 150);

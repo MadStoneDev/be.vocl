@@ -103,8 +103,15 @@ function mediaSrc(post: FeedPost): string | null {
   return c.imageUrl || c.imageUrls?.[0] || c.videoThumbnailUrl || c.albumArtUrl || null;
 }
 
-function hrefOf(post: FeedPost): string {
-  if (post.threadId) return `/thread/${post.threadId}`;
+/**
+ * Where a tile links. Threaded posts open the aggregate /thread view only for
+ * logged-in members — it's login-gated and can include members-only siblings —
+ * so logged-out visitors (homepage / public surfaces) always go to the single
+ * post instead of being bounced to /login.
+ */
+function usePostHref(post: FeedPost): string {
+  const { isAuthenticated } = useAuth();
+  if (post.threadId && isAuthenticated) return `/thread/${post.threadId}`;
   return `/post/${post.id}`;
 }
 
@@ -179,9 +186,10 @@ function TileShell({
   byline?: React.ReactNode;
   className?: string;
 }) {
+  const href = usePostHref(post);
   return (
     <div className="flex h-full flex-col gap-2" data-post-id={post.id}>
-      <Link href={hrefOf(post)} prefetch={false} className={`group block ${className}`}>
+      <Link href={href} prefetch={false} className={`group block ${className}`}>
         {children}
       </Link>
       {byline && <div className="mt-auto pt-2">{byline}</div>}
@@ -231,6 +239,7 @@ function ArticleTile({ post, prominence }: { post: FeedPost; prominence: Promine
 
 function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominence }) {
   const src = mediaSrc(post);
+  const href = usePostHref(post);
 
   if (!src) return <ArticleTile post={post} prominence={prominence} />;
 
@@ -273,12 +282,12 @@ function MediaTile({ post, prominence }: { post: FeedPost; prominence: Prominenc
       {/* The whole media is a real link to the post (works with middle-click /
           open-in-new-tab / screen readers / crawlers); the full view + lightbox
           live on the post page. */}
-      <Link href={hrefOf(post)} prefetch={false} className="block" aria-label={alt}>
+      <Link href={href} prefetch={false} className="block" aria-label={alt}>
         {media}
       </Link>
 
       {caption && (
-        <Link href={hrefOf(post)} prefetch={false} className="block">
+        <Link href={href} prefetch={false} className="block">
           <p
             className={`${prominence === "lead" ? "type-body-lg" : "type-body"} text-foreground/85 hover:text-vocl-primary transition-colors`}
           >
@@ -384,7 +393,9 @@ function LinkTile({ post, prominence, preview }: { post: FeedPost; prominence: P
 export function TileActions({ post }: { post: FeedPost }) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const href = hrefOf(post);
+  // Matches usePostHref: threaded → /thread only for logged-in members.
+  const href =
+    post.threadId && isAuthenticated ? `/thread/${post.threadId}` : `/post/${post.id}`;
 
   // Inline like (optimistic). Comment + voice lead to the post to engage.
   const { isLiked, likeCount, handleLike } = useLike({
