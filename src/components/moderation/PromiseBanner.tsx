@@ -58,7 +58,7 @@ export function PromiseBanner({ onAccepted }: PromiseBannerProps) {
                 any context
               </li>
               <li>
-                • Violations may result in permanent ban and IP logging
+                • Violations may result in a permanent ban
               </li>
               <li>
                 • I have read and agree to the{" "}
