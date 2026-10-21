@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { createContext, useContext, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled, IconPencil, IconEyeOff } from "@tabler/icons-react";
-import { Avatar, TimeAgo, toast, ImageWithPlaceholder } from "@/components/ui";
+import { IconPlayerPlay, IconMicrophone, IconPhoto, IconChartBar, IconRefresh, IconLink, IconMessage, IconHeart, IconHeartFilled, IconPencil, IconTrash, IconEyeOff } from "@tabler/icons-react";
+import { Avatar, TimeAgo, toast, ImageWithPlaceholder, ConfirmDialog } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLike } from "@/hooks/useLike";
 import { reblogPost } from "@/actions/reblogs";
+import { deletePost } from "@/actions/posts";
 import type { FeedPost } from "../FeedList";
 import type { Prominence } from "./useFeedLayout";
 import type { LinkPreviewData } from "@/types/database";
@@ -131,10 +132,37 @@ function domainOf(url: string): string {
 // ---------------------------------------------------------------------------
 // Shared chrome
 // ---------------------------------------------------------------------------
+
+/** Lets the owner Delete action (rendered deep inside Byline) tell the top-level
+ *  FrontPageTile to unmount the whole tile once a delete succeeds. */
+const TileDeleteContext = createContext<(() => void) | null>(null);
+
 function Byline({ post }: { post: FeedPost }) {
   // The tile itself is a link to the post; these nested links (author, edit) stop
   // propagation so they navigate to their own target instead of the post.
   const stop = (e: React.MouseEvent) => e.stopPropagation();
+  const onDeleted = useContext(TileDeleteContext);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, startDeleteTransition] = useTransition();
+
+  const openDeleteConfirm = (e: React.MouseEvent) => {
+    stop(e);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    startDeleteTransition(async () => {
+      const result = await deletePost(post.id);
+      if (result.success) {
+        setShowDeleteConfirm(false);
+        toast.success("Post deleted");
+        onDeleted?.();
+      } else {
+        toast.error(result.error || "Failed to delete post");
+      }
+    });
+  };
+
   return (
     <div className="flex items-center gap-2 text-foreground/55 type-meta">
       <Link
@@ -154,15 +182,36 @@ function Byline({ post }: { post: FeedPost }) {
         </span>
       )}
       {post.isOwn && (
-        <Link
-          href={`/create?edit=${post.id}`}
-          prefetch={false}
-          onClick={stop}
-          aria-label="Edit post"
-          className="ml-auto inline-flex items-center gap-1 text-foreground/45 hover:text-vocl-primary transition-colors"
-        >
-          <IconPencil size={13} /> Edit
-        </Link>
+        <div className="ml-auto flex items-center gap-2.5">
+          <Link
+            href={`/create?edit=${post.id}`}
+            prefetch={false}
+            onClick={stop}
+            aria-label="Edit post"
+            className="inline-flex items-center gap-1 text-foreground/45 hover:text-vocl-primary transition-colors"
+          >
+            <IconPencil size={13} /> Edit
+          </Link>
+          <button
+            type="button"
+            onClick={openDeleteConfirm}
+            aria-label="Delete post"
+            className="inline-flex items-center text-foreground/45 hover:text-vocl-like transition-colors"
+          >
+            <IconTrash size={13} />
+          </button>
+          <ConfirmDialog
+            isOpen={showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(false)}
+            onConfirm={handleConfirmDelete}
+            title="Delete Post"
+            message="Are you sure you want to delete this post? This action cannot be undone."
+            confirmText="Delete"
+            cancelText="Cancel"
+            variant="danger"
+            isLoading={isDeleting}
+          />
+        </div>
       )}
     </div>
   );
@@ -491,35 +540,47 @@ export function FrontPageTile({ post, prominence }: { post: FeedPost; prominence
   // placeholder instead of the headline/image. (Sensitive posts never reach the
   // logged-out homepage — they're filtered server-side — so this is the feed.)
   const { profile } = useAuth();
-  const autoReveal = post.isOwn || profile?.blurSensitiveByDefault === false;
-  if (post.isSensitive && !autoReveal) {
-    return <SensitiveTile post={post} prominence={prominence} />;
-  }
+  const [isDeleted, setIsDeleted] = useState(false);
+  if (isDeleted) return null;
 
-  switch (post.contentType) {
-    case "image":
-    case "gallery":
-    case "video":
-      return <MediaTile post={post} prominence={prominence} />;
-    case "audio":
-      return <AudioTile post={post} prominence={prominence} />;
-    case "poll":
-      return (
-        <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
-          <Kicker post={post} />
-          <h3 className="type-heading text-foreground hover:text-vocl-primary transition-colors flex items-start gap-2">
-            <IconChartBar size={20} className="mt-0.5 flex-shrink-0 text-vocl-primary" />
-            {headlineOf(post)}
-          </h3>
-        </TileShell>
-      );
-    default: {
-      // A non-essay text post that's really a shared link → render it as a link card
-      const preview = firstLinkPreview(post);
-      if (post.contentType === "text" && !post.content.isEssay && preview) {
-        return <LinkTile post={post} prominence={prominence} preview={preview} />;
-      }
-      return <ArticleTile post={post} prominence={prominence} />;
+  const autoReveal = post.isOwn || profile?.blurSensitiveByDefault === false;
+
+  const tile = (() => {
+    if (post.isSensitive && !autoReveal) {
+      return <SensitiveTile post={post} prominence={prominence} />;
     }
-  }
+
+    switch (post.contentType) {
+      case "image":
+      case "gallery":
+      case "video":
+        return <MediaTile post={post} prominence={prominence} />;
+      case "audio":
+        return <AudioTile post={post} prominence={prominence} />;
+      case "poll":
+        return (
+          <TileShell post={post} className="flex flex-col gap-2" byline={<Byline post={post} />}>
+            <Kicker post={post} />
+            <h3 className="type-heading text-foreground hover:text-vocl-primary transition-colors flex items-start gap-2">
+              <IconChartBar size={20} className="mt-0.5 flex-shrink-0 text-vocl-primary" />
+              {headlineOf(post)}
+            </h3>
+          </TileShell>
+        );
+      default: {
+        // A non-essay text post that's really a shared link → render it as a link card
+        const preview = firstLinkPreview(post);
+        if (post.contentType === "text" && !post.content.isEssay && preview) {
+          return <LinkTile post={post} prominence={prominence} preview={preview} />;
+        }
+        return <ArticleTile post={post} prominence={prominence} />;
+      }
+    }
+  })();
+
+  return (
+    <TileDeleteContext.Provider value={() => setIsDeleted(true)}>
+      {tile}
+    </TileDeleteContext.Provider>
+  );
 }
