@@ -94,6 +94,8 @@ const MANIFESTO: { lead: string; body: string }[] = [
   },
 ];
 
+const MORE_STORIES_CAP = 6;
+
 export default async function Home() {
   // Logged-in users belong in their feed. The proxy handles `/` too, but guard
   // here so a direct render still redirects.
@@ -110,8 +112,8 @@ export default async function Home() {
   // Editorial slicing of the public river into a broadsheet. Each post is placed
   // exactly once and nothing is dropped: lead + right column take the newest,
   // the curated Listen / Briefs / Poll slots draw from still-unused posts of the
-  // right type, then More stories catches ALL remaining posts in order (no 3-item
-  // cap, which previously stranded later posts).
+  // right type, then the remaining posts fill More stories (first
+  // MORE_STORIES_CAP) and the full-width overflow river below, in order.
   // Lead eligibility is shared with the logged-in Front Page (single source of
   // truth in useFeedLayout): newest text / captioned image or gallery / titled
   // link post, falling back to the newest of any type. Pulled out of the list;
@@ -132,7 +134,11 @@ export default async function Home() {
   const pollPost = posts.find((p) => !used.has(p.id) && p.contentType === "poll");
   if (pollPost) used.add(pollPost.id);
 
-  const moreStories = posts.filter((p) => !used.has(p.id));
+  // More stories shows a capped column so it can't tower over the lead and
+  // briefs; the remainder overflows into a full-width river below the grid.
+  const remaining = posts.filter((p) => !used.has(p.id));
+  const moreStories = remaining.slice(0, MORE_STORIES_CAP);
+  const overflow = remaining.slice(MORE_STORIES_CAP);
   const pollData =
     (pollPost as unknown as {
       poll?: { question: string; options: Array<{ label: string; votes: number }>; totalVotes: number } | null;
@@ -240,8 +246,10 @@ export default async function Home() {
             </div>
           ) : (
             <>
-              {/* Column 1 — lead + secondary */}
-              <div className="lg:pr-9">
+              {/* Column 1 — lead + secondary. self-start: if this cell stretched to
+                  a taller More stories column, the lead tile's h-full + mt-auto
+                  byline would fill it and shove the secondary pair into the footer. */}
+              <div className="lg:self-start lg:pr-9">
                 {lead && (
                   <>
                     <FrontPageTile post={lead} prominence="lead" />
@@ -366,6 +374,20 @@ export default async function Home() {
             </>
           )}
         </main>
+
+        {/* ===== Overflow river — More stories past the column cap ===== */}
+        {overflow.length > 0 && (
+          <section className="border-t border-rule pb-10 pt-3">
+            <div className="slug mb-6 text-meta">Also in this edition</div>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+              {overflow.map((p) => (
+                <div key={p.id} className="h-full border-t border-rule pt-5">
+                  <FrontPageTile post={p} prominence="standard" />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ===== The Terms (subscribe fold) ===== */}
         <section className="rule-double py-9">
