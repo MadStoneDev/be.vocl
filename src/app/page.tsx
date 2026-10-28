@@ -51,18 +51,13 @@ function clamp(s: string, n: number): string {
   if (s.length <= n) return s;
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
-function clampWords(s: string, n: number): string {
-  const words = s.split(/\s+/);
-  if (words.length <= n) return s;
-  return words.slice(0, n).join(" ") + "…";
-}
 function hrefOf(post: FeedPost): string {
   // The homepage is logged-out only (authed users are redirected to /feed), so
   // always link to the single post — /thread/ is login-gated for members.
   return `/post/${post.id}`;
 }
 function briefText(post: FeedPost): string {
-  return clampWords(post.content.text || stripHtml(post.content.html), 300);
+  return clamp(post.content.text || stripHtml(post.content.html), 200);
 }
 
 // Section bar — logged-out tabs all point at public surfaces.
