@@ -51,13 +51,18 @@ function clamp(s: string, n: number): string {
   if (s.length <= n) return s;
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
+function clampWords(s: string, n: number): string {
+  const words = s.split(/\s+/);
+  if (words.length <= n) return s;
+  return words.slice(0, n).join(" ") + "…";
+}
 function hrefOf(post: FeedPost): string {
   // The homepage is logged-out only (authed users are redirected to /feed), so
   // always link to the single post — /thread/ is login-gated for members.
   return `/post/${post.id}`;
 }
 function briefText(post: FeedPost): string {
-  return clamp(post.content.text || stripHtml(post.content.html), 150);
+  return clampWords(post.content.text || stripHtml(post.content.html), 300);
 }
 
 // Section bar — logged-out tabs all point at public surfaces.
@@ -94,7 +99,7 @@ const MANIFESTO: { lead: string; body: string }[] = [
   },
 ];
 
-const MORE_STORIES_CAP = 6;
+const MORE_STORIES_CAP = 3;
 
 export default async function Home() {
   // Logged-in users belong in their feed. The proxy handles `/` too, but guard
